@@ -1,26 +1,22 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { DataManagementClient } from 'forge-nodejs-utils';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+import { SimpleStorageDataProvider } from './SimpleStorageDataProvider';
+
 export function activate(context: vscode.ExtensionContext) {
+	const ForgeClientID = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientId');
+	const ForgeClientSecret = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientSecret');
+	if (!ForgeClientID || !ForgeClientSecret) {
+		vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings and reload the editor.');
+		return;
+	}
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-		console.log('Congratulations, your extension "vscode-forge-tools" is now active!');
+	console.log('Extension "vscode-forge-tools" has been loaded.');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World!');
-	});
-
-	context.subscriptions.push(disposable);
+	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
+	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
+	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
+	context.subscriptions.push(dataManagementView);
 }
 
 // this method is called when your extension is deactivated

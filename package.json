@@ -10,14 +10,43 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"onView:forgeDataManagementView",
+		"onView:forgeDesignAutomationView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [{
-			"command": "extension.helloWorld",
-			"title": "Hello World"
-		}]
+		"configuration": {
+			"title": "Forge",
+			"properties": {
+				"autodesk.forge.clientId": {
+					"type": "string",
+					"description": "Client ID",
+					"scope": "resource"
+				},
+				"autodesk.forge.clientSecret": {
+					"type": "string",
+					"description": "Client Secret",
+					"scope": "resource"
+				}
+			}
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "forgeViewContainer",
+					"title": "Forge",
+					"icon": "resources/logo.png"
+				}
+			]
+		},
+		"views": {
+			"forgeViewContainer": [
+				{
+					"id": "forgeDataManagementView",
+					"name": "Data Management"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
@@ -27,10 +56,13 @@
 		"test": "yarn run compile && node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28",
-		"tslint": "^5.12.1",
+		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"@types/mocha": "^2.2.42"
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28"
+	},
+	"dependencies": {
+		"forge-nodejs-utils": "^1.5.1"
 	}
 }
