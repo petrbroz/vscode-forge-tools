@@ -5,6 +5,10 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/petrbroz/vscode-forge-tools"
+	},
 	"engines": {
 		"vscode": "^1.35.0"
 	},
