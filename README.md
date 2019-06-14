@@ -20,6 +20,15 @@ _Design Automation_ can be used for browsing [Forge Design Automation](https://f
 - [Visual Studio Code](https://code.visualstudio.com) version 1.35.0 or newer
 - Forge application credentials ([tutorial](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
 
+## Getting Started
+
+While in Visual Studio Code:
+
+- Switch to the _Extensions_ sidebar (`Cmd`+`Shift`+`X` on macOS or `Ctrl`+`Shift`+`X` on Windows)
+- Search for the _Autodesk Forge Tools_ extension and install it
+- Open _User Settings_ (`Cmd`+`,` on macOS or `Ctrl`+`,` on Windows), locate the _Forge_ extension settings, and provide the client ID and client secret
+- Switch to the new _Forge_ sidebar and start browsing!
+
 ## Extension Settings
 
 This extension contributes the following settings:

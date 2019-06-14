@@ -193,37 +193,44 @@ export async function previewObject(object: IObject, context: vscode.ExtensionCo
 		_templateFuncCache.set('object-preview', ejs.compile(template));
 	}
 
-	const token = await authClient.authenticate(['viewables:read']);
-	const panel = vscode.window.createWebviewPanel(
-		'object-preview',
-		'Preview: ' + object.objectKey,
-		vscode.ViewColumn.One,
-		{ enableScripts: true }
-	);
-	const templateFunc = _templateFuncCache.get('object-preview');
-	if (templateFunc) {
-		panel.webview.html = templateFunc({ object, token });
+	try {
+		const token = await authClient.authenticate(['viewables:read']);
+		const panel = vscode.window.createWebviewPanel(
+			'object-preview',
+			'Preview: ' + object.objectKey,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const templateFunc = _templateFuncCache.get('object-preview');
+		if (templateFunc) {
+			panel.webview.html = templateFunc({ object, token });
+		}
+	
+		panel.webview.onDidReceiveMessage(
+			async (message) => {
+				switch (message.command) {
+					case 'translate':
+						try {
+							const job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
+							vscode.window.showInformationMessage('Started translation job: ' + JSON.stringify(job));
+							let manifest = await derivClient.getManifest(message.urn);
+							while (manifest.status === 'inprogress' || manifest.status === 'pending') {
+								panel.webview.postMessage({ command: 'progress', progress: manifest.progress });
+								await sleep(2000);
+								manifest = await derivClient.getManifest(message.urn);
+							}
+							panel.webview.postMessage({ command: 'reload' });
+						} catch(err) {
+							vscode.window.showErrorMessage('Could not translate file: ' + JSON.stringify(err));
+						}
+				}
+			},
+			undefined,
+			context.subscriptions
+		);
+	} catch(err) {
+		vscode.window.showErrorMessage('Could not access object: ' + JSON.stringify(err));
 	}
-
-	panel.webview.onDidReceiveMessage(
-		async (message) => {
-			switch (message.command) {
-				case 'translate':
-					const job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
-					vscode.window.showInformationMessage('Started translation job: ' + JSON.stringify(job));
-					let manifest = await derivClient.getManifest(message.urn);
-					while (manifest.status === 'inprogress' || manifest.status === 'pending') {
-						panel.webview.postMessage({ command: 'progress', progress: manifest.progress });
-						await sleep(2000);
-						manifest = await derivClient.getManifest(message.urn);
-					}
-					panel.webview.postMessage({ command: 'reload' });
-					return;
-			}
-		},
-		undefined,
-		context.subscriptions
-	);
 }
 
 export async function previewAppBundle(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
@@ -233,16 +240,20 @@ export async function previewAppBundle(fullId: string, context: vscode.Extension
 		_templateFuncCache.set('appbundle-preview', ejs.compile(template));
 	}
 
-	const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
-	const panel = vscode.window.createWebviewPanel(
-		'appbundle-preview',
-		'Preview: ' + appBundleDetail.id,
-		vscode.ViewColumn.One,
-		{ enableScripts: true }
-	);
-	const templateFunc = _templateFuncCache.get('appbundle-preview');
-	if (templateFunc) {
-		panel.webview.html = templateFunc({ bundle: appBundleDetail });
+	try {
+		const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
+		const panel = vscode.window.createWebviewPanel(
+			'appbundle-preview',
+			'Preview: ' + appBundleDetail.id,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const templateFunc = _templateFuncCache.get('appbundle-preview');
+		if (templateFunc) {
+			panel.webview.html = templateFunc({ bundle: appBundleDetail });
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage('Could not access app bundle: ' + JSON.stringify(err));
 	}
 }
 
@@ -253,15 +264,19 @@ export async function previewActivity(fullId: string, context: vscode.ExtensionC
 		_templateFuncCache.set('activity-preview', ejs.compile(template));
 	}
 
-	const activityDetail = await designAutomationClient.getActivity(fullId);
-	const panel = vscode.window.createWebviewPanel(
-		'activity-preview',
-		'Preview: ' + activityDetail.id,
-		vscode.ViewColumn.One,
-		{ enableScripts: true }
-	);
-	const templateFunc = _templateFuncCache.get('activity-preview');
-	if (templateFunc) {
-		panel.webview.html = templateFunc({ activity: activityDetail });
+	try {
+		const activityDetail = await designAutomationClient.getActivity(fullId);
+		const panel = vscode.window.createWebviewPanel(
+			'activity-preview',
+			'Preview: ' + activityDetail.id,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const templateFunc = _templateFuncCache.get('activity-preview');
+		if (templateFunc) {
+			panel.webview.html = templateFunc({ activity: activityDetail });
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage('Could not access activity: ' + JSON.stringify(err));
 	}
 }
