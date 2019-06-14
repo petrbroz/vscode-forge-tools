@@ -21,12 +21,12 @@
 				"autodesk.forge.clientId": {
 					"type": "string",
 					"description": "Client ID",
-					"scope": "resource"
+					"scope": "window"
 				},
 				"autodesk.forge.clientSecret": {
 					"type": "string",
 					"description": "Client Secret",
-					"scope": "resource"
+					"scope": "window"
 				}
 			}
 		},
@@ -44,6 +44,62 @@
 				{
 					"id": "forgeDataManagementView",
 					"name": "Data Management"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "forge.refreshBuckets",
+				"title": "Refresh Buckets",
+				"icon": {
+					"light": "resources/icons/dark/refresh.svg",
+					"dark": "resources/icons/light/refresh.svg"
+				}
+			},
+			{
+				"command": "forge.createBucket",
+				"title": "Create Bucket",
+				"icon": {
+					"light": "resources/icons/dark/add.svg",
+					"dark": "resources/icons/light/add.svg"
+				}
+			},
+			{
+				"command": "forge.uploadObject",
+				"title": "Upload Object",
+				"icon": {
+					"light": "resources/icons/dark/add.svg",
+					"dark": "resources/icons/light/add.svg"
+				}
+			},
+			{
+				"command": "forge.downloadObject",
+				"title": "Download"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "forge.refreshBuckets",
+					"when": "view == forgeDataManagementView",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.createBucket",
+					"when": "view == forgeDataManagementView",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "forge.uploadObject",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.downloadObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation"
 				}
 			]
 		}

@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import { DataManagementClient, Bucket, Object } from 'forge-nodejs-utils';
+import { DataManagementClient, IBucket, IObject } from 'forge-nodejs-utils';
 
-type SimpleStorageEntry = Bucket | Object;
+type SimpleStorageEntry = IBucket | IObject;
 
-function isBucket(entry: SimpleStorageEntry): entry is Bucket {
-    return (<Bucket>entry).policyKey !== undefined;
+function isBucket(entry: SimpleStorageEntry): entry is IBucket {
+    return (<IBucket>entry).policyKey !== undefined;
 }
 
-function isObject(entry: SimpleStorageEntry): entry is Object {
-    return (<Object>entry).objectId !== undefined;
+function isObject(entry: SimpleStorageEntry): entry is IObject {
+    return (<IObject>entry).objectId !== undefined;
 }
 
 export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry> {
@@ -27,20 +27,22 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
 
     getTreeItem(element: SimpleStorageEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (isBucket(element)) {
-            return new vscode.TreeItem(element.bucketKey, vscode.TreeItemCollapsibleState.Collapsed);
+            const node = new vscode.TreeItem(element.bucketKey, vscode.TreeItemCollapsibleState.Collapsed);
+            node.contextValue = 'bucket';
+            return node;
         } else {
-            return new vscode.TreeItem(element.objectKey, vscode.TreeItemCollapsibleState.None);
+            const node = new vscode.TreeItem(element.objectKey, vscode.TreeItemCollapsibleState.None);
+            node.contextValue = 'object';
+            return node;
         }
     }
 
     async getChildren(element?: SimpleStorageEntry | undefined): Promise<SimpleStorageEntry[]> {
         if (element && isBucket(element)) {
             const objects = await this._client.listObjects(element.bucketKey);
-            console.log('objects', objects);
             return objects;
 		} else {
             const buckets = await this._client.listBuckets();
-            console.log('buckets', buckets);
             return buckets;
 		}
     }
