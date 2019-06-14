@@ -187,7 +187,7 @@ let _templateFuncCache: Map<string, ejs.TemplateFunction> = new Map();
 
 export async function previewObject(object: IObject, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
 	if (!_templateFuncCache.has('object-preview')) {
-		const templatePath = context.asAbsolutePath(path.join('src', 'templates', 'object-preview.ejs'));
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-preview.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
 		_templateFuncCache.set('object-preview', ejs.compile(template));
 	}
