@@ -1,8 +1,14 @@
 {
 	"name": "vscode-forge-tools",
 	"displayName": "Autodesk Forge Tools",
+	"publisher": "petrbroz",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
+	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/petrbroz/vscode-forge-tools"
+	},
 	"engines": {
 		"vscode": "^1.35.0"
 	},
@@ -10,14 +16,126 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"onView:forgeDataManagementView",
+		"onView:forgeDesignAutomationView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [{
-			"command": "extension.helloWorld",
-			"title": "Hello World"
-		}]
+		"configuration": {
+			"title": "Forge",
+			"properties": {
+				"autodesk.forge.clientId": {
+					"type": "string",
+					"description": "Client ID",
+					"scope": "window"
+				},
+				"autodesk.forge.clientSecret": {
+					"type": "string",
+					"description": "Client Secret",
+					"scope": "window"
+				}
+			}
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "forgeViewContainer",
+					"title": "Forge",
+					"icon": "resources/logo.png"
+				}
+			]
+		},
+		"views": {
+			"forgeViewContainer": [
+				{
+					"id": "forgeDataManagementView",
+					"name": "Data Management"
+				},
+				{
+					"id": "forgeDesignAutomationView",
+					"name": "Design Automation"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "forge.refreshBuckets",
+				"title": "Refresh Buckets",
+				"icon": {
+					"light": "resources/icons/dark/refresh.svg",
+					"dark": "resources/icons/light/refresh.svg"
+				}
+			},
+			{
+				"command": "forge.createBucket",
+				"title": "Create Bucket",
+				"icon": {
+					"light": "resources/icons/dark/add.svg",
+					"dark": "resources/icons/light/add.svg"
+				}
+			},
+			{
+				"command": "forge.uploadObject",
+				"title": "Upload Object"
+			},
+			{
+				"command": "forge.downloadObject",
+				"title": "Download"
+			},
+			{
+				"command": "forge.previewObject",
+				"title": "Preview"
+			},
+			{
+				"command": "forge.previewAppBundle",
+				"title": "Preview"
+			},
+			{
+				"command": "forge.previewActivity",
+				"title": "Preview"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "forge.refreshBuckets",
+					"when": "view == forgeDataManagementView",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.createBucket",
+					"when": "view == forgeDataManagementView",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "forge.uploadObject",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.previewObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.downloadObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.previewAppBundle",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.previewActivity",
+					"when": "view == forgeDesignAutomationView && viewItem == activity",
+					"group": "navigation@1"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
@@ -27,10 +145,15 @@
 		"test": "yarn run compile && node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28",
-		"tslint": "^5.12.1",
+		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"@types/mocha": "^2.2.42"
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28"
+	},
+	"dependencies": {
+		"@types/ejs": "^2.6.3",
+		"ejs": "^2.6.1",
+		"forge-nodejs-utils": "1.6.1"
 	}
 }
