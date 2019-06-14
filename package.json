@@ -1,7 +1,9 @@
 {
 	"name": "vscode-forge-tools",
 	"displayName": "Autodesk Forge Tools",
+	"publisher": "petrbroz",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
+	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.35.0"
