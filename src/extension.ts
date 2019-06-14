@@ -1,8 +1,14 @@
 import * as vscode from 'vscode';
-import { DataManagementClient, IBucket, IObject } from 'forge-nodejs-utils';
+import {
+	AuthenticationClient,
+	DataManagementClient,
+	IBucket,
+	IObject,
+	ModelDerivativeClient
+} from 'forge-nodejs-utils';
 
 import { SimpleStorageDataProvider } from './providers';
-import { createBucket, uploadObject, downloadObject } from './commands';
+import { createBucket, uploadObject, downloadObject, previewObject } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
 	const ForgeClientID = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientId');
@@ -14,7 +20,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	console.log('Extension "vscode-forge-tools" has been loaded.');
 
+	let authClient = new AuthenticationClient(ForgeClientID, ForgeClientSecret);
 	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
+	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
 
 	// Setup data management view
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
@@ -43,6 +51,13 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		await downloadObject(object.bucketKey, object.objectKey, dataManagementClient);
+	});
+	vscode.commands.registerCommand('forge.previewObject', async (object?: IObject) => {
+		if (!object) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await previewObject(object, context, authClient, modelDerivativeClient);
 	});
 }
 

@@ -66,15 +66,15 @@
 			},
 			{
 				"command": "forge.uploadObject",
-				"title": "Upload Object",
-				"icon": {
-					"light": "resources/icons/dark/add.svg",
-					"dark": "resources/icons/light/add.svg"
-				}
+				"title": "Upload Object"
 			},
 			{
 				"command": "forge.downloadObject",
 				"title": "Download"
+			},
+			{
+				"command": "forge.previewObject",
+				"title": "Preview"
 			}
 		],
 		"menus": {
@@ -97,9 +97,14 @@
 					"group": "navigation"
 				},
 				{
+					"command": "forge.previewObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@1"
+				},
+				{
 					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation"
+					"group": "navigation@2"
 				}
 			]
 		}
@@ -119,6 +124,8 @@
 		"vscode": "^1.1.28"
 	},
 	"dependencies": {
+		"@types/ejs": "^2.6.3",
+		"ejs": "^2.6.1",
 		"forge-nodejs-utils": "^1.5.1"
 	}
 }

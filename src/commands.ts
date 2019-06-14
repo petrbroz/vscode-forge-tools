@@ -1,7 +1,14 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { DataManagementClient, IBucket } from 'forge-nodejs-utils';
+import * as ejs from 'ejs';
+import {
+	AuthenticationClient,
+	DataManagementClient,
+	IBucket,
+	IObject,
+	ModelDerivativeClient
+} from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'permanent'];
 const AllowedMimeTypes = {
@@ -121,6 +128,8 @@ const AllowedMimeTypes = {
 	'zip': 'application/zip'
 };
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function createBucket(client: DataManagementClient) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
     if (!name)
@@ -172,4 +181,46 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
     } catch(err) {
         vscode.window.showErrorMessage('Could not download file: ' + JSON.stringify(err));
     }
+}
+
+let _templateFuncCache: Map<string, ejs.TemplateFunction> = new Map();
+
+export async function previewObject(object: IObject, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
+	if (!_templateFuncCache.has('object-preview')) {
+		const templatePath = context.asAbsolutePath(path.join('src', 'templates', 'object-preview.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('object-preview', ejs.compile(template));
+	}
+
+	const token = await authClient.authenticate(['viewables:read']);
+	const panel = vscode.window.createWebviewPanel(
+		'object-preview',
+		'Preview: ' + object.objectKey,
+		vscode.ViewColumn.One,
+		{ enableScripts: true }
+	);
+	const templateFunc = _templateFuncCache.get('object-preview');
+	if (templateFunc) {
+		panel.webview.html = templateFunc({ object, token });
+	}
+
+	panel.webview.onDidReceiveMessage(
+		async (message) => {
+			switch (message.command) {
+				case 'translate':
+					const job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
+					vscode.window.showInformationMessage('Started translation job: ' + JSON.stringify(job));
+					let manifest = await derivClient.getManifest(message.urn);
+					while (manifest.status === 'inprogress' || manifest.status === 'pending') {
+						panel.webview.postMessage({ command: 'progress', progress: manifest.progress });
+						await sleep(2000);
+						manifest = await derivClient.getManifest(message.urn);
+					}
+					panel.webview.postMessage({ command: 'reload' });
+					return;
+			}
+		},
+		undefined,
+		context.subscriptions
+	);
 }
