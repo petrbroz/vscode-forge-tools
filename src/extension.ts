@@ -8,8 +8,15 @@ import {
 	DesignAutomationClient
 } from 'forge-nodejs-utils';
 
-import { SimpleStorageDataProvider, DesignAutomationDataProvider } from './providers';
-import { createBucket, uploadObject, downloadObject, previewObject } from './commands';
+import { SimpleStorageDataProvider, DesignAutomationDataProvider, IAppBundleEntry, IActivityEntry } from './providers';
+import {
+	createBucket,
+	uploadObject,
+	downloadObject,
+	previewObject,
+	previewAppBundle,
+	previewActivity
+} from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
 	const ForgeClientID = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientId');
@@ -66,6 +73,22 @@ export function activate(context: vscode.ExtensionContext) {
 	let designAutomationDataProvider = new DesignAutomationDataProvider(designAutomationClient, ForgeClientID);
 	let designAutomationView = vscode.window.createTreeView('forgeDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
 	context.subscriptions.push(designAutomationView);
+
+	// Setup design automation commands
+	vscode.commands.registerCommand('forge.previewAppBundle', async (bundle?: IAppBundleEntry) => {
+		if (!bundle) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await previewAppBundle(bundle.id, context, designAutomationClient);
+	});
+	vscode.commands.registerCommand('forge.previewActivity', async (activity?: IActivityEntry) => {
+		if (!activity) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await previewActivity(activity.id, context, designAutomationClient);
+	});
 }
 
 export function deactivate() { }

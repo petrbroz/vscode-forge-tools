@@ -79,6 +79,14 @@
 			{
 				"command": "forge.previewObject",
 				"title": "Preview"
+			},
+			{
+				"command": "forge.previewAppBundle",
+				"title": "Preview"
+			},
+			{
+				"command": "forge.previewActivity",
+				"title": "Preview"
 			}
 		],
 		"menus": {
@@ -109,6 +117,16 @@
 					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.previewAppBundle",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.previewActivity",
+					"when": "view == forgeDesignAutomationView && viewItem == activity",
+					"group": "navigation@1"
 				}
 			]
 		}

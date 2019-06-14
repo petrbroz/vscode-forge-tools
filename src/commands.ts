@@ -7,7 +7,8 @@ import {
 	DataManagementClient,
 	IBucket,
 	IObject,
-	ModelDerivativeClient
+	ModelDerivativeClient,
+	DesignAutomationClient
 } from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'permanent'];
@@ -223,4 +224,44 @@ export async function previewObject(object: IObject, context: vscode.ExtensionCo
 		undefined,
 		context.subscriptions
 	);
+}
+
+export async function previewAppBundle(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	if (!_templateFuncCache.has('appbundle-preview')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'appbundle-preview.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('appbundle-preview', ejs.compile(template));
+	}
+
+	const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
+	const panel = vscode.window.createWebviewPanel(
+		'appbundle-preview',
+		'Preview: ' + appBundleDetail.id,
+		vscode.ViewColumn.One,
+		{ enableScripts: true }
+	);
+	const templateFunc = _templateFuncCache.get('appbundle-preview');
+	if (templateFunc) {
+		panel.webview.html = templateFunc({ bundle: appBundleDetail });
+	}
+}
+
+export async function previewActivity(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	if (!_templateFuncCache.has('activity-preview')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'activity-preview.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('activity-preview', ejs.compile(template));
+	}
+
+	const activityDetail = await designAutomationClient.getActivity(fullId);
+	const panel = vscode.window.createWebviewPanel(
+		'activity-preview',
+		'Preview: ' + activityDetail.id,
+		vscode.ViewColumn.One,
+		{ enableScripts: true }
+	);
+	const templateFunc = _templateFuncCache.get('activity-preview');
+	if (templateFunc) {
+		panel.webview.html = templateFunc({ activity: activityDetail });
+	}
 }

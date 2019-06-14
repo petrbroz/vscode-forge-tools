@@ -71,13 +71,13 @@ interface IGroupEntry {
     label: string;
 }
 
-interface IAppBundleEntry {
+export interface IAppBundleEntry {
     type: 'appbundle';
     id: string;
     label: string;
 }
 
-interface IActivityEntry {
+export interface IActivityEntry {
     type: 'activity';
     id: string;
     label: string;
@@ -149,28 +149,28 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
             switch (group.group) {
                 case DesignAutomationGroupType.OwnAppBundles: {
                     const appBundleIDs = await this._client.listAppBundles();
-                    return appBundleIDs.filter(id => id.startsWith(this._clientId)).map(id => {
+                    return appBundleIDs.filter(id => !id.endsWith('$LATEST') && id.startsWith(this._clientId)).map(id => {
                         const parsedId = this._parseId(id);
                         return { type: 'appbundle', id: id, label: parsedId ? `${parsedId.name} (${parsedId.alias})` : id };
                     });
                 }
                 case DesignAutomationGroupType.SharedAppBundles: {
                     const appBundleIDs = await this._client.listAppBundles();
-                    return appBundleIDs.filter(id => !id.startsWith(this._clientId)).map(id => {
+                    return appBundleIDs.filter(id => !id.endsWith('$LATEST') && !id.startsWith(this._clientId)).map(id => {
                         const parsedId = this._parseId(id);
                         return { type: 'appbundle', id: id, label: parsedId ? `${parsedId.name} (${parsedId.alias})` : id };
                     });
                 }
                 case DesignAutomationGroupType.OwnActivities: {
                     const activityIDs = await this._client.listActivities();
-                    return activityIDs.filter(id => id.startsWith(this._clientId)).map(id => {
+                    return activityIDs.filter(id => !id.endsWith('$LATEST') && id.startsWith(this._clientId)).map(id => {
                         const parsedId = this._parseId(id);
                         return { type: 'activity', id: id, label: parsedId ? `${parsedId.name} (${parsedId.alias})` : id };
                     });
                 }
                 case DesignAutomationGroupType.SharedActivities: {
                     const activityIDs = await this._client.listActivities();
-                    return activityIDs.filter(id => !id.startsWith(this._clientId)).map(id => {
+                    return activityIDs.filter(id => !id.endsWith('$LATEST') && !id.startsWith(this._clientId)).map(id => {
                         const parsedId = this._parseId(id);
                         return { type: 'activity', id: id, label: parsedId ? `${parsedId.name} (${parsedId.alias})` : id };
                     });
