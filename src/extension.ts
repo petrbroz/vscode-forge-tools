@@ -4,10 +4,11 @@ import {
 	DataManagementClient,
 	IBucket,
 	IObject,
-	ModelDerivativeClient
+	ModelDerivativeClient,
+	DesignAutomationClient
 } from 'forge-nodejs-utils';
 
-import { SimpleStorageDataProvider } from './providers';
+import { SimpleStorageDataProvider, DesignAutomationDataProvider } from './providers';
 import { createBucket, uploadObject, downloadObject, previewObject } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -23,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let authClient = new AuthenticationClient(ForgeClientID, ForgeClientSecret);
 	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
 	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
+	let designAutomationClient = new DesignAutomationClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
 
 	// Setup data management view
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
@@ -59,6 +61,11 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await previewObject(object, context, authClient, modelDerivativeClient);
 	});
+
+	// Setup design automation view
+	let designAutomationDataProvider = new DesignAutomationDataProvider(designAutomationClient, ForgeClientID);
+	let designAutomationView = vscode.window.createTreeView('forgeDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
+	context.subscriptions.push(designAutomationView);
 }
 
 export function deactivate() { }

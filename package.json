@@ -44,6 +44,10 @@
 				{
 					"id": "forgeDataManagementView",
 					"name": "Data Management"
+				},
+				{
+					"id": "forgeDesignAutomationView",
+					"name": "Design Automation"
 				}
 			]
 		},
