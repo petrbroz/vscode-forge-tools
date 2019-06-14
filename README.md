@@ -2,7 +2,7 @@
 
 [Visual Studio Code](https://code.visualstudio.com) extension for accessing [Autodesk Forge](https://forge.autodesk.com) services and content.
 
-![Forge Tools](docs/vscode-forge-tools.gif)
+![Forge Tools](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/vscode-forge-tools.gif)
 
 ## Features
 
