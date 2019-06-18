@@ -286,22 +286,22 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
 
 let _templateFuncCache: Map<string, ejs.TemplateFunction> = new Map();
 
-export async function viewObjectDetails(object: IObject, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
-	if (!_templateFuncCache.has('object-details')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-details.ejs'));
+export async function previewObject(object: IObject, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
+	if (!_templateFuncCache.has('object-preview')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-preview.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('object-details', ejs.compile(template));
+		_templateFuncCache.set('object-preview', ejs.compile(template));
 	}
 
 	try {
 		const token = await authClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
-			'object-details',
-			'Details: ' + object.objectKey,
+			'object-preview',
+			'Preview: ' + object.objectKey,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const templateFunc = _templateFuncCache.get('object-details');
+		const templateFunc = _templateFuncCache.get('object-preview');
 		if (templateFunc) {
 			panel.webview.html = templateFunc({ object, token });
 		}
@@ -335,6 +335,29 @@ export async function viewObjectDetails(object: IObject, context: vscode.Extensi
 			undefined,
 			context.subscriptions
 		);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function viewObjectDetails(object: IObject, context: vscode.ExtensionContext) {
+	if (!_templateFuncCache.has('object-details')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-details.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('object-details', ejs.compile(template));
+	}
+
+	try {
+		const panel = vscode.window.createWebviewPanel(
+			'object-details',
+			'Details: ' + object.objectKey,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const templateFunc = _templateFuncCache.get('object-details');
+		if (templateFunc) {
+			panel.webview.html = templateFunc({ object });
+		}
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}

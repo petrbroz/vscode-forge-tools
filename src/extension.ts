@@ -15,7 +15,8 @@ import {
 	downloadObject,
 	viewObjectDetails,
 	viewAppBundleDetails,
-	viewActivityDetails
+	viewActivityDetails,
+	previewObject
 } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -61,12 +62,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await downloadObject(object.bucketKey, object.objectKey, dataManagementClient);
 	});
+	vscode.commands.registerCommand('forge.previewObject', async (object?: IObject) => {
+		if (!object) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await previewObject(object, context, authClient, modelDerivativeClient);
+	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewObjectDetails(object, context, authClient, modelDerivativeClient);
+		await viewObjectDetails(object, context);
 	});
 
 	// Setup design automation view

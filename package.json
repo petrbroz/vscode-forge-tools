@@ -84,6 +84,10 @@
 				"title": "Download"
 			},
 			{
+				"command": "forge.previewObject",
+				"title": "Preview"
+			},
+			{
 				"command": "forge.viewObjectDetails",
 				"title": "View Details"
 			},
@@ -121,9 +125,14 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.previewObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.downloadObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
