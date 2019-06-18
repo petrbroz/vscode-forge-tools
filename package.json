@@ -84,16 +84,16 @@
 				"title": "Download"
 			},
 			{
-				"command": "forge.previewObject",
-				"title": "Preview"
+				"command": "forge.viewObjectDetails",
+				"title": "View Details"
 			},
 			{
-				"command": "forge.previewAppBundle",
-				"title": "Preview"
+				"command": "forge.viewAppBundleDetails",
+				"title": "View Details"
 			},
 			{
-				"command": "forge.previewActivity",
-				"title": "Preview"
+				"command": "forge.viewActivityDetails",
+				"title": "View Details"
 			}
 		],
 		"menus": {
@@ -116,7 +116,7 @@
 					"group": "navigation"
 				},
 				{
-					"command": "forge.previewObject",
+					"command": "forge.viewObjectDetails",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@1"
 				},
@@ -126,12 +126,12 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.previewAppBundle",
+					"command": "forge.viewAppBundleDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle",
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.previewActivity",
+					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity",
 					"group": "navigation@1"
 				}

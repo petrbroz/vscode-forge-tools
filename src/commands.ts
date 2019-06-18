@@ -286,22 +286,22 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
 
 let _templateFuncCache: Map<string, ejs.TemplateFunction> = new Map();
 
-export async function previewObject(object: IObject, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
-	if (!_templateFuncCache.has('object-preview')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-preview.ejs'));
+export async function viewObjectDetails(object: IObject, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
+	if (!_templateFuncCache.has('object-details')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-details.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('object-preview', ejs.compile(template));
+		_templateFuncCache.set('object-details', ejs.compile(template));
 	}
 
 	try {
 		const token = await authClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
-			'object-preview',
-			'Preview: ' + object.objectKey,
+			'object-details',
+			'Details: ' + object.objectKey,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const templateFunc = _templateFuncCache.get('object-preview');
+		const templateFunc = _templateFuncCache.get('object-details');
 		if (templateFunc) {
 			panel.webview.html = templateFunc({ object, token });
 		}
@@ -340,11 +340,11 @@ export async function previewObject(object: IObject, context: vscode.ExtensionCo
 	}
 }
 
-export async function previewAppBundle(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
-	if (!_templateFuncCache.has('appbundle-preview')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'appbundle-preview.ejs'));
+export async function viewAppBundleDetails(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	if (!_templateFuncCache.has('appbundle-details')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'appbundle-details.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('appbundle-preview', ejs.compile(template));
+		_templateFuncCache.set('appbundle-details', ejs.compile(template));
 	}
 
 	try {
@@ -355,12 +355,12 @@ export async function previewAppBundle(fullId: string, context: vscode.Extension
 		}, async (progress, token) => {
 			const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
 			const panel = vscode.window.createWebviewPanel(
-				'appbundle-preview',
-				`Preview: ${appBundleDetail.id}`,
+				'appbundle-details',
+				`Details: ${appBundleDetail.id}`,
 				vscode.ViewColumn.One,
 				{ enableScripts: true }
 			);
-			const templateFunc = _templateFuncCache.get('appbundle-preview');
+			const templateFunc = _templateFuncCache.get('appbundle-details');
 			if (templateFunc) {
 				panel.webview.html = templateFunc({ bundle: appBundleDetail });
 			}
@@ -370,11 +370,11 @@ export async function previewAppBundle(fullId: string, context: vscode.Extension
 	}
 }
 
-export async function previewActivity(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
-	if (!_templateFuncCache.has('activity-preview')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'activity-preview.ejs'));
+export async function viewActivityDetails(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	if (!_templateFuncCache.has('activity-details')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'activity-details.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('activity-preview', ejs.compile(template));
+		_templateFuncCache.set('activity-details', ejs.compile(template));
 	}
 
 	try {
@@ -385,12 +385,12 @@ export async function previewActivity(fullId: string, context: vscode.ExtensionC
 		}, async (progress, token) => {
 			const activityDetail = await designAutomationClient.getActivity(fullId);
 			const panel = vscode.window.createWebviewPanel(
-				'activity-preview',
-				`Preview: ${activityDetail.id}`,
+				'activity-details',
+				`Details: ${activityDetail.id}`,
 				vscode.ViewColumn.One,
 				{ enableScripts: true }
 			);
-			const templateFunc = _templateFuncCache.get('activity-preview');
+			const templateFunc = _templateFuncCache.get('activity-details');
 			if (templateFunc) {
 				panel.webview.html = templateFunc({ activity: activityDetail });
 			}
