@@ -4,31 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body, .form-control-plaintext {
+            color: var(--vscode-editor-foreground);
+            background-color: var(--vscode-editor-background);
+        }
+    </style>
     <title>App Bundle: <%= bundle.id %></title>
 </head>
 <body>
-    <h1>App Bundle: <%= bundle.id %></h1>
-    <table>
-        <tr>
-            <td>ID</td>
-            <td><%= bundle.id %></td>
-        </tr>
-        <tr>
-            <td>Version</td>
-            <td><%= bundle.version %></td>
-        </tr>
-        <tr>
-            <td>Engine</td>
-            <td><%= bundle.engine %></td>
-        </tr>
-        <tr>
-            <td>Description</td>
-            <td><%= bundle.description %></td>
-        </tr>
-        <tr>
-            <td>Package</td>
-            <td><%= bundle.package %></td>
-        </tr>
-    </table>
+    <form>
+        <div class="form-group row">
+            <label for="bundle-id" class="col-sm-2 col-form-label">ID</label>
+            <div class="col-sm-10">
+                <input type="text" readonly class="form-control-plaintext" id="bundle-id" value="<%= bundle.id %>">
+            </div>
+            <label for="bundle-version" class="col-sm-2 col-form-label">Version</label>
+            <div class="col-sm-10">
+                <input type="text" readonly class="form-control-plaintext" id="bundle-version" value="<%= bundle.version %>">
+            </div>
+            <label for="bundle-engine" class="col-sm-2 col-form-label">Engine</label>
+            <div class="col-sm-10">
+                <input type="text" readonly class="form-control-plaintext" id="bundle-engine" value="<%= bundle.engine %>">
+            </div>
+            <label for="bundle-description" class="col-sm-2 col-form-label">Description</label>
+            <div class="col-sm-10">
+                <input type="text" readonly class="form-control-plaintext" id="bundle-description" value="<%= bundle.description %>">
+            </div>
+            <label for="bundle-package" class="col-sm-2 col-form-label">Package</label>
+            <div class="col-sm-10">
+                <input type="text" readonly class="form-control-plaintext" id="bundle-package" value="<%= bundle.package %>">
+            </div>
+        </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 </html>
