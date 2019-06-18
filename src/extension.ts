@@ -13,9 +13,10 @@ import {
 	createBucket,
 	uploadObject,
 	downloadObject,
-	previewObject,
-	previewAppBundle,
-	previewActivity
+	viewObjectDetails,
+	viewAppBundleDetails,
+	viewActivityDetails,
+	previewObject
 } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -68,6 +69,13 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await previewObject(object, context, authClient, modelDerivativeClient);
 	});
+	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
+		if (!object) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await viewObjectDetails(object, context);
+	});
 
 	// Setup design automation view
 	let designAutomationDataProvider = new DesignAutomationDataProvider(designAutomationClient, ForgeClientID);
@@ -75,19 +83,19 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(designAutomationView);
 
 	// Setup design automation commands
-	vscode.commands.registerCommand('forge.previewAppBundle', async (bundle?: IAppBundleEntry) => {
+	vscode.commands.registerCommand('forge.viewAppBundleDetails', async (bundle?: IAppBundleEntry) => {
 		if (!bundle) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await previewAppBundle(bundle.id, context, designAutomationClient);
+		await viewAppBundleDetails(bundle.id, context, designAutomationClient);
 	});
-	vscode.commands.registerCommand('forge.previewActivity', async (activity?: IActivityEntry) => {
+	vscode.commands.registerCommand('forge.viewActivityDetails', async (activity?: IActivityEntry) => {
 		if (!activity) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await previewActivity(activity.id, context, designAutomationClient);
+		await viewActivityDetails(activity.id, context, designAutomationClient);
 	});
 }
 

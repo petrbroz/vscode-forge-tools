@@ -5,13 +5,13 @@
 	"icon": "resources/marketplace-logo.png",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"version": "0.0.4",
+	"version": "0.1.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
 	},
 	"engines": {
-		"vscode": "^1.35.0"
+		"vscode": "^1.31.0"
 	},
 	"categories": [
 		"Other"
@@ -88,12 +88,16 @@
 				"title": "Preview"
 			},
 			{
-				"command": "forge.previewAppBundle",
-				"title": "Preview"
+				"command": "forge.viewObjectDetails",
+				"title": "View Details"
 			},
 			{
-				"command": "forge.previewActivity",
-				"title": "Preview"
+				"command": "forge.viewAppBundleDetails",
+				"title": "View Details"
+			},
+			{
+				"command": "forge.viewActivityDetails",
+				"title": "View Details"
 			}
 		],
 		"menus": {
@@ -116,22 +120,27 @@
 					"group": "navigation"
 				},
 				{
-					"command": "forge.previewObject",
+					"command": "forge.viewObjectDetails",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.previewObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.previewAppBundle",
+					"command": "forge.downloadObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@3"
+				},
+				{
+					"command": "forge.viewAppBundleDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle",
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.previewActivity",
+					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity",
 					"group": "navigation@1"
 				}
