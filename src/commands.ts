@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import * as ejs from 'ejs';
 import {
 	AuthenticationClient,
@@ -8,7 +9,8 @@ import {
 	IBucket,
 	IObject,
 	ModelDerivativeClient,
-	DesignAutomationClient
+	DesignAutomationClient,
+	IResumableUploadRange
 } from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -131,6 +133,22 @@ const AllowedMimeTypes = {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+function computeFileHash(filename: string): Promise<string> {
+    return new Promise(function(resolve, reject) {
+        const stream = fs.createReadStream(filename);
+        let hash = crypto.createHash('md5');
+        stream.on('data', function(chunk) {
+            hash.update(chunk);
+        });
+        stream.on('end', function() {
+            resolve(hash.digest('hex'));
+        });
+        stream.on('error', function(err) {
+            reject(err);
+        });
+    });
+}
+
 export async function createBucket(client: DataManagementClient) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
     if (!name) {
@@ -151,28 +169,94 @@ export async function createBucket(client: DataManagementClient) {
 }
 
 export async function uploadObject(bucket: IBucket, client: DataManagementClient) {
+	// Collect inputs
     const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
 	if (!uri) {
 		return;
 	}
-
     const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].path) });
     if (!name) {
 		return;
 	}
-
     const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
     if (!contentType) {
 		return;
 	}
 
-    const buff = fs.readFileSync(uri[0].path);
+	const filepath = uri[0].path;
+	let fd = -1;
     try {
-		const result = await client.uploadObject(bucket.bucketKey, name, contentType, buff);
-        vscode.window.showInformationMessage('Uploaded file: ' + JSON.stringify(result));
+		fd = fs.openSync(filepath, 'r');
+		const totalBytes = fs.statSync(filepath).size;
+		const chunkBytes = 2 << 20; // TODO: make the page size configurable
+		const buff = Buffer.alloc(chunkBytes);
+		let lastByte = 0;
+		let cancelled = false;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: 'Uploading ' + filepath,
+			cancellable: true
+		}, async (progress, token) => {
+			token.onCancellationRequested(() => {
+				cancelled = true;
+			});
+			progress.report({ increment: 0 });
+
+			// Check if any parts of the file have already been uploaded
+			const fileContentHash = await computeFileHash(filepath);
+			let ranges: IResumableUploadRange[];
+			try {
+				ranges = await client.getResumableUploadStatus(bucket.bucketKey, name, fileContentHash);
+				console.log('ranges', ranges);
+			} catch(err) {
+				ranges = [];
+			}
+
+			// Upload potential missing data before each successfully uploaded range
+			for (const range of ranges) {
+				if (cancelled) {
+					return;
+				}
+				while (lastByte < range.start) {
+					if (cancelled) {
+						return;
+					}
+					const chunkSize = Math.min(range.start - lastByte, chunkBytes);
+					fs.readSync(fd, buff, 0, chunkSize, lastByte);
+					await client.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+					progress.report({ increment: 100 * chunkSize / totalBytes });
+					lastByte += chunkSize;
+				}
+				progress.report({ increment: 100 * (range.end + 1 - lastByte) / totalBytes });
+				lastByte = range.end + 1;
+			}
+
+			// Upload potential missing data after the last successfully uploaded range
+			while (lastByte < totalBytes - 1) {
+				if (cancelled) {
+					return;
+				}
+				const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
+				fs.readSync(fd, buff, 0, chunkSize, lastByte);
+				await client.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+				progress.report({ increment: 100 * chunkSize / totalBytes });
+				lastByte += chunkSize;
+			}
+		});
+
+		if (cancelled) {
+			vscode.window.showInformationMessage('Upload cancelled');
+		} else {
+			vscode.window.showInformationMessage('Upload complete');
+		}
     } catch(err) {
-        vscode.window.showErrorMessage('Could not upload file: ' + JSON.stringify(err));
-    }
+		vscode.window.showErrorMessage('Could not upload file: ' + JSON.stringify(err));
+	} finally {
+		if (fd !== -1) {
+			fs.closeSync(fd);
+			fd = -1;
+		}
+	}
 }
 
 export async function downloadObject(bucketKey: string, objectKey: string, client: DataManagementClient) {
