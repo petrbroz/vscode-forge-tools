@@ -11,7 +11,7 @@ import {
 	DesignAutomationClient
 } from 'forge-nodejs-utils';
 
-const RetentionPolicyKeys = ['transient', 'temporary', 'permanent'];
+const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const AllowedMimeTypes = {
 	'a': 'application/octet-stream',
 	'ai': 'application/postscript',
