@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added
   - Progress tracking for async operations (downloading/uploading objects, creating buckets, translating files, etc.)
   - Object upload can be cancelled and later resumed (simply start the upload again with the same bucket and object key)
+  - Bootstrap UI to detail views (incl. support for VSCode theme colors)
+  - Object preview now includes a dropdown with all available 2D/3D viewables
 - Changed
   - Details of individual entities (objects, app bundles, activities, ...) are now accessed via "View Details" context menu action
   - Objects now provide a "Preview" context menu action that opens a standalone tab with Forge Viewer
