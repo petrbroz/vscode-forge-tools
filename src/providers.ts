@@ -63,7 +63,7 @@ enum DesignAutomationGroupType {
     SharedAppBundles = 'shared-appbundles',
     OwnActivities = 'own-activities',
     SharedActivities = 'shared-activities'
-};
+}
 
 interface IGroupEntry {
     type: 'group';

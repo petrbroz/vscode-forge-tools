@@ -133,12 +133,14 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function createBucket(client: DataManagementClient) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
-    if (!name)
-        return;
+    if (!name) {
+		return;
+	}
 
     const retention = await vscode.window.showQuickPick(RetentionPolicyKeys, { placeHolder: 'Select retention policy' });
-    if (!retention)
-        return;
+    if (!retention) {
+		return;
+	}
 
     try {
         const bucket = await client.createBucket(name, retention);
@@ -150,16 +152,19 @@ export async function createBucket(client: DataManagementClient) {
 
 export async function uploadObject(bucket: IBucket, client: DataManagementClient) {
     const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
-    if (!uri)
-        return;
+	if (!uri) {
+		return;
+	}
 
     const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].path) });
-    if (!name)
-        return;
+    if (!name) {
+		return;
+	}
 
     const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
-    if (!contentType)
-        return;
+    if (!contentType) {
+		return;
+	}
 
     const buff = fs.readFileSync(uri[0].path);
     try {
@@ -172,8 +177,9 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 
 export async function downloadObject(bucketKey: string, objectKey: string, client: DataManagementClient) {
     const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
-    if (!uri)
-        return;
+    if (!uri) {
+		return;
+	}
 
     try {
         const arrayBuffer = await client.downloadObject(bucketKey, objectKey);
