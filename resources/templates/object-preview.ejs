@@ -11,10 +11,19 @@
             margin: 0;
             padding: 0;
         }
+
+        #viewable {
+            position: absolute;
+            left: 1em;
+            top: 1em;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
     <div id="viewer"></div>
+    <select name="viewable" id="viewable">
+    </select>
     <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/viewer3D.min.js"></script>
     <script>
         const vscode = acquireVsCodeApi();
@@ -61,8 +70,13 @@
 
         function onDocumentLoadSuccess(doc) {
             const viewables = viewerApp.bubble.search({ 'type': 'geometry' });
-              if (viewables.length > 0) {
-                viewerApp.selectItem(viewables[0].data, onItemLoadSuccess, onItemLoadFail);
+            if (viewables.length > 0) {
+                const select = document.getElementById('viewable');
+                select.innerHTML = viewables.map(item => `<option value="${item.data.guid}">${item.data.guid}</option>`).join('');
+                select.addEventListener('change', function() {
+                    viewerApp.selectItem(viewables[select.selectedIndex].data, onItemLoadSuccess, onItemLoadFail);
+                });
+                viewerApp.selectItem(viewables[select.selectedIndex].data, onItemLoadSuccess, onItemLoadFail);
             } else {
                 showTranslationButton();
             }
