@@ -7,9 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Added
-  - Progress tracking when downloading/uploading objects
-  - Object upload can be cancelled and later resumed
-  (simply start the upload again with the same bucket and object key)
+  - Progress tracking for async operations (downloading/uploading objects, creating buckets, translating files, etc.)
+  - Object upload can be cancelled and later resumed (simply start the upload again with the same bucket and object key)
 
 ## [0.0.4] - 2019-06-18
 
