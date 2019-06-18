@@ -154,17 +154,22 @@ export async function createBucket(client: DataManagementClient) {
     if (!name) {
 		return;
 	}
-
     const retention = await vscode.window.showQuickPick(RetentionPolicyKeys, { placeHolder: 'Select retention policy' });
     if (!retention) {
 		return;
 	}
 
     try {
-        const bucket = await client.createBucket(name, retention);
-        vscode.window.showInformationMessage('Bucket created: ' + bucket.bucketKey);
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Creating bucket: ${name}`,
+			cancellable: false
+		}, async (progress, token) => {
+			const bucket = await client.createBucket(name, retention);
+		});
+        vscode.window.showInformationMessage(`Bucket created: ${name}`);
     } catch (err) {
-        vscode.window.showErrorMessage('Could not create bucket: ' + JSON.stringify(err));
+		vscode.window.showErrorMessage(`Could not create bucket: ${JSON.stringify(err.message)}`);
     }
 }
 
@@ -194,7 +199,7 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 		let cancelled = false;
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: 'Uploading ' + filepath,
+			title: `Uploading file: ${filepath}`,
 			cancellable: true
 		}, async (progress, token) => {
 			token.onCancellationRequested(() => {
@@ -207,7 +212,6 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 			let ranges: IResumableUploadRange[];
 			try {
 				ranges = await client.getResumableUploadStatus(bucket.bucketKey, name, fileContentHash);
-				console.log('ranges', ranges);
 			} catch(err) {
 				ranges = [];
 			}
@@ -245,12 +249,12 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 		});
 
 		if (cancelled) {
-			vscode.window.showInformationMessage('Upload cancelled');
+			vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
 		} else {
-			vscode.window.showInformationMessage('Upload complete');
+			vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
 		}
     } catch(err) {
-		vscode.window.showErrorMessage('Could not upload file: ' + JSON.stringify(err));
+		vscode.window.showErrorMessage(`Could not upload file: ${JSON.stringify(err.message)}`);
 	} finally {
 		if (fd !== -1) {
 			fs.closeSync(fd);
@@ -268,15 +272,15 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
     try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: 'Downloading ' + uri.fsPath,
+			title: `Downloading file: ${uri.fsPath}`,
 			cancellable: false
 		}, async (progress, token) => {
 			const arrayBuffer = await client.downloadObject(bucketKey, objectKey);
 			fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
 		});
-        vscode.window.showInformationMessage('Download complete');
+        vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
     } catch(err) {
-        vscode.window.showErrorMessage('Could not download file: ' + JSON.stringify(err));
+        vscode.window.showErrorMessage(`Could not download file: ${JSON.stringify(err.message)}`);
     }
 }
 
@@ -301,23 +305,30 @@ export async function previewObject(object: IObject, context: vscode.ExtensionCo
 		if (templateFunc) {
 			panel.webview.html = templateFunc({ object, token });
 		}
-	
+
 		panel.webview.onDidReceiveMessage(
 			async (message) => {
 				switch (message.command) {
 					case 'translate':
 						try {
-							const job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
-							vscode.window.showInformationMessage('Started translation job: ' + JSON.stringify(job));
-							let manifest = await derivClient.getManifest(message.urn);
-							while (manifest.status === 'inprogress' || manifest.status === 'pending') {
-								panel.webview.postMessage({ command: 'progress', progress: manifest.progress });
-								await sleep(2000);
-								manifest = await derivClient.getManifest(message.urn);
-							}
+							await vscode.window.withProgress({
+								location: vscode.ProgressLocation.Notification,
+								title: `Translating object: ${message.urn}`,
+								cancellable: false
+							}, async (progress, token) => {
+								const job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
+								progress.report({ message: `Translation started: ${job.urn}` });
+								let manifest = await derivClient.getManifest(message.urn);
+								while (manifest.status === 'inprogress' || manifest.status === 'pending') {
+									progress.report({ message: manifest.progress });
+									panel.webview.postMessage({ command: 'progress', progress: manifest.progress });
+									await sleep(2000);
+									manifest = await derivClient.getManifest(message.urn);
+								}
+							});
 							panel.webview.postMessage({ command: 'reload' });
 						} catch(err) {
-							vscode.window.showErrorMessage('Could not translate file: ' + JSON.stringify(err));
+							vscode.window.showErrorMessage(`Could not translate file: ${JSON.stringify(err.message)}`);
 						}
 				}
 			},
@@ -325,7 +336,7 @@ export async function previewObject(object: IObject, context: vscode.ExtensionCo
 			context.subscriptions
 		);
 	} catch(err) {
-		vscode.window.showErrorMessage('Could not access object: ' + JSON.stringify(err));
+		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
 }
 
@@ -337,19 +348,25 @@ export async function previewAppBundle(fullId: string, context: vscode.Extension
 	}
 
 	try {
-		const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
-		const panel = vscode.window.createWebviewPanel(
-			'appbundle-preview',
-			'Preview: ' + appBundleDetail.id,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		const templateFunc = _templateFuncCache.get('appbundle-preview');
-		if (templateFunc) {
-			panel.webview.html = templateFunc({ bundle: appBundleDetail });
-		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting appbundle details: ${fullId}`,
+			cancellable: false
+		}, async (progress, token) => {
+			const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
+			const panel = vscode.window.createWebviewPanel(
+				'appbundle-preview',
+				`Preview: ${appBundleDetail.id}`,
+				vscode.ViewColumn.One,
+				{ enableScripts: true }
+			);
+			const templateFunc = _templateFuncCache.get('appbundle-preview');
+			if (templateFunc) {
+				panel.webview.html = templateFunc({ bundle: appBundleDetail });
+			}
+		});
 	} catch(err) {
-		vscode.window.showErrorMessage('Could not access app bundle: ' + JSON.stringify(err));
+		vscode.window.showErrorMessage(`Could not access app bundle: ${JSON.stringify(err.message)}`);
 	}
 }
 
@@ -361,18 +378,24 @@ export async function previewActivity(fullId: string, context: vscode.ExtensionC
 	}
 
 	try {
-		const activityDetail = await designAutomationClient.getActivity(fullId);
-		const panel = vscode.window.createWebviewPanel(
-			'activity-preview',
-			'Preview: ' + activityDetail.id,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		const templateFunc = _templateFuncCache.get('activity-preview');
-		if (templateFunc) {
-			panel.webview.html = templateFunc({ activity: activityDetail });
-		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting activity details: ${fullId}`,
+			cancellable: false
+		}, async (progress, token) => {
+			const activityDetail = await designAutomationClient.getActivity(fullId);
+			const panel = vscode.window.createWebviewPanel(
+				'activity-preview',
+				`Preview: ${activityDetail.id}`,
+				vscode.ViewColumn.One,
+				{ enableScripts: true }
+			);
+			const templateFunc = _templateFuncCache.get('activity-preview');
+			if (templateFunc) {
+				panel.webview.html = templateFunc({ activity: activityDetail });
+			}
+		});
 	} catch(err) {
-		vscode.window.showErrorMessage('Could not access activity: ' + JSON.stringify(err));
+		vscode.window.showErrorMessage(`Could not access activity: ${JSON.stringify(err.message)}`);
 	}
 }
