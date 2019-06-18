@@ -266,9 +266,15 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
 	}
 
     try {
-        const arrayBuffer = await client.downloadObject(bucketKey, objectKey);
-        fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
-        vscode.window.showInformationMessage('Downloaded file: ' + uri.fsPath);
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: 'Downloading ' + uri.fsPath,
+			cancellable: false
+		}, async (progress, token) => {
+			const arrayBuffer = await client.downloadObject(bucketKey, objectKey);
+			fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
+		});
+        vscode.window.showInformationMessage('Download complete');
     } catch(err) {
         vscode.window.showErrorMessage('Could not download file: ' + JSON.stringify(err));
     }
