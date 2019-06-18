@@ -35,6 +35,7 @@
         const documentId = 'urn:' + urn;
 
         function showTranslationButton() {
+            document.getElementById('viewable').style.display = 'none';
             document.getElementById('viewer').innerHTML = `
                 Document does not seem to be translated yet.
                 <button id="translate">Translate</button>
