@@ -173,6 +173,36 @@ export async function createBucket(client: DataManagementClient) {
     }
 }
 
+export async function viewBucketDetails(name: string, context: vscode.ExtensionContext, client: DataManagementClient) {
+	if (!_templateFuncCache.has('bucket-details')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'bucket-details.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('bucket-details', ejs.compile(template));
+	}
+
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting bucket details: ${name}`,
+			cancellable: false
+		}, async (progress, token) => {
+			const bucketDetail = await client.getBucketDetails(name);
+			const panel = vscode.window.createWebviewPanel(
+				'bucket-details',
+				`Details: ${bucketDetail.bucketKey}`,
+				vscode.ViewColumn.One,
+				{ enableScripts: false }
+			);
+			const templateFunc = _templateFuncCache.get('bucket-details');
+			if (templateFunc) {
+				panel.webview.html = templateFunc({ bucket: bucketDetail });
+			}
+		});
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access bucket: ${JSON.stringify(err.message)}`);
+	}
+}
+
 export async function uploadObject(bucket: IBucket, client: DataManagementClient) {
 	// Collect inputs
     const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });

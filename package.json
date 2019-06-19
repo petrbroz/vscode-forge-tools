@@ -76,6 +76,10 @@
 				}
 			},
 			{
+				"command": "forge.viewBucketDetails",
+				"title": "View Details"
+			},
+			{
 				"command": "forge.uploadObject",
 				"title": "Upload Object"
 			},
@@ -115,9 +119,14 @@
 			],
 			"view/item/context": [
 				{
+					"command": "forge.viewBucketDetails",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation@1"
+				},
+				{
 					"command": "forge.uploadObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation"
+					"group": "navigation@2"
 				},
 				{
 					"command": "forge.viewObjectDetails",
