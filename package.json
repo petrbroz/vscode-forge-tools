@@ -42,7 +42,7 @@
 				{
 					"id": "forgeViewContainer",
 					"title": "Forge",
-					"icon": "resources/sidebar-logo.png"
+					"icon": "resources/sidebar-logo.svg"
 				}
 			]
 		},
