@@ -3,7 +3,8 @@ import {
 	IBucket,
 	IObject,
     DataManagementClient,
-    DesignAutomationClient
+    DesignAutomationClient,
+    DesignAutomationID
 } from 'forge-nodejs-utils';
 
 type SimpleStorageEntry = IBucket | IObject;
@@ -65,7 +66,7 @@ enum DesignAutomationGroupType {
     SharedActivities = 'shared-activities'
 }
 
-interface IGroupEntry {
+export interface IGroupEntry {
     type: 'group';
     group: DesignAutomationGroupType;
     label: string;
@@ -77,13 +78,67 @@ export interface IAppBundleEntry {
     label: string;
 }
 
+export interface IAppBundleAliasGroupEntry {
+    type: 'appbundle-aliases';
+    appbundle: string;
+    label: string;
+}
+
+export interface IAppBundleAliasEntry {
+    type: 'appbundle-alias';
+    appbundle: string;
+    alias: string;
+    label: string;
+}
+
+export interface IAppBundleVersionGroupEntry {
+    type: 'appbundle-versions';
+    appbundle: string;
+    label: string;
+}
+
+export interface IAppBundleVersionEntry {
+    type: 'appbundle-version';
+    appbundle: string;
+    version: number;
+    label: string;
+}
+
 export interface IActivityEntry {
     type: 'activity';
     id: string;
     label: string;
 }
 
-type DesignAutomationEntry = IGroupEntry | IAppBundleEntry | IActivityEntry;
+export interface IActivityAliasGroupEntry {
+    type: 'activity-aliases';
+    activity: string;
+    label: string;
+}
+
+export interface IActivityAliasEntry {
+    type: 'activity-alias';
+    activity: string;
+    alias: string;
+    label: string;
+}
+
+export interface IActivityVersionGroupEntry {
+    type: 'activity-versions';
+    activity: string;
+    label: string;
+}
+
+export interface IActivityVersionEntry {
+    type: 'activity-version';
+    activity: string;
+    version: number;
+    label: string;
+}
+
+type DesignAutomationEntry = IGroupEntry
+    | IAppBundleEntry | IAppBundleAliasGroupEntry | IAppBundleAliasEntry | IAppBundleVersionGroupEntry | IAppBundleVersionEntry
+    | IActivityEntry | IActivityAliasGroupEntry | IActivityAliasEntry | IActivityVersionGroupEntry | IActivityVersionEntry;
 
 const DesignAutomationGroups: IGroupEntry[] = [
     { type: 'group', group: DesignAutomationGroupType.OwnAppBundles, label: 'My AppBundles' },
@@ -115,9 +170,33 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
                 break;
             case 'appbundle':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
+                break;
+            case 'appbundle-aliases':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
+                break;
+            case 'appbundle-alias':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
+                break;
+            case 'appbundle-versions':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
+                break;
+            case 'appbundle-version':
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
                 break;
             case 'activity':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
+                break;
+            case 'activity-aliases':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
+                break;
+            case 'activity-alias':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
+                break;
+            case 'activity-versions':
+                node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
+                break;
+            case 'activity-version':
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
                 break;
             default:
@@ -136,8 +215,16 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
                     return this._getGroupChildren(element);
                 case 'appbundle':
                     return this._getAppBundleChildren(element);
+                case 'appbundle-aliases':
+                    return this._getAppBundleAliasChildren(element);
+                case 'appbundle-versions':
+                    return this._getAppBundleVersionChildren(element);
                 case 'activity':
                     return this._getActivityChildren(element);
+                case 'activity-aliases':
+                    return this._getActivityAliasChildren(element);
+                case 'activity-versions':
+                    return this._getActivityVersionChildren(element);
                 default:
                     throw new Error('Unexpected entry type'); // Should never be hit
             }
@@ -183,11 +270,53 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getAppBundleChildren(appBundle: IAppBundleEntry): Promise<DesignAutomationEntry[]> {
-        return [];
+        return [
+            { type: 'appbundle-aliases', appbundle: appBundle.id, label: 'Aliases' },
+            { type: 'appbundle-versions', appbundle: appBundle.id, label: 'Versions' }
+        ];
+    }
+
+    private async _getAppBundleAliasChildren(aliasGroup: IAppBundleAliasGroupEntry): Promise<DesignAutomationEntry[]> {
+        const appBundleID = DesignAutomationID.parse(aliasGroup.appbundle);
+        if (!appBundleID) {
+            throw new Error('Cannot parse app bundle ID.');
+        }
+        const aliases = await this._client.listAppBundleAliases(appBundleID.id);
+        return aliases.map(alias => ({ type: 'appbundle-alias', appbundle: appBundleID.id, alias: alias.id, label: alias.id }));
+    }
+
+    private async _getAppBundleVersionChildren(versionGroup: IAppBundleVersionGroupEntry): Promise<DesignAutomationEntry[]> {
+        const appBundleID = DesignAutomationID.parse(versionGroup.appbundle);
+        if (!appBundleID) {
+            throw new Error('Cannot parse app bundle ID.');
+        }
+        const versions = await this._client.listAppBundleVersions(appBundleID.id);
+        return versions.map(version => ({ type: 'appbundle-version', appbundle: appBundleID.id, version: version, label: version.toString() }));
     }
 
     private async _getActivityChildren(activity: IActivityEntry): Promise<DesignAutomationEntry[]> {
-        return [];
+        return [
+            { type: 'activity-aliases', activity: activity.id, label: 'Aliases' },
+            { type: 'activity-versions', activity: activity.id, label: 'Versions' }
+        ];
+    }
+
+    private async _getActivityAliasChildren(aliasGroup: IActivityAliasGroupEntry): Promise<DesignAutomationEntry[]> {
+        const activityID = DesignAutomationID.parse(aliasGroup.activity);
+        if (!activityID) {
+            throw new Error('Cannot parse activity ID.');
+        }
+        const aliases = await this._client.listActivityAliases(activityID.id);
+        return aliases.map(alias => ({ type: 'activity-alias', activity: activityID.id, alias: alias.id, label: alias.id }));
+    }
+
+    private async _getActivityVersionChildren(versionGroup: IActivityVersionGroupEntry): Promise<DesignAutomationEntry[]> {
+        const activityID = DesignAutomationID.parse(versionGroup.activity);
+        if (!activityID) {
+            throw new Error('Cannot parse activity ID.');
+        }
+        const versions = await this._client.listActivityVersions(activityID.id);
+        return versions.map(version => ({ type: 'activity-version', activity: activityID.id, version: version, label: version.toString() }));
     }
 
     private _parseId(id: string): { owner: string; name: string; alias: string} | null {
