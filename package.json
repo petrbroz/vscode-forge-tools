@@ -173,6 +173,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "1.6.1"
+		"forge-nodejs-utils": "2.0.4"
 	}
 }

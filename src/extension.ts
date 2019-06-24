@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import {
 	AuthenticationClient,
-	DataManagementClient,
 	IBucket,
 	IObject,
+	DataManagementClient,
 	ModelDerivativeClient,
 	DesignAutomationClient
 } from 'forge-nodejs-utils';

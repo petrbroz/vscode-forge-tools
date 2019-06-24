@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import {
+	IBucket,
+	IObject,
     DataManagementClient,
-    IBucket,
-    IObject,
     DesignAutomationClient
 } from 'forge-nodejs-utils';
 
