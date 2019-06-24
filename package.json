@@ -145,12 +145,12 @@
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
 					"group": "navigation@1"
 				},
 				{
 					"command": "forge.viewActivityDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == activity",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "navigation@1"
 				}
 			]
