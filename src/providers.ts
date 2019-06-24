@@ -282,7 +282,9 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
             throw new Error('Cannot parse app bundle ID.');
         }
         const aliases = await this._client.listAppBundleAliases(appBundleID.id);
-        return aliases.map(alias => ({ type: 'appbundle-alias', appbundle: appBundleID.id, alias: alias.id, label: alias.id }));
+        return aliases
+            .filter(alias => alias.id !== '$LATEST')
+            .map(alias => ({ type: 'appbundle-alias', appbundle: appBundleID.id, alias: alias.id, label: alias.id }));
     }
 
     private async _getAppBundleVersionChildren(versionGroup: IAppBundleVersionGroupEntry): Promise<DesignAutomationEntry[]> {
@@ -307,7 +309,9 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
             throw new Error('Cannot parse activity ID.');
         }
         const aliases = await this._client.listActivityAliases(activityID.id);
-        return aliases.map(alias => ({ type: 'activity-alias', activity: activityID.id, alias: alias.id, label: alias.id }));
+        return aliases
+            .filter(alias => alias.id !== '$LATEST')
+            .map(alias => ({ type: 'activity-alias', activity: activityID.id, alias: alias.id, label: alias.id }));
     }
 
     private async _getActivityVersionChildren(versionGroup: IActivityVersionGroupEntry): Promise<DesignAutomationEntry[]> {
