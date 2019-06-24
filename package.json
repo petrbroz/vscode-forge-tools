@@ -5,7 +5,7 @@
 	"icon": "resources/marketplace-logo.png",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
@@ -100,8 +100,40 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.viewAppBundleVersionDetails",
+				"title": "View Details"
+			},
+			{
+				"command": "forge.deleteAppBundle",
+				"title": "Delete"
+			},
+			{
+				"command": "forge.deleteAppBundleAlias",
+				"title": "Delete"
+			},
+			{
+				"command": "forge.deleteAppBundleVersion",
+				"title": "Delete"
+			},
+			{
 				"command": "forge.viewActivityDetails",
 				"title": "View Details"
+			},
+			{
+				"command": "forge.viewActivityVersionDetails",
+				"title": "View Details"
+			},
+			{
+				"command": "forge.deleteActivity",
+				"title": "Delete"
+			},
+			{
+				"command": "forge.deleteActivityAlias",
+				"title": "Delete"
+			},
+			{
+				"command": "forge.deleteActivityVersion",
+				"title": "Delete"
 			}
 		],
 		"menus": {
@@ -144,14 +176,64 @@
 					"group": "navigation@3"
 				},
 				{
+					"command": "forge.deleteAppBundle",
+					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
+					"group": "navigation@1"
+				},
+				{
 					"command": "forge.viewAppBundleDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.viewAppBundleDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == shared-appbundle",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.deleteAppBundleAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.viewAppBundleVersionDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.deleteAppBundleVersion",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.deleteActivity",
+					"when": "view == forgeDesignAutomationView && viewItem == owned-activity",
 					"group": "navigation@1"
 				},
 				{
 					"command": "forge.viewActivityDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == activity",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "navigation@1"
+				},
+				{
+					"command": "forge.viewActivityDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.deleteActivityAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.viewActivityVersionDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.deleteActivityVersion",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"group": "navigation@2"
 				}
 			]
 		}
@@ -173,6 +255,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "2.0.4"
+		"forge-nodejs-utils": "2.1.0"
 	}
 }
