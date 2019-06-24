@@ -394,7 +394,14 @@ export async function viewObjectDetails(object: IObject, context: vscode.Extensi
 	}
 }
 
-export async function viewAppBundleDetails(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+type FullyQualifiedID = string;
+
+interface INameAndVersion {
+	name: string;
+	version: number;
+}
+
+export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
 	if (!_templateFuncCache.has('appbundle-details')) {
 		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'appbundle-details.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
@@ -404,10 +411,12 @@ export async function viewAppBundleDetails(fullId: string, context: vscode.Exten
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Getting appbundle details: ${fullId}`,
+			title: `Getting appbundle details: ${id}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const appBundleDetail = await designAutomationClient.getAppBundle(fullId);
+			const appBundleDetail = typeof(id) === 'string'
+				? await designAutomationClient.getAppBundle(id)
+				: await designAutomationClient.getAppBundleVersion(id.name, id.version);
 			const panel = vscode.window.createWebviewPanel(
 				'appbundle-details',
 				`Details: ${appBundleDetail.id}`,
@@ -424,7 +433,7 @@ export async function viewAppBundleDetails(fullId: string, context: vscode.Exten
 	}
 }
 
-export async function viewActivityDetails(fullId: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
 	if (!_templateFuncCache.has('activity-details')) {
 		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'activity-details.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
@@ -434,10 +443,12 @@ export async function viewActivityDetails(fullId: string, context: vscode.Extens
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Getting activity details: ${fullId}`,
+			title: `Getting activity details: ${id}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const activityDetail = await designAutomationClient.getActivity(fullId);
+			const activityDetail = typeof(id) === 'string'
+				? await designAutomationClient.getActivity(id)
+				: await designAutomationClient.getActivityVersion(id.name, id.version);
 			const panel = vscode.window.createWebviewPanel(
 				'activity-details',
 				`Details: ${activityDetail.id}`,

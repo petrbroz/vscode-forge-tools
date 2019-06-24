@@ -100,7 +100,15 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.viewAppBundleVersionDetails",
+				"title": "View Details"
+			},
+			{
 				"command": "forge.viewActivityDetails",
+				"title": "View Details"
+			},
+			{
+				"command": "forge.viewActivityVersionDetails",
 				"title": "View Details"
 			}
 		],
@@ -149,8 +157,18 @@
 					"group": "navigation@1"
 				},
 				{
+					"command": "forge.viewAppBundleVersionDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
+					"group": "navigation@1"
+				},
+				{
 					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.viewActivityVersionDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
 					"group": "navigation@1"
 				}
 			]
@@ -173,6 +191,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "2.0.4"
+		"forge-nodejs-utils": "2.1.0"
 	}
 }
