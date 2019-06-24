@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2019-06-24
+
+- Added
+  - "View details" of buckets
+- Changed
+  - Moved to forge-nodejs-utils version 2.0.4 (now using TypeScript)
+
 ## [0.1.0] - 2019-06-18
 
 - Added

@@ -5,12 +5,13 @@ import * as crypto from 'crypto';
 import * as ejs from 'ejs';
 import {
 	AuthenticationClient,
+	ModelDerivativeClient,
+	DesignAutomationClient,
 	DataManagementClient,
 	IBucket,
 	IObject,
-	ModelDerivativeClient,
-	DesignAutomationClient,
-	IResumableUploadRange
+	IResumableUploadRange,
+	DataRetentionPolicy
 } from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -165,12 +166,42 @@ export async function createBucket(client: DataManagementClient) {
 			title: `Creating bucket: ${name}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucket = await client.createBucket(name, retention);
+			const bucket = await client.createBucket(name, <DataRetentionPolicy>retention);
 		});
         vscode.window.showInformationMessage(`Bucket created: ${name}`);
     } catch (err) {
 		vscode.window.showErrorMessage(`Could not create bucket: ${JSON.stringify(err.message)}`);
     }
+}
+
+export async function viewBucketDetails(name: string, context: vscode.ExtensionContext, client: DataManagementClient) {
+	if (!_templateFuncCache.has('bucket-details')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'bucket-details.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('bucket-details', ejs.compile(template));
+	}
+
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting bucket details: ${name}`,
+			cancellable: false
+		}, async (progress, token) => {
+			const bucketDetail = await client.getBucketDetails(name);
+			const panel = vscode.window.createWebviewPanel(
+				'bucket-details',
+				`Details: ${bucketDetail.bucketKey}`,
+				vscode.ViewColumn.One,
+				{ enableScripts: false }
+			);
+			const templateFunc = _templateFuncCache.get('bucket-details');
+			if (templateFunc) {
+				panel.webview.html = templateFunc({ bucket: bucketDetail });
+			}
+		});
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access bucket: ${JSON.stringify(err.message)}`);
+	}
 }
 
 export async function uploadObject(bucket: IBucket, client: DataManagementClient) {

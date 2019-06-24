@@ -5,7 +5,7 @@
 	"icon": "resources/marketplace-logo.png",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
@@ -42,7 +42,7 @@
 				{
 					"id": "forgeViewContainer",
 					"title": "Forge",
-					"icon": "resources/sidebar-logo.png"
+					"icon": "resources/sidebar-logo.svg"
 				}
 			]
 		},
@@ -74,6 +74,10 @@
 					"light": "resources/icons/dark/add.svg",
 					"dark": "resources/icons/light/add.svg"
 				}
+			},
+			{
+				"command": "forge.viewBucketDetails",
+				"title": "View Details"
 			},
 			{
 				"command": "forge.uploadObject",
@@ -115,9 +119,14 @@
 			],
 			"view/item/context": [
 				{
+					"command": "forge.viewBucketDetails",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation@1"
+				},
+				{
 					"command": "forge.uploadObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation"
+					"group": "navigation@2"
 				},
 				{
 					"command": "forge.viewObjectDetails",
@@ -164,6 +173,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "1.6.1"
+		"forge-nodejs-utils": "2.0.4"
 	}
 }

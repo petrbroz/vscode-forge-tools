@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import {
 	AuthenticationClient,
-	DataManagementClient,
 	IBucket,
 	IObject,
+	DataManagementClient,
 	ModelDerivativeClient,
 	DesignAutomationClient
 } from 'forge-nodejs-utils';
@@ -16,7 +16,8 @@ import {
 	viewObjectDetails,
 	viewAppBundleDetails,
 	viewActivityDetails,
-	previewObject
+	previewObject,
+	viewBucketDetails
 } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -46,6 +47,13 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.createBucket', async () => {
 		await createBucket(dataManagementClient);
 		simpleStorageDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.viewBucketDetails', async (bucket?: IBucket) => {
+		if (!bucket) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await viewBucketDetails(bucket.bucketKey, context, dataManagementClient);
 	});
 	vscode.commands.registerCommand('forge.uploadObject', async (bucket?: IBucket) => {
 		if (!bucket) {
