@@ -63,16 +63,21 @@ interface IDesignAutomationEntry {
     label: string;
 }
 
-export interface IOwnedAppBundlesEntry extends IDesignAutomationEntry {
-    type: 'owned-appbundles';
-}
-
 export interface ISharedAppBundlesEntry extends IDesignAutomationEntry {
     type: 'shared-appbundles';
 }
 
+export interface ISharedAppBundleEntry extends IDesignAutomationEntry {
+    type: 'shared-appbundle';
+    fullid: string;
+}
+
+export interface IOwnedAppBundlesEntry extends IDesignAutomationEntry {
+    type: 'owned-appbundles';
+}
+
 export interface IAppBundleEntry extends IDesignAutomationEntry {
-    type: 'appbundle';
+    type: 'owned-appbundle';
     client: string;
     appbundle: string;
 }
@@ -103,16 +108,21 @@ export interface IAppBundleVersionEntry extends IDesignAutomationEntry {
     version: number;
 }
 
-export interface IOwnedActivitiesEntry extends IDesignAutomationEntry {
-    type: 'owned-activities';
-}
-
 export interface ISharedActivitiesEntry extends IDesignAutomationEntry {
     type: 'shared-activities';
 }
 
+export interface ISharedActivityEntry extends IDesignAutomationEntry {
+    type: 'shared-activity';
+    fullid: string;
+}
+
+export interface IOwnedActivitiesEntry extends IDesignAutomationEntry {
+    type: 'owned-activities';
+}
+
 export interface IActivityEntry extends IDesignAutomationEntry {
-    type: 'activity';
+    type: 'owned-activity';
     client: string;
     activity: string;
 }
@@ -144,8 +154,8 @@ export interface IActivityVersionEntry extends IDesignAutomationEntry {
 }
 
 type DesignAutomationEntry =
-    | IOwnedAppBundlesEntry | ISharedAppBundlesEntry | IAppBundleEntry | IAppBundleAliasesEntry | IAppBundleAliasEntry | IAppBundleVersionsEntry | IAppBundleVersionEntry
-    | IOwnedActivitiesEntry | ISharedActivitiesEntry | IActivityEntry | IActivityAliasesEntry | IActivityAliasEntry | IActivityVersionsEntry | IActivityVersionEntry;
+    | IOwnedAppBundlesEntry | ISharedAppBundlesEntry | ISharedAppBundleEntry | IAppBundleEntry | IAppBundleAliasesEntry | IAppBundleAliasEntry | IAppBundleVersionsEntry | IAppBundleVersionEntry
+    | IOwnedActivitiesEntry | ISharedActivitiesEntry | ISharedActivityEntry | IActivityEntry | IActivityAliasesEntry | IActivityAliasEntry | IActivityVersionsEntry | IActivityVersionEntry;
 
 export class DesignAutomationDataProvider implements vscode.TreeDataProvider<DesignAutomationEntry> {
     private _client: DesignAutomationClient;
@@ -168,20 +178,22 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         switch (element.type) {
             case 'owned-appbundles':
             case 'shared-appbundles':
-            case 'appbundle':
+            case 'owned-appbundle':
             case 'appbundle-aliases':
             case 'appbundle-versions':
             case 'owned-activities':
             case 'shared-activities':
-            case 'activity':
+            case 'owned-activity':
             case 'activity-aliases':
             case 'activity-versions':
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
                 break;
             case 'appbundle-alias':
             case 'appbundle-version':
+            case 'shared-appbundle':
             case 'activity-alias':
             case 'activity-version':
+            case 'shared-activity':
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
                 break;
             default:
@@ -205,7 +217,7 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
                     return this._getOwnedAppBundles(element);
                 case 'shared-appbundles':
                     return this._getSharedAppBundles(element);
-                case 'appbundle':
+                case 'owned-appbundle':
                     return this._getAppBundleChildren(element);
                 case 'appbundle-aliases':
                     return this._getAppBundleAliases(element);
@@ -215,7 +227,7 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
                     return this._getOwnedActivities(element);
                 case 'shared-activities':
                     return this._getSharedActivities(element);
-                case 'activity':
+                case 'owned-activity':
                     return this._getActivityChildren(element);
                 case 'activity-aliases':
                     return this._getActivityAliases(element);
@@ -231,13 +243,13 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         const appBundleIDs = await this._client.listAppBundles();
         const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
         const uniqueIDs = new Set(filteredIDs.map(item => item.id));
-        return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'appbundle', client: this._clientId, appbundle: appbundle, label: appbundle }));
+        return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'owned-appbundle', client: this._clientId, appbundle: appbundle, label: appbundle }));
     }
 
-    private async _getSharedAppBundles(entry: ISharedAppBundlesEntry): Promise<IAppBundleAliasEntry[]> {
+    private async _getSharedAppBundles(entry: ISharedAppBundlesEntry): Promise<ISharedAppBundleEntry[]> {
         const appBundleIDs = await this._client.listAppBundles();
         const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
-        return filteredIDs.map(id => ({ type: 'appbundle-alias', client: id.owner, appbundle: id.id, alias: id.alias, label: id.toString() }));
+        return filteredIDs.map(id => ({ type: 'shared-appbundle', fullid: id.toString(), label: id.toString() }));
     }
 
     private async _getAppBundleChildren(entry: IAppBundleEntry): Promise<(IAppBundleAliasesEntry | IAppBundleVersionsEntry)[]> {
@@ -263,13 +275,13 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         const activityIDs = await this._client.listActivities();
         const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
         const uniqueIDs = new Set<string>(filteredIDs.map(id => id.id));
-        return Array.from(uniqueIDs.values()).map(activity => ({ type: 'activity', client: this._clientId, activity: activity, label: activity }));
+        return Array.from(uniqueIDs.values()).map(activity => ({ type: 'owned-activity', client: this._clientId, activity: activity, label: activity }));
     }
 
-    private async _getSharedActivities(entry: ISharedActivitiesEntry): Promise<IActivityAliasEntry[]> {
+    private async _getSharedActivities(entry: ISharedActivitiesEntry): Promise<ISharedActivityEntry[]> {
         const activityIDs = await this._client.listActivities();
         const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
-        return filteredIDs.map(id => ({ type: 'activity-alias', client: id.owner, activity: id.id, alias: id.alias, label: id.toString() }));
+        return filteredIDs.map(id => ({ type: 'shared-activity', fullid: id.toString(), label: id.toString() }));
     }
 
     private async _getActivityChildren(entry: IActivityEntry): Promise<(IActivityAliasesEntry | IActivityVersionsEntry)[]> {

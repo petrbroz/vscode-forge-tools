@@ -395,7 +395,7 @@ export async function viewObjectDetails(object: IObject, context: vscode.Extensi
 }
 
 type FullyQualifiedID = string;
-
+type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
@@ -429,7 +429,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 			}
 		});
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access app bundle: ${JSON.stringify(err.message)}`);
+		vscode.window.showErrorMessage(`Could not access appbundle: ${JSON.stringify(err.message)}`);
 	}
 }
 
@@ -462,5 +462,95 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 		});
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access activity: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteAppBundle(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing appbundle: ${id}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.deleteAppBundle(id);
+		});
+		vscode.window.showInformationMessage(`Appbundle removed`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not remove appbundle: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing app bundle alias: ${id}/${alias}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.deleteAppBundleAlias(id, alias);
+		});
+		vscode.window.showInformationMessage(`Appbundle alias removed`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not remove appbundle alias: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteAppBundleVersion(id: UnqualifiedID, version: number, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing app bundle version: ${id}/${version}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.deleteAppBundleVersion(id, version);
+		});
+		vscode.window.showInformationMessage(`Appbundle version removed`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not remove appbundle version: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteActivity(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing activity: ${id}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.deleteActivity(id);
+		});
+		vscode.window.showInformationMessage(`Activity removed`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not remove activity: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteActivityAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing activity alias: ${id}/${alias}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.deleteActivityAlias(id, alias);
+		});
+		vscode.window.showInformationMessage(`Activity alias removed`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not remove activity alias: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteActivityVersion(id: UnqualifiedID, version: number, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing activity version: ${id}/${version}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.deleteActivityVersion(id, version);
+		});
+		vscode.window.showInformationMessage(`Activity version removed`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not remove activity version: ${JSON.stringify(err.message)}`);
 	}
 }
