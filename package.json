@@ -5,7 +5,7 @@
 	"icon": "resources/marketplace-logo.png",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
@@ -34,6 +34,13 @@
 					"type": "string",
 					"description": "Client Secret",
 					"scope": "window"
+				},
+				"autodesk.forge.dataRegion": {
+					"type": "string",
+					"description": "Data Region",
+					"scope": "window",
+					"enum": ["US", "EMEA"],
+					"default": "US"
 				}
 			}
 		},
@@ -94,6 +101,10 @@
 			{
 				"command": "forge.viewObjectDetails",
 				"title": "View Details"
+			},
+			{
+				"command": "forge.deleteObject",
+				"title": "Delete"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
@@ -176,6 +187,11 @@
 					"group": "navigation@3"
 				},
 				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@4"
+				},
+				{
 					"command": "forge.deleteAppBundle",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
 					"group": "navigation@1"
@@ -255,6 +271,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "2.1.0"
+		"forge-nodejs-utils": "2.2.0"
 	}
 }
