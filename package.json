@@ -34,6 +34,13 @@
 					"type": "string",
 					"description": "Client Secret",
 					"scope": "window"
+				},
+				"autodesk.forge.dataRegion": {
+					"type": "string",
+					"description": "Data Region",
+					"scope": "window",
+					"enum": ["US", "EMEA"],
+					"default": "US"
 				}
 			}
 		},
@@ -255,6 +262,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "2.1.0"
+		"forge-nodejs-utils": "2.2.0"
 	}
 }
