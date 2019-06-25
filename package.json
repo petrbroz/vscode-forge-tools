@@ -103,6 +103,10 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.deleteObject",
+				"title": "Delete"
+			},
+			{
 				"command": "forge.viewAppBundleDetails",
 				"title": "View Details"
 			},
@@ -181,6 +185,11 @@
 					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@4"
 				},
 				{
 					"command": "forge.deleteAppBundle",

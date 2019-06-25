@@ -34,7 +34,8 @@ import {
 	deleteAppBundleVersion,
 	deleteActivity,
 	deleteActivityAlias,
-	deleteActivityVersion
+	deleteActivityVersion,
+	deleteObject
 } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -100,6 +101,14 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		await viewObjectDetails(object, context);
+	});
+	vscode.commands.registerCommand('forge.deleteObject', async (object?: IObject) => {
+		if (!object) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await deleteObject(object, context, dataManagementClient);
+		simpleStorageDataProvider.refresh();
 	});
 
 	// Setup design automation view

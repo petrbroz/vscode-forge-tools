@@ -396,6 +396,21 @@ export async function viewObjectDetails(object: IObject, context: vscode.Extensi
 	}
 }
 
+export async function deleteObject(object: IObject, context: vscode.ExtensionContext, client: DataManagementClient) {
+	try {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Deleting object: ${object.objectKey}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await client.deleteObject(object.bucketKey, object.objectKey);
+		});
+        vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
+    } catch(err) {
+        vscode.window.showErrorMessage(`Could not delete object: ${JSON.stringify(err.message)}`);
+    }
+}
+
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
 interface INameAndVersion {
