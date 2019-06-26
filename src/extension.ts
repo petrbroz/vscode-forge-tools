@@ -18,7 +18,9 @@ import {
 	IAppBundleEntry,
 	IActivityEntry,
 	ISharedActivityEntry,
-	ISharedAppBundleEntry
+	ISharedAppBundleEntry,
+	IActivityAliasesEntry,
+	IAppBundleAliasesEntry
 } from './providers';
 import {
 	createBucket,
@@ -35,8 +37,13 @@ import {
 	deleteActivity,
 	deleteActivityAlias,
 	deleteActivityVersion,
-	deleteObject
+	deleteObject,
+	createActivityAlias,
+	createAppBundleAlias,
+	updateActivityAlias,
+	updateAppBundleAlias
 } from './commands';
+import { Region } from 'forge-nodejs-utils/dist/common';
 
 export function activate(context: vscode.ExtensionContext) {
 	const ForgeClientID = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientId');
@@ -45,13 +52,14 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings and reload the editor.');
 		return;
 	}
+	const ForgeRegion = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
 
 	console.log('Extension "vscode-forge-tools" has been loaded.');
 
 	let authClient = new AuthenticationClient(ForgeClientID, ForgeClientSecret);
-	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
-	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
-	let designAutomationClient = new DesignAutomationClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
+	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
+	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
+	let designAutomationClient = new DesignAutomationClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
 
 	// Setup data management view
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
@@ -60,6 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Setup data management commands
 	vscode.commands.registerCommand('forge.refreshBuckets', () => {
+		const region = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
+		dataManagementClient.reset(undefined, undefined, region as Region);
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.createBucket', async () => {
@@ -148,6 +158,21 @@ export function activate(context: vscode.ExtensionContext) {
 		await deleteAppBundleAlias(entry.appbundle, entry.alias, context, designAutomationClient);
 		designAutomationDataProvider.refresh();
 	});
+	vscode.commands.registerCommand('forge.createAppBundleAlias', async (entry?: IAppBundleAliasesEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await createAppBundleAlias(entry.appbundle, context, designAutomationClient);
+		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.updateAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await updateAppBundleAlias(entry.appbundle, entry.alias, context, designAutomationClient);
+	});
 	vscode.commands.registerCommand('forge.deleteAppBundleVersion', async (entry?: IAppBundleVersionEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -186,6 +211,21 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await deleteActivityAlias(entry.activity, entry.alias, context, designAutomationClient);
 		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: IActivityAliasesEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await createActivityAlias(entry.activity, context, designAutomationClient);
+		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.updateActivityAlias', async (entry?: IActivityAliasEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await updateActivityAlias(entry.activity, entry.alias, context, designAutomationClient);
 	});
 	vscode.commands.registerCommand('forge.deleteActivityVersion', async (entry?: IActivityVersionEntry) => {
 		if (!entry) {

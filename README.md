@@ -37,3 +37,4 @@ This extension contributes the following settings:
 
 * `autodesk.forge.clientId`: Forge application client ID
 * `autodesk.forge.clientSecret`: Forge application client secret
+* `autodesk.forge.dataRegion`: Region where listed or created buckets reside (`US` or `EMEA`)

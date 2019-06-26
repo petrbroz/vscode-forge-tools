@@ -5,7 +5,7 @@
 	"icon": "resources/marketplace-logo.png",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
@@ -123,6 +123,14 @@
 				"title": "Delete"
 			},
 			{
+				"command": "forge.createAppBundleAlias",
+				"title": "Create Alias"
+			},
+			{
+				"command": "forge.updateAppBundleAlias",
+				"title": "Update Alias"
+			},
+			{
 				"command": "forge.deleteAppBundleVersion",
 				"title": "Delete"
 			},
@@ -141,6 +149,14 @@
 			{
 				"command": "forge.deleteActivityAlias",
 				"title": "Delete"
+			},
+			{
+				"command": "forge.createActivityAlias",
+				"title": "Create Alias"
+			},
+			{
+				"command": "forge.updateActivityAlias",
+				"title": "Update Alias"
 			},
 			{
 				"command": "forge.deleteActivityVersion",
@@ -209,6 +225,16 @@
 				{
 					"command": "forge.deleteAppBundleAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"group": "navigation@3"
+				},
+				{
+					"command": "forge.createAppBundleAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-aliases",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.updateAppBundleAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
 					"group": "navigation@2"
 				},
 				{
@@ -238,6 +264,16 @@
 				},
 				{
 					"command": "forge.deleteActivityAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@3"
+				},
+				{
+					"command": "forge.createActivityAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-aliases",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.updateActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "navigation@2"
 				},
@@ -271,6 +307,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "2.2.0"
+		"forge-nodejs-utils": "3.0.2"
 	}
 }

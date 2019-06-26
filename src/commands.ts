@@ -11,8 +11,7 @@ import {
 	IBucket,
 	IObject,
 	IResumableUploadRange,
-	DataRetentionPolicy,
-	Region
+	DataRetentionPolicy
 } from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -162,13 +161,12 @@ export async function createBucket(client: DataManagementClient) {
 	}
 
     try {
-		const region = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating bucket: ${name}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucket = await client.createBucket(name, <DataRetentionPolicy>retention, <Region>region);
+			const bucket = await client.createBucket(name, <DataRetentionPolicy>retention);
 		});
         vscode.window.showInformationMessage(`Bucket created: ${name}`);
     } catch (err) {
@@ -497,6 +495,54 @@ export async function deleteAppBundle(id: UnqualifiedID, context: vscode.Extensi
 	}
 }
 
+export async function createAppBundleAlias(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		const alias = await vscode.window.showInputBox({ prompt: 'Enter alias name' });
+		if (!alias) {
+			return;
+		}
+		const appBundleVersions = await designAutomationClient.listAppBundleVersions(id);
+		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map(v => v.toString()), {
+			canPickMany: false, placeHolder: 'Select appbundle version'
+		});
+		if (!appBundleVersion) {
+			return;
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Creating appbundle alias: ${id}/${alias}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion));
+		});
+		vscode.window.showInformationMessage(`Appbundle alias created`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not create appbundle alias: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		const appBundleVersions = await designAutomationClient.listAppBundleVersions(id);
+		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map(v => v.toString()), {
+			canPickMany: false, placeHolder: 'Select appbundle version'
+		});
+		if (!appBundleVersion) {
+			return;
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Updating appbundle alias: ${id}/${alias}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion));
+		});
+		vscode.window.showInformationMessage(`Appbundle alias updated`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not update appbundle alias: ${JSON.stringify(err.message)}`);
+	}
+}
+
 export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
 	try {
 		await vscode.window.withProgress({
@@ -569,5 +615,53 @@ export async function deleteActivityVersion(id: UnqualifiedID, version: number, 
 		vscode.window.showInformationMessage(`Activity version removed`);
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not remove activity version: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function createActivityAlias(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		const alias = await vscode.window.showInputBox({ prompt: 'Enter alias name' });
+		if (!alias) {
+			return;
+		}
+		const activityVersions = await designAutomationClient.listActivityVersions(id);
+		const activityVersion = await vscode.window.showQuickPick(activityVersions.map(v => v.toString()), {
+			canPickMany: false, placeHolder: 'Select activity version'
+		});
+		if (!activityVersion) {
+			return;
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Creating activity alias: ${id}/${alias}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion));
+		});
+		vscode.window.showInformationMessage(`Activity alias created`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not create activity alias: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function updateActivityAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+	try {
+		const activityVersions = await designAutomationClient.listActivityVersions(id);
+		const activityVersion = await vscode.window.showQuickPick(activityVersions.map(v => v.toString()), {
+			canPickMany: false, placeHolder: 'Select activity version'
+		});
+		if (!activityVersion) {
+			return;
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Updating activity alias: ${id}/${alias}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion));
+		});
+		vscode.window.showInformationMessage(`Activity alias updated`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not update activity alias: ${JSON.stringify(err.message)}`);
 	}
 }
