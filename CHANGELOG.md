@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Support for creating/updating aliases of DA activities and appbundles
+
 ## [0.3.1] - 2019-06-26
 
 - Added
