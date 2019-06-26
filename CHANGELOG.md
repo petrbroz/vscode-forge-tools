@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.3.2] - 2019-06-27
+
 - Added
   - Support for creating/updating aliases of DA activities and appbundles
+  - Refreshing buckets can now be used to update the list after changing the region settings
 
 ## [0.3.1] - 2019-06-26
 
