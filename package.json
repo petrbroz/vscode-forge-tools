@@ -127,6 +127,10 @@
 				"title": "Create Alias"
 			},
 			{
+				"command": "forge.updateAppBundleAlias",
+				"title": "Update Alias"
+			},
+			{
 				"command": "forge.deleteAppBundleVersion",
 				"title": "Delete"
 			},
@@ -149,6 +153,10 @@
 			{
 				"command": "forge.createActivityAlias",
 				"title": "Create Alias"
+			},
+			{
+				"command": "forge.updateActivityAlias",
+				"title": "Update Alias"
 			},
 			{
 				"command": "forge.deleteActivityVersion",
@@ -217,12 +225,17 @@
 				{
 					"command": "forge.deleteAppBundleAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
-					"group": "navigation@2"
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.createAppBundleAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-aliases",
 					"group": "navigation@1"
+				},
+				{
+					"command": "forge.updateAppBundleAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"group": "navigation@2"
 				},
 				{
 					"command": "forge.viewAppBundleVersionDetails",
@@ -252,12 +265,17 @@
 				{
 					"command": "forge.deleteActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@2"
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.createActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-aliases",
 					"group": "navigation@1"
+				},
+				{
+					"command": "forge.updateActivityAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@2"
 				},
 				{
 					"command": "forge.viewActivityVersionDetails",

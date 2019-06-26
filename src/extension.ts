@@ -39,7 +39,9 @@ import {
 	deleteActivityVersion,
 	deleteObject,
 	createActivityAlias,
-	createAppBundleAlias
+	createAppBundleAlias,
+	updateActivityAlias,
+	updateAppBundleAlias
 } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -160,6 +162,13 @@ export function activate(context: vscode.ExtensionContext) {
 		await createAppBundleAlias(entry.appbundle, context, designAutomationClient);
 		designAutomationDataProvider.refresh();
 	});
+	vscode.commands.registerCommand('forge.updateAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await updateAppBundleAlias(entry.appbundle, entry.alias, context, designAutomationClient);
+	});
 	vscode.commands.registerCommand('forge.deleteAppBundleVersion', async (entry?: IAppBundleVersionEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -206,6 +215,13 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await createActivityAlias(entry.activity, context, designAutomationClient);
 		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.updateActivityAlias', async (entry?: IActivityAliasEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await updateActivityAlias(entry.activity, entry.alias, context, designAutomationClient);
 	});
 	vscode.commands.registerCommand('forge.deleteActivityVersion', async (entry?: IActivityVersionEntry) => {
 		if (!entry) {
