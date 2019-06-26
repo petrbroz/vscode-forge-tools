@@ -11,8 +11,7 @@ import {
 	IBucket,
 	IObject,
 	IResumableUploadRange,
-	DataRetentionPolicy,
-	Region
+	DataRetentionPolicy
 } from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -162,13 +161,12 @@ export async function createBucket(client: DataManagementClient) {
 	}
 
     try {
-		const region = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating bucket: ${name}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucket = await client.createBucket(name, <DataRetentionPolicy>retention, <Region>region);
+			const bucket = await client.createBucket(name, <DataRetentionPolicy>retention);
 		});
         vscode.window.showInformationMessage(`Bucket created: ${name}`);
     } catch (err) {

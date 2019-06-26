@@ -43,6 +43,7 @@ import {
 	updateActivityAlias,
 	updateAppBundleAlias
 } from './commands';
+import { Region } from 'forge-nodejs-utils/dist/common';
 
 export function activate(context: vscode.ExtensionContext) {
 	const ForgeClientID = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientId');
@@ -51,13 +52,14 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings and reload the editor.');
 		return;
 	}
+	const ForgeRegion = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
 
 	console.log('Extension "vscode-forge-tools" has been loaded.');
 
 	let authClient = new AuthenticationClient(ForgeClientID, ForgeClientSecret);
-	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
-	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
-	let designAutomationClient = new DesignAutomationClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret });
+	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
+	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
+	let designAutomationClient = new DesignAutomationClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
 
 	// Setup data management view
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);

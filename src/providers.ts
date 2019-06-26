@@ -4,8 +4,7 @@ import {
 	IObject,
     DataManagementClient,
     DesignAutomationClient,
-    DesignAutomationID,
-    Region
+    DesignAutomationID
 } from 'forge-nodejs-utils';
 
 type SimpleStorageEntry = IBucket | IObject;
@@ -50,8 +49,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 const objects = await this._client.listObjects(element.bucketKey);
                 return objects;
             } else {
-                const region = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
-                const buckets = await this._client.listBuckets(<Region>region);
+                const buckets = await this._client.listBuckets();
                 return buckets;
             }
         } catch(err) {
