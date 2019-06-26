@@ -297,10 +297,10 @@ forever-agent@~0.6.1:
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-forge-nodejs-utils@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/forge-nodejs-utils/-/forge-nodejs-utils-3.0.1.tgz#6c051686b4b0df10f14268067ca43427b12ed02a"
-  integrity sha512-5XPih2HsbZs23Cp+XNP++26SWyXIvG89Px2sA7aWTQu+Ga2yKizisHi8tqSvyOEPcVHlF0LsQDPu1PUwJFdElw==
+forge-nodejs-utils@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/forge-nodejs-utils/-/forge-nodejs-utils-3.0.2.tgz#9d0567ef5f47772cb9b1f203708e4e24d574c368"
+  integrity sha512-MUgWZoLwSCFY2OC+wbov+XjguwkQFRphpC4r6iiio6Lhd6qIbGlJOaEKkSQtNAMzurkBH45S1KtOpqrceOjR8g==
   dependencies:
     "@types/node-fetch" "^2.3.7"
     node-fetch "^2.5.0"

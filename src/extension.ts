@@ -68,6 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Setup data management commands
 	vscode.commands.registerCommand('forge.refreshBuckets', () => {
+		const region = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
+		dataManagementClient.reset(undefined, undefined, region as Region);
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.createBucket', async () => {
