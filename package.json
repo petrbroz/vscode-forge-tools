@@ -123,6 +123,10 @@
 				"title": "Delete"
 			},
 			{
+				"command": "forge.createAppBundleAlias",
+				"title": "Create Alias"
+			},
+			{
 				"command": "forge.deleteAppBundleVersion",
 				"title": "Delete"
 			},
@@ -141,6 +145,10 @@
 			{
 				"command": "forge.deleteActivityAlias",
 				"title": "Delete"
+			},
+			{
+				"command": "forge.createActivityAlias",
+				"title": "Create Alias"
 			},
 			{
 				"command": "forge.deleteActivityVersion",
@@ -212,6 +220,11 @@
 					"group": "navigation@2"
 				},
 				{
+					"command": "forge.createAppBundleAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-aliases",
+					"group": "navigation@1"
+				},
+				{
 					"command": "forge.viewAppBundleVersionDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
 					"group": "navigation@1"
@@ -240,6 +253,11 @@
 					"command": "forge.deleteActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.createActivityAlias",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-aliases",
+					"group": "navigation@1"
 				},
 				{
 					"command": "forge.viewActivityVersionDetails",
