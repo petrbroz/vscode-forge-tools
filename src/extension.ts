@@ -45,21 +45,27 @@ import {
 } from './commands';
 import { Region } from 'forge-nodejs-utils/dist/common';
 
+interface IEnvironment {
+	title: string;
+	clientId: string;
+	clientSecret: string;
+	region: string;
+}
+
 export function activate(context: vscode.ExtensionContext) {
-	const ForgeClientID = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientId');
-	const ForgeClientSecret = vscode.workspace.getConfiguration().get<string>('autodesk.forge.clientSecret');
-	if (!ForgeClientID || !ForgeClientSecret) {
+	const environments = vscode.workspace.getConfiguration().get<IEnvironment[]>('autodesk.forge.environments') || [];
+	if (environments.length === 0 || !environments[0].clientId || !environments[0].clientSecret) {
 		vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings and reload the editor.');
 		return;
 	}
-	const ForgeRegion = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
+	let env = environments[0];
 
 	console.log('Extension "vscode-forge-tools" has been loaded.');
 
-	let authClient = new AuthenticationClient(ForgeClientID, ForgeClientSecret);
-	let dataManagementClient = new DataManagementClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
-	let modelDerivativeClient = new ModelDerivativeClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
-	let designAutomationClient = new DesignAutomationClient({ client_id: ForgeClientID, client_secret: ForgeClientSecret }, undefined, ForgeRegion as Region);
+	let authClient = new AuthenticationClient(env.clientId, env.clientSecret);
+	let dataManagementClient = new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+	let modelDerivativeClient = new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+	let designAutomationClient = new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
 
 	// Setup data management view
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
@@ -68,8 +74,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Setup data management commands
 	vscode.commands.registerCommand('forge.refreshBuckets', () => {
-		const region = vscode.workspace.getConfiguration().get<string>('autodesk.forge.dataRegion');
-		dataManagementClient.reset(undefined, undefined, region as Region);
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.createBucket', async () => {
@@ -122,7 +126,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// Setup design automation view
-	let designAutomationDataProvider = new DesignAutomationDataProvider(designAutomationClient, ForgeClientID);
+	let designAutomationDataProvider = new DesignAutomationDataProvider(designAutomationClient, env.clientId);
 	let designAutomationView = vscode.window.createTreeView('forgeDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
 	context.subscriptions.push(designAutomationView);
 
@@ -234,6 +238,31 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await deleteActivityVersion(entry.activity, entry.version, context, designAutomationClient);
 		designAutomationDataProvider.refresh();
+	});
+
+	// Setup rest
+	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
+		statusBarItem.text = 'Forge Env: ' + env.title;
+		statusBarItem.command = 'forge.switchEnvironment';
+		statusBarItem.show();
+	}
+	const envStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+	context.subscriptions.push(envStatusBarItem);
+	updateEnvironmentStatus(envStatusBarItem);
+
+	vscode.commands.registerCommand('forge.switchEnvironment', async () => {
+		const environments = vscode.workspace.getConfiguration().get<IEnvironment[]>('autodesk.forge.environments') || [];
+		const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select Forge environment' });
+		if (!name) {
+			return;
+		}
+		env = environments.find(environment => environment.title === name) as IEnvironment;
+		dataManagementClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+		designAutomationClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+		modelDerivativeClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+		simpleStorageDataProvider.refresh();
+		designAutomationDataProvider.refresh();
+		updateEnvironmentStatus(envStatusBarItem);
 	});
 }
 
