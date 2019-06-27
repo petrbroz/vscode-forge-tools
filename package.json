@@ -38,6 +38,7 @@
 			"title": "Forge",
 			"properties": {
 				"autodesk.forge.environments": {
+					"scope": "resource",
 					"type": "array",
 					"description": "List of Forge environments to switch between",
 					"items": {

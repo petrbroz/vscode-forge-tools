@@ -52,8 +52,12 @@ interface IEnvironment {
 	region: string;
 }
 
+function getEnvironments(): IEnvironment[] {
+	return vscode.workspace.getConfiguration(undefined, null).get<IEnvironment[]>('autodesk.forge.environments') || [];
+}
+
 export function activate(context: vscode.ExtensionContext) {
-	const environments = vscode.workspace.getConfiguration().get<IEnvironment[]>('autodesk.forge.environments') || [];
+	const environments = getEnvironments();
 	if (environments.length === 0 || !environments[0].clientId || !environments[0].clientSecret) {
 		vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings and reload the editor.');
 		return;
@@ -251,7 +255,7 @@ export function activate(context: vscode.ExtensionContext) {
 	updateEnvironmentStatus(envStatusBarItem);
 
 	vscode.commands.registerCommand('forge.switchEnvironment', async () => {
-		const environments = vscode.workspace.getConfiguration().get<IEnvironment[]>('autodesk.forge.environments') || [];
+		const environments = getEnvironments();
 		const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select Forge environment' });
 		if (!name) {
 			return;
