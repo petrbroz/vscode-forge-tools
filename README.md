@@ -20,7 +20,7 @@ While in Visual Studio Code:
 - Switch to the _Extensions_ sidebar (`Cmd`+`Shift`+`X` on macOS or `Ctrl`+`Shift`+`X` on Windows)
 - Search for the _Autodesk Forge Tools_ extension and install it
 - Open _User Settings_ (`Cmd`+`,` on macOS or `Ctrl`+`,` on Windows), and search for _forge env_
-  - Note: switch to _User_ or _Workspace_ tab depending on whether you want to specify the settings globally or locally
+  - Note: switch to _User_ or _Workspace_ tab depending on whether you want to persist the settings globally or locally
 - In the _Autodesk > Forge: Environments_ section, click _Edit in settings.json_ and define one or more environments as explained in the _Extension Settings_ section below
 - Switch to the new _Forge_ sidebar and start browsing!
 
@@ -32,9 +32,16 @@ This extension contributes the following settings:
   - `title` - unique name of the environment (will be shown in status bar and when switching to other environments)
   - `clientId` - Forge client ID
   - `clientSecret` - Forge client secret
-  - `region` - one of `US` or `EMEA` (`US` by default)
+  - `region` - data region for storing Forge content (can be `US` or `EMEA`; `US` by default)
 
 ## Features
+
+### Forge Environments
+
+If you have configured multiple Forge environments, you can switch between them via status bar,
+or using the `forge.switchEnvironment` command.
+
+![Switch Environments](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/switch-environments.gif)
 
 ### Data Management View
 
