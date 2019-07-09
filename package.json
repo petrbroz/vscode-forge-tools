@@ -6,15 +6,15 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.3.2",
+	"version": "0.4.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
 	},
 	"bugs": {
-		"url" : "https://github.com/petrbroz/vscode-forge-tools/issues",
-		"email" : "petr.broz@autodesk.com"
+		"url": "https://github.com/petrbroz/vscode-forge-tools/issues",
+		"email": "petr.broz@autodesk.com"
 	},
 	"keywords": [
 		"autodesk",
@@ -60,7 +60,10 @@
 							"region": {
 								"type": "string",
 								"description": "Data Region",
-								"enum": ["US", "EMEA"],
+								"enum": [
+									"US",
+									"EMEA"
+								],
 								"default": "US"
 							}
 						}
