@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2019-07-09
+
+- Changed
+  - Instead of a single set of Forge credentials, the extension is now configured with a list of environments with different Forge credentials, data regions, etc.
+  - The settings can be configured in _User_ or _Workspace_ scope, with _Workspace_ scope having higher precedence
+
 ## [0.3.2] - 2019-06-27
 
 - Added
