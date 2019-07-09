@@ -8,6 +8,32 @@
 
 [Visual Studio Code](https://code.visualstudio.com) extension for accessing [Autodesk Forge](https://forge.autodesk.com) services and content.
 
+## Requirements
+
+- [Visual Studio Code](https://code.visualstudio.com) version 1.31.0 or newer
+- Forge application credentials ([tutorial](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
+
+## Getting Started
+
+While in Visual Studio Code:
+
+- Switch to the _Extensions_ sidebar (`Cmd`+`Shift`+`X` on macOS or `Ctrl`+`Shift`+`X` on Windows)
+- Search for the _Autodesk Forge Tools_ extension and install it
+- Open _User Settings_ (`Cmd`+`,` on macOS or `Ctrl`+`,` on Windows), and search for _forge env_
+  - Note: switch to _User_ or _Workspace_ tab depending on whether you want to specify the settings globally or locally
+- In the _Autodesk > Forge: Environments_ section, click _Edit in settings.json_ and define one or more environments as explained in the _Extension Settings_ section below
+- Switch to the new _Forge_ sidebar and start browsing!
+
+## Extension Settings
+
+This extension contributes the following settings:
+
+- `autodesk.forge.environments`: Array of objects representing different Forge environments; objects contain the following properties:
+  - `title` - unique name of the environment (will be shown in status bar and when switching to other environments)
+  - `clientId` - Forge client ID
+  - `clientSecret` - Forge client secret
+  - `region` - one of `US` or `EMEA` (`US` by default)
+
 ## Features
 
 ### Data Management View
@@ -22,25 +48,3 @@ _Data Management_ view allows you to browse
 ![Design Automation Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/design-automation-preview.gif)
 
 _Design Automation_ can be used for browsing [Forge Design Automation](https://forge.autodesk.com/en/docs/design-automation/v2/developers_guide/overview) entities such as app bundles and activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
-
-## Requirements
-
-- [Visual Studio Code](https://code.visualstudio.com) version 1.35.0 or newer
-- Forge application credentials ([tutorial](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
-
-## Getting Started
-
-While in Visual Studio Code:
-
-- Switch to the _Extensions_ sidebar (`Cmd`+`Shift`+`X` on macOS or `Ctrl`+`Shift`+`X` on Windows)
-- Search for the _Autodesk Forge Tools_ extension and install it
-- Open _User Settings_ (`Cmd`+`,` on macOS or `Ctrl`+`,` on Windows), locate the _Forge_ extension settings, and provide the client ID and client secret
-- Switch to the new _Forge_ sidebar and start browsing!
-
-## Extension Settings
-
-This extension contributes the following settings:
-
-* `autodesk.forge.clientId`: Forge application client ID
-* `autodesk.forge.clientSecret`: Forge application client secret
-* `autodesk.forge.dataRegion`: Region where listed or created buckets reside (`US` or `EMEA`)
