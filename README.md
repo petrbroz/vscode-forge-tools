@@ -34,6 +34,10 @@ This extension contributes the following settings:
   - `clientSecret` - Forge client secret
   - `region` - data region for storing Forge content (can be `US` or `EMEA`; `US` by default)
 
+Here's an example of an environment list:
+
+![Extension Settings](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/extension-settings.png)
+
 ## Features
 
 ### Forge Environments
