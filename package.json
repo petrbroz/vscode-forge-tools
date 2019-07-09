@@ -5,11 +5,23 @@
 	"icon": "resources/marketplace-logo.png",
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"version": "0.3.2",
+	"license": "MIT",
+	"version": "0.4.0",
+	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/petrbroz/vscode-forge-tools"
 	},
+	"bugs": {
+		"url": "https://github.com/petrbroz/vscode-forge-tools/issues",
+		"email": "petr.broz@autodesk.com"
+	},
+	"keywords": [
+		"autodesk",
+		"forge",
+		"vscode",
+		"extension"
+	],
 	"engines": {
 		"vscode": "^1.31.0"
 	},
@@ -25,22 +37,37 @@
 		"configuration": {
 			"title": "Forge",
 			"properties": {
-				"autodesk.forge.clientId": {
-					"type": "string",
-					"description": "Client ID",
-					"scope": "window"
-				},
-				"autodesk.forge.clientSecret": {
-					"type": "string",
-					"description": "Client Secret",
-					"scope": "window"
-				},
-				"autodesk.forge.dataRegion": {
-					"type": "string",
-					"description": "Data Region",
-					"scope": "window",
-					"enum": ["US", "EMEA"],
-					"default": "US"
+				"autodesk.forge.environments": {
+					"scope": "resource",
+					"type": "array",
+					"description": "List of Forge environments to switch between",
+					"items": {
+						"type": "object",
+						"title": "Forge environments",
+						"properties": {
+							"title": {
+								"type": "string",
+								"description": "Environment title"
+							},
+							"clientId": {
+								"type": "string",
+								"description": "Forge client ID"
+							},
+							"clientSecret": {
+								"type": "string",
+								"description": "Forge client secret"
+							},
+							"region": {
+								"type": "string",
+								"description": "Data Region",
+								"enum": [
+									"US",
+									"EMEA"
+								],
+								"default": "US"
+							}
+						}
+					}
 				}
 			}
 		},
@@ -66,6 +93,10 @@
 			]
 		},
 		"commands": [
+			{
+				"command": "forge.switchEnvironment",
+				"title": "Switch Environment"
+			},
 			{
 				"command": "forge.refreshBuckets",
 				"title": "Refresh Buckets",
