@@ -19,12 +19,40 @@
             top: 1em;
             z-index: 1;
         }
+
+        body {
+            color: var(--vscode-editor-foreground);
+            background-color: var(--vscode-editor-background);
+        }
+
+        #spinner {
+            margin: 1em;
+        }
+
+        #viewer.no-viewable {
+            height: 100%;
+            margin: 1em;
+        }
+
+        #viewer.no-viewable > form {
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 2em;
+            padding: 1em;
+            border: 1px solid var(--vscode-editor-foreground);
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div id="viewer"></div>
-    <select name="viewable" id="viewable">
+    <select name="viewable" id="viewable" style="display: none">
     </select>
+    <div id="spinner" class="d-flex align-items-center">
+        <strong>Loading...</strong>
+        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+    </div>
     <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/6.*/viewer3D.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -35,16 +63,40 @@
         const documentId = 'urn:' + urn;
 
         function showTranslationButton() {
-            document.getElementById('viewable').style.display = 'none';
+            document.getElementById('viewer').classList.add('no-viewable');
             document.getElementById('viewer').innerHTML = `
-                Document does not seem to be translated yet.
-                <button id="translate">Translate</button>
+                <div class="alert alert-primary" role="alert">
+                    Document does not seem to be translated yet.
+                </div>
+                <form>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="compressed">
+                            <label class="form-check-label" for="compressed">Compressed Archive</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="rootfile">Root File</label>
+                        <input type="text" class="form-control" id="rootfile" placeholder="path\\to\\file" disabled="true">
+                        <small class="form-text text-muted">
+                            Relative path to root design file in compressed archive.
+                        </small>
+                    </div>
+                    <button id="translate" class="btn btn-primary">Translate</button>
+                </form>
             `;
+            $('#compressed').on('change', function() {
+                $('#rootfile').prop('disabled', !this.checked);
+            });
+            const $compressed = $('#compressed');
+            const $rootfile = $('#rootfile');
             document.getElementById('translate').addEventListener('click', async function() {
                 document.getElementById('viewer').innerText = 'Translating';
                 vscode.postMessage({
                     command: 'translate',
-                    urn: urn
+                    urn: urn,
+                    compressed: $compressed[0].checked,
+                    rootfile: $rootfile.val()
                 });
 
                 window.addEventListener('message', event => {
@@ -74,6 +126,9 @@
         });
 
         function onDocumentLoadSuccess(doc) {
+            const spinner = document.getElementById('spinner');
+            spinner.parentElement.removeChild(spinner);
+            document.getElementById('viewable').style.display = 'block';
             const viewables = viewerApp.bubble.search({ 'type': 'geometry' });
             if (viewables.length > 0) {
                 const select = document.getElementById('viewable');
@@ -88,6 +143,8 @@
         }
 
         function onDocumentLoadFailure(viewerErrorCode) {
+            const spinner = document.getElementById('spinner');
+            spinner.parentElement.removeChild(spinner);
             //document.getElementById('logs').innerText = 'onDocumentLoadFailure() - errorCode:' + viewerErrorCode;
             showTranslationButton();
         }

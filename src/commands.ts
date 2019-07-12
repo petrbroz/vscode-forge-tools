@@ -11,7 +11,8 @@ import {
 	IBucket,
 	IObject,
 	IResumableUploadRange,
-	DataRetentionPolicy
+	DataRetentionPolicy,
+	IJob
 } from 'forge-nodejs-utils';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -347,7 +348,12 @@ export async function previewObject(object: IObject, context: vscode.ExtensionCo
 								title: `Translating object: ${message.urn}`,
 								cancellable: false
 							}, async (progress, token) => {
-								const job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
+								let job: IJob;
+								if (message.compressed && message.rootfile) {
+									job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }], message.rootfile);
+								} else {
+									job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
+								}
 								progress.report({ message: `Translation started: ${job.urn}` });
 								let manifest = await derivClient.getManifest(message.urn);
 								while (manifest.status === 'inprogress' || manifest.status === 'pending') {
