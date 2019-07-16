@@ -224,19 +224,19 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.previewObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.deleteObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@4"
+					"command": "forge.previewObject",
+					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"group": "navigation@1"
 				},
 				{
 					"command": "forge.deleteAppBundle",

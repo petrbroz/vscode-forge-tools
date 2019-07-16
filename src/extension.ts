@@ -11,6 +11,7 @@ import {
 import {
 	SimpleStorageDataProvider,
 	DesignAutomationDataProvider,
+	IDerivative,
 	IAppBundleAliasEntry,
 	IActivityAliasEntry,
 	IAppBundleVersionEntry,
@@ -88,7 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let designAutomationClient = new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
 
 	// Setup data management view
-	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
+	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient, modelDerivativeClient);
 	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.subscriptions.push(dataManagementView);
 
@@ -122,12 +123,12 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await downloadObject(object.bucketKey, object.objectKey, dataManagementClient);
 	});
-	vscode.commands.registerCommand('forge.previewObject', async (object?: IObject) => {
-		if (!object) {
+	vscode.commands.registerCommand('forge.previewObject', async (derivative?: IDerivative) => {
+		if (!derivative) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await previewObject(object, context, authClient, modelDerivativeClient);
+		await previewObject(derivative, context, authClient, modelDerivativeClient);
 	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		if (!object) {
