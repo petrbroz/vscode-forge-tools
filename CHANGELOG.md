@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2019-07-17
+
 - Changed
   - Objects in the tree view now list derivatives (if there are any) as their children in the tree
     - If no derivatives are available yet, or if the translation failed, the tree view provides additional information
