@@ -30,7 +30,7 @@ import {
 	viewObjectDetails,
 	viewAppBundleDetails,
 	viewActivityDetails,
-	previewObject,
+	previewDerivative,
 	viewBucketDetails,
 	deleteAppBundle,
 	deleteAppBundleAlias,
@@ -131,12 +131,12 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await translateObject(object, modelDerivativeClient);
 	});
-	vscode.commands.registerCommand('forge.previewObject', async (derivative?: IDerivative) => {
+	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: IDerivative) => {
 		if (!derivative) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await previewObject(derivative, context, authClient, modelDerivativeClient);
+		await previewDerivative(derivative, context, authClient, modelDerivativeClient);
 	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		if (!object) {

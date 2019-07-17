@@ -130,7 +130,7 @@
 				"title": "Translate"
 			},
 			{
-				"command": "forge.previewObject",
+				"command": "forge.previewDerivative",
 				"title": "Preview"
 			},
 			{
@@ -243,7 +243,7 @@
 					"group": "navigation@4"
 				},
 				{
-					"command": "forge.previewObject",
+					"command": "forge.previewDerivative",
 					"when": "view == forgeDataManagementView && viewItem == derivative",
 					"group": "navigation@1"
 				},

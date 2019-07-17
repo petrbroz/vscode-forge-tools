@@ -335,60 +335,25 @@ export async function translateObject(object: IObject, modelDerivativeClient: Mo
 
 let _templateFuncCache: Map<string, ejs.TemplateFunction> = new Map();
 
-export async function previewObject(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
-	if (!_templateFuncCache.has('object-preview')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-preview.ejs'));
+export async function previewDerivative(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
+	if (!_templateFuncCache.has('derivative-preview')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'derivative-preview.ejs'));
 		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('object-preview', ejs.compile(template));
+		_templateFuncCache.set('derivative-preview', ejs.compile(template));
 	}
 
 	try {
 		const token = await authClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
-			'object-preview',
+			'derivative-preview',
 			'Preview: ' + derivative.name,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const templateFunc = _templateFuncCache.get('object-preview');
+		const templateFunc = _templateFuncCache.get('derivative-preview');
 		if (templateFunc) {
 			panel.webview.html = templateFunc({ urn: derivative.urn, guid: derivative.guid, name: derivative.name, token });
 		}
-
-		// panel.webview.onDidReceiveMessage(
-		// 	async (message) => {
-		// 		switch (message.command) {
-		// 			case 'translate':
-		// 				try {
-		// 					await vscode.window.withProgress({
-		// 						location: vscode.ProgressLocation.Notification,
-		// 						title: `Translating object: ${message.urn}`,
-		// 						cancellable: false
-		// 					}, async (progress, token) => {
-		// 						let job: IJob;
-		// 						if (message.compressed && message.rootfile) {
-		// 							job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }], message.rootfile);
-		// 						} else {
-		// 							job = await derivClient.submitJob(message.urn, [{ type: 'svf', views: ['2d', '3d'] }]);
-		// 						}
-		// 						progress.report({ message: `Translation started: ${job.urn}` });
-		// 						let manifest = await derivClient.getManifest(message.urn);
-		// 						while (manifest.status === 'inprogress' || manifest.status === 'pending') {
-		// 							progress.report({ message: manifest.progress });
-		// 							panel.webview.postMessage({ command: 'progress', progress: manifest.progress });
-		// 							await sleep(2000);
-		// 							manifest = await derivClient.getManifest(message.urn);
-		// 						}
-		// 					});
-		// 					panel.webview.postMessage({ command: 'reload' });
-		// 				} catch(err) {
-		// 					vscode.window.showErrorMessage(`Could not translate file: ${JSON.stringify(err.message)}`);
-		// 				}
-		// 		}
-		// 	},
-		// 	undefined,
-		// 	context.subscriptions
-		// );
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
