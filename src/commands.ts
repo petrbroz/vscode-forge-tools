@@ -359,6 +359,74 @@ export async function previewDerivative(derivative: IDerivative, context: vscode
 	}
 }
 
+export async function viewDerivativeTree(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
+	if (!_templateFuncCache.has('spinner')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'spinner.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('spinner', ejs.compile(template));
+	}
+	if (!_templateFuncCache.has('derivative-tree')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'derivative-tree.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('derivative-tree', ejs.compile(template));
+	}
+
+	try {
+		const panel = vscode.window.createWebviewPanel(
+			'derivative-tree',
+			'Tree: ' + derivative.name,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const spinnerTemplateFunc = _templateFuncCache.get('spinner');
+		if (spinnerTemplateFunc) {
+			panel.webview.html = spinnerTemplateFunc();
+		}
+		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
+		const tree = await derivClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
+		const treeTemplateFunc = _templateFuncCache.get('derivative-tree');
+		if (treeTemplateFunc) {
+			panel.webview.html = treeTemplateFunc({ urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access derivative tree: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function viewDerivativeProps(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
+	if (!_templateFuncCache.has('spinner')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'spinner.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('spinner', ejs.compile(template));
+	}
+	if (!_templateFuncCache.has('derivative-props')) {
+		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'derivative-props.ejs'));
+		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
+		_templateFuncCache.set('derivative-props', ejs.compile(template));
+	}
+
+	try {
+		const panel = vscode.window.createWebviewPanel(
+			'derivative-props',
+			'Properties: ' + derivative.name,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const spinnerTemplateFunc = _templateFuncCache.get('spinner');
+		if (spinnerTemplateFunc) {
+			panel.webview.html = spinnerTemplateFunc();
+		}
+		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
+		const props = await derivClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
+		const propsTemplateFunc = _templateFuncCache.get('derivative-props');
+		if (propsTemplateFunc) {
+			panel.webview.html = propsTemplateFunc({ urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access derivative properties: ${JSON.stringify(err.message)}`);
+	}
+}
+
 export async function viewObjectDetails(object: IObject, context: vscode.ExtensionContext) {
 	if (!_templateFuncCache.has('object-details')) {
 		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-details.ejs'));

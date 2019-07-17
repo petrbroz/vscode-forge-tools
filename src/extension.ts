@@ -43,7 +43,9 @@ import {
 	createAppBundleAlias,
 	updateActivityAlias,
 	updateAppBundleAlias,
-	translateObject
+	translateObject,
+	viewDerivativeTree,
+	viewDerivativeProps
 } from './commands';
 import { Region } from 'forge-nodejs-utils/dist/common';
 
@@ -137,6 +139,20 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		await previewDerivative(derivative, context, authClient, modelDerivativeClient);
+	});
+	vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: IDerivative) => {
+		if (!derivative) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await viewDerivativeTree(derivative, context, authClient, modelDerivativeClient);
+	});
+	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: IDerivative) => {
+		if (!derivative) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await viewDerivativeProps(derivative, context, authClient, modelDerivativeClient);
 	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		if (!object) {

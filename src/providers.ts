@@ -15,6 +15,7 @@ export interface IDerivative {
     name: string;
     role: string;
     guid: string;
+    bubble: any;
 }
 
 export interface IHint {
@@ -125,7 +126,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 urn: urn,
                 name: geometry.name,
                 role: geometry.role,
-                guid: geometry.guid
+                guid: geometry.guid,
+                bubble: geometry
             };
         });
     }

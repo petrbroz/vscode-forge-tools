@@ -134,6 +134,18 @@
 				"title": "Preview"
 			},
 			{
+				"command": "forge.viewDerivativeTree",
+				"title": "View Tree"
+			},
+			{
+				"command": "forge.viewDerivativeProps",
+				"title": "View Tree"
+			},
+			{
+				"command": "forge.viewDerivativeProps",
+				"title": "View Properties"
+			},
+			{
 				"command": "forge.viewObjectDetails",
 				"title": "View Details"
 			},
@@ -246,6 +258,16 @@
 					"command": "forge.previewDerivative",
 					"when": "view == forgeDataManagementView && viewItem == derivative",
 					"group": "navigation@1"
+				},
+				{
+					"command": "forge.viewDerivativeTree",
+					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.viewDerivativeProps",
+					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.deleteAppBundle",
