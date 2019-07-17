@@ -43,9 +43,7 @@
         function onDocumentLoadSuccess(doc) {
             const viewable = doc.getRoot().findByGuid('<%= guid %>');
             if (viewable) {
-                // Viewable is a { "type": "resource", "role": "graphics" } but we need its parent
-                // which is (or should be)  "type": "geometry", "role": "3d" }
-                viewerApp.selectItem(viewable.parent, onItemLoadSuccess, onItemLoadFail);
+                viewerApp.selectItem(viewable, onItemLoadSuccess, onItemLoadFail);
             }
         }
 

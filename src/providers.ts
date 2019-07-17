@@ -5,7 +5,8 @@ import {
     DataManagementClient,
     ModelDerivativeClient,
     DesignAutomationClient,
-    DesignAutomationID
+    DesignAutomationID,
+    IDerivativeManifest
 } from 'forge-nodejs-utils';
 
 export interface IDerivative {
@@ -85,27 +86,20 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 } else if (isObject(element)) {
                     const urn = Buffer.from(element.objectId).toString('base64').replace(/=/, '');
                     try {
-                        const metadata = await this._modelDerivativeClient.getMetadata(urn) as any;
-                        const derivatives = metadata.data.metadata;
-                        // TODO: if metadata exists but there are no viewables, look at manifest for more info
-                        return derivatives.map((deriv: any) => ({
-                            urn: urn,
-                            name: deriv.name,
-                            role: deriv.role,
-                            guid: deriv.guid
-                        }));
-                    } catch(err) {
-                        if (err.status === 404) {
-                            return [
-                                {
-                                    hint: '(no derivatives yet)',
-                                    tooltip: 'Try triggering a new translation job on the object.'
-                                }
-                            ];
-                        } else {
-                            vscode.window.showErrorMessage('Could not load derivatives: ' + JSON.stringify(err));
-                            return [];
+                        const manifest = await this._modelDerivativeClient.getManifest(urn);
+                        switch (manifest.status) {
+                            case 'success':
+                                return this._getManifestDerivatives(manifest, urn);
+                            case 'failed':
+                                return [this._getManifestErrorHint(manifest, urn)];
+                            default:
+                                return [this._getManifestProgressHint(manifest, urn)];
                         }
+                    } catch(err) {
+                        return [{
+                            hint: 'No derivatives yet (hover for more info)',
+                            tooltip: 'There don\'t seem to be any derivatives yet.\nTry triggering a new translation job on the object.'
+                        }];
                     }
                 } else {
                     return [];
@@ -118,6 +112,40 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             vscode.window.showErrorMessage('Could not load objects or buckets: ' + JSON.stringify(err));
         }
         return [];
+    }
+
+    private _getManifestDerivatives(manifest: any, urn: string): IDerivative[] {
+        const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+        if (!svf) {
+            return [];
+        }
+        return svf.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
+            return {
+                urn: urn,
+                name: geometry.name,
+                role: geometry.role,
+                guid: geometry.guid
+            };
+        });
+    }
+
+    private _getManifestErrorHint(manifest: any, urn: string): IHint {
+        const failed = manifest.derivatives.find((deriv: any) => deriv.status === 'failed');
+        if (failed && failed.messages) {
+            return {
+                hint: 'Translation failed (hover for more info)',
+                tooltip: failed.messages.map((message: any) => message.code + ':\n' + message.message).join('\n\n')
+            };
+        } else {
+            return {
+                hint:'Translation failed (hover for mmore info)',
+                tooltip: 'Oops, there\'s no more info :('
+            };
+        }
+    }
+
+    private _getManifestProgressHint(manifest: IDerivativeManifest, urn: string): IHint {
+        return { hint: `Translation in progress (${manifest.progress})` };
     }
 }
 
