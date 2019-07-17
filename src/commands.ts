@@ -14,6 +14,7 @@ import {
 	DataRetentionPolicy,
 	IJob
 } from 'forge-nodejs-utils';
+import { idToUrn } from './common';
 import { IDerivative } from './providers';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -314,6 +315,21 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
         vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
     } catch(err) {
         vscode.window.showErrorMessage(`Could not download file: ${JSON.stringify(err.message)}`);
+    }
+}
+
+export async function translateObject(object: IObject, modelDerivativeClient: ModelDerivativeClient) {
+    try {
+		const urn = idToUrn(object.objectId);
+		const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'If this is a compressed file, enter the filename of the root design' });
+		if (rootDesignFilename) {
+			await modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
+		} else {
+			await modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		}
+		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+    } catch(err) {
+        vscode.window.showErrorMessage(`Could not translate object: ${JSON.stringify(err.message)}`);
     }
 }
 

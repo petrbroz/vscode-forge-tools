@@ -42,7 +42,8 @@ import {
 	createActivityAlias,
 	createAppBundleAlias,
 	updateActivityAlias,
-	updateAppBundleAlias
+	updateAppBundleAlias,
+	translateObject
 } from './commands';
 import { Region } from 'forge-nodejs-utils/dist/common';
 
@@ -122,6 +123,13 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		await downloadObject(object.bucketKey, object.objectKey, dataManagementClient);
+	});
+	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
+		if (!object) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await translateObject(object, modelDerivativeClient);
 	});
 	vscode.commands.registerCommand('forge.previewObject', async (derivative?: IDerivative) => {
 		if (!derivative) {

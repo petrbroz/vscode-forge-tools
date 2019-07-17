@@ -126,6 +126,10 @@
 				"title": "Download"
 			},
 			{
+				"command": "forge.translateObject",
+				"title": "Translate"
+			},
+			{
 				"command": "forge.previewObject",
 				"title": "Preview"
 			},
@@ -224,14 +228,19 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.translateObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@4"
 				},
 				{
 					"command": "forge.previewObject",

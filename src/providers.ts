@@ -8,6 +8,7 @@ import {
     DesignAutomationID,
     IDerivativeManifest
 } from 'forge-nodejs-utils';
+import { idToUrn } from './common';
 
 export interface IDerivative {
     urn: string;
@@ -84,7 +85,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     const objects = await this._dataManagementClient.listObjects(element.bucketKey);
                     return objects;
                 } else if (isObject(element)) {
-                    const urn = Buffer.from(element.objectId).toString('base64').replace(/=/, '');
+                    const urn = idToUrn(element.objectId);
                     try {
                         const manifest = await this._modelDerivativeClient.getManifest(urn);
                         switch (manifest.status) {
