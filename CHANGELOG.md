@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2019-07-17
+
+- Changed
+  - Objects in the tree view now list derivatives (if there are any) as their children in the tree
+    - If no derivatives are available yet, or if the translation failed, the tree view provides additional information
+  - Objects can no longer be _previewed_; they can be _translated_ (`Translate` menu item), and their resulting derivatives can then be _previewed_ (`Preview` menu item)
+    - Note: `Translate` will always force a new translation, even if derivatives already exist
+
+- Added
+  - Derivatives in the tree view now provide commands and menu items for visualizing their hierarchies (`View Tree`) and properties (`View Properties`)
+  - Support for translating compressed archives
+    - When translating an object, if a _root design filename_ is specified, the translation considers the input file
+    to be a compressed archive, and the _root design filename_ to be the name of the main file inside the archive
+
 ## [0.4.0] - 2019-07-09
 
 - Changed

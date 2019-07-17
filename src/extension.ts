@@ -11,6 +11,7 @@ import {
 import {
 	SimpleStorageDataProvider,
 	DesignAutomationDataProvider,
+	IDerivative,
 	IAppBundleAliasEntry,
 	IActivityAliasEntry,
 	IAppBundleVersionEntry,
@@ -29,7 +30,7 @@ import {
 	viewObjectDetails,
 	viewAppBundleDetails,
 	viewActivityDetails,
-	previewObject,
+	previewDerivative,
 	viewBucketDetails,
 	deleteAppBundle,
 	deleteAppBundleAlias,
@@ -41,7 +42,10 @@ import {
 	createActivityAlias,
 	createAppBundleAlias,
 	updateActivityAlias,
-	updateAppBundleAlias
+	updateAppBundleAlias,
+	translateObject,
+	viewDerivativeTree,
+	viewDerivativeProps
 } from './commands';
 import { Region } from 'forge-nodejs-utils/dist/common';
 
@@ -88,7 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let designAutomationClient = new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
 
 	// Setup data management view
-	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient);
+	let simpleStorageDataProvider = new SimpleStorageDataProvider(dataManagementClient, modelDerivativeClient);
 	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.subscriptions.push(dataManagementView);
 
@@ -122,12 +126,33 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		await downloadObject(object.bucketKey, object.objectKey, dataManagementClient);
 	});
-	vscode.commands.registerCommand('forge.previewObject', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await previewObject(object, context, authClient, modelDerivativeClient);
+		await translateObject(object, modelDerivativeClient);
+	});
+	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: IDerivative) => {
+		if (!derivative) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await previewDerivative(derivative, context, authClient, modelDerivativeClient);
+	});
+	vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: IDerivative) => {
+		if (!derivative) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await viewDerivativeTree(derivative, context, authClient, modelDerivativeClient);
+	});
+	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: IDerivative) => {
+		if (!derivative) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await viewDerivativeProps(derivative, context, authClient, modelDerivativeClient);
 	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		if (!object) {

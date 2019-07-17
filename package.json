@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -126,8 +126,24 @@
 				"title": "Download"
 			},
 			{
-				"command": "forge.previewObject",
+				"command": "forge.translateObject",
+				"title": "Translate"
+			},
+			{
+				"command": "forge.previewDerivative",
 				"title": "Preview"
+			},
+			{
+				"command": "forge.viewDerivativeTree",
+				"title": "View Tree"
+			},
+			{
+				"command": "forge.viewDerivativeProps",
+				"title": "View Tree"
+			},
+			{
+				"command": "forge.viewDerivativeProps",
+				"title": "View Properties"
 			},
 			{
 				"command": "forge.viewObjectDetails",
@@ -224,7 +240,7 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.previewObject",
+					"command": "forge.translateObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@2"
 				},
@@ -237,6 +253,21 @@
 					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
+				},
+				{
+					"command": "forge.previewDerivative",
+					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.viewDerivativeTree",
+					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.viewDerivativeProps",
+					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.deleteAppBundle",
@@ -338,6 +369,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-nodejs-utils": "3.0.2"
+		"forge-nodejs-utils": "3.2.0"
 	}
 }
