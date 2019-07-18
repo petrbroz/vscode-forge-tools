@@ -2,6 +2,21 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as ejs from 'ejs';
+import {
+    AuthenticationClient,
+    DataManagementClient,
+    ModelDerivativeClient,
+    DesignAutomationClient
+} from 'forge-nodejs-utils';
+
+export interface IContext {
+    extensionContext: vscode.ExtensionContext;
+	authenticationClient: AuthenticationClient;
+	dataManagementClient: DataManagementClient;
+	modelDerivativeClient: ModelDerivativeClient;
+	designAutomationClient: DesignAutomationClient;
+	templateEngine: TemplateEngine;
+}
 
 export function idToUrn(id: string) {
     return Buffer.from(id).toString('base64').replace(/=/, '');
