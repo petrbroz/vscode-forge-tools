@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.5.1] - 2019-07-18
+
+- Changed
+  - Naming of "Data & Derivatives" in the UI and related content in README
+
 ## [0.5.0] - 2019-07-17
 
 - Changed

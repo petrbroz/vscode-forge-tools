@@ -51,12 +51,13 @@ based on the _first_ environment in the list.
 > Note: if you have configured the extension both in the _User_ scope and in the _Workspace_ scope,
 the extension will present the list of environments from the _Workspace_ scope as it has higher precedence.
 
-### Data Management View
+### Data & Derivatives View
 
-The _Data Management_ view allows you to browse
-[Forge Data Management](https://forge.autodesk.com/en/docs/data/v2/developers_guide/overview) content, create buckets, and upload/download objects. Individual objects and their 2D/3D derivatives can then be previewed in a simple webview.
+The _Data & Derivatives_ view allows you to browse [Forge Data Management](https://forge.autodesk.com/en/docs/data/v2/developers_guide/overview) content, create buckets, upload/download objects, translate objects using [Forge Model Derivative](https://forge.autodesk.com/en/docs/model-derivative/v2) service, and access the resulting derivatives. All derivatives are listed as children of the corresponding object in the tree. If there are no derivatives yet, or if there's been a translation issue, the tree view will provide additional information.
 
-![Data Management Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/data-management-preview.gif)
+![Create bucket and upload object](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/create-bucket-upload-file.gif)
+
+![Translate object and view derivatives](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/translate-and-preview.gif)
 
 ### Design Automation View
 
