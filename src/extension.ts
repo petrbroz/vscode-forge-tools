@@ -45,7 +45,8 @@ import {
 	updateAppBundleAlias,
 	translateObject,
 	viewDerivativeTree,
-	viewDerivativeProps
+	viewDerivativeProps,
+	generateSignedUrl
 } from './commands';
 import { Region } from 'forge-nodejs-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
@@ -166,6 +167,13 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		await viewObjectDetails(object, context);
+	});
+	vscode.commands.registerCommand('forge.generateSignedUrl', async (object?: IObject) => {
+		if (!object) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await generateSignedUrl(object, context);
 	});
 	vscode.commands.registerCommand('forge.deleteObject', async (object?: IObject) => {
 		if (!object) {

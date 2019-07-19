@@ -379,6 +379,24 @@ export async function viewObjectDetails(object: IObject, context: IContext) {
 	}
 }
 
+export async function generateSignedUrl(object: IObject, context: IContext) {
+	try {
+		const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
+			canPickMany: false, placeHolder: 'Select access permissions for the new URL'
+		});
+		if (!permissions) {
+			return;
+		}
+		const signedUrl = await context.dataManagementClient.createSignedUrl(object.bucketKey, object.objectKey, permissions);
+		const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
+		if (action === 'Copy URL to Clipboard') {
+			vscode.env.clipboard.writeText(signedUrl.signedUrl);
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not generate signed URL: ${JSON.stringify(err.message)}`);
+	}
+}
+
 export async function deleteObject(object: IObject, context: IContext) {
 	try {
 		await vscode.window.withProgress({

@@ -150,6 +150,10 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.generateSignedUrl",
+				"title": "Generate Signed URL"
+			},
+			{
 				"command": "forge.deleteObject",
 				"title": "Delete"
 			},
@@ -250,9 +254,14 @@
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@5"
 				},
 				{
 					"command": "forge.previewDerivative",
