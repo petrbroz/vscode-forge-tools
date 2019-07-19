@@ -137,6 +137,7 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		await translateObject(object, context);
+		simpleStorageDataProvider.refresh(object);
 	});
 	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: IDerivative) => {
 		if (!derivative) {

@@ -51,8 +51,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         this._context = context;
     }
 
-    refresh() {
-        this._onDidChangeTreeData.fire();
+    refresh(entry?: SimpleStorageEntry | null) {
+        this._onDidChangeTreeData.fire(entry);
     }
 
     getTreeItem(element: SimpleStorageEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -93,6 +93,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                             case 'failed':
                                 return [this._getManifestErrorHint(manifest, urn)];
                             default:
+                                // If still in progress, schedule auto-refresh in 1 second
+                                setTimeout(() => { this.refresh(element); }, 1000);
                                 return [this._getManifestProgressHint(manifest, urn)];
                         }
                     } catch(err) {
