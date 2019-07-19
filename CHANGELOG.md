@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added
   - Auto-refresh tree view when translating objects
   - Generating signed URLs for uploaded objects
+  - Viewing object manifests
 - Fixed
   - Error when viewing properties of objects with no properties.
 

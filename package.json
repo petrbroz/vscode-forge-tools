@@ -150,6 +150,10 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.viewObjectManifest",
+				"title": "View Manifest"
+			},
+			{
 				"command": "forge.generateSignedUrl",
 				"title": "Generate Signed URL"
 			},
@@ -249,7 +253,7 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.viewObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
 				},
@@ -259,9 +263,14 @@
 					"group": "navigation@4"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@5"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@6"
 				},
 				{
 					"command": "forge.previewDerivative",

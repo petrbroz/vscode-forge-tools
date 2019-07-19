@@ -379,6 +379,31 @@ export async function viewObjectDetails(object: IObject, context: IContext) {
 	}
 }
 
+export async function viewObjectManifest(object: IObject, context: IContext) {
+	try {
+		const panel = vscode.window.createWebviewPanel(
+			'object-manifest',
+			'Manifest: ' + object.objectKey,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		try {
+			const manifest = await context.modelDerivativeClient.getManifest(idToUrn(object.objectId));
+			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
+		} catch(_) {
+			const action = await vscode.window.showInformationMessage(`
+				In order to access the manifest of ${object.objectId}, the object must be translated first.
+				Would you like to start the translation now?
+			`, 'Translate');
+			if (action === 'Translate') {
+				await translateObject(object, context);
+			}
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access object manifest: ${JSON.stringify(err.message)}`);
+	}
+}
+
 export async function generateSignedUrl(object: IObject, context: IContext) {
 	try {
 		const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
