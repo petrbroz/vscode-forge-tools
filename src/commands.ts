@@ -130,32 +130,32 @@ const AllowedMimeTypes = {
 };
 
 function computeFileHash(filename: string): Promise<string> {
-    return new Promise(function(resolve, reject) {
-        const stream = fs.createReadStream(filename);
-        let hash = crypto.createHash('md5');
-        stream.on('data', function(chunk) {
-            hash.update(chunk);
-        });
-        stream.on('end', function() {
-            resolve(hash.digest('hex'));
-        });
-        stream.on('error', function(err) {
-            reject(err);
-        });
-    });
+	return new Promise(function (resolve, reject) {
+		const stream = fs.createReadStream(filename);
+		let hash = crypto.createHash('md5');
+		stream.on('data', function (chunk) {
+			hash.update(chunk);
+		});
+		stream.on('end', function () {
+			resolve(hash.digest('hex'));
+		});
+		stream.on('error', function (err) {
+			reject(err);
+		});
+	});
 }
 
 export async function createBucket(context: IContext) {
-    const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
-    if (!name) {
+	const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
+	if (!name) {
 		return;
 	}
-    const retention = await vscode.window.showQuickPick(RetentionPolicyKeys, { placeHolder: 'Select retention policy' });
-    if (!retention) {
+	const retention = await vscode.window.showQuickPick(RetentionPolicyKeys, { placeHolder: 'Select retention policy' });
+	if (!retention) {
 		return;
 	}
 
-    try {
+	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating bucket: ${name}`,
@@ -163,10 +163,10 @@ export async function createBucket(context: IContext) {
 		}, async (progress, token) => {
 			const bucket = await context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention);
 		});
-        vscode.window.showInformationMessage(`Bucket created: ${name}`);
-    } catch (err) {
+		vscode.window.showInformationMessage(`Bucket created: ${name}`);
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not create bucket: ${JSON.stringify(err.message)}`);
-    }
+	}
 }
 
 export async function viewBucketDetails(name: string, context: IContext) {
@@ -185,29 +185,29 @@ export async function viewBucketDetails(name: string, context: IContext) {
 			);
 			panel.webview.html = context.templateEngine.render('bucket-details', { bucket: bucketDetail });
 		});
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access bucket: ${JSON.stringify(err.message)}`);
 	}
 }
 
 export async function uploadObject(bucket: IBucket, context: IContext) {
 	// Collect inputs
-    const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
+	const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
 	if (!uri) {
 		return;
 	}
-    const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].path) });
-    if (!name) {
+	const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].path) });
+	if (!name) {
 		return;
 	}
-    const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
-    if (!contentType) {
+	const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	if (!contentType) {
 		return;
 	}
 
 	const filepath = uri[0].path;
 	let fd = -1;
-    try {
+	try {
 		fd = fs.openSync(filepath, 'r');
 		const totalBytes = fs.statSync(filepath).size;
 		const chunkBytes = 2 << 20; // TODO: make the page size configurable
@@ -229,7 +229,7 @@ export async function uploadObject(bucket: IBucket, context: IContext) {
 			let ranges: IResumableUploadRange[];
 			try {
 				ranges = await context.dataManagementClient.getResumableUploadStatus(bucket.bucketKey, name, fileContentHash);
-			} catch(err) {
+			} catch (err) {
 				ranges = [];
 			}
 
@@ -270,7 +270,7 @@ export async function uploadObject(bucket: IBucket, context: IContext) {
 		} else {
 			vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
 		}
-    } catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not upload file: ${JSON.stringify(err.message)}`);
 	} finally {
 		if (fd !== -1) {
@@ -281,12 +281,12 @@ export async function uploadObject(bucket: IBucket, context: IContext) {
 }
 
 export async function downloadObject(bucketKey: string, objectKey: string, context: IContext) {
-    const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
-    if (!uri) {
+	const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
+	if (!uri) {
 		return;
 	}
 
-    try {
+	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Downloading file: ${uri.fsPath}`,
@@ -295,14 +295,14 @@ export async function downloadObject(bucketKey: string, objectKey: string, conte
 			const arrayBuffer = await context.dataManagementClient.downloadObject(bucketKey, objectKey);
 			fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
 		});
-        vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
-    } catch(err) {
-        vscode.window.showErrorMessage(`Could not download file: ${JSON.stringify(err.message)}`);
-    }
+		vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not download file: ${JSON.stringify(err.message)}`);
+	}
 }
 
 export async function translateObject(object: IObject, context: IContext) {
-    try {
+	try {
 		const urn = idToUrn(object.objectId);
 		const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'If this is a compressed file, enter the filename of the root design' });
 		if (rootDesignFilename) {
@@ -311,9 +311,9 @@ export async function translateObject(object: IObject, context: IContext) {
 			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
 		}
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
-    } catch(err) {
-        vscode.window.showErrorMessage(`Could not translate object: ${JSON.stringify(err.message)}`);
-    }
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not translate object: ${JSON.stringify(err.message)}`);
+	}
 }
 
 export async function previewDerivative(derivative: IDerivative, context: IContext) {
@@ -326,7 +326,7 @@ export async function previewDerivative(derivative: IDerivative, context: IConte
 			{ enableScripts: true }
 		);
 		panel.webview.html = context.templateEngine.render('derivative-preview', { urn: derivative.urn, guid: derivative.guid, name: derivative.name, token });
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -343,7 +343,7 @@ export async function viewDerivativeTree(derivative: IDerivative, context: ICont
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
 		panel.webview.html = context.templateEngine.render('derivative-tree', { urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access derivative tree: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -360,7 +360,7 @@ export async function viewDerivativeProps(derivative: IDerivative, context: ICon
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
 		panel.webview.html = context.templateEngine.render('derivative-props', { urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access derivative properties: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -374,23 +374,21 @@ export async function viewObjectDetails(object: IObject, context: IContext) {
 			{ enableScripts: true }
 		);
 		panel.webview.html = context.templateEngine.render('object-details', { object });
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
 }
 
 export async function viewObjectManifest(object: IObject, context: IContext) {
 	try {
-		const panel = vscode.window.createWebviewPanel(
-			'object-manifest',
-			'Manifest: ' + object.objectKey,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
 		try {
 			const manifest = await context.modelDerivativeClient.getManifest(idToUrn(object.objectId));
-			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
-		} catch(_) {
+			const doc = await vscode.workspace.openTextDocument({
+				content: JSON.stringify(manifest, null, 4),
+				language: 'json'
+			});
+			await vscode.window.showTextDocument(doc, { preview: false });
+		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
@@ -399,7 +397,7 @@ export async function viewObjectManifest(object: IObject, context: IContext) {
 				await translateObject(object, context);
 			}
 		}
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access object manifest: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -417,7 +415,7 @@ export async function generateSignedUrl(object: IObject, context: IContext) {
 		if (action === 'Copy URL to Clipboard') {
 			vscode.env.clipboard.writeText(signedUrl.signedUrl);
 		}
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not generate signed URL: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -431,10 +429,10 @@ export async function deleteObject(object: IObject, context: IContext) {
 		}, async (progress, token) => {
 			await context.dataManagementClient.deleteObject(object.bucketKey, object.objectKey);
 		});
-        vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
-    } catch(err) {
-        vscode.window.showErrorMessage(`Could not delete object: ${JSON.stringify(err.message)}`);
-    }
+		vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not delete object: ${JSON.stringify(err.message)}`);
+	}
 }
 
 type FullyQualifiedID = string;
@@ -451,7 +449,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 			title: `Getting appbundle details: ${id}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const appBundleDetail = typeof(id) === 'string'
+			const appBundleDetail = typeof (id) === 'string'
 				? await context.designAutomationClient.getAppBundle(id)
 				: await context.designAutomationClient.getAppBundleVersion(id.name, id.version);
 			const panel = vscode.window.createWebviewPanel(
@@ -462,7 +460,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 			);
 			panel.webview.html = context.templateEngine.render('appbundle-details', { bundle: appBundleDetail });
 		});
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access appbundle: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -474,7 +472,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 			title: `Getting activity details: ${id}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const activityDetail = typeof(id) === 'string'
+			const activityDetail = typeof (id) === 'string'
 				? await context.designAutomationClient.getActivity(id)
 				: await context.designAutomationClient.getActivityVersion(id.name, id.version);
 			const panel = vscode.window.createWebviewPanel(
@@ -485,7 +483,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 			);
 			panel.webview.html = context.templateEngine.render('activity-details', { activity: activityDetail });
 		});
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access activity: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -500,7 +498,7 @@ export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 			await context.designAutomationClient.deleteAppBundle(id);
 		});
 		vscode.window.showInformationMessage(`Appbundle removed`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not remove appbundle: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -526,7 +524,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 			await context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion));
 		});
 		vscode.window.showInformationMessage(`Appbundle alias created`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not create appbundle alias: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -548,7 +546,7 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 			await context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion));
 		});
 		vscode.window.showInformationMessage(`Appbundle alias updated`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not update appbundle alias: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -563,7 +561,7 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 			await context.designAutomationClient.deleteAppBundleAlias(id, alias);
 		});
 		vscode.window.showInformationMessage(`Appbundle alias removed`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not remove appbundle alias: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -578,7 +576,7 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 			await context.designAutomationClient.deleteAppBundleVersion(id, version);
 		});
 		vscode.window.showInformationMessage(`Appbundle version removed`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not remove appbundle version: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -593,7 +591,7 @@ export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 			await context.designAutomationClient.deleteActivity(id);
 		});
 		vscode.window.showInformationMessage(`Activity removed`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not remove activity: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -608,7 +606,7 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 			await context.designAutomationClient.deleteActivityAlias(id, alias);
 		});
 		vscode.window.showInformationMessage(`Activity alias removed`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not remove activity alias: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -623,7 +621,7 @@ export async function deleteActivityVersion(id: UnqualifiedID, version: number, 
 			await context.designAutomationClient.deleteActivityVersion(id, version);
 		});
 		vscode.window.showInformationMessage(`Activity version removed`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not remove activity version: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -649,7 +647,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 			await context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion));
 		});
 		vscode.window.showInformationMessage(`Activity alias created`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not create activity alias: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -671,7 +669,7 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 			await context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion));
 		});
 		vscode.window.showInformationMessage(`Activity alias updated`);
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not update activity alias: ${JSON.stringify(err.message)}`);
 	}
 }
