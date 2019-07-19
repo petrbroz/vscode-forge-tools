@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -150,6 +150,14 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.viewObjectManifest",
+				"title": "View Manifest"
+			},
+			{
+				"command": "forge.generateSignedUrl",
+				"title": "Generate Signed URL"
+			},
+			{
 				"command": "forge.deleteObject",
 				"title": "Delete"
 			},
@@ -245,14 +253,24 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.viewObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
+				},
+				{
+					"command": "forge.downloadObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@5"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@6"
 				},
 				{
 					"command": "forge.previewDerivative",

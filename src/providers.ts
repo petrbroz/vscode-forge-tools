@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import {
 	IBucket,
 	IObject,
-    DataManagementClient,
-    ModelDerivativeClient,
-    DesignAutomationClient,
     DesignAutomationID,
     IDerivativeManifest
 } from 'forge-nodejs-utils';
-import { idToUrn } from './common';
+import {
+    idToUrn,
+    IContext
+} from './common';
 
 export interface IDerivative {
     urn: string;
@@ -42,19 +42,17 @@ function isHint(entry: SimpleStorageEntry): entry is IHint {
 }
 
 export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry> {
-    private _dataManagementClient: DataManagementClient;
-    private _modelDerivativeClient: ModelDerivativeClient;
+    private _context: IContext;
     private _onDidChangeTreeData: vscode.EventEmitter<SimpleStorageEntry | null> = new vscode.EventEmitter<SimpleStorageEntry | null>();
 
 	readonly onDidChangeTreeData?: vscode.Event<SimpleStorageEntry | null> = this._onDidChangeTreeData.event;
 
-    constructor(dataManagementClient: DataManagementClient, modelDerivativeClient: ModelDerivativeClient) {
-        this._dataManagementClient = dataManagementClient;
-        this._modelDerivativeClient = modelDerivativeClient;
+    constructor(context: IContext) {
+        this._context = context;
     }
 
-    refresh() {
-        this._onDidChangeTreeData.fire();
+    refresh(entry?: SimpleStorageEntry | null) {
+        this._onDidChangeTreeData.fire(entry);
     }
 
     getTreeItem(element: SimpleStorageEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -83,18 +81,20 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         try {
             if (element) {
                 if (isBucket(element)) {
-                    const objects = await this._dataManagementClient.listObjects(element.bucketKey);
+                    const objects = await this._context.dataManagementClient.listObjects(element.bucketKey);
                     return objects;
                 } else if (isObject(element)) {
                     const urn = idToUrn(element.objectId);
                     try {
-                        const manifest = await this._modelDerivativeClient.getManifest(urn);
+                        const manifest = await this._context.modelDerivativeClient.getManifest(urn);
                         switch (manifest.status) {
                             case 'success':
                                 return this._getManifestDerivatives(manifest, urn);
                             case 'failed':
                                 return [this._getManifestErrorHint(manifest, urn)];
                             default:
+                                // If still in progress, schedule auto-refresh in 1 second
+                                setTimeout(() => { this.refresh(element); }, 1000);
                                 return [this._getManifestProgressHint(manifest, urn)];
                         }
                     } catch(err) {
@@ -107,7 +107,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     return [];
                 }
             } else {
-                const buckets = await this._dataManagementClient.listBuckets();
+                const buckets = await this._context.dataManagementClient.listBuckets();
                 return buckets;
             }
         } catch(err) {
@@ -251,14 +251,14 @@ type DesignAutomationEntry =
     | IOwnedActivitiesEntry | ISharedActivitiesEntry | ISharedActivityEntry | IActivityEntry | IActivityAliasesEntry | IActivityAliasEntry | IActivityVersionsEntry | IActivityVersionEntry;
 
 export class DesignAutomationDataProvider implements vscode.TreeDataProvider<DesignAutomationEntry> {
-    private _client: DesignAutomationClient;
+    private _context: IContext;
     private _clientId: string;
     private _onDidChangeTreeData: vscode.EventEmitter<DesignAutomationEntry | null> = new vscode.EventEmitter<DesignAutomationEntry | null>();
 
 	readonly onDidChangeTreeData?: vscode.Event<DesignAutomationEntry | null> = this._onDidChangeTreeData.event;
 
-    constructor(client: DesignAutomationClient, clientId: string) {
-        this._client = client;
+    constructor(context: IContext, clientId: string) {
+        this._context = context;
         this._clientId = clientId;
     }
 
@@ -333,14 +333,14 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getOwnedAppBundles(entry: IOwnedAppBundlesEntry): Promise<IAppBundleEntry[]> {
-        const appBundleIDs = await this._client.listAppBundles();
+        const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
         const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
         const uniqueIDs = new Set(filteredIDs.map(item => item.id));
         return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'owned-appbundle', client: this._clientId, appbundle: appbundle, label: appbundle }));
     }
 
     private async _getSharedAppBundles(entry: ISharedAppBundlesEntry): Promise<ISharedAppBundleEntry[]> {
-        const appBundleIDs = await this._client.listAppBundles();
+        const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
         const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
         return filteredIDs.map(id => ({ type: 'shared-appbundle', fullid: id.toString(), label: id.toString() }));
     }
@@ -353,26 +353,26 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getAppBundleAliases(entry: IAppBundleAliasesEntry): Promise<IAppBundleAliasEntry[]> {
-        const aliases = await this._client.listAppBundleAliases(entry.appbundle);
+        const aliases = await this._context.designAutomationClient.listAppBundleAliases(entry.appbundle);
         return aliases
             .filter(alias => alias.id !== '$LATEST')
             .map(alias => ({ type: 'appbundle-alias', client: entry.client, appbundle: entry.appbundle, alias: alias.id, label: alias.id }));
     }
 
     private async _getAppBundleVersions(entry: IAppBundleVersionsEntry): Promise<IAppBundleVersionEntry[]> {
-        const versions = await this._client.listAppBundleVersions(entry.appbundle);
+        const versions = await this._context.designAutomationClient.listAppBundleVersions(entry.appbundle);
         return versions.map(version => ({ type: 'appbundle-version', client: entry.client, appbundle: entry.appbundle, version: version, label: version.toString() }));
     }
 
     private async _getOwnedActivities(entry: IOwnedActivitiesEntry): Promise<IActivityEntry[]> {
-        const activityIDs = await this._client.listActivities();
+        const activityIDs = await this._context.designAutomationClient.listActivities();
         const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
         const uniqueIDs = new Set<string>(filteredIDs.map(id => id.id));
         return Array.from(uniqueIDs.values()).map(activity => ({ type: 'owned-activity', client: this._clientId, activity: activity, label: activity }));
     }
 
     private async _getSharedActivities(entry: ISharedActivitiesEntry): Promise<ISharedActivityEntry[]> {
-        const activityIDs = await this._client.listActivities();
+        const activityIDs = await this._context.designAutomationClient.listActivities();
         const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
         return filteredIDs.map(id => ({ type: 'shared-activity', fullid: id.toString(), label: id.toString() }));
     }
@@ -385,14 +385,14 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getActivityAliases(entry: IActivityAliasesEntry): Promise<DesignAutomationEntry[]> {
-        const aliases = await this._client.listActivityAliases(entry.activity);
+        const aliases = await this._context.designAutomationClient.listActivityAliases(entry.activity);
         return aliases
             .filter(alias => alias.id !== '$LATEST')
             .map(alias => ({ type: 'activity-alias', client: entry.client, activity: entry.activity, alias: alias.id, label: alias.id }));
     }
 
     private async _getActivityVersions(entry: IActivityVersionsEntry): Promise<DesignAutomationEntry[]> {
-        const versions = await this._client.listActivityVersions(entry.activity);
+        const versions = await this._context.designAutomationClient.listActivityVersions(entry.activity);
         return versions.map(version => ({ type: 'activity-version', client: entry.client, activity: entry.activity, version: version, label: version.toString() }));
     }
 }

@@ -23,6 +23,7 @@
                         <%= obj.name + ' (#' + obj.objectid + ')' %>
                     </strong>
                     <ul>
+                        <% if (!obj.properties) continue; %>
                         <% for (const prop of Object.keys(obj.properties)) { %>
                             <% if (typeof obj.properties[prop] === 'object') { %>
                                 <li>

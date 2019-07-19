@@ -2,19 +2,13 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import * as ejs from 'ejs';
 import {
-	AuthenticationClient,
-	ModelDerivativeClient,
-	DesignAutomationClient,
-	DataManagementClient,
 	IBucket,
 	IObject,
 	IResumableUploadRange,
-	DataRetentionPolicy,
-	IJob
+	DataRetentionPolicy
 } from 'forge-nodejs-utils';
-import { idToUrn } from './common';
+import { idToUrn, IContext } from './common';
 import { IDerivative } from './providers';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -135,8 +129,6 @@ const AllowedMimeTypes = {
 	'zip': 'application/zip'
 };
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 function computeFileHash(filename: string): Promise<string> {
     return new Promise(function(resolve, reject) {
         const stream = fs.createReadStream(filename);
@@ -153,7 +145,7 @@ function computeFileHash(filename: string): Promise<string> {
     });
 }
 
-export async function createBucket(client: DataManagementClient) {
+export async function createBucket(context: IContext) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
     if (!name) {
 		return;
@@ -169,7 +161,7 @@ export async function createBucket(client: DataManagementClient) {
 			title: `Creating bucket: ${name}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucket = await client.createBucket(name, <DataRetentionPolicy>retention);
+			const bucket = await context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention);
 		});
         vscode.window.showInformationMessage(`Bucket created: ${name}`);
     } catch (err) {
@@ -177,37 +169,28 @@ export async function createBucket(client: DataManagementClient) {
     }
 }
 
-export async function viewBucketDetails(name: string, context: vscode.ExtensionContext, client: DataManagementClient) {
-	if (!_templateFuncCache.has('bucket-details')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'bucket-details.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('bucket-details', ejs.compile(template));
-	}
-
+export async function viewBucketDetails(name: string, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Getting bucket details: ${name}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucketDetail = await client.getBucketDetails(name);
+			const bucketDetail = await context.dataManagementClient.getBucketDetails(name);
 			const panel = vscode.window.createWebviewPanel(
 				'bucket-details',
 				`Details: ${bucketDetail.bucketKey}`,
 				vscode.ViewColumn.One,
 				{ enableScripts: false }
 			);
-			const templateFunc = _templateFuncCache.get('bucket-details');
-			if (templateFunc) {
-				panel.webview.html = templateFunc({ bucket: bucketDetail });
-			}
+			panel.webview.html = context.templateEngine.render('bucket-details', { bucket: bucketDetail });
 		});
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access bucket: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function uploadObject(bucket: IBucket, client: DataManagementClient) {
+export async function uploadObject(bucket: IBucket, context: IContext) {
 	// Collect inputs
     const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
 	if (!uri) {
@@ -245,7 +228,7 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 			const fileContentHash = await computeFileHash(filepath);
 			let ranges: IResumableUploadRange[];
 			try {
-				ranges = await client.getResumableUploadStatus(bucket.bucketKey, name, fileContentHash);
+				ranges = await context.dataManagementClient.getResumableUploadStatus(bucket.bucketKey, name, fileContentHash);
 			} catch(err) {
 				ranges = [];
 			}
@@ -261,7 +244,7 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 					}
 					const chunkSize = Math.min(range.start - lastByte, chunkBytes);
 					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await client.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+					await context.dataManagementClient.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
 					progress.report({ increment: 100 * chunkSize / totalBytes });
 					lastByte += chunkSize;
 				}
@@ -276,7 +259,7 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 				}
 				const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
 				fs.readSync(fd, buff, 0, chunkSize, lastByte);
-				await client.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+				await context.dataManagementClient.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
 				progress.report({ increment: 100 * chunkSize / totalBytes });
 				lastByte += chunkSize;
 			}
@@ -297,7 +280,7 @@ export async function uploadObject(bucket: IBucket, client: DataManagementClient
 	}
 }
 
-export async function downloadObject(bucketKey: string, objectKey: string, client: DataManagementClient) {
+export async function downloadObject(bucketKey: string, objectKey: string, context: IContext) {
     const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
     if (!uri) {
 		return;
@@ -309,7 +292,7 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
 			title: `Downloading file: ${uri.fsPath}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const arrayBuffer = await client.downloadObject(bucketKey, objectKey);
+			const arrayBuffer = await context.dataManagementClient.downloadObject(bucketKey, objectKey);
 			fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
 		});
         vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
@@ -318,14 +301,14 @@ export async function downloadObject(bucketKey: string, objectKey: string, clien
     }
 }
 
-export async function translateObject(object: IObject, modelDerivativeClient: ModelDerivativeClient) {
+export async function translateObject(object: IObject, context: IContext) {
     try {
 		const urn = idToUrn(object.objectId);
 		const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'If this is a compressed file, enter the filename of the root design' });
 		if (rootDesignFilename) {
-			await modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
+			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
 		} else {
-			await modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
 		}
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
     } catch(err) {
@@ -333,44 +316,22 @@ export async function translateObject(object: IObject, modelDerivativeClient: Mo
     }
 }
 
-let _templateFuncCache: Map<string, ejs.TemplateFunction> = new Map();
-
-export async function previewDerivative(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
-	if (!_templateFuncCache.has('derivative-preview')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'derivative-preview.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('derivative-preview', ejs.compile(template));
-	}
-
+export async function previewDerivative(derivative: IDerivative, context: IContext) {
 	try {
-		const token = await authClient.authenticate(['viewables:read']);
+		const token = await context.authenticationClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-preview',
 			'Preview: ' + derivative.name,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const templateFunc = _templateFuncCache.get('derivative-preview');
-		if (templateFunc) {
-			panel.webview.html = templateFunc({ urn: derivative.urn, guid: derivative.guid, name: derivative.name, token });
-		}
+		panel.webview.html = context.templateEngine.render('derivative-preview', { urn: derivative.urn, guid: derivative.guid, name: derivative.name, token });
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function viewDerivativeTree(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
-	if (!_templateFuncCache.has('spinner')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'spinner.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('spinner', ejs.compile(template));
-	}
-	if (!_templateFuncCache.has('derivative-tree')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'derivative-tree.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('derivative-tree', ejs.compile(template));
-	}
-
+export async function viewDerivativeTree(derivative: IDerivative, context: IContext) {
 	try {
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-tree',
@@ -378,33 +339,16 @@ export async function viewDerivativeTree(derivative: IDerivative, context: vscod
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const spinnerTemplateFunc = _templateFuncCache.get('spinner');
-		if (spinnerTemplateFunc) {
-			panel.webview.html = spinnerTemplateFunc();
-		}
+		panel.webview.html = context.templateEngine.render('spinner', {});
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const tree = await derivClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
-		const treeTemplateFunc = _templateFuncCache.get('derivative-tree');
-		if (treeTemplateFunc) {
-			panel.webview.html = treeTemplateFunc({ urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
-		}
+		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
+		panel.webview.html = context.templateEngine.render('derivative-tree', { urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access derivative tree: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function viewDerivativeProps(derivative: IDerivative, context: vscode.ExtensionContext, authClient: AuthenticationClient, derivClient: ModelDerivativeClient) {
-	if (!_templateFuncCache.has('spinner')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'spinner.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('spinner', ejs.compile(template));
-	}
-	if (!_templateFuncCache.has('derivative-props')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'derivative-props.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('derivative-props', ejs.compile(template));
-	}
-
+export async function viewDerivativeProps(derivative: IDerivative, context: IContext) {
 	try {
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-props',
@@ -412,28 +356,16 @@ export async function viewDerivativeProps(derivative: IDerivative, context: vsco
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const spinnerTemplateFunc = _templateFuncCache.get('spinner');
-		if (spinnerTemplateFunc) {
-			panel.webview.html = spinnerTemplateFunc();
-		}
+		panel.webview.html = context.templateEngine.render('spinner', {});
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const props = await derivClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
-		const propsTemplateFunc = _templateFuncCache.get('derivative-props');
-		if (propsTemplateFunc) {
-			panel.webview.html = propsTemplateFunc({ urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
-		}
+		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
+		panel.webview.html = context.templateEngine.render('derivative-props', { urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access derivative properties: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function viewObjectDetails(object: IObject, context: vscode.ExtensionContext) {
-	if (!_templateFuncCache.has('object-details')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'object-details.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('object-details', ejs.compile(template));
-	}
-
+export async function viewObjectDetails(object: IObject, context: IContext) {
 	try {
 		const panel = vscode.window.createWebviewPanel(
 			'object-details',
@@ -441,23 +373,63 @@ export async function viewObjectDetails(object: IObject, context: vscode.Extensi
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		const templateFunc = _templateFuncCache.get('object-details');
-		if (templateFunc) {
-			panel.webview.html = templateFunc({ object });
-		}
+		panel.webview.html = context.templateEngine.render('object-details', { object });
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function deleteObject(object: IObject, context: vscode.ExtensionContext, client: DataManagementClient) {
+export async function viewObjectManifest(object: IObject, context: IContext) {
+	try {
+		const panel = vscode.window.createWebviewPanel(
+			'object-manifest',
+			'Manifest: ' + object.objectKey,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		try {
+			const manifest = await context.modelDerivativeClient.getManifest(idToUrn(object.objectId));
+			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
+		} catch(_) {
+			const action = await vscode.window.showInformationMessage(`
+				In order to access the manifest of ${object.objectId}, the object must be translated first.
+				Would you like to start the translation now?
+			`, 'Translate');
+			if (action === 'Translate') {
+				await translateObject(object, context);
+			}
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not access object manifest: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function generateSignedUrl(object: IObject, context: IContext) {
+	try {
+		const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
+			canPickMany: false, placeHolder: 'Select access permissions for the new URL'
+		});
+		if (!permissions) {
+			return;
+		}
+		const signedUrl = await context.dataManagementClient.createSignedUrl(object.bucketKey, object.objectKey, permissions);
+		const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
+		if (action === 'Copy URL to Clipboard') {
+			vscode.env.clipboard.writeText(signedUrl.signedUrl);
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not generate signed URL: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function deleteObject(object: IObject, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Deleting object: ${object.objectKey}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await client.deleteObject(object.bucketKey, object.objectKey);
+			await context.dataManagementClient.deleteObject(object.bucketKey, object.objectKey);
 		});
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
     } catch(err) {
@@ -472,13 +444,7 @@ interface INameAndVersion {
 	version: number;
 }
 
-export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
-	if (!_templateFuncCache.has('appbundle-details')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'appbundle-details.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('appbundle-details', ejs.compile(template));
-	}
-
+export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -486,31 +452,22 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 			cancellable: false
 		}, async (progress, token) => {
 			const appBundleDetail = typeof(id) === 'string'
-				? await designAutomationClient.getAppBundle(id)
-				: await designAutomationClient.getAppBundleVersion(id.name, id.version);
+				? await context.designAutomationClient.getAppBundle(id)
+				: await context.designAutomationClient.getAppBundleVersion(id.name, id.version);
 			const panel = vscode.window.createWebviewPanel(
 				'appbundle-details',
 				`Details: ${appBundleDetail.id}`,
 				vscode.ViewColumn.One,
 				{ enableScripts: true }
 			);
-			const templateFunc = _templateFuncCache.get('appbundle-details');
-			if (templateFunc) {
-				panel.webview.html = templateFunc({ bundle: appBundleDetail });
-			}
+			panel.webview.html = context.templateEngine.render('appbundle-details', { bundle: appBundleDetail });
 		});
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access appbundle: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
-	if (!_templateFuncCache.has('activity-details')) {
-		const templatePath = context.asAbsolutePath(path.join('resources', 'templates', 'activity-details.ejs'));
-		const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-		_templateFuncCache.set('activity-details', ejs.compile(template));
-	}
-
+export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -518,32 +475,29 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 			cancellable: false
 		}, async (progress, token) => {
 			const activityDetail = typeof(id) === 'string'
-				? await designAutomationClient.getActivity(id)
-				: await designAutomationClient.getActivityVersion(id.name, id.version);
+				? await context.designAutomationClient.getActivity(id)
+				: await context.designAutomationClient.getActivityVersion(id.name, id.version);
 			const panel = vscode.window.createWebviewPanel(
 				'activity-details',
 				`Details: ${activityDetail.id}`,
 				vscode.ViewColumn.One,
 				{ enableScripts: true }
 			);
-			const templateFunc = _templateFuncCache.get('activity-details');
-			if (templateFunc) {
-				panel.webview.html = templateFunc({ activity: activityDetail });
-			}
+			panel.webview.html = context.templateEngine.render('activity-details', { activity: activityDetail });
 		});
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not access activity: ${JSON.stringify(err.message)}`);
 	}
 }
 
-export async function deleteAppBundle(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Removing appbundle: ${id}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.deleteAppBundle(id);
+			await context.designAutomationClient.deleteAppBundle(id);
 		});
 		vscode.window.showInformationMessage(`Appbundle removed`);
 	} catch(err) {
@@ -551,13 +505,13 @@ export async function deleteAppBundle(id: UnqualifiedID, context: vscode.Extensi
 	}
 }
 
-export async function createAppBundleAlias(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function createAppBundleAlias(id: UnqualifiedID, context: IContext) {
 	try {
 		const alias = await vscode.window.showInputBox({ prompt: 'Enter alias name' });
 		if (!alias) {
 			return;
 		}
-		const appBundleVersions = await designAutomationClient.listAppBundleVersions(id);
+		const appBundleVersions = await context.designAutomationClient.listAppBundleVersions(id);
 		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map(v => v.toString()), {
 			canPickMany: false, placeHolder: 'Select appbundle version'
 		});
@@ -569,7 +523,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: vscode.Ex
 			title: `Creating appbundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion));
+			await context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion));
 		});
 		vscode.window.showInformationMessage(`Appbundle alias created`);
 	} catch(err) {
@@ -577,9 +531,9 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: vscode.Ex
 	}
 }
 
-export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
-		const appBundleVersions = await designAutomationClient.listAppBundleVersions(id);
+		const appBundleVersions = await context.designAutomationClient.listAppBundleVersions(id);
 		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map(v => v.toString()), {
 			canPickMany: false, placeHolder: 'Select appbundle version'
 		});
@@ -591,7 +545,7 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 			title: `Updating appbundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion));
+			await context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion));
 		});
 		vscode.window.showInformationMessage(`Appbundle alias updated`);
 	} catch(err) {
@@ -599,14 +553,14 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 	}
 }
 
-export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Removing app bundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.deleteAppBundleAlias(id, alias);
+			await context.designAutomationClient.deleteAppBundleAlias(id, alias);
 		});
 		vscode.window.showInformationMessage(`Appbundle alias removed`);
 	} catch(err) {
@@ -614,14 +568,14 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 	}
 }
 
-export async function deleteAppBundleVersion(id: UnqualifiedID, version: number, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function deleteAppBundleVersion(id: UnqualifiedID, version: number, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Removing app bundle version: ${id}/${version}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.deleteAppBundleVersion(id, version);
+			await context.designAutomationClient.deleteAppBundleVersion(id, version);
 		});
 		vscode.window.showInformationMessage(`Appbundle version removed`);
 	} catch(err) {
@@ -629,14 +583,14 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 	}
 }
 
-export async function deleteActivity(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Removing activity: ${id}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.deleteActivity(id);
+			await context.designAutomationClient.deleteActivity(id);
 		});
 		vscode.window.showInformationMessage(`Activity removed`);
 	} catch(err) {
@@ -644,14 +598,14 @@ export async function deleteActivity(id: UnqualifiedID, context: vscode.Extensio
 	}
 }
 
-export async function deleteActivityAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function deleteActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Removing activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.deleteActivityAlias(id, alias);
+			await context.designAutomationClient.deleteActivityAlias(id, alias);
 		});
 		vscode.window.showInformationMessage(`Activity alias removed`);
 	} catch(err) {
@@ -659,14 +613,14 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 	}
 }
 
-export async function deleteActivityVersion(id: UnqualifiedID, version: number, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function deleteActivityVersion(id: UnqualifiedID, version: number, context: IContext) {
 	try {
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Removing activity version: ${id}/${version}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.deleteActivityVersion(id, version);
+			await context.designAutomationClient.deleteActivityVersion(id, version);
 		});
 		vscode.window.showInformationMessage(`Activity version removed`);
 	} catch(err) {
@@ -674,13 +628,13 @@ export async function deleteActivityVersion(id: UnqualifiedID, version: number, 
 	}
 }
 
-export async function createActivityAlias(id: UnqualifiedID, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function createActivityAlias(id: UnqualifiedID, context: IContext) {
 	try {
 		const alias = await vscode.window.showInputBox({ prompt: 'Enter alias name' });
 		if (!alias) {
 			return;
 		}
-		const activityVersions = await designAutomationClient.listActivityVersions(id);
+		const activityVersions = await context.designAutomationClient.listActivityVersions(id);
 		const activityVersion = await vscode.window.showQuickPick(activityVersions.map(v => v.toString()), {
 			canPickMany: false, placeHolder: 'Select activity version'
 		});
@@ -692,7 +646,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: vscode.Ext
 			title: `Creating activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion));
+			await context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion));
 		});
 		vscode.window.showInformationMessage(`Activity alias created`);
 	} catch(err) {
@@ -700,9 +654,9 @@ export async function createActivityAlias(id: UnqualifiedID, context: vscode.Ext
 	}
 }
 
-export async function updateActivityAlias(id: UnqualifiedID, alias: string, context: vscode.ExtensionContext, designAutomationClient: DesignAutomationClient) {
+export async function updateActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
-		const activityVersions = await designAutomationClient.listActivityVersions(id);
+		const activityVersions = await context.designAutomationClient.listActivityVersions(id);
 		const activityVersion = await vscode.window.showQuickPick(activityVersions.map(v => v.toString()), {
 			canPickMany: false, placeHolder: 'Select activity version'
 		});
@@ -714,7 +668,7 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 			title: `Updating activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion));
+			await context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion));
 		});
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {
