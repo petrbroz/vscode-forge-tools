@@ -6,9 +6,10 @@ import {
 	IBucket,
 	IObject,
 	IResumableUploadRange,
-	DataRetentionPolicy
-} from 'forge-nodejs-utils';
-import { idToUrn, IContext } from './common';
+	DataRetentionPolicy,
+	urnify
+} from 'forge-server-utils';
+import { IContext } from './common';
 import { IDerivative } from './providers';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -303,7 +304,7 @@ export async function downloadObject(bucketKey: string, objectKey: string, conte
 
 export async function translateObject(object: IObject, context: IContext) {
     try {
-		const urn = idToUrn(object.objectId);
+		const urn = urnify(object.objectId);
 		const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'If this is a compressed file, enter the filename of the root design' });
 		if (rootDesignFilename) {
 			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
@@ -388,7 +389,7 @@ export async function viewObjectManifest(object: IObject, context: IContext) {
 			{ enableScripts: true }
 		);
 		try {
-			const manifest = await context.modelDerivativeClient.getManifest(idToUrn(object.objectId));
+			const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
 			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
 		} catch(_) {
 			const action = await vscode.window.showInformationMessage(`
@@ -512,7 +513,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 			return;
 		}
 		const appBundleVersions = await context.designAutomationClient.listAppBundleVersions(id);
-		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map(v => v.toString()), {
+		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select appbundle version'
 		});
 		if (!appBundleVersion) {
@@ -534,7 +535,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		const appBundleVersions = await context.designAutomationClient.listAppBundleVersions(id);
-		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map(v => v.toString()), {
+		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select appbundle version'
 		});
 		if (!appBundleVersion) {
@@ -635,7 +636,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 			return;
 		}
 		const activityVersions = await context.designAutomationClient.listActivityVersions(id);
-		const activityVersion = await vscode.window.showQuickPick(activityVersions.map(v => v.toString()), {
+		const activityVersion = await vscode.window.showQuickPick(activityVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select activity version'
 		});
 		if (!activityVersion) {
@@ -657,7 +658,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 export async function updateActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		const activityVersions = await context.designAutomationClient.listActivityVersions(id);
-		const activityVersion = await vscode.window.showQuickPick(activityVersions.map(v => v.toString()), {
+		const activityVersion = await vscode.window.showQuickPick(activityVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select activity version'
 		});
 		if (!activityVersion) {

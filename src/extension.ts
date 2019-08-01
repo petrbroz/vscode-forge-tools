@@ -6,7 +6,7 @@ import {
 	DataManagementClient,
 	ModelDerivativeClient,
 	DesignAutomationClient
-} from 'forge-nodejs-utils';
+} from 'forge-server-utils';
 
 import {
 	SimpleStorageDataProvider,
@@ -49,7 +49,7 @@ import {
 	generateSignedUrl,
 	viewObjectManifest
 } from './commands';
-import { Region } from 'forge-nodejs-utils/dist/common';
+import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 
 interface IEnvironment {
