@@ -7,7 +7,7 @@ import {
     DataManagementClient,
     ModelDerivativeClient,
     DesignAutomationClient
-} from 'forge-nodejs-utils';
+} from 'forge-server-utils';
 
 export interface IContext {
     extensionContext: vscode.ExtensionContext;
@@ -16,10 +16,6 @@ export interface IContext {
 	modelDerivativeClient: ModelDerivativeClient;
 	designAutomationClient: DesignAutomationClient;
 	templateEngine: TemplateEngine;
-}
-
-export function idToUrn(id: string) {
-    return Buffer.from(id).toString('base64').replace(/=/, '');
 }
 
 export class TemplateEngine {

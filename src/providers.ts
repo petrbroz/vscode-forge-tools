@@ -3,10 +3,10 @@ import {
 	IBucket,
 	IObject,
     DesignAutomationID,
-    IDerivativeManifest
-} from 'forge-nodejs-utils';
+    IDerivativeManifest,
+    urnify
+} from 'forge-server-utils';
 import {
-    idToUrn,
     IContext
 } from './common';
 
@@ -84,7 +84,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     const objects = await this._context.dataManagementClient.listObjects(element.bucketKey);
                     return objects;
                 } else if (isObject(element)) {
-                    const urn = idToUrn(element.objectId);
+                    const urn = urnify(element.objectId);
                     try {
                         const manifest = await this._context.modelDerivativeClient.getManifest(urn);
                         switch (manifest.status) {
