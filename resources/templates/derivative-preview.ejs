@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css" type="text/css">
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.0.*/style.min.css" type="text/css">
     <title>Preview: <%= name %></title>
     <style>
         html, body {
@@ -21,41 +20,37 @@
 </head>
 <body>
     <div id="viewer"></div>
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.0.*/viewer3D.min.js"></script>
     <script>
         //const vscode = acquireVsCodeApi();
-
-        let viewer;
+        const container = document.getElementById('viewer');
         const options = {
             env: 'AutodeskProduction',
             getAccessToken: function (callback) {
                 callback('<%= token.access_token %>', 3600);
             }
         };
+        let viewer;
 
         Autodesk.Viewing.Initializer(options, function() {
-            console.log('Viewer initializing');
-            viewer = new Autodesk.Viewing.Private.GuiViewer3D(document.getElementById('viewer'));
+            viewer = new Autodesk.Viewing.Private.GuiViewer3D(container);
             viewer.start();
             Autodesk.Viewing.Document.load('urn:<%= urn %>', onDocumentLoadSuccess, onDocumentLoadFailure);
         });
 
         function onDocumentLoadSuccess(doc) {
-            console.log('Document loaded successfully');
             const node = doc.getRoot().findByGuid('<%= guid %>');
             if (node) {
                 viewer.loadDocumentNode(doc, node);
             } else {
-                $('#viewer').addClass('alert alert-warning').text('Viewable not found');
+                container.classList.add('alert', 'alert-warning');
+                container.innerText = 'Viewable not found';
             }
         }
 
         function onDocumentLoadFailure(err) {
-            console.log('Document loading failed', err);
-            //document.getElementById('logs').innerText = 'onDocumentLoadFailure() - errorCode:' + viewerErrorCode;
+            container.classList.add('alert', 'alert-danger');
+            container.innerText = `Document loading failed (${err})`;
         }
     </script>
 </body>
