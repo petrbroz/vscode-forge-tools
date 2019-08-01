@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Moved to new version of forge-server-utils
+  - Moved to Forge Viewer v7.0
+
 ## [0.6.0] - 2019-07-19
 
 - Added
