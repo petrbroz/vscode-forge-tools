@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext } from '../common';
+import { IContext, promptAppBundleFullID } from '../common';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
@@ -8,8 +8,15 @@ interface INameAndVersion {
 	version: number;
 }
 
-export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
+export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
 	try {
+		if (!id) {
+			id = await promptAppBundleFullID(context);
+			if (!id) {
+				return;
+			}
+		}
+
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Getting appbundle details: ${id}`,
@@ -17,7 +24,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 		}, async (progress, token) => {
 			const appBundleDetail = typeof(id) === 'string'
 				? await context.designAutomationClient.getAppBundle(id)
-				: await context.designAutomationClient.getAppBundleVersion(id.name, id.version);
+				: await context.designAutomationClient.getAppBundleVersion((<INameAndVersion>id).name, (<INameAndVersion>id).version);
 			const panel = vscode.window.createWebviewPanel(
 				'appbundle-details',
 				`Details: ${appBundleDetail.id}`,

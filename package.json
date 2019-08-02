@@ -159,7 +159,7 @@
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
-				"title": "View Details"
+				"title": "View App Bundle Details"
 			},
 			{
 				"command": "forge.viewAppBundleVersionDetails",

@@ -90,3 +90,8 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
 		return derivatives.find(item => item.name === derivativeName);
 	}
 }
+
+export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
+    const appBundles = await context.designAutomationClient.listAppBundles();
+    return vscode.window.showQuickPick(appBundles.filter(id => !id.endsWith('$LATEST')), { canPickMany: false, placeHolder: 'Select app bundle' });
+}

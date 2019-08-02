@@ -120,12 +120,11 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	// Setup design automation commands
 	vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: designAutomationProviders.IAppBundleAliasEntry | designAutomationProviders.ISharedAppBundleEntry) => {
-		if (!entry) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
+		if (entry) {
+			await designAutomationCommands.viewAppBundleDetails('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);
+		} else {
+			await designAutomationCommands.viewAppBundleDetails(undefined, context);
 		}
-		const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`;
-		await designAutomationCommands.viewAppBundleDetails(id, context);
 	});
 	vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: designAutomationProviders.IAppBundleVersionEntry) => {
 		if (!entry) {
