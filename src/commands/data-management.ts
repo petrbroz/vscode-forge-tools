@@ -353,24 +353,6 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 	}
 }
 
-export async function generateSignedUrl(object: IObject, context: IContext) {
-	try {
-		const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
-			canPickMany: false, placeHolder: 'Select access permissions for the new URL'
-		});
-		if (!permissions) {
-			return;
-		}
-		const signedUrl = await context.dataManagementClient.createSignedUrl(object.bucketKey, object.objectKey, permissions);
-		const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
-		if (action === 'Copy URL to Clipboard') {
-			vscode.env.clipboard.writeText(signedUrl.signedUrl);
-		}
-	} catch(err) {
-		vscode.window.showErrorMessage(`Could not generate signed URL: ${JSON.stringify(err.message)}`);
-	}
-}
-
 export async function deleteObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
@@ -395,4 +377,33 @@ export async function deleteObject(object: IObject | undefined, context: IContex
     } catch(err) {
         vscode.window.showErrorMessage(`Could not delete object: ${JSON.stringify(err.message)}`);
     }
+}
+
+export async function generateSignedUrl(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+		const { objectKey, bucketKey } = object;
+		const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
+			canPickMany: false, placeHolder: 'Select access permissions for the new URL'
+		});
+		if (!permissions) {
+			return;
+		}
+		const signedUrl = await context.dataManagementClient.createSignedUrl(bucketKey, objectKey, permissions);
+		const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
+		if (action === 'Copy URL to Clipboard') {
+			vscode.env.clipboard.writeText(signedUrl.signedUrl);
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not generate signed URL: ${JSON.stringify(err.message)}`);
+	}
 }

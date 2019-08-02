@@ -91,6 +91,9 @@ export function activate(_context: vscode.ExtensionContext) {
 		await dataManagementCommands.deleteObject(object, context);
 		simpleStorageDataProvider.refresh();
 	});
+	vscode.commands.registerCommand('forge.generateSignedUrl', async (object?: IObject) => {
+		await dataManagementCommands.generateSignedUrl(object, context);
+	});
 
 	// Model derivative commands
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
@@ -124,13 +127,6 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		await modelDerivativeCommands.viewObjectManifest(object, context);
-	});
-	vscode.commands.registerCommand('forge.generateSignedUrl', async (object?: IObject) => {
-		if (!object) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
-		await dataManagementCommands.generateSignedUrl(object, context);
 	});
 
 	// Setup design automation view

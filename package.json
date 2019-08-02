@@ -134,6 +134,10 @@
 				"title": "Delete Object"
 			},
 			{
+				"command": "forge.generateSignedUrl",
+				"title": "Generate Signed URL"
+			},
+			{
 				"command": "forge.translateObject",
 				"title": "Translate Object"
 			},
@@ -156,10 +160,6 @@
 			{
 				"command": "forge.viewObjectManifest",
 				"title": "View Manifest"
-			},
-			{
-				"command": "forge.generateSignedUrl",
-				"title": "Generate Signed URL"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
