@@ -10,8 +10,10 @@ import {
 
 import {
 	SimpleStorageDataProvider,
+	IDerivative
+} from './providers/data-management';
+import {
 	DesignAutomationDataProvider,
-	IDerivative,
 	IAppBundleAliasEntry,
 	IActivityAliasEntry,
 	IAppBundleVersionEntry,
@@ -22,7 +24,7 @@ import {
 	ISharedAppBundleEntry,
 	IActivityAliasesEntry,
 	IAppBundleAliasesEntry
-} from './providers';
+} from './providers/design-automation';
 import {
 	createBucket,
 	uploadObject,

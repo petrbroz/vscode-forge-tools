@@ -6,11 +6,9 @@ import {
 	IBucket,
 	IObject,
 	IResumableUploadRange,
-	DataRetentionPolicy,
-	urnify
+	DataRetentionPolicy
 } from 'forge-server-utils';
 import { IContext } from '../common';
-import { IDerivative } from '../providers';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const AllowedMimeTypes = {

@@ -4,7 +4,7 @@ import {
 	urnify
 } from 'forge-server-utils';
 import { IContext } from '../common';
-import { IDerivative } from '../providers';
+import { IDerivative } from '../providers/data-management';
 
 export async function translateObject(object: IObject, context: IContext) {
     try {
