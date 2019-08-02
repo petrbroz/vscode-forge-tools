@@ -61,8 +61,22 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 	}
 }
 
-export async function viewDerivativeTree(derivative: IDerivative, context: IContext) {
+export async function viewDerivativeTree(derivative: IDerivative | undefined, context: IContext) {
 	try {
+		if (!derivative) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			const object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+			derivative = await promptDerivative(context, object.objectId);
+			if (!derivative) {
+				return;
+			}
+		}
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-tree',
 			'Tree: ' + derivative.name,
@@ -78,8 +92,22 @@ export async function viewDerivativeTree(derivative: IDerivative, context: ICont
 	}
 }
 
-export async function viewDerivativeProps(derivative: IDerivative, context: IContext) {
+export async function viewDerivativeProps(derivative: IDerivative | undefined, context: IContext) {
 	try {
+		if (!derivative) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			const object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+			derivative = await promptDerivative(context, object.objectId);
+			if (!derivative) {
+				return;
+			}
+		}
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-props',
 			'Properties: ' + derivative.name,

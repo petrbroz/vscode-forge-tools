@@ -147,15 +147,11 @@
 			},
 			{
 				"command": "forge.viewDerivativeTree",
-				"title": "View Tree"
+				"title": "View Derivative Tree"
 			},
 			{
 				"command": "forge.viewDerivativeProps",
-				"title": "View Tree"
-			},
-			{
-				"command": "forge.viewDerivativeProps",
-				"title": "View Properties"
+				"title": "View Derivative Properties"
 			},
 			{
 				"command": "forge.viewObjectManifest",

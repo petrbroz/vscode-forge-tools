@@ -104,17 +104,9 @@ export function activate(_context: vscode.ExtensionContext) {
 		await modelDerivativeCommands.previewDerivative(derivative, context);
 	});
 	vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: dataManagementProviders.IDerivative) => {
-		if (!derivative) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
 		await modelDerivativeCommands.viewDerivativeTree(derivative, context);
 	});
 	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: dataManagementProviders.IDerivative) => {
-		if (!derivative) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
 		await modelDerivativeCommands.viewDerivativeProps(derivative, context);
 	});
 	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
