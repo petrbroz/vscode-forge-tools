@@ -123,8 +123,19 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 	}
 }
 
-export async function viewObjectManifest(object: IObject, context: IContext) {
+export async function viewObjectManifest(object: IObject | undefined, context: IContext) {
 	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
 		const panel = vscode.window.createWebviewPanel(
 			'object-manifest',
 			'Manifest: ' + object.objectKey,

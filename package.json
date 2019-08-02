@@ -155,7 +155,7 @@
 			},
 			{
 				"command": "forge.viewObjectManifest",
-				"title": "View Manifest"
+				"title": "View Object Manifest"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",

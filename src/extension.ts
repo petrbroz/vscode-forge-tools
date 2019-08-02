@@ -110,10 +110,6 @@ export function activate(_context: vscode.ExtensionContext) {
 		await modelDerivativeCommands.viewDerivativeProps(derivative, context);
 	});
 	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
-		if (!object) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
 		await modelDerivativeCommands.viewObjectManifest(object, context);
 	});
 
