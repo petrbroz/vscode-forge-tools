@@ -371,14 +371,25 @@ export async function generateSignedUrl(object: IObject, context: IContext) {
 	}
 }
 
-export async function deleteObject(object: IObject, context: IContext) {
+export async function deleteObject(object: IObject | undefined, context: IContext) {
 	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+		const { bucketKey, objectKey } = object;
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Deleting object: ${object.objectKey}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.dataManagementClient.deleteObject(object.bucketKey, object.objectKey);
+			await context.dataManagementClient.deleteObject(bucketKey, objectKey);
 		});
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
     } catch(err) {

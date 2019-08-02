@@ -87,6 +87,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
 		await dataManagementCommands.downloadObject(object, context);
 	});
+	vscode.commands.registerCommand('forge.deleteObject', async (object?: IObject) => {
+		await dataManagementCommands.deleteObject(object, context);
+		simpleStorageDataProvider.refresh();
+	});
 
 	// Model derivative commands
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
@@ -127,14 +131,6 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		await dataManagementCommands.generateSignedUrl(object, context);
-	});
-	vscode.commands.registerCommand('forge.deleteObject', async (object?: IObject) => {
-		if (!object) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
-		await dataManagementCommands.deleteObject(object, context);
-		simpleStorageDataProvider.refresh();
 	});
 
 	// Setup design automation view
