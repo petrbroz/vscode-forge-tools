@@ -115,7 +115,7 @@
 			},
 			{
 				"command": "forge.viewBucketDetails",
-				"title": "View Details"
+				"title": "View Bucket Details"
 			},
 			{
 				"command": "forge.uploadObject",

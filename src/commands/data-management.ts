@@ -168,14 +168,23 @@ export async function createBucket(context: IContext) {
     }
 }
 
-export async function viewBucketDetails(name: string, context: IContext) {
+export async function viewBucketDetails(bucket: IBucket | undefined, context: IContext) {
 	try {
+		if (!bucket) {
+			const buckets = await context.dataManagementClient.listBuckets();
+			const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+			if (!bucketKey) {
+				return;
+			}
+			bucket = buckets.find(item => item.bucketKey === bucketKey) as IBucket;
+		}
+
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Getting bucket details: ${name}`,
+			title: `Getting bucket details: ${bucket.bucketKey}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucketDetail = await context.dataManagementClient.getBucketDetails(name);
+			const bucketDetail = await context.dataManagementClient.getBucketDetails(bucket!.bucketKey);
 			const panel = vscode.window.createWebviewPanel(
 				'bucket-details',
 				`Details: ${bucketDetail.bucketKey}`,
