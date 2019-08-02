@@ -118,6 +118,10 @@
 				"title": "View Bucket Details"
 			},
 			{
+				"command": "forge.viewObjectDetails",
+				"title": "View Object Details"
+			},
+			{
 				"command": "forge.uploadObject",
 				"title": "Upload Object"
 			},
@@ -144,10 +148,6 @@
 			{
 				"command": "forge.viewDerivativeProps",
 				"title": "View Properties"
-			},
-			{
-				"command": "forge.viewObjectDetails",
-				"title": "View Details"
 			},
 			{
 				"command": "forge.viewObjectManifest",

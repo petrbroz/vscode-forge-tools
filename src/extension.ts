@@ -66,7 +66,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.extensionContext.subscriptions.push(dataManagementView);
 
-	// Setup data management commands
+	// Data management commands
 	vscode.commands.registerCommand('forge.refreshBuckets', () => {
 		simpleStorageDataProvider.refresh();
 	});
@@ -77,6 +77,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewBucketDetails', async (bucket?: IBucket) => {
 		await dataManagementCommands.viewBucketDetails(bucket, context);
 	});
+	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
+		await dataManagementCommands.viewObjectDetails(object, context);
+	});
 	vscode.commands.registerCommand('forge.uploadObject', async (bucket?: IBucket) => {
 		await dataManagementCommands.uploadObject(bucket, context);
 		simpleStorageDataProvider.refresh();
@@ -84,6 +87,8 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
 		await dataManagementCommands.downloadObject(object, context);
 	});
+
+	// Model derivative commands
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
 		await modelDerivativeCommands.translateObject(object, context);
 		simpleStorageDataProvider.refresh(object);
@@ -108,13 +113,6 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		await modelDerivativeCommands.viewDerivativeProps(derivative, context);
-	});
-	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
-		if (!object) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
-		await dataManagementCommands.viewObjectDetails(object, context);
 	});
 	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
 		if (!object) {

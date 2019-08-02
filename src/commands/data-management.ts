@@ -329,8 +329,18 @@ export async function downloadObject(object: IObject | undefined, context: ICont
     }
 }
 
-export async function viewObjectDetails(object: IObject, context: IContext) {
+export async function viewObjectDetails(object: IObject | undefined, context: IContext) {
 	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
 		const panel = vscode.window.createWebviewPanel(
 			'object-details',
 			'Details: ' + object.objectKey,
