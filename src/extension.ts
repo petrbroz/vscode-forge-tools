@@ -28,27 +28,31 @@ import {
 	uploadObject,
 	downloadObject,
 	viewObjectDetails,
+	viewBucketDetails,
+	deleteObject,
+	generateSignedUrl
+} from './commands/data-management';
+import {
+	previewDerivative,
+	translateObject,
+	viewDerivativeTree,
+	viewDerivativeProps,
+	viewObjectManifest
+} from './commands/model-derivative';
+import {
 	viewAppBundleDetails,
 	viewActivityDetails,
-	previewDerivative,
-	viewBucketDetails,
 	deleteAppBundle,
 	deleteAppBundleAlias,
 	deleteAppBundleVersion,
 	deleteActivity,
 	deleteActivityAlias,
 	deleteActivityVersion,
-	deleteObject,
 	createActivityAlias,
 	createAppBundleAlias,
 	updateActivityAlias,
-	updateAppBundleAlias,
-	translateObject,
-	viewDerivativeTree,
-	viewDerivativeProps,
-	generateSignedUrl,
-	viewObjectManifest
-} from './commands';
+	updateAppBundleAlias
+} from './commands/design-automation';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 
