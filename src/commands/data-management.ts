@@ -144,6 +144,16 @@ function computeFileHash(filename: string): Promise<string> {
     });
 }
 
+async function promptBucket(context: IContext): Promise<IBucket | undefined> {
+	const buckets = await context.dataManagementClient.listBuckets();
+	const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+	if (!bucketKey) {
+		return undefined;
+	} else {
+		return buckets.find(item => item.bucketKey === bucketKey);
+	}
+}
+
 export async function createBucket(context: IContext) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
     if (!name) {
@@ -171,23 +181,22 @@ export async function createBucket(context: IContext) {
 export async function viewBucketDetails(bucket: IBucket | undefined, context: IContext) {
 	try {
 		if (!bucket) {
-			const buckets = await context.dataManagementClient.listBuckets();
-			const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
-			if (!bucketKey) {
+			bucket = await promptBucket(context);
+			if (!bucket) {
 				return;
 			}
-			bucket = buckets.find(item => item.bucketKey === bucketKey) as IBucket;
 		}
 
+		const { bucketKey } = bucket;
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Getting bucket details: ${bucket.bucketKey}`,
+			title: `Getting bucket details: ${bucketKey}`,
 			cancellable: false
 		}, async (progress, token) => {
-			const bucketDetail = await context.dataManagementClient.getBucketDetails(bucket!.bucketKey);
+			const bucketDetail = await context.dataManagementClient.getBucketDetails(bucketKey);
 			const panel = vscode.window.createWebviewPanel(
 				'bucket-details',
-				`Details: ${bucketDetail.bucketKey}`,
+				`Details: ${bucketKey}`,
 				vscode.ViewColumn.One,
 				{ enableScripts: false }
 			);
@@ -198,7 +207,16 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 	}
 }
 
-export async function uploadObject(bucket: IBucket, context: IContext) {
+export async function uploadObject(bucket: IBucket | undefined, context: IContext) {
+	if (!bucket) {
+		bucket = await promptBucket(context);
+		if (!bucket) {
+			return;
+		}
+	}
+
+	const { bucketKey } = bucket;
+
 	// Collect inputs
     const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
 	if (!uri) {
@@ -236,7 +254,7 @@ export async function uploadObject(bucket: IBucket, context: IContext) {
 			const fileContentHash = await computeFileHash(filepath);
 			let ranges: IResumableUploadRange[];
 			try {
-				ranges = await context.dataManagementClient.getResumableUploadStatus(bucket.bucketKey, name, fileContentHash);
+				ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, name, fileContentHash);
 			} catch(err) {
 				ranges = [];
 			}
@@ -252,7 +270,7 @@ export async function uploadObject(bucket: IBucket, context: IContext) {
 					}
 					const chunkSize = Math.min(range.start - lastByte, chunkBytes);
 					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await context.dataManagementClient.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+					await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
 					progress.report({ increment: 100 * chunkSize / totalBytes });
 					lastByte += chunkSize;
 				}
@@ -267,7 +285,7 @@ export async function uploadObject(bucket: IBucket, context: IContext) {
 				}
 				const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
 				fs.readSync(fd, buff, 0, chunkSize, lastByte);
-				await context.dataManagementClient.uploadObjectResumable(bucket.bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+				await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
 				progress.report({ increment: 100 * chunkSize / totalBytes });
 				lastByte += chunkSize;
 			}

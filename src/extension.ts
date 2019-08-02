@@ -78,10 +78,6 @@ export function activate(_context: vscode.ExtensionContext) {
 		await dataManagementCommands.viewBucketDetails(bucket, context);
 	});
 	vscode.commands.registerCommand('forge.uploadObject', async (bucket?: IBucket) => {
-		if (!bucket) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
 		await dataManagementCommands.uploadObject(bucket, context);
 		simpleStorageDataProvider.refresh();
 	});
