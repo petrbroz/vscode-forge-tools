@@ -8,8 +8,10 @@ import {
     ModelDerivativeClient,
     DesignAutomationClient,
     IBucket,
-    IObject
+    IObject,
+    urnify
 } from 'forge-server-utils';
+import { IDerivative } from './providers/data-management';
 
 export interface IContext {
     extensionContext: vscode.ExtensionContext;
@@ -60,5 +62,31 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 		return undefined;
 	} else {
 		return objects.find(item => item.objectKey === objectKey);
+	}
+}
+
+export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
+    const urn = urnify(objectId);
+    const manifest = await context.modelDerivativeClient.getManifest(urn) as any;
+    const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+    if (!svf) {
+        vscode.window.showWarningMessage(`No derivatives yet for ${urn}`);
+        return undefined;
+    }
+    const derivatives: IDerivative[] = svf.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
+        return {
+            urn: urn,
+            name: geometry.name,
+            role: geometry.role,
+            guid: geometry.guid,
+            bubble: geometry
+        };
+    });
+
+	const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+	if (!derivativeName) {
+		return undefined;
+	} else {
+		return derivatives.find(item => item.name === derivativeName);
 	}
 }

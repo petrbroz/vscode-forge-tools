@@ -3,7 +3,7 @@ import {
 	IObject,
 	urnify
 } from 'forge-server-utils';
-import { IContext, promptBucket, promptObject } from '../common';
+import { IContext, promptBucket, promptObject, promptDerivative } from '../common';
 import { IDerivative } from '../providers/data-management';
 
 export async function translateObject(object: IObject | undefined, context: IContext) {
@@ -32,8 +32,22 @@ export async function translateObject(object: IObject | undefined, context: ICon
     }
 }
 
-export async function previewDerivative(derivative: IDerivative, context: IContext) {
+export async function previewDerivative(derivative: IDerivative | undefined, context: IContext) {
 	try {
+		if (!derivative) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			const object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+			derivative = await promptDerivative(context, object.objectId);
+			if (!derivative) {
+				return;
+			}
+		}
 		const token = await context.authenticationClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-preview',

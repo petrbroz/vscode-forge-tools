@@ -101,10 +101,6 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh(object);
 	});
 	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: dataManagementProviders.IDerivative) => {
-		if (!derivative) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
 		await modelDerivativeCommands.previewDerivative(derivative, context);
 	});
 	vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: dataManagementProviders.IDerivative) => {
