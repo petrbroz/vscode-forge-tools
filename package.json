@@ -127,7 +127,7 @@
 			},
 			{
 				"command": "forge.translateObject",
-				"title": "Translate"
+				"title": "Translate Object"
 			},
 			{
 				"command": "forge.previewDerivative",

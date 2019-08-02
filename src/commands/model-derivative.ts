@@ -3,11 +3,22 @@ import {
 	IObject,
 	urnify
 } from 'forge-server-utils';
-import { IContext } from '../common';
+import { IContext, promptBucket, promptObject } from '../common';
 import { IDerivative } from '../providers/data-management';
 
-export async function translateObject(object: IObject, context: IContext) {
+export async function translateObject(object: IObject | undefined, context: IContext) {
     try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
 		const urn = urnify(object.objectId);
 		const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'If this is a compressed file, enter the filename of the root design' });
 		if (rootDesignFilename) {

@@ -6,7 +6,9 @@ import {
     AuthenticationClient,
     DataManagementClient,
     ModelDerivativeClient,
-    DesignAutomationClient
+    DesignAutomationClient,
+    IBucket,
+    IObject
 } from 'forge-server-utils';
 
 export interface IContext {
@@ -39,4 +41,24 @@ export class TemplateEngine {
         }
         return func(data);
     }
+}
+
+export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
+	const buckets = await context.dataManagementClient.listBuckets();
+	const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+	if (!bucketKey) {
+		return undefined;
+	} else {
+		return buckets.find(item => item.bucketKey === bucketKey);
+	}
+}
+
+export async function promptObject(context: IContext, bucketKey: string): Promise<IObject | undefined> {
+	const objects = await context.dataManagementClient.listObjects(bucketKey);
+	const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
+	if (!objectKey) {
+		return undefined;
+	} else {
+		return objects.find(item => item.objectKey === objectKey);
+	}
 }

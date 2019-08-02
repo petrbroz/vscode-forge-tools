@@ -8,7 +8,7 @@ import {
 	IResumableUploadRange,
 	DataRetentionPolicy
 } from 'forge-server-utils';
-import { IContext } from '../common';
+import { IContext, promptBucket, promptObject } from '../common';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const AllowedMimeTypes = {
@@ -142,26 +142,6 @@ function computeFileHash(filename: string): Promise<string> {
             reject(err);
         });
     });
-}
-
-async function promptBucket(context: IContext): Promise<IBucket | undefined> {
-	const buckets = await context.dataManagementClient.listBuckets();
-	const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
-	if (!bucketKey) {
-		return undefined;
-	} else {
-		return buckets.find(item => item.bucketKey === bucketKey);
-	}
-}
-
-async function promptObject(context: IContext, bucketKey: string): Promise<IObject | undefined> {
-	const objects = await context.dataManagementClient.listObjects(bucketKey);
-	const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
-	if (!objectKey) {
-		return undefined;
-	} else {
-		return objects.find(item => item.objectKey === objectKey);
-	}
 }
 
 export async function createBucket(context: IContext) {
