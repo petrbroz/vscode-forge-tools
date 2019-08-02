@@ -7,54 +7,11 @@ import {
 	ModelDerivativeClient,
 	DesignAutomationClient
 } from 'forge-server-utils';
-
-import {
-	SimpleStorageDataProvider,
-	IDerivative
-} from './providers/data-management';
-import {
-	DesignAutomationDataProvider,
-	IAppBundleAliasEntry,
-	IActivityAliasEntry,
-	IAppBundleVersionEntry,
-	IActivityVersionEntry,
-	IAppBundleEntry,
-	IActivityEntry,
-	ISharedActivityEntry,
-	ISharedAppBundleEntry,
-	IActivityAliasesEntry,
-	IAppBundleAliasesEntry
-} from './providers/design-automation';
-import {
-	createBucket,
-	uploadObject,
-	downloadObject,
-	viewObjectDetails,
-	viewBucketDetails,
-	deleteObject,
-	generateSignedUrl
-} from './commands/data-management';
-import {
-	previewDerivative,
-	translateObject,
-	viewDerivativeTree,
-	viewDerivativeProps,
-	viewObjectManifest
-} from './commands/model-derivative';
-import {
-	viewAppBundleDetails,
-	viewActivityDetails,
-	deleteAppBundle,
-	deleteAppBundleAlias,
-	deleteAppBundleVersion,
-	deleteActivity,
-	deleteActivityAlias,
-	deleteActivityVersion,
-	createActivityAlias,
-	createAppBundleAlias,
-	updateActivityAlias,
-	updateAppBundleAlias
-} from './commands/design-automation';
+import * as dataManagementProviders from './providers/data-management';
+import * as designAutomationProviders from './providers/design-automation';
+import * as dataManagementCommands from './commands/data-management';
+import * as modelDerivativeCommands from './commands/model-derivative';
+import * as designAutomationCommands from './commands/design-automation';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 
@@ -105,7 +62,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	};
 
 	// Setup data management view
-	let simpleStorageDataProvider = new SimpleStorageDataProvider(context);
+	let simpleStorageDataProvider = new dataManagementProviders.SimpleStorageDataProvider(context);
 	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.extensionContext.subscriptions.push(dataManagementView);
 
@@ -114,7 +71,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.createBucket', async () => {
-		await createBucket(context);
+		await dataManagementCommands.createBucket(context);
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.viewBucketDetails', async (bucket?: IBucket) => {
@@ -122,14 +79,14 @@ export function activate(_context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewBucketDetails(bucket.bucketKey, context);
+		await dataManagementCommands.viewBucketDetails(bucket.bucketKey, context);
 	});
 	vscode.commands.registerCommand('forge.uploadObject', async (bucket?: IBucket) => {
 		if (!bucket) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await uploadObject(bucket, context);
+		await dataManagementCommands.uploadObject(bucket, context);
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
@@ -137,179 +94,179 @@ export function activate(_context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await downloadObject(object.bucketKey, object.objectKey, context);
+		await dataManagementCommands.downloadObject(object.bucketKey, object.objectKey, context);
 	});
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await translateObject(object, context);
+		await modelDerivativeCommands.translateObject(object, context);
 		simpleStorageDataProvider.refresh(object);
 	});
-	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: IDerivative) => {
+	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: dataManagementProviders.IDerivative) => {
 		if (!derivative) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await previewDerivative(derivative, context);
+		await modelDerivativeCommands.previewDerivative(derivative, context);
 	});
-	vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: IDerivative) => {
+	vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: dataManagementProviders.IDerivative) => {
 		if (!derivative) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewDerivativeTree(derivative, context);
+		await modelDerivativeCommands.viewDerivativeTree(derivative, context);
 	});
-	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: IDerivative) => {
+	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: dataManagementProviders.IDerivative) => {
 		if (!derivative) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewDerivativeProps(derivative, context);
+		await modelDerivativeCommands.viewDerivativeProps(derivative, context);
 	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewObjectDetails(object, context);
+		await dataManagementCommands.viewObjectDetails(object, context);
 	});
 	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewObjectManifest(object, context);
+		await modelDerivativeCommands.viewObjectManifest(object, context);
 	});
 	vscode.commands.registerCommand('forge.generateSignedUrl', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await generateSignedUrl(object, context);
+		await dataManagementCommands.generateSignedUrl(object, context);
 	});
 	vscode.commands.registerCommand('forge.deleteObject', async (object?: IObject) => {
 		if (!object) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteObject(object, context);
+		await dataManagementCommands.deleteObject(object, context);
 		simpleStorageDataProvider.refresh();
 	});
 
 	// Setup design automation view
-	let designAutomationDataProvider = new DesignAutomationDataProvider(context, env.clientId);
+	let designAutomationDataProvider = new designAutomationProviders.DesignAutomationDataProvider(context, env.clientId);
 	let designAutomationView = vscode.window.createTreeView('forgeDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
 	context.extensionContext.subscriptions.push(designAutomationView);
 
 	// Setup design automation commands
-	vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) => {
+	vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: designAutomationProviders.IAppBundleAliasEntry | designAutomationProviders.ISharedAppBundleEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
 		const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`;
-		await viewAppBundleDetails(id, context);
+		await designAutomationCommands.viewAppBundleDetails(id, context);
 	});
-	vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: IAppBundleVersionEntry) => {
+	vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: designAutomationProviders.IAppBundleVersionEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, context);
+		await designAutomationCommands.viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, context);
 	});
-	vscode.commands.registerCommand('forge.deleteAppBundle', async (entry?: IAppBundleEntry) => {
+	vscode.commands.registerCommand('forge.deleteAppBundle', async (entry?: designAutomationProviders.IAppBundleEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteAppBundle(entry.appbundle, context);
+		await designAutomationCommands.deleteAppBundle(entry.appbundle, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.deleteAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
+	vscode.commands.registerCommand('forge.deleteAppBundleAlias', async (entry?: designAutomationProviders.IAppBundleAliasEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteAppBundleAlias(entry.appbundle, entry.alias, context);
+		await designAutomationCommands.deleteAppBundleAlias(entry.appbundle, entry.alias, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.createAppBundleAlias', async (entry?: IAppBundleAliasesEntry) => {
+	vscode.commands.registerCommand('forge.createAppBundleAlias', async (entry?: designAutomationProviders.IAppBundleAliasesEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await createAppBundleAlias(entry.appbundle, context);
+		await designAutomationCommands.createAppBundleAlias(entry.appbundle, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.updateAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
+	vscode.commands.registerCommand('forge.updateAppBundleAlias', async (entry?: designAutomationProviders.IAppBundleAliasEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await updateAppBundleAlias(entry.appbundle, entry.alias, context);
+		await designAutomationCommands.updateAppBundleAlias(entry.appbundle, entry.alias, context);
 	});
-	vscode.commands.registerCommand('forge.deleteAppBundleVersion', async (entry?: IAppBundleVersionEntry) => {
+	vscode.commands.registerCommand('forge.deleteAppBundleVersion', async (entry?: designAutomationProviders.IAppBundleVersionEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteAppBundleVersion(entry.appbundle, entry.version, context);
+		await designAutomationCommands.deleteAppBundleVersion(entry.appbundle, entry.version, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.viewActivityDetails', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
+	vscode.commands.registerCommand('forge.viewActivityDetails', async (entry?: designAutomationProviders.IActivityAliasEntry | designAutomationProviders.ISharedActivityEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
 		const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
-		await viewActivityDetails(id, context);
+		await designAutomationCommands.viewActivityDetails(id, context);
 	});
-	vscode.commands.registerCommand('forge.viewActivityVersionDetails', async (entry?: IActivityVersionEntry) => {
+	vscode.commands.registerCommand('forge.viewActivityVersionDetails', async (entry?: designAutomationProviders.IActivityVersionEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await viewActivityDetails({ name: entry.activity, version: entry.version }, context);
+		await designAutomationCommands.viewActivityDetails({ name: entry.activity, version: entry.version }, context);
 	});
-	vscode.commands.registerCommand('forge.deleteActivity', async (entry?: IActivityEntry) => {
+	vscode.commands.registerCommand('forge.deleteActivity', async (entry?: designAutomationProviders.IActivityEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteActivity(entry.activity, context);
+		await designAutomationCommands.deleteActivity(entry.activity, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.deleteActivityAlias', async (entry?: IActivityAliasEntry) => {
+	vscode.commands.registerCommand('forge.deleteActivityAlias', async (entry?: designAutomationProviders.IActivityAliasEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteActivityAlias(entry.activity, entry.alias, context);
+		await designAutomationCommands.deleteActivityAlias(entry.activity, entry.alias, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: IActivityAliasesEntry) => {
+	vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: designAutomationProviders.IActivityAliasesEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await createActivityAlias(entry.activity, context);
+		await designAutomationCommands.createActivityAlias(entry.activity, context);
 		designAutomationDataProvider.refresh();
 	});
-	vscode.commands.registerCommand('forge.updateActivityAlias', async (entry?: IActivityAliasEntry) => {
+	vscode.commands.registerCommand('forge.updateActivityAlias', async (entry?: designAutomationProviders.IActivityAliasEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await updateActivityAlias(entry.activity, entry.alias, context);
+		await designAutomationCommands.updateActivityAlias(entry.activity, entry.alias, context);
 	});
-	vscode.commands.registerCommand('forge.deleteActivityVersion', async (entry?: IActivityVersionEntry) => {
+	vscode.commands.registerCommand('forge.deleteActivityVersion', async (entry?: designAutomationProviders.IActivityVersionEntry) => {
 		if (!entry) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
 			return;
 		}
-		await deleteActivityVersion(entry.activity, entry.version, context);
+		await designAutomationCommands.deleteActivityVersion(entry.activity, entry.version, context);
 		designAutomationDataProvider.refresh();
 	});
 
