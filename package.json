@@ -123,7 +123,7 @@
 			},
 			{
 				"command": "forge.downloadObject",
-				"title": "Download"
+				"title": "Download Object"
 			},
 			{
 				"command": "forge.translateObject",

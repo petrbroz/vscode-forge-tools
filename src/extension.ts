@@ -82,11 +82,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
-		if (!object) {
-			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-			return;
-		}
-		await dataManagementCommands.downloadObject(object.bucketKey, object.objectKey, context);
+		await dataManagementCommands.downloadObject(object, context);
 	});
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
 		if (!object) {

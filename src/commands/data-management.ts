@@ -154,6 +154,16 @@ async function promptBucket(context: IContext): Promise<IBucket | undefined> {
 	}
 }
 
+async function promptObject(context: IContext, bucketKey: string): Promise<IObject | undefined> {
+	const objects = await context.dataManagementClient.listObjects(bucketKey);
+	const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
+	if (!objectKey) {
+		return undefined;
+	} else {
+		return objects.find(item => item.objectKey === objectKey);
+	}
+}
+
 export async function createBucket(context: IContext) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
     if (!name) {
@@ -306,7 +316,19 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 	}
 }
 
-export async function downloadObject(bucketKey: string, objectKey: string, context: IContext) {
+export async function downloadObject(object: IObject | undefined, context: IContext) {
+	if (!object) {
+		const bucket = await promptBucket(context);
+		if (!bucket) {
+			return;
+		}
+		object = await promptObject(context, bucket.bucketKey);
+		if (!object) {
+			return;
+		}
+	}
+	const { objectKey, bucketKey } = object;
+
     const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
     if (!uri) {
 		return;
