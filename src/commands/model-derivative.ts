@@ -4,7 +4,7 @@ import {
 	urnify
 } from 'forge-server-utils';
 import { IContext, promptBucket, promptObject, promptDerivative } from '../common';
-import { IDerivative } from '../providers/data-management';
+import { IDerivative } from '../interfaces/model-derivative';
 
 export async function translateObject(object: IObject | undefined, context: IContext) {
     try {

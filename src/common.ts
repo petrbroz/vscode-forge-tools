@@ -11,7 +11,7 @@ import {
     IObject,
     urnify
 } from 'forge-server-utils';
-import { IDerivative } from './providers/data-management';
+import { IDerivative } from './interfaces/model-derivative';
 
 export interface IContext {
     extensionContext: vscode.ExtensionContext;

@@ -1,108 +1,17 @@
 import * as vscode from 'vscode';
-import {
-    DesignAutomationID
-} from 'forge-server-utils';
-import {
-    IContext
-} from '../common';
-
-interface IDesignAutomationEntry {
-    label: string;
-}
-
-export interface ISharedAppBundlesEntry extends IDesignAutomationEntry {
-    type: 'shared-appbundles';
-}
-
-export interface ISharedAppBundleEntry extends IDesignAutomationEntry {
-    type: 'shared-appbundle';
-    fullid: string;
-}
-
-export interface IOwnedAppBundlesEntry extends IDesignAutomationEntry {
-    type: 'owned-appbundles';
-}
-
-export interface IAppBundleEntry extends IDesignAutomationEntry {
-    type: 'owned-appbundle';
-    client: string;
-    appbundle: string;
-}
-
-export interface IAppBundleAliasesEntry extends IDesignAutomationEntry {
-    type: 'appbundle-aliases';
-    client: string;
-    appbundle: string;
-}
-
-export interface IAppBundleAliasEntry extends IDesignAutomationEntry {
-    type: 'appbundle-alias';
-    client: string;
-    appbundle: string;
-    alias: string;
-}
-
-export interface IAppBundleVersionsEntry extends IDesignAutomationEntry {
-    type: 'appbundle-versions';
-    client: string;
-    appbundle: string;
-}
-
-export interface IAppBundleVersionEntry extends IDesignAutomationEntry {
-    type: 'appbundle-version';
-    client: string;
-    appbundle: string;
-    version: number;
-}
-
-export interface ISharedActivitiesEntry extends IDesignAutomationEntry {
-    type: 'shared-activities';
-}
-
-export interface ISharedActivityEntry extends IDesignAutomationEntry {
-    type: 'shared-activity';
-    fullid: string;
-}
-
-export interface IOwnedActivitiesEntry extends IDesignAutomationEntry {
-    type: 'owned-activities';
-}
-
-export interface IActivityEntry extends IDesignAutomationEntry {
-    type: 'owned-activity';
-    client: string;
-    activity: string;
-}
-
-export interface IActivityAliasesEntry extends IDesignAutomationEntry {
-    type: 'activity-aliases';
-    client: string;
-    activity: string;
-}
-
-export interface IActivityAliasEntry extends IDesignAutomationEntry {
-    type: 'activity-alias';
-    client: string;
-    activity: string;
-    alias: string;
-}
-
-export interface IActivityVersionsEntry extends IDesignAutomationEntry {
-    type: 'activity-versions';
-    client: string;
-    activity: string;
-}
-
-export interface IActivityVersionEntry extends IDesignAutomationEntry {
-    type: 'activity-version';
-    client: string;
-    activity: string;
-    version: number;
-}
+import { DesignAutomationID } from 'forge-server-utils';
+import { IContext } from '../common';
+import * as dai from '../interfaces/design-automation';
 
 type DesignAutomationEntry =
-    | IOwnedAppBundlesEntry | ISharedAppBundlesEntry | ISharedAppBundleEntry | IAppBundleEntry | IAppBundleAliasesEntry | IAppBundleAliasEntry | IAppBundleVersionsEntry | IAppBundleVersionEntry
-    | IOwnedActivitiesEntry | ISharedActivitiesEntry | ISharedActivityEntry | IActivityEntry | IActivityAliasesEntry | IActivityAliasEntry | IActivityVersionsEntry | IActivityVersionEntry;
+    | dai.IOwnedAppBundlesEntry | dai.ISharedAppBundlesEntry
+    | dai.ISharedAppBundleEntry | dai.IAppBundleEntry
+    | dai.IAppBundleAliasesEntry | dai.IAppBundleAliasEntry
+    | dai.IAppBundleVersionsEntry | dai.IAppBundleVersionEntry
+    | dai.IOwnedActivitiesEntry | dai.ISharedActivitiesEntry
+    | dai.ISharedActivityEntry | dai.IActivityEntry
+    | dai.IActivityAliasesEntry | dai.IActivityAliasEntry
+    | dai.IActivityVersionsEntry | dai.IActivityVersionEntry;
 
 export class DesignAutomationDataProvider implements vscode.TreeDataProvider<DesignAutomationEntry> {
     private _context: IContext;
@@ -186,66 +95,66 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         }
     }
 
-    private async _getOwnedAppBundles(entry: IOwnedAppBundlesEntry): Promise<IAppBundleEntry[]> {
+    private async _getOwnedAppBundles(entry: dai.IOwnedAppBundlesEntry): Promise<dai.IAppBundleEntry[]> {
         const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
         const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
         const uniqueIDs = new Set(filteredIDs.map(item => item.id));
         return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'owned-appbundle', client: this._clientId, appbundle: appbundle, label: appbundle }));
     }
 
-    private async _getSharedAppBundles(entry: ISharedAppBundlesEntry): Promise<ISharedAppBundleEntry[]> {
+    private async _getSharedAppBundles(entry: dai.ISharedAppBundlesEntry): Promise<dai.ISharedAppBundleEntry[]> {
         const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
         const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
         return filteredIDs.map(id => ({ type: 'shared-appbundle', fullid: id.toString(), label: id.toString() }));
     }
 
-    private async _getAppBundleChildren(entry: IAppBundleEntry): Promise<(IAppBundleAliasesEntry | IAppBundleVersionsEntry)[]> {
+    private async _getAppBundleChildren(entry: dai.IAppBundleEntry): Promise<(dai.IAppBundleAliasesEntry | dai.IAppBundleVersionsEntry)[]> {
         return [
             { type: 'appbundle-aliases', client: entry.client, appbundle: entry.appbundle, label: 'Aliases' },
             { type: 'appbundle-versions', client: entry.client, appbundle: entry.appbundle, label: 'Versions' }
         ];
     }
 
-    private async _getAppBundleAliases(entry: IAppBundleAliasesEntry): Promise<IAppBundleAliasEntry[]> {
+    private async _getAppBundleAliases(entry: dai.IAppBundleAliasesEntry): Promise<dai.IAppBundleAliasEntry[]> {
         const aliases = await this._context.designAutomationClient.listAppBundleAliases(entry.appbundle);
         return aliases
             .filter(alias => alias.id !== '$LATEST')
             .map(alias => ({ type: 'appbundle-alias', client: entry.client, appbundle: entry.appbundle, alias: alias.id, label: alias.id }));
     }
 
-    private async _getAppBundleVersions(entry: IAppBundleVersionsEntry): Promise<IAppBundleVersionEntry[]> {
+    private async _getAppBundleVersions(entry: dai.IAppBundleVersionsEntry): Promise<dai.IAppBundleVersionEntry[]> {
         const versions = await this._context.designAutomationClient.listAppBundleVersions(entry.appbundle);
         return versions.map(version => ({ type: 'appbundle-version', client: entry.client, appbundle: entry.appbundle, version: version, label: version.toString() }));
     }
 
-    private async _getOwnedActivities(entry: IOwnedActivitiesEntry): Promise<IActivityEntry[]> {
+    private async _getOwnedActivities(entry: dai.IOwnedActivitiesEntry): Promise<dai.IActivityEntry[]> {
         const activityIDs = await this._context.designAutomationClient.listActivities();
         const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
         const uniqueIDs = new Set<string>(filteredIDs.map(id => id.id));
         return Array.from(uniqueIDs.values()).map(activity => ({ type: 'owned-activity', client: this._clientId, activity: activity, label: activity }));
     }
 
-    private async _getSharedActivities(entry: ISharedActivitiesEntry): Promise<ISharedActivityEntry[]> {
+    private async _getSharedActivities(entry: dai.ISharedActivitiesEntry): Promise<dai.ISharedActivityEntry[]> {
         const activityIDs = await this._context.designAutomationClient.listActivities();
         const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
         return filteredIDs.map(id => ({ type: 'shared-activity', fullid: id.toString(), label: id.toString() }));
     }
 
-    private async _getActivityChildren(entry: IActivityEntry): Promise<(IActivityAliasesEntry | IActivityVersionsEntry)[]> {
+    private async _getActivityChildren(entry: dai.IActivityEntry): Promise<(dai.IActivityAliasesEntry | dai.IActivityVersionsEntry)[]> {
         return [
             { type: 'activity-aliases', client: entry.client, activity: entry.activity, label: 'Aliases' },
             { type: 'activity-versions', client: entry.client, activity: entry.activity, label: 'Versions' }
         ];
     }
 
-    private async _getActivityAliases(entry: IActivityAliasesEntry): Promise<DesignAutomationEntry[]> {
+    private async _getActivityAliases(entry: dai.IActivityAliasesEntry): Promise<DesignAutomationEntry[]> {
         const aliases = await this._context.designAutomationClient.listActivityAliases(entry.activity);
         return aliases
             .filter(alias => alias.id !== '$LATEST')
             .map(alias => ({ type: 'activity-alias', client: entry.client, activity: entry.activity, alias: alias.id, label: alias.id }));
     }
 
-    private async _getActivityVersions(entry: IActivityVersionsEntry): Promise<DesignAutomationEntry[]> {
+    private async _getActivityVersions(entry: dai.IActivityVersionsEntry): Promise<DesignAutomationEntry[]> {
         const versions = await this._context.designAutomationClient.listActivityVersions(entry.activity);
         return versions.map(version => ({ type: 'activity-version', client: entry.client, activity: entry.activity, version: version, label: version.toString() }));
     }

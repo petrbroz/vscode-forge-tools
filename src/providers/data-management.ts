@@ -5,17 +5,8 @@ import {
     IDerivativeManifest,
     urnify
 } from 'forge-server-utils';
-import {
-    IContext
-} from '../common';
-
-export interface IDerivative {
-    urn: string;
-    name: string;
-    role: string;
-    guid: string;
-    bubble: any;
-}
+import { IDerivative } from '../interfaces/model-derivative';
+import { IContext } from '../common';
 
 export interface IHint {
     hint: string;
