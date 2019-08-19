@@ -383,6 +383,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-server-utils": "^4.1.2"
+		"forge-server-utils": "^4.1.3"
 	}
 }
