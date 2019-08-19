@@ -6,8 +6,12 @@ import {
     AuthenticationClient,
     DataManagementClient,
     ModelDerivativeClient,
-    DesignAutomationClient
+    DesignAutomationClient,
+    IBucket,
+    IObject,
+    urnify
 } from 'forge-server-utils';
+import { IDerivative } from './interfaces/model-derivative';
 
 export interface IContext {
     extensionContext: vscode.ExtensionContext;
@@ -39,4 +43,55 @@ export class TemplateEngine {
         }
         return func(data);
     }
+}
+
+export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
+	const buckets = await context.dataManagementClient.listBuckets();
+	const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+	if (!bucketKey) {
+		return undefined;
+	} else {
+		return buckets.find(item => item.bucketKey === bucketKey);
+	}
+}
+
+export async function promptObject(context: IContext, bucketKey: string): Promise<IObject | undefined> {
+	const objects = await context.dataManagementClient.listObjects(bucketKey);
+	const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
+	if (!objectKey) {
+		return undefined;
+	} else {
+		return objects.find(item => item.objectKey === objectKey);
+	}
+}
+
+export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
+    const urn = urnify(objectId);
+    const manifest = await context.modelDerivativeClient.getManifest(urn) as any;
+    const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+    if (!svf) {
+        vscode.window.showWarningMessage(`No derivatives yet for ${urn}`);
+        return undefined;
+    }
+    const derivatives: IDerivative[] = svf.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
+        return {
+            urn: urn,
+            name: geometry.name,
+            role: geometry.role,
+            guid: geometry.guid,
+            bubble: geometry
+        };
+    });
+
+	const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+	if (!derivativeName) {
+		return undefined;
+	} else {
+		return derivatives.find(item => item.name === derivativeName);
+	}
+}
+
+export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
+    const appBundles = await context.designAutomationClient.listAppBundles();
+    return vscode.window.showQuickPick(appBundles.filter(id => !id.endsWith('$LATEST')), { canPickMany: false, placeHolder: 'Select app bundle' });
 }

@@ -64,3 +64,14 @@ The _Data & Derivatives_ view allows you to browse [Forge Data Management](https
 The _Design Automation_ can be used for browsing [Forge Design Automation](https://forge.autodesk.com/en/docs/design-automation/v2/developers_guide/overview) entities such as app bundles and activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
 
 ![Design Automation Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/design-automation-preview.gif)
+
+## Development
+
+- clone the repository
+- install and setup dependencies: `yarn install`
+- open the project in vscode and launch the _Run Extension_ task; new vscode window will open
+- make sure you have at least one set of Forge credentials configured (see [Getting Started](#getting-started) and [Extension Settings](#extension-settings))
+- click on the Forge icon in the sidebar and start browsing
+
+> When debugging a webview inside vscode, you can open Chrome Dev Tools for it
+> using the standard shortcut (`Option`+`Command`+`I` on macOS, `Control`+`Shift`+`I` on Windows)

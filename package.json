@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.7.0",
+	"version": "0.7.1",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -115,7 +115,11 @@
 			},
 			{
 				"command": "forge.viewBucketDetails",
-				"title": "View Details"
+				"title": "View Bucket Details"
+			},
+			{
+				"command": "forge.viewObjectDetails",
+				"title": "View Object Details"
 			},
 			{
 				"command": "forge.uploadObject",
@@ -123,47 +127,39 @@
 			},
 			{
 				"command": "forge.downloadObject",
-				"title": "Download"
+				"title": "Download Object"
 			},
 			{
-				"command": "forge.translateObject",
-				"title": "Translate"
-			},
-			{
-				"command": "forge.previewDerivative",
-				"title": "Preview"
-			},
-			{
-				"command": "forge.viewDerivativeTree",
-				"title": "View Tree"
-			},
-			{
-				"command": "forge.viewDerivativeProps",
-				"title": "View Tree"
-			},
-			{
-				"command": "forge.viewDerivativeProps",
-				"title": "View Properties"
-			},
-			{
-				"command": "forge.viewObjectDetails",
-				"title": "View Details"
-			},
-			{
-				"command": "forge.viewObjectManifest",
-				"title": "View Manifest"
+				"command": "forge.deleteObject",
+				"title": "Delete Object"
 			},
 			{
 				"command": "forge.generateSignedUrl",
 				"title": "Generate Signed URL"
 			},
 			{
-				"command": "forge.deleteObject",
-				"title": "Delete"
+				"command": "forge.translateObject",
+				"title": "Translate Object"
+			},
+			{
+				"command": "forge.previewDerivative",
+				"title": "Preview Derivative"
+			},
+			{
+				"command": "forge.viewDerivativeTree",
+				"title": "View Derivative Tree"
+			},
+			{
+				"command": "forge.viewDerivativeProps",
+				"title": "View Derivative Properties"
+			},
+			{
+				"command": "forge.viewObjectManifest",
+				"title": "View Object Manifest"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
-				"title": "View Details"
+				"title": "View App Bundle Details"
 			},
 			{
 				"command": "forge.viewAppBundleVersionDetails",
@@ -387,6 +383,6 @@
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
 		"ejs": "^2.6.1",
-		"forge-server-utils": "^4.1.2"
+		"forge-server-utils": "^4.1.3"
 	}
 }
