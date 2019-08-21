@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.7.2",
+	"version": "0.8.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -126,6 +126,10 @@
 				"title": "Upload Object"
 			},
 			{
+				"command": "forge.deleteBucketObjects",
+				"title": "Delete All Objects"
+			},
+			{
 				"command": "forge.downloadObject",
 				"title": "Download Object"
 			},
@@ -237,6 +241,11 @@
 					"command": "forge.uploadObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.deleteBucketObjects",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.viewObjectDetails",
