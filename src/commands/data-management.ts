@@ -127,6 +127,7 @@ const AllowedMimeTypes = {
 	'xwd': 'image/x-xwindowdump',
 	'zip': 'application/zip'
 };
+const DeleteBatchSize = 8;
 
 function computeFileHash(filename: string): Promise<string> {
     return new Promise(function(resolve, reject) {
@@ -376,6 +377,51 @@ export async function deleteObject(object: IObject | undefined, context: IContex
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
     } catch(err) {
         vscode.window.showErrorMessage(`Could not delete object: ${JSON.stringify(err.message)}`);
+    }
+}
+
+export async function deleteAllObjects(bucket: IBucket | undefined, context: IContext) {
+	try {
+		if (!bucket) {
+			bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+		}
+
+		const { bucketKey } = bucket;
+		const objects = await context.dataManagementClient.listObjects(bucketKey);
+		if (objects.length === 0) {
+			vscode.window.showInformationMessage('No objects to delete');
+			return;
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Deleting all objects in bucket: ${bucket.bucketKey}`,
+			cancellable: true
+		}, async (progress, token) => {
+			let cancelled = false;
+			token.onCancellationRequested(() => {
+				cancelled = true;
+			});
+			let batch = [];
+			progress.report({ increment: 0 });
+			for (let i = 0, len = objects.length; i < len; i++) {
+				if (cancelled) {
+					break;
+				}
+				batch.push(context.dataManagementClient.deleteObject(bucketKey, objects[i].objectKey));
+				if (batch.length === DeleteBatchSize || i === len - 1) {
+					await Promise.all(batch);
+					progress.report({ increment: 100.0 * batch.length / len });
+					batch = [];
+				}
+			}
+		});
+        vscode.window.showInformationMessage(`Objects deleted`);
+    } catch(err) {
+        vscode.window.showErrorMessage(`Could not delete objects: ${JSON.stringify(err.message)}`);
     }
 }
 

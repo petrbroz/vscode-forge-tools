@@ -79,6 +79,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewBucketDetails', async (bucket?: IBucket) => {
 		await dmc.viewBucketDetails(bucket, context);
 	});
+	vscode.commands.registerCommand('forge.deleteBucketObjects', async (bucket?: IBucket) => {
+		await dmc.deleteAllObjects(bucket, context);
+		simpleStorageDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
 		await dmc.viewObjectDetails(object, context);
 	});
