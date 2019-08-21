@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.8.0] - 2019-09-21
+
+- Added
+  - Deleting all objects in bucket
+- Changed
+  - Moved to new version of forge-server-utils
+  - All commands can now be triggered via Command Palette, not just from the Tree View
+    - Note: for now, the commands are not available until the extension is activated,
+    that is, until you open the Forge tools in vscode sidebar
+
 ## [0.7.0] - 2019-09-01
 
 - Changed
