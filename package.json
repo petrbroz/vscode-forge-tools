@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.8.0",
+	"version": "0.9.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -162,6 +162,14 @@
 				"title": "View Object Manifest"
 			},
 			{
+				"command": "forge.deleteObjectManifest",
+				"title": "Delete Derivatives"
+			},
+			{
+				"command": "forge.viewObjectThumbnail",
+				"title": "View Object Thumbnail"
+			},
+			{
 				"command": "forge.viewAppBundleDetails",
 				"title": "View App Bundle Details"
 			},
@@ -263,19 +271,29 @@
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@5"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@6"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@7"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@8"
 				},
 				{
 					"command": "forge.previewDerivative",

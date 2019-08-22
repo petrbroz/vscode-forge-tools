@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.9.0] - 2019-09-22
+
+- Added
+  - Previewing and downloading of derivative thumbnails
+  - Deleting model derivatives
+
 ## [0.8.0] - 2019-09-21
 
 - Added
