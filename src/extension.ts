@@ -118,6 +118,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
 		await mdc.viewObjectManifest(object, context);
 	});
+	vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject) => {
+		await mdc.viewObjectThumbnail(object, context);
+	});
 
 	// Setup design automation view
 	let designAutomationDataProvider = new dap.DesignAutomationDataProvider(context, env.clientId);
