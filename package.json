@@ -162,6 +162,10 @@
 				"title": "View Object Manifest"
 			},
 			{
+				"command": "forge.deleteObjectManifest",
+				"title": "Delete Derivatives"
+			},
+			{
 				"command": "forge.viewObjectThumbnail",
 				"title": "View Object Thumbnail"
 			},
@@ -285,6 +289,11 @@
 					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@7"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@8"
 				},
 				{
 					"command": "forge.previewDerivative",

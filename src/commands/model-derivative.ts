@@ -161,6 +161,36 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 	}
 }
 
+export async function deleteObjectManifest(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		try {
+			await context.modelDerivativeClient.deleteManifest(urnify(object.objectId));
+		} catch(_) {
+			const action = await vscode.window.showInformationMessage(`
+				In order to access the manifest of ${object.objectId}, the object must be translated first.
+				Would you like to start the translation now?
+			`, 'Translate');
+			if (action === 'Translate') {
+				await translateObject(object, context);
+			}
+		}
+		vscode.window.showInformationMessage(`Derivatives deleted: ${object.objectKey}`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not delete derivatives: ${JSON.stringify(err.message)}`);
+	}	
+}
+
 export async function viewObjectThumbnail(object: IObject | undefined, context: IContext) {
 	async function downloadThumbnail(buff: ArrayBuffer, defaultUri: vscode.Uri) {
 		const uri = await vscode.window.showSaveDialog({ defaultUri });
