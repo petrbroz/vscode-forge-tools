@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - There are now two separate actions for translating objects:
+    1. `Translate Object` will simply start translation without any additional prompts
+    2. `Translate Object as Zip` will assume the object is a zip archive,
+    asking for filename of the root design in the archive
+
 ## [0.9.0] - 2019-09-22
 
 - Added

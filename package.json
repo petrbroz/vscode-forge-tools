@@ -146,6 +146,10 @@
 				"title": "Translate Object"
 			},
 			{
+				"command": "forge.translateArchive",
+				"title": "Translate Object as Zip"
+			},
+			{
 				"command": "forge.previewDerivative",
 				"title": "Preview Derivative"
 			},
@@ -266,34 +270,39 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.viewObjectManifest",
+					"command": "forge.translateArchive",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.viewObjectThumbnail",
+					"command": "forge.viewObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@5"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@6"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@7"
 				},
 				{
-					"command": "forge.deleteObjectManifest",
+					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@8"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@9"
 				},
 				{
 					"command": "forge.previewDerivative",

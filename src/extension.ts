@@ -103,7 +103,11 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	// Model derivative commands
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
-		await mdc.translateObject(object, context);
+		await mdc.translateObject(object, false, context);
+		simpleStorageDataProvider.refresh(object);
+	});
+	vscode.commands.registerCommand('forge.translateArchive', async (object?: IObject) => {
+		await mdc.translateObject(object, true, context);
 		simpleStorageDataProvider.refresh(object);
 	});
 	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: mdi.IDerivative) => {
