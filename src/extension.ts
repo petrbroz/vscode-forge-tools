@@ -90,6 +90,10 @@ export function activate(_context: vscode.ExtensionContext) {
 		await dmc.uploadObject(bucket, context);
 		simpleStorageDataProvider.refresh();
 	});
+	vscode.commands.registerCommand('forge.createEmptyObject', async (bucket?: IBucket) => {
+		await dmc.createEmptyObject(bucket, context);
+		simpleStorageDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
 		await dmc.downloadObject(object, context);
 	});

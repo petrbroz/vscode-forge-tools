@@ -126,6 +126,10 @@
 				"title": "Upload Object"
 			},
 			{
+				"command": "forge.createEmptyObject",
+				"title": "Create Empty Object"
+			},
+			{
 				"command": "forge.deleteBucketObjects",
 				"title": "Delete All Objects"
 			},
@@ -255,9 +259,14 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.deleteBucketObjects",
+					"command": "forge.createEmptyObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
 					"group": "navigation@3"
+				},
+				{
+					"command": "forge.deleteBucketObjects",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation@4"
 				},
 				{
 					"command": "forge.viewObjectDetails",
