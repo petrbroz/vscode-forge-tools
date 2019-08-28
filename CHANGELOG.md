@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Support for creating empty OSS objects (for use with signed URLs and Design Automation)
+  - Support for creating and modifying app bundles (incl. uploading their zip archives)
 - Changed
   - There are now two separate actions for translating objects:
     1. `Translate Object` will simply start translation without any additional prompts
