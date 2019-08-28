@@ -140,6 +140,18 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(designAutomationView);
 
 	// Setup design automation commands
+	vscode.commands.registerCommand('forge.createAppBundle', async () => {
+		await dac.uploadAppBundle(undefined, context);
+		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.updateAppBundle', async (entry?: dai.IAppBundleEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await dac.uploadAppBundle(entry.appbundle, context);
+		designAutomationDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: dai.IAppBundleAliasEntry | dai.ISharedAppBundleEntry) => {
 		if (entry) {
 			await dac.viewAppBundleDetails('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);

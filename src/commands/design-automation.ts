@@ -1,11 +1,82 @@
+import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { IContext, promptAppBundleFullID } from '../common';
+import { IContext, promptAppBundleFullID, promptEngine } from '../common';
+import * as FormData from 'form-data';
+import { IAppBundleDetail } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
+}
+
+function uploadAppBundleFile(appBundle: any, appBundleFilename: string) {
+    const uploadParameters = appBundle.uploadParameters.formData;
+    const form = new FormData();
+    form.append('key', uploadParameters['key']);
+    form.append('policy', uploadParameters['policy']);
+    form.append('content-type', uploadParameters['content-type']);
+    form.append('success_action_status', uploadParameters['success_action_status']);
+    form.append('success_action_redirect', uploadParameters['success_action_redirect']);
+    form.append('x-amz-signature', uploadParameters['x-amz-signature']);
+    form.append('x-amz-credential', uploadParameters['x-amz-credential']);
+    form.append('x-amz-algorithm', uploadParameters['x-amz-algorithm']);
+    form.append('x-amz-date', uploadParameters['x-amz-date']);
+    form.append('x-amz-server-side-encryption', uploadParameters['x-amz-server-side-encryption']);
+    form.append('x-amz-security-token', uploadParameters['x-amz-security-token']);
+    form.append('file', fs.createReadStream(appBundleFilename));
+    return new Promise(function(resolve, reject) {
+        form.submit(appBundle.uploadParameters.endpointURL, function(err, res) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        });
+    });
+}
+
+export async function uploadAppBundle(name: string | undefined, context: IContext) {
+	try {
+		let exists = !!name;
+		if (!name) {
+			name = await vscode.window.showInputBox({ prompt: 'Enter app bundle name', value: '' });
+			if (!name) {
+				return;
+			}
+		}
+		const uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, openLabel: 'Upload zip' });
+		if (!uris) {
+			return;
+		}
+		const engine = await promptEngine(context);
+		if (!engine) {
+			return;
+		}
+		const description = await vscode.window.showInputBox({ prompt: 'Enter app bundle description', value: '' });
+		if (typeof description === 'undefined') {
+			return;
+		}
+
+		const filepath = uris[0].fsPath;
+		let details: IAppBundleDetail;
+		if (exists) {
+			details = await context.designAutomationClient.updateAppBundle(name, engine, description);
+		} else {
+			details = await context.designAutomationClient.createAppBundle(name, engine, description);
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Uploading app bundle: ${filepath}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await uploadAppBundleFile(details, filepath);
+		});
+        vscode.window.showInformationMessage(`App bundle uploaded: ${filepath}`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not upload app bundle: ${JSON.stringify(err.message)}`);
+	}
 }
 
 export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
