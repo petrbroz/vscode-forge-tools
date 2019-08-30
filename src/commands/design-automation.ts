@@ -183,6 +183,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 		}, async (progress, token) => {
 			availableEngines = await context.designAutomationClient.listEngines();
 			availableAppBundles = await context.designAutomationClient.listAppBundles();
+			availableAppBundles = availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'));
 		});
 
 		const panel = vscode.window.createWebviewPanel(
@@ -197,12 +198,14 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			description: '',
 			version: '',
 			engine: '',
-			commandLine: [],
-			parameters: {},
-			appbundles: [],
+			commandLine: [''],
+			parameters: {
+				'': {}
+			},
+			appbundles: [availableAppBundles[0]],
 			options: {
 				engines: availableEngines,
-				appBundles: availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'))
+				appBundles: availableAppBundles
 			}
 		});
 		// Handle messages from the webview
