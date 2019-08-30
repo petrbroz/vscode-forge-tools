@@ -222,6 +222,10 @@
 				"title": "View Details"
 			},
 			{
+				"command": "forge.createActivity",
+				"title": "Create Activity"
+			},
+			{
 				"command": "forge.deleteActivity",
 				"title": "Delete"
 			},
@@ -385,6 +389,11 @@
 					"command": "forge.deleteAppBundleVersion",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.createActivity",
+					"when": "view == forgeDesignAutomationView && viewItem == owned-activities",
+					"group": "navigation@1"
 				},
 				{
 					"command": "forge.deleteActivity",
