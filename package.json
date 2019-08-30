@@ -226,6 +226,10 @@
 				"title": "Create Activity"
 			},
 			{
+				"command": "forge.updateActivity",
+				"title": "Update Activity"
+			},
+			{
 				"command": "forge.deleteActivity",
 				"title": "Delete"
 			},
@@ -406,6 +410,11 @@
 					"group": "navigation@1"
 				},
 				{
+					"command": "forge.updateActivity",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@2"
+				},
+				{
 					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
 					"group": "navigation@1"
@@ -413,7 +422,7 @@
 				{
 					"command": "forge.deleteActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@3"
+					"group": "navigation@4"
 				},
 				{
 					"command": "forge.createActivityAlias",
@@ -423,7 +432,7 @@
 				{
 					"command": "forge.updateActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@2"
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.viewActivityVersionDetails",
@@ -431,9 +440,14 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.deleteActivityVersion",
+					"command": "forge.updateActivity",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.deleteActivityVersion",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"group": "navigation@3"
 				}
 			]
 		}

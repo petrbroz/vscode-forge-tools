@@ -99,9 +99,10 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 				vscode.ViewColumn.One,
 				{ enableScripts: true }
 			);
+			const daid = DesignAutomationID.parse(activityDetail.id);
 			panel.webview.html = context.templateEngine.render('activity-details', {
 				mode: 'read',
-				id: activityDetail.id,
+				id: (daid !== null) ? daid.id : activityDetail.id,
 				description: (activityDetail as any).description, // TODO: add description to IActivityDetail
 				version: activityDetail.version,
 				engine: activityDetail.engine,
@@ -225,6 +226,121 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 		);
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not create activity: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCallback: (activity: IActivityDetail) => void, context: IContext) {
+	async function update(params: any, panel: vscode.WebviewPanel) {
+		if (params.appBundles.length === 0) {
+			vscode.window.showErrorMessage('At least one app bundle must be provided.');
+			return;
+		} else if (params.appBundles.length > 1) {
+			// TODO: add support for updating activities with multiple app bundles
+			vscode.window.showWarningMessage('Currently it is only possible to update activities with one app bundle. Additional bundles will be ignored.');
+		}
+
+		const appBundleID = DesignAutomationID.parse(params.appBundles[0]) as DesignAutomationID;
+		const inputs: IActivityParam[] = [];
+		const outputs: IActivityParam[] = [];
+		for (const name of Object.keys(params.parameters)) {
+			const param = params.parameters[name];
+			switch (param.verb) {
+				case 'get':
+					inputs.push({
+						name,
+						verb: param.verb,
+						description: param.description,
+						localName: param.localName,
+						// TODO: support 'ondemand', 'required', and 'zip' fields
+					});
+					break;
+				case 'put':
+					outputs.push({
+						name,
+						verb: param.verb,
+						description: param.description,
+						localName: param.localName,
+						// TODO: support 'ondemand', 'required', and 'zip' fields
+					});
+					break;
+			}
+		}
+
+		try {
+			// TODO: currently the forge-server-utils library builts the command line
+			// based on selected engine; add support for custom command lines as well
+			const activity = await context.designAutomationClient.updateActivity(
+				params.id,
+				params.description,
+				appBundleID.id,
+				appBundleID.alias,
+				params.engine,
+				inputs,
+				outputs
+			);
+			panel.dispose();
+			vscode.window.showInformationMessage(`Activity updated: ${activity.id} (version ${activity.version})`);
+			successCallback(activity);
+		} catch(err) {
+			vscode.window.showErrorMessage(`Could not update activity: ${JSON.stringify(err.message)}`);
+		}
+	}
+
+	try {
+		let availableEngines: string[] = [];
+		let availableAppBundles: string[] = [];
+		let originalActivity: IActivityDetail = typeof(id) === 'string'
+			? await context.designAutomationClient.getActivity(id)
+			: await context.designAutomationClient.getActivityVersion(id.name, id.version);
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Collecting available valus for activity`,
+			cancellable: false
+		}, async (progress, token) => {
+			availableEngines = await context.designAutomationClient.listEngines();
+			availableAppBundles = await context.designAutomationClient.listAppBundles();
+			availableAppBundles = availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'));
+		});
+
+		const panel = vscode.window.createWebviewPanel(
+			'update-activity',
+			`Activity: ${originalActivity.id}`,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const daid = DesignAutomationID.parse(originalActivity.id) as DesignAutomationID;
+		panel.webview.html = context.templateEngine.render('activity-details', {
+			mode: 'update',
+			id: (daid !== null) ? daid.id : originalActivity.id,
+			description: (originalActivity as any).description,
+			version: originalActivity.version,
+			engine: originalActivity.engine,
+			commandLine: originalActivity.commandLine,
+			parameters: originalActivity.parameters,
+			appbundles: originalActivity.appbundles,
+			options: {
+				engines: availableEngines,
+				appBundles: availableAppBundles
+			}
+		});
+		// Handle messages from the webview
+		panel.webview.onDidReceiveMessage(
+			message => {
+				switch (message.command) {
+					case 'create':
+						update(message.activity, panel);
+						break;
+					case 'cancel':
+						panel.dispose();
+						break;
+				}
+			},
+			undefined,
+			context.extensionContext.subscriptions
+		);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not update activity: ${JSON.stringify(err.message)}`);
 	}
 }
 

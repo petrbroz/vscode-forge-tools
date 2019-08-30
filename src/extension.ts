@@ -238,7 +238,21 @@ export function activate(_context: vscode.ExtensionContext) {
 		designAutomationDataProvider.refresh();
 	});
 	vscode.commands.registerCommand('forge.createActivity', async () => {
-		await dac.createActivity((activity: IActivityDetail) => { designAutomationDataProvider.refresh(); }, context);
+		await dac.createActivity(
+			(activity: IActivityDetail) => { designAutomationDataProvider.refresh(); },
+			context
+		);
+	});
+	vscode.commands.registerCommand('forge.updateActivity', async (entry?: dai.IActivityAliasEntry | dai.IActivityVersionEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await dac.updateActivity(
+			'alias' in entry ? `${entry.client}.${entry.activity}+${entry.alias}` : { name: entry.activity, version: entry.version },
+			(activity: IActivityDetail) => { designAutomationDataProvider.refresh(); },
+			context
+		);
 	});
 	vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: dai.IActivityAliasesEntry) => {
 		if (!entry) {
