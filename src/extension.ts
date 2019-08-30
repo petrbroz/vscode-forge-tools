@@ -5,7 +5,8 @@ import {
 	IObject,
 	DataManagementClient,
 	ModelDerivativeClient,
-	DesignAutomationClient
+	DesignAutomationClient,
+	IActivityDetail
 } from 'forge-server-utils';
 import * as dmp from './providers/data-management';
 import * as dap from './providers/design-automation';
@@ -235,6 +236,9 @@ export function activate(_context: vscode.ExtensionContext) {
 		}
 		await dac.deleteActivityAlias(entry.activity, entry.alias, context);
 		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.createActivity', async () => {
+		await dac.createActivity((activity: IActivityDetail) => { designAutomationDataProvider.refresh(); }, context);
 	});
 	vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: dai.IActivityAliasesEntry) => {
 		if (!entry) {
