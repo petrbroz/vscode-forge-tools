@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - When switching environments, the auth. client that generates tokens for the viewer
+  is now updated as well
+
 ## [0.10.0] - 2019-09-30
 
 - Added
