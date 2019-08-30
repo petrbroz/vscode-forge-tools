@@ -280,6 +280,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		context.dataManagementClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
 		context.designAutomationClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
 		context.modelDerivativeClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
