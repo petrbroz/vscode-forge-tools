@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { IContext, promptAppBundleFullID, promptEngine } from '../common';
-import * as FormData from 'form-data';
-import { IAppBundleDetail, IAppBundleUploadParams } from 'forge-server-utils';
+import { IAppBundleUploadParams } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
