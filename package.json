@@ -440,13 +440,12 @@
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
 		"tslint": "^5.12.1",
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28"
+		"typescript": "^3.6.2",
+		"vscode": "^1.1.36"
 	},
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
-		"ejs": "^2.6.1",
-		"forge-server-utils": "^4.2.0",
-		"form-data": "^2.5.0"
+		"ejs": "^2.6.2",
+		"forge-server-utils": "^4.4.0"
 	}
 }
