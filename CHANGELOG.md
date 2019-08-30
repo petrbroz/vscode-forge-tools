@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.10.0] - 2019-09-30
+
 - Added
   - Support for creating empty OSS objects (for use with signed URLs and Design Automation)
   - Support for creating and modifying app bundles (incl. uploading their zip archives)
