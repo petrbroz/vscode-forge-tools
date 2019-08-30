@@ -297,6 +297,33 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 	}
 }
 
+export async function createEmptyObject(bucket: IBucket | undefined, context: IContext) {
+	if (!bucket) {
+		bucket = await promptBucket(context);
+		if (!bucket) {
+			return;
+		}
+	}
+
+	const { bucketKey } = bucket;
+
+    const name = await vscode.window.showInputBox({ prompt: 'Enter object name' });
+    if (!name) {
+		return;
+	}
+    const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+    if (!contentType) {
+		return;
+	}
+
+    try {
+		const obj = await context.dataManagementClient.uploadObject(bucketKey, name, contentType, Buffer.from([]));
+		vscode.window.showInformationMessage(`Object created: ${obj.objectId}`);
+    } catch(err) {
+		vscode.window.showErrorMessage(`Could not create file: ${JSON.stringify(err.message)}`);
+	}
+}
+
 export async function downloadObject(object: IObject | undefined, context: IContext) {
 	if (!object) {
 		const bucket = await promptBucket(context);

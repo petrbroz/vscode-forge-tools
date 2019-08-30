@@ -95,3 +95,8 @@ export async function promptAppBundleFullID(context: IContext): Promise<string |
     const appBundles = await context.designAutomationClient.listAppBundles();
     return vscode.window.showQuickPick(appBundles.filter(id => !id.endsWith('$LATEST')), { canPickMany: false, placeHolder: 'Select app bundle' });
 }
+
+export async function promptEngine(context: IContext): Promise<string | undefined> {
+    const engines = await context.designAutomationClient.listEngines();
+    return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
+}

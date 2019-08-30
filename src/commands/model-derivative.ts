@@ -8,7 +8,12 @@ import {
 import { IContext, promptBucket, promptObject, promptDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 
-export async function translateObject(object: IObject | undefined, context: IContext) {
+enum TranslationActions {
+	Translate = 'Translate',
+	TranslateAsArchive = 'Translate as Archive'
+}
+
+export async function translateObject(object: IObject | undefined, compressed: boolean, context: IContext) {
     try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -22,8 +27,11 @@ export async function translateObject(object: IObject | undefined, context: ICon
 		}
 
 		const urn = urnify(object.objectId);
-		const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'If this is a compressed file, enter the filename of the root design' });
-		if (rootDesignFilename) {
+		if (compressed) {
+			const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'Enter the filename of the root design' });
+			if (!rootDesignFilename) {
+				return;
+			}
 			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
 		} else {
 			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
@@ -151,9 +159,14 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
-			`, 'Translate');
-			if (action === 'Translate') {
-				await translateObject(object, context);
+			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
+			switch (action) {
+				case TranslationActions.Translate:
+					await translateObject(object, false, context);
+					break;
+				case TranslationActions.TranslateAsArchive:
+					await translateObject(object, true, context);
+					break;
 			}
 		}
 	} catch(err) {
@@ -180,9 +193,14 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
-			`, 'Translate');
-			if (action === 'Translate') {
-				await translateObject(object, context);
+			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
+			switch (action) {
+				case TranslationActions.Translate:
+					await translateObject(object, false, context);
+					break;
+				case TranslationActions.TranslateAsArchive:
+					await translateObject(object, true, context);
+					break;
 			}
 		}
 		vscode.window.showInformationMessage(`Derivatives deleted: ${object.objectKey}`);
@@ -257,9 +275,14 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the thumbnails of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
-			`, 'Translate');
-			if (action === 'Translate') {
-				await translateObject(object, context);
+			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
+			switch (action) {
+				case TranslationActions.Translate:
+					await translateObject(object, false, context);
+					break;
+				case TranslationActions.TranslateAsArchive:
+					await translateObject(object, true, context);
+					break;
 			}
 		}
 	} catch(err) {

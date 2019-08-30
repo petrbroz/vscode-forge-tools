@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.9.0",
+	"version": "0.10.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -126,6 +126,10 @@
 				"title": "Upload Object"
 			},
 			{
+				"command": "forge.createEmptyObject",
+				"title": "Create Empty Object"
+			},
+			{
 				"command": "forge.deleteBucketObjects",
 				"title": "Delete All Objects"
 			},
@@ -144,6 +148,10 @@
 			{
 				"command": "forge.translateObject",
 				"title": "Translate Object"
+			},
+			{
+				"command": "forge.translateArchive",
+				"title": "Translate Object as Zip"
 			},
 			{
 				"command": "forge.previewDerivative",
@@ -168,6 +176,14 @@
 			{
 				"command": "forge.viewObjectThumbnail",
 				"title": "View Object Thumbnail"
+			},
+			{
+				"command": "forge.createAppBundle",
+				"title": "Create App Bundle"
+			},
+			{
+				"command": "forge.updateAppBundle",
+				"title": "Update App Bundle"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
@@ -251,9 +267,14 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.deleteBucketObjects",
+					"command": "forge.createEmptyObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
 					"group": "navigation@3"
+				},
+				{
+					"command": "forge.deleteBucketObjects",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation@4"
 				},
 				{
 					"command": "forge.viewObjectDetails",
@@ -266,34 +287,39 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "forge.viewObjectManifest",
+					"command": "forge.translateArchive",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.viewObjectThumbnail",
+					"command": "forge.viewObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@5"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@6"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@7"
 				},
 				{
-					"command": "forge.deleteObjectManifest",
+					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@8"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@9"
 				},
 				{
 					"command": "forge.previewDerivative",
@@ -311,9 +337,19 @@
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.deleteAppBundle",
+					"command": "forge.createAppBundle",
+					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundles",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.updateAppBundle",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
 					"group": "navigation@1"
+				},
+				{
+					"command": "forge.deleteAppBundle",
+					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
+					"group": "navigation@2"
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
@@ -404,12 +440,12 @@
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
 		"tslint": "^5.12.1",
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28"
+		"typescript": "^3.6.2",
+		"vscode": "^1.1.36"
 	},
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
-		"ejs": "^2.6.1",
-		"forge-server-utils": "^4.2.0"
+		"ejs": "^2.6.2",
+		"forge-server-utils": "^4.4.0"
 	}
 }

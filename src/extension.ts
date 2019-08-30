@@ -90,6 +90,10 @@ export function activate(_context: vscode.ExtensionContext) {
 		await dmc.uploadObject(bucket, context);
 		simpleStorageDataProvider.refresh();
 	});
+	vscode.commands.registerCommand('forge.createEmptyObject', async (bucket?: IBucket) => {
+		await dmc.createEmptyObject(bucket, context);
+		simpleStorageDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
 		await dmc.downloadObject(object, context);
 	});
@@ -103,7 +107,11 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	// Model derivative commands
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
-		await mdc.translateObject(object, context);
+		await mdc.translateObject(object, false, context);
+		simpleStorageDataProvider.refresh(object);
+	});
+	vscode.commands.registerCommand('forge.translateArchive', async (object?: IObject) => {
+		await mdc.translateObject(object, true, context);
 		simpleStorageDataProvider.refresh(object);
 	});
 	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: mdi.IDerivative) => {
@@ -132,6 +140,18 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(designAutomationView);
 
 	// Setup design automation commands
+	vscode.commands.registerCommand('forge.createAppBundle', async () => {
+		await dac.uploadAppBundle(undefined, context);
+		designAutomationDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.updateAppBundle', async (entry?: dai.IAppBundleEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await dac.uploadAppBundle(entry.appbundle, context);
+		designAutomationDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: dai.IAppBundleAliasEntry | dai.ISharedAppBundleEntry) => {
 		if (entry) {
 			await dac.viewAppBundleDetails('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);

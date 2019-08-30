@@ -1,11 +1,57 @@
+import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { IContext, promptAppBundleFullID } from '../common';
+import { IContext, promptAppBundleFullID, promptEngine } from '../common';
+import * as FormData from 'form-data';
+import { IAppBundleDetail, IAppBundleUploadParams } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
+}
+
+export async function uploadAppBundle(name: string | undefined, context: IContext) {
+	try {
+		let exists = !!name;
+		if (!name) {
+			name = await vscode.window.showInputBox({ prompt: 'Enter app bundle name', value: '' });
+			if (!name) {
+				return;
+			}
+		}
+		const uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, openLabel: 'Upload zip' });
+		if (!uris) {
+			return;
+		}
+		const engine = await promptEngine(context);
+		if (!engine) {
+			return;
+		}
+		const description = await vscode.window.showInputBox({ prompt: 'Enter app bundle description', value: '' });
+		if (typeof description === 'undefined') {
+			return;
+		}
+
+		const filepath = uris[0].fsPath;
+		let details: IAppBundleUploadParams;
+		if (exists) {
+			details = await context.designAutomationClient.updateAppBundle(name, engine, description);
+		} else {
+			details = await context.designAutomationClient.createAppBundle(name, engine, description);
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Uploading app bundle: ${filepath}`,
+			cancellable: false
+		}, async (progress, token) => {
+			const stream = fs.createReadStream(filepath);
+			await context.designAutomationClient.uploadAppBundleArchive(details, stream);
+		});
+        vscode.window.showInformationMessage(`App bundle uploaded: ${filepath}`);
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not upload app bundle: ${JSON.stringify(err.message)}`);
+	}
 }
 
 export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {

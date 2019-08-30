@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.10.0] - 2019-09-30
+
+- Added
+  - Support for creating empty OSS objects (for use with signed URLs and Design Automation)
+  - Support for creating and modifying app bundles (incl. uploading their zip archives)
+- Changed
+  - There are now two separate actions for translating objects:
+    1. `Translate Object` will simply start translation without any additional prompts
+    2. `Translate Object as Zip` will assume the object is a zip archive,
+    asking for filename of the root design in the archive
+  - Updated npm dependencies
+
 ## [0.9.0] - 2019-09-22
 
 - Added
