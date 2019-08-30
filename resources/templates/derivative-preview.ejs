@@ -48,9 +48,9 @@
             }
         }
 
-        function onDocumentLoadFailure(err) {
+        function onDocumentLoadFailure(err, msg) {
             container.classList.add('alert', 'alert-danger');
-            container.innerText = `Document loading failed (${err})`;
+            container.innerText = `Document loading failed (${msg})`;
         }
     </script>
 </body>
