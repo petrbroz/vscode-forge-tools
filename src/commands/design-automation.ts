@@ -544,12 +544,10 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 		if (activity.parameters) {
 			for (const name of Object.keys(activity.parameters)) {
 				if (params.hasOwnProperty(name)) {
-					if (activity.parameters[name].verb === 'put') {
-						outputs.push({ name, url: params[name] });
-					} else if (activity.parameters[name].verb === 'get') {
+					if (activity.parameters[name].verb === 'get') {
 						inputs.push({ name, url: params[name] });
 					} else {
-						console.warn('Unsupported activity parameter verb:', activity.parameters[name]);
+						outputs.push({ name, url: params[name] });
 					}
 				}
 			}
