@@ -277,6 +277,13 @@ export function activate(_context: vscode.ExtensionContext) {
 		await dac.deleteActivityVersion(entry.activity, entry.version, context);
 		designAutomationDataProvider.refresh();
 	});
+	vscode.commands.registerCommand('forge.createWorkitem', async (entry?: dai.IActivityAliasEntry | dai.ISharedActivityEntry) => {
+		if (!entry) {
+			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+			return;
+		}
+		await dac.createWorkitem(('fullid' in entry) ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`, context);
+	});
 
 	// Setup rest
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {

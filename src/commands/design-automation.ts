@@ -1,13 +1,19 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { IContext, promptAppBundleFullID, promptEngine } from '../common';
-import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID } from 'forge-server-utils';
+import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
+}
+
+function sleep(ms: number) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() { resolve(); }, ms);
+    });
 }
 
 export async function uploadAppBundle(name: string | undefined, context: IContext) {
@@ -107,8 +113,8 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 				version: activityDetail.version,
 				engine: activityDetail.engine,
 				commandLine: activityDetail.commandLine,
-				parameters: activityDetail.parameters,
-				appbundles: activityDetail.appbundles
+				parameters: activityDetail.parameters || {},
+				appbundles: activityDetail.appbundles || []
 			});
 		});
 	} catch(err) {
@@ -527,5 +533,96 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {
 		vscode.window.showErrorMessage(`Could not update activity alias: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
+	async function run(activity: IActivityDetail, params: { [name: string]: string }) {
+		let inputs: IWorkItemParam[] = [];
+		let outputs: IWorkItemParam[] = [];
+		if (activity.parameters) {
+			for (const name of Object.keys(activity.parameters)) {
+				if (params.hasOwnProperty(name)) {
+					if (activity.parameters[name].verb === 'put') {
+						outputs.push({ name, url: params[name] });
+					} else if (activity.parameters[name].verb === 'get') {
+						inputs.push({ name, url: params[name] });
+					} else {
+						console.warn('Unsupported activity parameter verb:', activity.parameters[name]);
+					}
+				}
+			}
+		}
+
+		try {
+			let workitem = await context.designAutomationClient.createWorkItem(id, inputs, outputs);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Processing workitem: ${workitem.id}`,
+				cancellable: false
+			}, async (progress, token) => {
+				while (workitem.status === 'inprogress' || workitem.status === 'pending') {
+					await sleep(5000);
+					workitem = await context.designAutomationClient.workItemDetails(workitem.id);
+					progress.report({ message: workitem.status });
+				}
+			});
+
+			let action: string | undefined;
+			if (workitem.status === 'success') {
+				action = await vscode.window.showInformationMessage(`Workitem succeeded`, 'View Report');
+			} else {
+				action = await vscode.window.showErrorMessage(`Workitem failed`, 'View Report');
+			}
+			if (action === 'View Report') {
+				const doc = await vscode.workspace.openTextDocument(vscode.Uri.parse(workitem.reportUrl));
+				vscode.window.showTextDocument(doc);
+			}
+		} catch(err) {
+			let msg = `Could not start workitem: ${JSON.stringify(err.message)}`;
+			if (err.response) {
+				msg += ` (${JSON.stringify(err.response.data)})`;
+			}
+			vscode.window.showErrorMessage(msg);
+		}
+	}
+
+	try {
+		let activity: IActivityDetail | undefined;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting activity details: ${id}`,
+			cancellable: false
+		}, async (progress, token) => {
+			activity = await context.designAutomationClient.getActivity(id);
+		});
+
+		if (activity) {
+			const panel = vscode.window.createWebviewPanel(
+				'workitem',
+				`Workitem: ${activity.id}`,
+				vscode.ViewColumn.One,
+				{ enableScripts: true }
+			);
+			panel.webview.html = context.templateEngine.render('workitem', { activity });
+			// Handle messages from the webview
+			panel.webview.onDidReceiveMessage(
+				message => {
+					switch (message.command) {
+						case 'start':
+							run(activity as IActivityDetail, message.parameters);
+							panel.dispose();
+							break;
+						case 'cancel':
+							panel.dispose();
+							break;
+					}
+				},
+				undefined,
+				context.extensionContext.subscriptions
+			);
+		}
+	} catch(err) {
+		vscode.window.showErrorMessage(`Could not create workitem: ${JSON.stringify(err.message)}`);
 	}
 }

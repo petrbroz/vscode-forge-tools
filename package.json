@@ -248,6 +248,10 @@
 			{
 				"command": "forge.deleteActivityVersion",
 				"title": "Delete"
+			},
+			{
+				"command": "forge.createWorkitem",
+				"title": "Create Workitem"
 			}
 		],
 		"menus": {
@@ -415,14 +419,24 @@
 					"group": "navigation@2"
 				},
 				{
+					"command": "forge.createWorkitem",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@4"
+				},
+				{
 					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
 					"group": "navigation@1"
 				},
 				{
+					"command": "forge.createWorkitem",
+					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
+					"group": "navigation@2"
+				},
+				{
 					"command": "forge.deleteActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@4"
+					"group": "navigation@5"
 				},
 				{
 					"command": "forge.createActivityAlias",

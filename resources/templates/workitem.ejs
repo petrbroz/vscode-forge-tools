@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body {
+            padding: 1em;
+        }
+
+        body, .form-control-plaintext, .table {
+            color: var(--vscode-editor-foreground);
+            background-color: var(--vscode-editor-background);
+        }
+    </style>
+    <title>
+        Workitem: <%= activity.id %>
+    </title>
+</head>
+<body>
+    <form>
+        <div class="form-group row">
+            <!-- Activity ID -->
+            <label for="activity-id" class="col-sm-2 col-form-label">Activity</label>
+            <div class="col-sm-10">
+                <input type="text" id="activity-id" class="form-control" value="<%= activity.id %>" readonly>
+            </div>
+        </div>
+        <% if (activity.parameters) { %>
+            <div class="form-group row">
+                <!-- Parameters -->
+                <label for="parameters" class="col-sm-2 col-form-label">Parameters</label>
+                <div class="col-sm-10">
+                    <table id="parameters" class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (const param of Object.keys(activity.parameters)) { %>
+                                <tr>
+                                    <td>
+                                        <input type="text" name="param-name" class="form-control" value="<%= param %>" readonly>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="param-value" class="form-control" value="" placeholder="Value">
+                                    </td>
+                                    <!-- <td>
+                                        <button type="button" name="remove-parameter" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                    </td> -->
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <% } %>
+        <div class="form-group row">
+            <div class="col">
+                <button type="button" id="start" class="btn btn-primary">Run</button>
+                <button type="button" id="cancel" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script>
+        const vscode = acquireVsCodeApi();
+        let parameters = {};
+        $('#start').click(function () {
+            $('#parameters > tbody > tr').each(function () {
+                const $row = $(this);
+                const name = $row.find("input[name='param-name']").val();
+                parameters[name] = $row.find("input[name='param-value']").val();
+            });
+            vscode.postMessage({
+                command: 'start',
+                parameters
+            });
+        });
+        $('#cancel').click(function () {
+            vscode.postMessage({ command: 'cancel' });
+        });
+
+        // window.addEventListener('message', event => {
+        //     const message = event.data;
+        //     switch (message.command) {
+        //     }
+        // });
+    </script>
+</body>
+</html>
