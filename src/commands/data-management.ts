@@ -8,7 +8,7 @@ import {
 	IResumableUploadRange,
 	DataRetentionPolicy
 } from 'forge-server-utils';
-import { IContext, promptBucket, promptObject } from '../common';
+import { IContext, promptBucket, promptObject, showErrorMessage } from '../common';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const AllowedMimeTypes = {
@@ -165,7 +165,7 @@ export async function createBucket(context: IContext) {
 		});
         vscode.window.showInformationMessage(`Bucket created: ${name}`);
     } catch (err) {
-		vscode.window.showErrorMessage(`Could not create bucket: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create bucket', err);
     }
 }
 
@@ -194,7 +194,7 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 			panel.webview.html = context.templateEngine.render('bucket-details', { bucket: bucketDetail });
 		});
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access bucket: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access bucket', err);
 	}
 }
 
@@ -288,7 +288,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 			vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
 		}
     } catch(err) {
-		vscode.window.showErrorMessage(`Could not upload file: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not upload file', err);
 	} finally {
 		if (fd !== -1) {
 			fs.closeSync(fd);
@@ -320,7 +320,7 @@ export async function createEmptyObject(bucket: IBucket | undefined, context: IC
 		const obj = await context.dataManagementClient.uploadObject(bucketKey, name, contentType, Buffer.from([]));
 		vscode.window.showInformationMessage(`Object created: ${obj.objectId}`);
     } catch(err) {
-		vscode.window.showErrorMessage(`Could not create file: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create file', err);
 	}
 }
 
@@ -353,7 +353,7 @@ export async function downloadObject(object: IObject | undefined, context: ICont
 		});
         vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
     } catch(err) {
-        vscode.window.showErrorMessage(`Could not download file: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not download file', err);
     }
 }
 
@@ -377,7 +377,7 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 		);
 		panel.webview.html = context.templateEngine.render('object-details', { object });
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access object', err);
 	}
 }
 
@@ -403,7 +403,7 @@ export async function deleteObject(object: IObject | undefined, context: IContex
 		});
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
     } catch(err) {
-        vscode.window.showErrorMessage(`Could not delete object: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not delete object', err);
     }
 }
 
@@ -448,7 +448,7 @@ export async function deleteAllObjects(bucket: IBucket | undefined, context: ICo
 		});
         vscode.window.showInformationMessage(`Objects deleted`);
     } catch(err) {
-        vscode.window.showErrorMessage(`Could not delete objects: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not delete objects', err);
     }
 }
 
@@ -477,6 +477,6 @@ export async function generateSignedUrl(object: IObject | undefined, context: IC
 			vscode.env.clipboard.writeText(signedUrl.signedUrl);
 		}
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not generate signed URL: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not generate signed URL', err);
 	}
 }

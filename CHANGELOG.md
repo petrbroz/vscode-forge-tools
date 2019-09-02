@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added
   - Support for creating and modifying DA activities
   - Basic support for running DA workitems
+  - Error reports now include more information, incl. server responses
 
 ## [0.10.1] - 2019-09-30
 

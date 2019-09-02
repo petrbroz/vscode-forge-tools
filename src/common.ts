@@ -100,3 +100,11 @@ export async function promptEngine(context: IContext): Promise<string | undefine
     const engines = await context.designAutomationClient.listEngines();
     return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
 }
+
+export function showErrorMessage(title: string, err: any) {
+    let msg = title + ': ' + err.message;
+    if (err.response) {
+        msg += ' (' + JSON.stringify(err.response.data) + ')';
+    }
+    vscode.window.showErrorMessage(msg);
+}

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { IContext, promptAppBundleFullID, promptEngine } from '../common';
+import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
@@ -55,7 +55,7 @@ export async function uploadAppBundle(name: string | undefined, context: IContex
 		});
         vscode.window.showInformationMessage(`App bundle uploaded: ${filepath}`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not upload app bundle: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not upload app bundle', err);
 	}
 }
 
@@ -85,7 +85,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 			panel.webview.html = context.templateEngine.render('appbundle-details', { bundle: appBundleDetail });
 		});
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access appbundle: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access app bundle', err);
 	}
 }
 
@@ -118,7 +118,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 			});
 		});
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access activity', err);
 	}
 }
 
@@ -175,7 +175,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			vscode.window.showInformationMessage(`Activity created: ${activity.id} (version ${activity.version})`);
 			successCallback(activity);
 		} catch(err) {
-			vscode.window.showErrorMessage(`Could not create activity: ${JSON.stringify(err.message)}`);
+			showErrorMessage('Could not create activity', err);
 		}
 	}
 
@@ -231,7 +231,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			context.extensionContext.subscriptions
 		);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create activity', err);
 	}
 }
 
@@ -288,7 +288,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 			vscode.window.showInformationMessage(`Activity updated: ${activity.id} (version ${activity.version})`);
 			successCallback(activity);
 		} catch(err) {
-			vscode.window.showErrorMessage(`Could not update activity: ${JSON.stringify(err.message)}`);
+			showErrorMessage('Could not update activity', err);
 		}
 	}
 
@@ -346,7 +346,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 			context.extensionContext.subscriptions
 		);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not update activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not update activity', err);
 	}
 }
 
@@ -361,7 +361,7 @@ export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 		});
 		vscode.window.showInformationMessage(`Appbundle removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove appbundle: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove app bundle', err);
 	}
 }
 
@@ -387,7 +387,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 		});
 		vscode.window.showInformationMessage(`Appbundle alias created`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create appbundle alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create app bundle alias', err);
 	}
 }
 
@@ -409,7 +409,7 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 		});
 		vscode.window.showInformationMessage(`Appbundle alias updated`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not update appbundle alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not update app bundle alias', err);
 	}
 }
 
@@ -424,7 +424,7 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 		});
 		vscode.window.showInformationMessage(`Appbundle alias removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove appbundle alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove app bundle alias', err);
 	}
 }
 
@@ -439,7 +439,7 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 		});
 		vscode.window.showInformationMessage(`Appbundle version removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove appbundle version: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove app bundle version', err);
 	}
 }
 
@@ -454,7 +454,7 @@ export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 		});
 		vscode.window.showInformationMessage(`Activity removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove activity', err);
 	}
 }
 
@@ -469,7 +469,7 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 		});
 		vscode.window.showInformationMessage(`Activity alias removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove activity alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove activity alias', err);
 	}
 }
 
@@ -510,7 +510,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 		});
 		vscode.window.showInformationMessage(`Activity alias created`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create activity alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create activity alias', err);
 	}
 }
 
@@ -532,7 +532,7 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 		});
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not update activity alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not update activity alias', err);
 	}
 }
 
@@ -579,11 +579,7 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 				vscode.window.showTextDocument(doc);
 			}
 		} catch(err) {
-			let msg = `Could not start workitem: ${JSON.stringify(err.message)}`;
-			if (err.response) {
-				msg += ` (${JSON.stringify(err.response.data)})`;
-			}
-			vscode.window.showErrorMessage(msg);
+			showErrorMessage('Could not start workitem', err);
 		}
 	}
 
@@ -623,6 +619,6 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 			);
 		}
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create workitem: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create workitem', err);
 	}
 }
