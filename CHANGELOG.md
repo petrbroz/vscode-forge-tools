@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.11.1] - 2019-09-02
+
+- Changed
+  - Styling of the UI for creating activities
+- Fixed
+  - Collection of inputs/outputs for DA workitems
+
 ## [0.11.0] - 2019-09-02
 
 - Added
