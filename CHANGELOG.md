@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Support for creating and modifying DA activities
   - Basic support for running DA workitems
   - Error reports now include more information, incl. server responses
+- Changed
+  - All "preview" webviews now use a consistent look
 
 ## [0.10.1] - 2019-09-30
 
