@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/8309329604.js"></script>
     <style>
         body {
             padding: 1em;
@@ -15,8 +16,8 @@
             background-color: var(--vscode-editor-background);
         }
 
-        button.btn-danger {
-            width: auto;
+        .table {
+            margin-bottom: 0.5rem;
         }
     </style>
     <title>
@@ -89,7 +90,7 @@
                                         <input type="text" name="command-line" class="form-control" value="<%= line %>" placeholder="Enter New Command">
                                     </td>
                                     <td style="width: 5%">
-                                        <button type="button" name="remove-command-line" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                        <button type="button" name="remove-command-line" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
                                     </td>
                                 <% } %>
                             </tr>
@@ -97,7 +98,7 @@
                     </tbody>
                 </table>
                 <% if (mode !== 'read') { %>
-                    <button type="button" name="add-command-line" class="btn btn-outline-primary float-right">Add Command Line</button>
+                    <button type="button" name="add-command-line" class="btn btn-outline-primary float-right"><i class="fas fa-plus-circle"></i> Command Line</button>
                 <% } %>
             </div>
         </div>
@@ -155,7 +156,7 @@
                                         <input type="text" name="param-local" class="form-control" value="<%= parameters[param].localName %>" placeholder="Local Name">
                                     </td>
                                     <td>
-                                        <button type="button" name="remove-parameter" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                        <button type="button" name="remove-parameter" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
                                     </td>
                                 <% } %>
                             </tr>
@@ -163,7 +164,7 @@
                     </tbody>
                 </table>
                 <% if (mode !== 'read') { %>
-                    <button type="button" name="add-parameter" class="btn btn-outline-primary float-right">Add Parameter</button>
+                    <button type="button" name="add-parameter" class="btn btn-outline-primary float-right"><i class="fas fa-plus-circle"></i> Parameter</button>
                 <% } %>
             </div>
         </div>
@@ -192,7 +193,7 @@
                                         </select>
                                     </td>
                                     <td style="width: 5%">
-                                        <button type="button" name="remove-appbundle" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                        <button type="button" name="remove-appbundle" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
                                     </td>
                                 <% } %>
                             </tr>
@@ -200,7 +201,7 @@
                     </tbody>
                 </table>
                 <% if (mode !== 'read') { %>
-                    <button type="button" name="add-appbundle" class="btn btn-outline-primary float-right">Add Bundle</button>
+                    <button type="button" name="add-appbundle" class="btn btn-outline-primary float-right"><i class="fas fa-plus-circle"></i> App Bundle</button>
                 <% } %>
             </div>
         </div>
@@ -228,7 +229,7 @@
                             <input type="text" name="command-line" class="form-control" value="" placeholder="Enter New Command">
                         </td>
                         <td style="width: 5%">
-                            <button type="button" name="remove-command-line" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                            <button type="button" name="remove-command-line" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
                         </td>
                     </tr>
                 `);
@@ -259,7 +260,7 @@
                             <input type="text" name="param-local" class="form-control" value="" placeholder="Parameter Local Name">
                         </td>
                         <td>
-                            <button type="button" name="remove-parameter" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                            <button type="button" name="remove-parameter" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
                         </td>
                     </tr>
                 `);
@@ -282,7 +283,7 @@
                             </select>
                         </td>
                         <td style="width: 5%">
-                            <button type="button" name="remove-appbundle" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                            <button type="button" name="remove-appbundle" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
                         </td>
                     </tr>
                 `);
