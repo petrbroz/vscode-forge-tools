@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.11.0] - 2019-09-02
+
 - Added
   - Support for creating and modifying DA activities
   - Basic support for running DA workitems
@@ -13,13 +15,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Changed
   - All "preview" webviews now use a consistent look
 
-## [0.10.1] - 2019-09-30
+## [0.10.1] - 2019-08-30
 
 - Fixed
   - When switching environments, the auth. client that generates tokens for the viewer
   is now updated as well
 
-## [0.10.0] - 2019-09-30
+## [0.10.0] - 2019-08-30
 
 - Added
   - Support for creating empty OSS objects (for use with signed URLs and Design Automation)
@@ -31,13 +33,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     asking for filename of the root design in the archive
   - Updated npm dependencies
 
-## [0.9.0] - 2019-09-22
+## [0.9.0] - 2019-08-22
 
 - Added
   - Previewing and downloading of derivative thumbnails
   - Deleting model derivatives
 
-## [0.8.0] - 2019-09-21
+## [0.8.0] - 2019-08-21
 
 - Added
   - Deleting all objects in bucket
@@ -47,7 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     - Note: for now, the commands are not available until the extension is activated,
     that is, until you open the Forge tools in vscode sidebar
 
-## [0.7.0] - 2019-09-01
+## [0.7.0] - 2019-08-01
 
 - Changed
   - Moved to new version of forge-server-utils
