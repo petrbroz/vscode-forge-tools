@@ -5,7 +5,7 @@ import {
 	urnify,
 	ThumbnailSize
 } from 'forge-server-utils';
-import { IContext, promptBucket, promptObject, promptDerivative } from '../common';
+import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 
 enum TranslationActions {
@@ -38,7 +38,7 @@ export async function translateObject(object: IObject | undefined, compressed: b
 		}
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
     } catch(err) {
-        vscode.window.showErrorMessage(`Could not translate object: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not translate object', err);
     }
 }
 
@@ -98,7 +98,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
 		panel.webview.html = context.templateEngine.render('derivative-tree', { urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access derivative tree: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access derivative tree', err);
 	}
 }
 
@@ -129,7 +129,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
 		panel.webview.html = context.templateEngine.render('derivative-props', { urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access derivative properties: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access derivative properties', err);
 	}
 }
 
@@ -170,7 +170,7 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 			}
 		}
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access object manifest: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access object manifest', err);
 	}
 }
 
@@ -205,7 +205,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 		}
 		vscode.window.showInformationMessage(`Derivatives deleted: ${object.objectKey}`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not delete derivatives: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not delete derivatives', err);
 	}	
 }
 
@@ -286,6 +286,6 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			}
 		}
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access object thumbnails: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access derivative thumbnails', err);
 	}
 }

@@ -1,13 +1,20 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { IContext, promptAppBundleFullID, promptEngine } from '../common';
-import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID } from 'forge-server-utils';
+import axios from 'axios';
+import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
+import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
+}
+
+function sleep(ms: number) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() { resolve(); }, ms);
+    });
 }
 
 export async function uploadAppBundle(name: string | undefined, context: IContext) {
@@ -49,7 +56,7 @@ export async function uploadAppBundle(name: string | undefined, context: IContex
 		});
         vscode.window.showInformationMessage(`App bundle uploaded: ${filepath}`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not upload app bundle: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not upload app bundle', err);
 	}
 }
 
@@ -79,7 +86,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 			panel.webview.html = context.templateEngine.render('appbundle-details', { bundle: appBundleDetail });
 		});
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access appbundle: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access app bundle', err);
 	}
 }
 
@@ -99,19 +106,20 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 				vscode.ViewColumn.One,
 				{ enableScripts: true }
 			);
+			const daid = DesignAutomationID.parse(activityDetail.id);
 			panel.webview.html = context.templateEngine.render('activity-details', {
 				mode: 'read',
-				id: activityDetail.id,
+				id: (daid !== null) ? daid.id : activityDetail.id,
 				description: (activityDetail as any).description, // TODO: add description to IActivityDetail
 				version: activityDetail.version,
 				engine: activityDetail.engine,
 				commandLine: activityDetail.commandLine,
-				parameters: activityDetail.parameters,
-				appbundles: activityDetail.appbundles
+				parameters: activityDetail.parameters || {},
+				appbundles: activityDetail.appbundles || []
 			});
 		});
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not access activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not access activity', err);
 	}
 }
 
@@ -168,7 +176,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			vscode.window.showInformationMessage(`Activity created: ${activity.id} (version ${activity.version})`);
 			successCallback(activity);
 		} catch(err) {
-			vscode.window.showErrorMessage(`Could not create activity: ${JSON.stringify(err.message)}`);
+			showErrorMessage('Could not create activity', err);
 		}
 	}
 
@@ -183,6 +191,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 		}, async (progress, token) => {
 			availableEngines = await context.designAutomationClient.listEngines();
 			availableAppBundles = await context.designAutomationClient.listAppBundles();
+			availableAppBundles = availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'));
 		});
 
 		const panel = vscode.window.createWebviewPanel(
@@ -197,12 +206,14 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			description: '',
 			version: '',
 			engine: '',
-			commandLine: [],
-			parameters: {},
-			appbundles: [],
+			commandLine: [''],
+			parameters: {
+				'': {}
+			},
+			appbundles: [availableAppBundles[0]],
 			options: {
 				engines: availableEngines,
-				appBundles: availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'))
+				appBundles: availableAppBundles
 			}
 		});
 		// Handle messages from the webview
@@ -221,7 +232,122 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			context.extensionContext.subscriptions
 		);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create activity', err);
+	}
+}
+
+export async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCallback: (activity: IActivityDetail) => void, context: IContext) {
+	async function update(params: any, panel: vscode.WebviewPanel) {
+		if (params.appBundles.length === 0) {
+			vscode.window.showErrorMessage('At least one app bundle must be provided.');
+			return;
+		} else if (params.appBundles.length > 1) {
+			// TODO: add support for updating activities with multiple app bundles
+			vscode.window.showWarningMessage('Currently it is only possible to update activities with one app bundle. Additional bundles will be ignored.');
+		}
+
+		const appBundleID = DesignAutomationID.parse(params.appBundles[0]) as DesignAutomationID;
+		const inputs: IActivityParam[] = [];
+		const outputs: IActivityParam[] = [];
+		for (const name of Object.keys(params.parameters)) {
+			const param = params.parameters[name];
+			switch (param.verb) {
+				case 'get':
+					inputs.push({
+						name,
+						verb: param.verb,
+						description: param.description,
+						localName: param.localName,
+						// TODO: support 'ondemand', 'required', and 'zip' fields
+					});
+					break;
+				case 'put':
+					outputs.push({
+						name,
+						verb: param.verb,
+						description: param.description,
+						localName: param.localName,
+						// TODO: support 'ondemand', 'required', and 'zip' fields
+					});
+					break;
+			}
+		}
+
+		try {
+			// TODO: currently the forge-server-utils library builts the command line
+			// based on selected engine; add support for custom command lines as well
+			const activity = await context.designAutomationClient.updateActivity(
+				params.id,
+				params.description,
+				appBundleID.id,
+				appBundleID.alias,
+				params.engine,
+				inputs,
+				outputs
+			);
+			panel.dispose();
+			vscode.window.showInformationMessage(`Activity updated: ${activity.id} (version ${activity.version})`);
+			successCallback(activity);
+		} catch(err) {
+			showErrorMessage('Could not update activity', err);
+		}
+	}
+
+	try {
+		let availableEngines: string[] = [];
+		let availableAppBundles: string[] = [];
+		let originalActivity: IActivityDetail = typeof(id) === 'string'
+			? await context.designAutomationClient.getActivity(id)
+			: await context.designAutomationClient.getActivityVersion(id.name, id.version);
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Collecting available valus for activity`,
+			cancellable: false
+		}, async (progress, token) => {
+			availableEngines = await context.designAutomationClient.listEngines();
+			availableAppBundles = await context.designAutomationClient.listAppBundles();
+			availableAppBundles = availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'));
+		});
+
+		const panel = vscode.window.createWebviewPanel(
+			'update-activity',
+			`Activity: ${originalActivity.id}`,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		const daid = DesignAutomationID.parse(originalActivity.id) as DesignAutomationID;
+		panel.webview.html = context.templateEngine.render('activity-details', {
+			mode: 'update',
+			id: (daid !== null) ? daid.id : originalActivity.id,
+			description: (originalActivity as any).description,
+			version: originalActivity.version,
+			engine: originalActivity.engine,
+			commandLine: originalActivity.commandLine,
+			parameters: originalActivity.parameters,
+			appbundles: originalActivity.appbundles,
+			options: {
+				engines: availableEngines,
+				appBundles: availableAppBundles
+			}
+		});
+		// Handle messages from the webview
+		panel.webview.onDidReceiveMessage(
+			message => {
+				switch (message.command) {
+					case 'create':
+						update(message.activity, panel);
+						break;
+					case 'cancel':
+						panel.dispose();
+						break;
+				}
+			},
+			undefined,
+			context.extensionContext.subscriptions
+		);
+	} catch(err) {
+		showErrorMessage('Could not update activity', err);
 	}
 }
 
@@ -236,7 +362,7 @@ export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 		});
 		vscode.window.showInformationMessage(`Appbundle removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove appbundle: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove app bundle', err);
 	}
 }
 
@@ -262,7 +388,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 		});
 		vscode.window.showInformationMessage(`Appbundle alias created`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create appbundle alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create app bundle alias', err);
 	}
 }
 
@@ -284,7 +410,7 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 		});
 		vscode.window.showInformationMessage(`Appbundle alias updated`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not update appbundle alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not update app bundle alias', err);
 	}
 }
 
@@ -299,7 +425,7 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 		});
 		vscode.window.showInformationMessage(`Appbundle alias removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove appbundle alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove app bundle alias', err);
 	}
 }
 
@@ -314,7 +440,7 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 		});
 		vscode.window.showInformationMessage(`Appbundle version removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove appbundle version: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove app bundle version', err);
 	}
 }
 
@@ -329,7 +455,7 @@ export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 		});
 		vscode.window.showInformationMessage(`Activity removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove activity: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove activity', err);
 	}
 }
 
@@ -344,7 +470,7 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 		});
 		vscode.window.showInformationMessage(`Activity alias removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove activity alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not remove activity alias', err);
 	}
 }
 
@@ -385,7 +511,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 		});
 		vscode.window.showInformationMessage(`Activity alias created`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not create activity alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not create activity alias', err);
 	}
 }
 
@@ -407,6 +533,94 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 		});
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not update activity alias: ${JSON.stringify(err.message)}`);
+		showErrorMessage('Could not update activity alias', err);
+	}
+}
+
+export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
+	async function run(activity: IActivityDetail, params: { [name: string]: string }) {
+		let inputs: IWorkItemParam[] = [];
+		let outputs: IWorkItemParam[] = [];
+		if (activity.parameters) {
+			for (const name of Object.keys(activity.parameters)) {
+				if (params.hasOwnProperty(name)) {
+					if (activity.parameters[name].verb === 'put') {
+						outputs.push({ name, url: params[name] });
+					} else if (activity.parameters[name].verb === 'get') {
+						inputs.push({ name, url: params[name] });
+					} else {
+						console.warn('Unsupported activity parameter verb:', activity.parameters[name]);
+					}
+				}
+			}
+		}
+
+		try {
+			let workitem = await context.designAutomationClient.createWorkItem(id, inputs, outputs);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Processing workitem: ${workitem.id}`,
+				cancellable: false
+			}, async (progress, token) => {
+				while (workitem.status === 'inprogress' || workitem.status === 'pending') {
+					await sleep(5000);
+					workitem = await context.designAutomationClient.workItemDetails(workitem.id);
+					progress.report({ message: workitem.status });
+				}
+			});
+
+			let action: string | undefined;
+			if (workitem.status === 'success') {
+				action = await vscode.window.showInformationMessage(`Workitem succeeded`, 'View Report');
+			} else {
+				action = await vscode.window.showErrorMessage(`Workitem failed`, 'View Report');
+			}
+			if (action === 'View Report') {
+				const resp = await axios.get(workitem.reportUrl);
+				const doc = await vscode.workspace.openTextDocument({ content: resp.data });
+				vscode.window.showTextDocument(doc);
+			}
+		} catch(err) {
+			showErrorMessage('Could not start workitem', err);
+		}
+	}
+
+	try {
+		let activity: IActivityDetail | undefined;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting activity details: ${id}`,
+			cancellable: false
+		}, async (progress, token) => {
+			activity = await context.designAutomationClient.getActivity(id);
+		});
+
+		if (activity) {
+			const panel = vscode.window.createWebviewPanel(
+				'workitem',
+				`Workitem: ${activity.id}`,
+				vscode.ViewColumn.One,
+				{ enableScripts: true }
+			);
+			panel.webview.html = context.templateEngine.render('workitem', { activity });
+			// Handle messages from the webview
+			panel.webview.onDidReceiveMessage(
+				message => {
+					switch (message.command) {
+						case 'start':
+							run(activity as IActivityDetail, message.parameters);
+							panel.dispose();
+							break;
+						case 'cancel':
+							panel.dispose();
+							break;
+					}
+				},
+				undefined,
+				context.extensionContext.subscriptions
+			);
+		}
+	} catch(err) {
+		showErrorMessage('Could not create workitem', err);
 	}
 }

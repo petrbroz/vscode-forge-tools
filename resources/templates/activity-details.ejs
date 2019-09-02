@@ -23,9 +23,9 @@
         <% if (mode === 'read') { %>
             Activity: <%= id %>
         <% } else if (mode === 'create') { %>
-            Create Activity: <%= id %>
+            Create Activity
         <% } else if (mode === 'update') { %>
-            Update Activity: <%= id %>
+            Update Activity
         <% } %>
     </title>
 </head>
@@ -36,29 +36,20 @@
             <label for="activity-id" class="col-sm-2 col-form-label">ID</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
-                    <input type="text" id="activity-id" class="form-control" value="<%= id %>" readonly>
+                    <input type="text" id="activity-id" class="form-control" value="<%= id %>" placeholder="Activity Name" readonly>
                 <% } else { %>
-                    <input type="text" id="activity-id" class="form-control" value="" placeholder="Activity Name">
+                    <input type="text" id="activity-id" class="form-control" value="<%= id %>" placeholder="Activity Name">
                 <% } %>
             </div>
         </div>
-        <% if (mode === 'read' || mode === 'update') { %>
-            <div class="form-group row">
-                <!-- Version -->
-                <label for="activity-version" class="col-sm-2 col-form-label">Version</label>
-                <div class="col-sm-10">
-                    <input type="text" id="activity-version" class="form-control" value="<%= version %>" readonly>
-                </div>
-            </div>
-        <% } %>
         <div class="form-group row">
             <!-- Description -->
             <label for="activity-description" class="col-sm-2 col-form-label">Description</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
-                    <input type="text" id="activity-description" class="form-control" value="<%= description %>" readonly>
+                    <input type="text" id="activity-description" class="form-control" value="<%= description %>" placeholder="Activity Description" readonly>
                 <% } else { %>
-                    <input type="text" id="activity-description" class="form-control" value="" placeholder="Activity Description">
+                    <input type="text" id="activity-description" class="form-control" value="<%= description %>" placeholder="Activity Description">
                 <% } %>
             </div>
         </div>
@@ -69,45 +60,44 @@
                 <% if (mode === 'read') { %>
                     <input type="text" id="activity-engine" class="form-control" value="<%= engine %>" readonly>
                 <% } else { %>
-                    <select id="activity-engine" id="activity-engine" class="form-control">
-                        <% for (const engine of options.engines) { %>
-                            <option value="<%= engine %>"><%= engine %></option>
+                    <select id="activity-engine" class="form-control">
+                        <% for (const eng of options.engines) { %>
+                            <% if (eng === engine) { %>
+                                <option value="<%= eng %>" selected><%= eng %></option>
+                            <% } else { %>
+                                <option value="<%= eng %>"><%= eng %></option>
+                            <% } %>
                         <% } %>
                     </select>
                 <% } %>
             </div>
         </div>
         <div class="form-group row">
-            <!-- Command Line -->
+            <!-- Command Lines -->
             <label for="command-lines" class="col-sm-2 col-form-label">Command Lines</label>
-            <div class="col-sm-10">
-                <% if (mode === 'read') { %>
-                    <table id="command-lines" class="table table-sm table-bordered">
-                        <tbody>
-                            <% for (const line of commandLine) { %>
-                                <tr>
+            <div class="col-sm-10">                
+                <table id="command-lines" class="table table-sm table-bordered">
+                    <tbody>
+                        <% for (const line of commandLine) { %>
+                            <tr>
+                                <% if (mode === 'read') { %>
                                     <td scope="col">
                                         <input type="text" name="command-line" class="form-control" value="<%= line %>" readonly>
                                     </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                <% } else { %>
-                    <div>(currently the command line is set automatically based on the selected engine)</div>
-                    <table id="command-lines" class="table table-sm table-bordered" style="display: none">
-                        <tbody>
-                            <tr>
-                                <td style="width: 95%">
-                                    <input type="text" name="command-line" class="form-control" value="" placeholder="Enter New Command">
-                                </td>
-                                <td style="width: 5%">
-                                    <button type="button" name="remove-command-line" class="btn btn-outline-danger" data-action="remove">Remove</button>
-                                </td>
+                                <% } else { %>
+                                    <td style="width: 95%">
+                                        <input type="text" name="command-line" class="form-control" value="<%= line %>" placeholder="Enter New Command">
+                                    </td>
+                                    <td style="width: 5%">
+                                        <button type="button" name="remove-command-line" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                    </td>
+                                <% } %>
                             </tr>
-                        </tbody>
-                    </table>
-                    <button type="button" name="add-command-line" class="btn btn-outline-primary float-right" style="display: none">Add Command Line</button>
+                        <% } %>
+                    </tbody>
+                </table>
+                <% if (mode !== 'read') { %>
+                    <button type="button" name="add-command-line" class="btn btn-outline-primary float-right">Add Command Line</button>
                 <% } %>
             </div>
         </div>
@@ -115,19 +105,22 @@
             <!-- Parameters -->
             <label for="parameters" class="col-sm-2 col-form-label">Parameters</label>
             <div class="col-sm-10">
-                <% if (mode === 'read') { %>
-                    <table id="parameters" class="table table-sm table-bordered">
-                        <thead>
+                <table id="parameters" class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Verb</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Local Name</th>
+                            <% if (mode !== 'read') { %>
+                                <th style="width: 5%"></th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (const param of Object.keys(parameters)) { %>
                             <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Verb</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Local Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for (const param of Object.keys(parameters)) { %>
-                                <tr>
+                                <% if (mode === 'read') { %>
                                     <td scope="row">
                                         <input type="text" name="param-name" class="form-control" value="<%= param %>" readonly>
                                     </td>
@@ -140,44 +133,36 @@
                                     <td>
                                         <input type="text" name="param-local" class="form-control" value="<%= parameters[param].localName %>" readonly>
                                     </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                <% } else { %>
-                    <table id="parameters" class="table table-sm table-bordered">
-                        <thead>
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Verb</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Local Name</th>
-                                <th style="width: 5%"></th>
+                                <% } else { %>
+                                    <td>
+                                        <input type="text" name="param-name" class="form-control" value="<%= param %>" placeholder="Parameter Name">
+                                    </td>
+                                    <td>
+                                        <select name="param-verb" class="form-control">
+                                            <% if (parameters[param].verb === 'put') { %>
+                                                <option value="get">Get</option>
+                                                <option value="put" selected>Put</option>
+                                            <% } else { %>
+                                                <option value="get" selected>Get</option>
+                                                <option value="put">Put</option>
+                                            <% } %>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="param-desc" class="form-control" value="<%= parameters[param].description %>" placeholder="Description">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="param-local" class="form-control" value="<%= parameters[param].localName %>" placeholder="Local Name">
+                                    </td>
+                                    <td>
+                                        <button type="button" name="remove-parameter" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                    </td>
+                                <% } %>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input type="text" name="param-name" class="form-control" value="" placeholder="Parameter Name">
-                                </td>
-                                <td>
-                                    <select name="param-verb" class="form-control">
-                                        <option value="get">Get</option>
-                                        <option value="put">Put</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="text" name="param-desc" class="form-control" value="" placeholder="Parameter Description">
-                                </td>
-                                <td>
-                                    <input type="text" name="param-local" class="form-control" value="" placeholder="Parameter Local Name">
-                                </td>
-                                <td>
-                                    <button type="button" name="remove-parameter" class="btn btn-outline-danger" data-action="remove">Remove</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <% } %>
+                    </tbody>
+                </table>
+                <% if (mode !== 'read') { %>
                     <button type="button" name="add-parameter" class="btn btn-outline-primary float-right">Add Parameter</button>
                 <% } %>
             </div>
@@ -186,35 +171,35 @@
             <!-- App Bundles -->
             <label for="appbundles" class="col-sm-2 col-form-label">App Bundles</label>
             <div class="col-sm-10">
-                <% if (mode === 'read') { %>
-                    <table id="appbundles" class="table table-sm table-bordered">
-                        <tbody>
-                            <% for (const bundle of appbundles) { %>
-                                <tr>
+                <table id="appbundles" class="table table-sm table-bordered">
+                    <tbody>
+                        <% for (const bundle of appbundles) { %>
+                            <tr>
+                                <% if (mode === 'read') { %>
                                     <td style="width: 100%">
                                         <input type="text" name="appbundle" class="form-control" value="<%= bundle %>" readonly>
                                     </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                <% } else { %>
-                    <table id="appbundles" class="table table-sm table-bordered">
-                        <tbody>
-                            <tr>
-                                <td style="width: 95%">
-                                    <select name="appbundle" class="form-control">
-                                        <% for (const appbundle of options.appBundles) { %>
-                                            <option value="<%= appbundle %>"><%= appbundle %></option>
-                                        <% } %>
-                                    </select>
-                                </td>
-                                <td style="width: 5%">
-                                    <button type="button" name="remove-appbundle" class="btn btn-outline-danger" data-action="remove">Remove</button>
-                                </td>
+                                <% } else { %>
+                                    <td style="width: 95%">
+                                        <select name="appbundle" class="form-control">
+                                            <% for (const appbundle of options.appBundles) { %>
+                                                <% if (appbundle === bundle) { %>
+                                                    <option value="<%= appbundle %>" selected><%= appbundle %></option>
+                                                <% } else { %>
+                                                    <option value="<%= appbundle %>"><%= appbundle %></option>
+                                                <% } %>
+                                            <% } %>
+                                        </select>
+                                    </td>
+                                    <td style="width: 5%">
+                                        <button type="button" name="remove-appbundle" class="btn btn-outline-danger" data-action="remove">Remove</button>
+                                    </td>
+                                <% } %>
                             </tr>
-                        </tbody>
-                    </table>
+                        <% } %>
+                    </tbody>
+                </table>
+                <% if (mode !== 'read') { %>
                     <button type="button" name="add-appbundle" class="btn btn-outline-primary float-right">Add Bundle</button>
                 <% } %>
             </div>

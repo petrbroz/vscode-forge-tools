@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.10.1",
+	"version": "0.11.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -115,135 +115,178 @@
 			},
 			{
 				"command": "forge.viewBucketDetails",
-				"title": "View Bucket Details"
+				"title": "View Bucket Details",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.viewObjectDetails",
-				"title": "View Object Details"
+				"title": "View Object Details",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.uploadObject",
-				"title": "Upload Object"
+				"title": "Upload Object",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.createEmptyObject",
-				"title": "Create Empty Object"
+				"title": "Create Empty Object",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.deleteBucketObjects",
-				"title": "Delete All Objects"
+				"title": "Delete All Objects",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.downloadObject",
-				"title": "Download Object"
+				"title": "Download Object",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.deleteObject",
-				"title": "Delete Object"
+				"title": "Delete Object",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.generateSignedUrl",
-				"title": "Generate Signed URL"
+				"title": "Generate Signed URL",
+				"category": "Forge Data Management"
 			},
 			{
 				"command": "forge.translateObject",
-				"title": "Translate Object"
+				"title": "Translate Object",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.translateArchive",
-				"title": "Translate Object as Zip"
+				"title": "Translate Object as Zip",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.previewDerivative",
-				"title": "Preview Derivative"
+				"title": "Preview Derivative",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.viewDerivativeTree",
-				"title": "View Derivative Tree"
+				"title": "View Derivative Tree",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.viewDerivativeProps",
-				"title": "View Derivative Properties"
+				"title": "View Derivative Properties",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.viewObjectManifest",
-				"title": "View Object Manifest"
+				"title": "View Object Manifest",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.deleteObjectManifest",
-				"title": "Delete Derivatives"
+				"title": "Delete Derivatives",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.viewObjectThumbnail",
-				"title": "View Object Thumbnail"
+				"title": "View Object Thumbnails",
+				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.createAppBundle",
-				"title": "Create App Bundle"
+				"title": "Create App Bundle",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.updateAppBundle",
-				"title": "Update App Bundle"
+				"title": "Update App Bundle",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
-				"title": "View App Bundle Details"
+				"title": "View App Bundle Details",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.viewAppBundleVersionDetails",
-				"title": "View Details"
+				"title": "View App Bundle Details",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.deleteAppBundle",
-				"title": "Delete"
+				"title": "Delete App Bundle",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.deleteAppBundleAlias",
-				"title": "Delete"
+				"title": "Delete App Bundle Alias",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.createAppBundleAlias",
-				"title": "Create Alias"
+				"title": "Create App Bundle Alias",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.updateAppBundleAlias",
-				"title": "Update Alias"
+				"title": "Update App Bundle Alias",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.deleteAppBundleVersion",
-				"title": "Delete"
+				"title": "Delete App Bundle Version",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.viewActivityDetails",
-				"title": "View Details"
+				"title": "View Activity Details",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.viewActivityVersionDetails",
-				"title": "View Details"
+				"title": "View Activity Details",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.createActivity",
-				"title": "Create Activity"
+				"title": "Create Activity",
+				"category": "Forge Design Automation"
+			},
+			{
+				"command": "forge.updateActivity",
+				"title": "Update Activity",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.deleteActivity",
-				"title": "Delete"
+				"title": "Delete Activity",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.deleteActivityAlias",
-				"title": "Delete"
+				"title": "Delete Activity Alias",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.createActivityAlias",
-				"title": "Create Alias"
+				"title": "Create Activity Alias",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.updateActivityAlias",
-				"title": "Update Alias"
+				"title": "Update Activity Alias",
+				"category": "Forge Design Automation"
 			},
 			{
 				"command": "forge.deleteActivityVersion",
-				"title": "Delete"
+				"title": "Delete Activity Version",
+				"category": "Forge Design Automation"
+			},
+			{
+				"command": "forge.createWorkitem",
+				"title": "Create Workitem",
+				"category": "Forge Design Automation"
 			}
 		],
 		"menus": {
@@ -406,14 +449,29 @@
 					"group": "navigation@1"
 				},
 				{
+					"command": "forge.updateActivity",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.createWorkitem",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "navigation@4"
+				},
+				{
 					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
 					"group": "navigation@1"
 				},
 				{
+					"command": "forge.createWorkitem",
+					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
+					"group": "navigation@2"
+				},
+				{
 					"command": "forge.deleteActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@3"
+					"group": "navigation@5"
 				},
 				{
 					"command": "forge.createActivityAlias",
@@ -423,7 +481,7 @@
 				{
 					"command": "forge.updateActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@2"
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.viewActivityVersionDetails",
@@ -431,9 +489,14 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.deleteActivityVersion",
+					"command": "forge.updateActivity",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.deleteActivityVersion",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"group": "navigation@3"
 				}
 			]
 		}
@@ -454,6 +517,7 @@
 	},
 	"dependencies": {
 		"@types/ejs": "^2.6.3",
+		"axios": "^0.19.0",
 		"ejs": "^2.6.2",
 		"forge-server-utils": "^4.4.0"
 	}
