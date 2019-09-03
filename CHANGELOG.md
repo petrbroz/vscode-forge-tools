@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.12.1] - 2019-09-03
+
+- Added
+  - Helper button for pre-generating initial command structure for DA activities
+- Fixed
+  - Styling of different web views to better follow vscode themes
+
+## [0.12.0] - 2019-09-03
+
 - Changed
   - Moved to new version of forge-server-utils
 - Added
