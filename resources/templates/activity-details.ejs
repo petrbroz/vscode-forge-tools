@@ -19,6 +19,11 @@
         .table {
             margin-bottom: 0.5rem;
         }
+
+        th.small {
+            font-size: 0.5rem;
+            width: 5%;
+        }
     </style>
     <title>
         <% if (mode === 'read') { %>
@@ -113,6 +118,9 @@
                             <th scope="col">Verb</th>
                             <th scope="col">Description</th>
                             <th scope="col">Local Name</th>
+                            <th scope="col" class="small" title="Required">Req.</th>
+                            <th scope="col" class="small" title="Zipped">Zip</th>
+                            <th scope="col" class="small" title="On Demand">On Dem.</div></th>
                             <% if (mode !== 'read') { %>
                                 <th style="width: 5%"></th>
                             <% } %>
@@ -134,19 +142,37 @@
                                     <td>
                                         <input type="text" name="param-local" class="form-control" value="<%= parameters[param].localName %>" readonly>
                                     </td>
+                                    <td>
+                                        <% if (parameters[param].required) { %>
+                                            <input type="checkbox" name="param-required" class="form-control" checked disabled>
+                                        <% } else { %>
+                                            <input type="checkbox" name="param-required" class="form-control" disabled>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (parameters[param].zip) { %>
+                                            <input type="checkbox" name="param-zip" class="form-control" checked disabled>
+                                        <% } else { %>
+                                            <input type="checkbox" name="param-zip" class="form-control" disabled>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (parameters[param].ondemand) { %>
+                                            <input type="checkbox" name="param-ondemand" class="form-control" checked disabled>
+                                        <% } else { %>
+                                            <input type="checkbox" name="param-ondemand" class="form-control" disabled>
+                                        <% } %>
+                                    </td>
                                 <% } else { %>
                                     <td>
                                         <input type="text" name="param-name" class="form-control" value="<%= param %>" placeholder="Parameter Name">
                                     </td>
                                     <td>
                                         <select name="param-verb" class="form-control">
-                                            <% if (parameters[param].verb === 'put') { %>
-                                                <option value="get">Get</option>
-                                                <option value="put" selected>Put</option>
-                                            <% } else { %>
-                                                <option value="get" selected>Get</option>
-                                                <option value="put">Put</option>
-                                            <% } %>
+                                            <% if (parameters[param].verb === 'get') { %><option value="get" selected>Get</option><% } else { %><option value="get">Get</option><% } %>
+                                            <% if (parameters[param].verb === 'put') { %><option value="put" selected>Put</option><% } else { %><option value="put">Put</option><% } %>
+                                            <% if (parameters[param].verb === 'post') { %><option value="post" selected>Post</option><% } else { %><option value="post">Post</option><% } %>
+                                            <% if (parameters[param].verb === 'patch') { %><option value="patch" selected>Patch</option><% } else { %><option value="patch">Patch</option><% } %>
                                         </select>
                                     </td>
                                     <td>
@@ -154,6 +180,27 @@
                                     </td>
                                     <td>
                                         <input type="text" name="param-local" class="form-control" value="<%= parameters[param].localName %>" placeholder="Local Name">
+                                    </td>
+                                    <td>
+                                        <% if (parameters[param].required) { %>
+                                            <input type="checkbox" name="param-required" class="form-control" checked>
+                                        <% } else { %>
+                                            <input type="checkbox" name="param-required" class="form-control">
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (parameters[param].zip) { %>
+                                            <input type="checkbox" name="param-zip" class="form-control" checked>
+                                        <% } else { %>
+                                            <input type="checkbox" name="param-zip" class="form-control">
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (parameters[param].ondemand) { %>
+                                            <input type="checkbox" name="param-ondemand" class="form-control" checked>
+                                        <% } else { %>
+                                            <input type="checkbox" name="param-ondemand" class="form-control">
+                                        <% } %>
                                     </td>
                                     <td>
                                         <button type="button" name="remove-parameter" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
@@ -251,6 +298,8 @@
                             <select name="param-verb" class="form-control">
                                 <option value="get">Get</option>
                                 <option value="put">Put</option>
+                                <option value="post">Post</option>
+                                <option value="patch">Patch</option>
                             </select>
                         </td>
                         <td>
@@ -258,6 +307,15 @@
                         </td>
                         <td>
                             <input type="text" name="param-local" class="form-control" value="" placeholder="Parameter Local Name">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="param-required" class="form-control">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="param-zip" class="form-control">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="param-ondemand" class="form-control">
                         </td>
                         <td>
                             <button type="button" name="remove-parameter" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
@@ -312,7 +370,10 @@
                     activity.parameters[name] = {
                         verb: $row.find("select[name='param-verb']").val(),
                         description: $row.find("input[name='param-desc']").val(),
-                        localName: $row.find("input[name='param-local']").val()
+                        localName: $row.find("input[name='param-local']").val(),
+                        required: $row.find("input[name='param-required']")[0].checked,
+                        zip: $row.find("input[name='param-zip']")[0].checked,
+                        ondemand: $row.find("input[name='param-ondemand']")[0].checked
                     };
                 });
 

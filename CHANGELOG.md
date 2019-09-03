@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Moved to new version of forge-server-utils
+- Added
+  - Activities can now specify multiple CLI commands and app bundles
+  - Activity params can now specify additional fields (_required_, _zip_, and _on demand_)
+  - Workitem arguments can now specify additional fields (_verb_, _optional_, _local name_, _path in zip_, and _headers_)
+
 ## [0.11.1] - 2019-09-02
 
 - Changed

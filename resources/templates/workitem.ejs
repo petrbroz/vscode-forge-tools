@@ -14,6 +14,11 @@
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
         }
+
+        th.small {
+            font-size: 0.5rem;
+            width: 5%;
+        }
     </style>
     <title>
         Workitem: <%= activity.id %>
@@ -38,6 +43,11 @@
                             <tr>
                                 <th scope="col">Name</th>
                                 <th scope="col">URL</th>
+                                <th scope="col">Verb</th>
+                                <th scope="col" class="small">Optional</th>
+                                <th scope="col">Local Name</th>
+                                <th scope="col">Path in Zip</th>
+                                <th scope="col">Headers</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -49,9 +59,26 @@
                                     <td>
                                         <input type="text" name="param-value" class="form-control" value="" placeholder="Value">
                                     </td>
-                                    <!-- <td>
-                                        <button type="button" name="remove-parameter" class="btn btn-outline-danger" data-action="remove">Remove</button>
-                                    </td> -->
+                                    <td>
+                                        <select name="param-verb" class="form-control">
+                                            <% if (!activity.parameters[param].verb || activity.parameters[param].verb === 'get') { %><option value="get" selected>Get</option><% } else { %><option value="get">Get</option><% } %>
+                                            <% if (activity.parameters[param].verb === 'put') { %><option value="put" selected>Put</option><% } else { %><option value="put">Put</option><% } %>
+                                            <% if (activity.parameters[param].verb === 'post') { %><option value="post" selected>Post</option><% } else { %><option value="post">Post</option><% } %>
+                                            <% if (activity.parameters[param].verb === 'patch') { %><option value="patch" selected>Patch</option><% } else { %><option value="patch">Patch</option><% } %>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="param-optional" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="param-local" class="form-control" value="" placeholder="Local Name">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="param-pathinzip" class="form-control" value="" placeholder="Path in Zip">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="param-headers" class="form-control" value="" placeholder="HeaderA:ValueA;HeaderB:ValueB">
+                                    </td>
                                 </tr>
                             <% } %>
                         </tbody>
@@ -77,8 +104,26 @@
                 const $row = $(this);
                 const name = $row.find("input[name='param-name']").val();
                 parameters[name] = {
-                    url: $row.find("input[name='param-value']").val()
+                    url: $row.find("input[name='param-value']").val(),
+                    verb: $row.find("select[name='param-verb']").val(),
+                    optional: $row.find("input[name='param-optional']")[0].checked
                 };
+                const localName = $row.find("input[name='param-local']").val();
+                if (localName) {
+                    parameters[name].localName = localName;
+                }
+                const pathInZip = $row.find("input[name='param-pathinzip']").val();
+                if (pathInZip) {
+                    parameters[name].pathInZip = pathInZip;
+                }
+                const headers = $row.find("input[name='param-headers']").val();
+                if (headers) {
+                    parameters[name].headers = {};
+                    for (const header of headers.split(';')) {
+                        const tokens = header.split(':');
+                        parameters[name].headers[tokens[0].trim()] = tokens[1].trim();
+                    }
+                }
             });
             vscode.postMessage({
                 command: 'start',
@@ -88,12 +133,6 @@
         $('#cancel').click(function () {
             vscode.postMessage({ command: 'cancel' });
         });
-
-        // window.addEventListener('message', event => {
-        //     const message = event.data;
-        //     switch (message.command) {
-        //     }
-        // });
     </script>
 </body>
 </html>
