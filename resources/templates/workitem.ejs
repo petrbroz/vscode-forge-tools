@@ -76,7 +76,9 @@
             $('#parameters > tbody > tr').each(function () {
                 const $row = $(this);
                 const name = $row.find("input[name='param-name']").val();
-                parameters[name] = $row.find("input[name='param-value']").val();
+                parameters[name] = {
+                    url: $row.find("input[name='param-value']").val()
+                };
             });
             vscode.postMessage({
                 command: 'start',

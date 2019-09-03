@@ -295,10 +295,10 @@ forever-agent@~0.6.1:
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-forge-server-utils@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-4.4.0.tgz#afa17e69c3ded1b698027b59d86386ecf03ec6d9"
-  integrity sha512-/2aOjBnsY8T1H3iv6UhSdJIsFIlyQz8HjNFxEmdS3DfTGbpbMCiyAGnWCjplTyAlDa7BS//bxT0nMBqnl40gYA==
+forge-server-utils@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-5.0.0.tgz#4074231a278b05ddd75a60950c8f005745b1451c"
+  integrity sha512-KOUqzSNzfwuRWhhjY8TIkMj35vlvpM9s3eocqJZFK6T5MSOYnaqW5Y1zrOW77oPkSXL2bO0vubmsflgDOzXRRw==
   dependencies:
     axios "^0.19.0"
     form-data "^2.5.1"

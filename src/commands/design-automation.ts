@@ -42,9 +42,9 @@ export async function uploadAppBundle(name: string | undefined, context: IContex
 		const filepath = uris[0].fsPath;
 		let details: IAppBundleUploadParams;
 		if (exists) {
-			details = await context.designAutomationClient.updateAppBundle(name, engine, description);
+			details = await context.designAutomationClient.updateAppBundle(name, engine, undefined, description);
 		} else {
-			details = await context.designAutomationClient.createAppBundle(name, engine, description);
+			details = await context.designAutomationClient.createAppBundle(name, engine, undefined, description);
 		}
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -128,49 +128,17 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 		if (params.appBundles.length === 0) {
 			vscode.window.showErrorMessage('At least one app bundle must be provided.');
 			return;
-		} else if (params.appBundles.length > 1) {
-			// TODO: add support for creating activities with multiple app bundles
-			vscode.window.showWarningMessage('Currently it is only possible to create activities with one app bundle. Additional bundles will be ignored.');
-		}
-
-		const appBundleID = DesignAutomationID.parse(params.appBundles[0]) as DesignAutomationID;
-		const inputs: IActivityParam[] = [];
-		const outputs: IActivityParam[] = [];
-		for (const name of Object.keys(params.parameters)) {
-			const param = params.parameters[name];
-			switch (param.verb) {
-				case 'get':
-					inputs.push({
-						name,
-						verb: param.verb,
-						description: param.description,
-						localName: param.localName,
-						// TODO: support 'ondemand', 'required', and 'zip' fields
-					});
-					break;
-				case 'put':
-					outputs.push({
-						name,
-						verb: param.verb,
-						description: param.description,
-						localName: param.localName,
-						// TODO: support 'ondemand', 'required', and 'zip' fields
-					});
-					break;
-			}
 		}
 
 		try {
-			// TODO: currently the forge-server-utils library builts the command line
-			// based on selected engine; add support for custom command lines as well
 			const activity = await context.designAutomationClient.createActivity(
 				params.id,
-				params.description,
-				appBundleID.id,
-				appBundleID.alias,
 				params.engine,
-				inputs,
-				outputs
+				params.commandLine,
+				params.appBundles,
+				params.parameters,
+				undefined,
+				params.description
 			);
 			panel.dispose();
 			vscode.window.showInformationMessage(`Activity created: ${activity.id} (version ${activity.version})`);
@@ -186,7 +154,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Collecting available valus for new activity`,
+			title: `Collecting available values for new activity`,
 			cancellable: false
 		}, async (progress, token) => {
 			availableEngines = await context.designAutomationClient.listEngines();
@@ -241,49 +209,17 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 		if (params.appBundles.length === 0) {
 			vscode.window.showErrorMessage('At least one app bundle must be provided.');
 			return;
-		} else if (params.appBundles.length > 1) {
-			// TODO: add support for updating activities with multiple app bundles
-			vscode.window.showWarningMessage('Currently it is only possible to update activities with one app bundle. Additional bundles will be ignored.');
-		}
-
-		const appBundleID = DesignAutomationID.parse(params.appBundles[0]) as DesignAutomationID;
-		const inputs: IActivityParam[] = [];
-		const outputs: IActivityParam[] = [];
-		for (const name of Object.keys(params.parameters)) {
-			const param = params.parameters[name];
-			switch (param.verb) {
-				case 'get':
-					inputs.push({
-						name,
-						verb: param.verb,
-						description: param.description,
-						localName: param.localName,
-						// TODO: support 'ondemand', 'required', and 'zip' fields
-					});
-					break;
-				case 'put':
-					outputs.push({
-						name,
-						verb: param.verb,
-						description: param.description,
-						localName: param.localName,
-						// TODO: support 'ondemand', 'required', and 'zip' fields
-					});
-					break;
-			}
 		}
 
 		try {
-			// TODO: currently the forge-server-utils library builts the command line
-			// based on selected engine; add support for custom command lines as well
 			const activity = await context.designAutomationClient.updateActivity(
 				params.id,
-				params.description,
-				appBundleID.id,
-				appBundleID.alias,
 				params.engine,
-				inputs,
-				outputs
+				params.commandLine,
+				params.appBundles,
+				params.parameters,
+				undefined,
+				params.description
 			);
 			panel.dispose();
 			vscode.window.showInformationMessage(`Activity updated: ${activity.id} (version ${activity.version})`);
@@ -302,7 +238,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Collecting available valus for activity`,
+			title: `Collecting available values for activity`,
 			cancellable: false
 		}, async (progress, token) => {
 			availableEngines = await context.designAutomationClient.listEngines();
@@ -538,23 +474,9 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 }
 
 export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
-	async function run(activity: IActivityDetail, params: { [name: string]: string }) {
-		let inputs: IWorkItemParam[] = [];
-		let outputs: IWorkItemParam[] = [];
-		if (activity.parameters) {
-			for (const name of Object.keys(activity.parameters)) {
-				if (params.hasOwnProperty(name)) {
-					if (activity.parameters[name].verb === 'get') {
-						inputs.push({ name, url: params[name] });
-					} else {
-						outputs.push({ name, url: params[name] });
-					}
-				}
-			}
-		}
-
+	async function run(params: { [key: string]: IWorkItemParam }) {
 		try {
-			let workitem = await context.designAutomationClient.createWorkItem(id, inputs, outputs);
+			let workitem = await context.designAutomationClient.createWorkItem(id, params);
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Processing workitem: ${workitem.id}`,
@@ -562,7 +484,7 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 			}, async (progress, token) => {
 				while (workitem.status === 'inprogress' || workitem.status === 'pending') {
 					await sleep(5000);
-					workitem = await context.designAutomationClient.workItemDetails(workitem.id);
+					workitem = await context.designAutomationClient.getWorkItem(workitem.id);
 					progress.report({ message: workitem.status });
 				}
 			});
@@ -606,7 +528,7 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 				message => {
 					switch (message.command) {
 						case 'start':
-							run(activity as IActivityDetail, message.parameters);
+							run(message.parameters);
 							panel.dispose();
 							break;
 						case 'cancel':
