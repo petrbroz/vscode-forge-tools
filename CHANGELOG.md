@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Warning when uploading objects without file extension
+- Fixed
+  - File uploading on Windows platform
+
 ## [0.12.1] - 2019-09-03
 
 - Added
