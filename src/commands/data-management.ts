@@ -412,6 +412,38 @@ export async function copyObject(object: IObject | undefined, context: IContext)
 	}
 }
 
+export async function renameObject(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+		const newObjectKey = await vscode.window.showInputBox({ prompt: 'Enter new object name' });
+		if (!newObjectKey) {
+			return;
+		}
+
+		const { bucketKey, objectKey } = object;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Renaming file: ${object.objectKey}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey);
+			await context.dataManagementClient.deleteObject(bucketKey, objectKey);
+		});
+        vscode.window.showInformationMessage(`Object successfully renamed to ${newObjectKey}`);
+	} catch(err) {
+		showErrorMessage('Could not rename object', err);
+	}
+}
+
 export async function deleteObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {

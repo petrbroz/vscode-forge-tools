@@ -98,6 +98,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.copyObject', async (object?: IObject) => {
 		await dmc.copyObject(object, context);
 	});
+	vscode.commands.registerCommand('forge.renameObject', async (object?: IObject) => {
+		await dmc.renameObject(object, context);
+	});
 	vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
 		await dmc.downloadObject(object, context);
 	});
