@@ -217,6 +217,11 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
     if (!name) {
 		return;
 	}
+	// Warn users against uploading files without extension (which is needed by Model Derivative service)
+	if (!path.extname(name)) {
+		await vscode.window.showWarningMessage('Objects with no file extension in their name cannot be translated by Model Derivative service.');
+	}
+
     const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
     if (!contentType) {
 		return;
