@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.13.0] - 2019-09-12
+
+- Added
+  - Support for copying objects within bucket
+  - Support for renaming objects
+
 ## [0.12.2] - 2019-09-12
 
 - Added

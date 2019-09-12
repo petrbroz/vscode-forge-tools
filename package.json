@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "0.12.2",
+	"version": "0.13.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -141,6 +141,16 @@
 			{
 				"command": "forge.downloadObject",
 				"title": "Download Object",
+				"category": "Forge Data Management"
+			},
+			{
+				"command": "forge.renameObject",
+				"title": "Rename Object",
+				"category": "Forge Data Management"
+			},
+			{
+				"command": "forge.copyObject",
+				"title": "Copy Object",
 				"category": "Forge Data Management"
 			},
 			{
@@ -349,24 +359,34 @@
 					"group": "navigation@5"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "forge.renameObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@6"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.copyObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@7"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@8"
 				},
 				{
-					"command": "forge.deleteObjectManifest",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@9"
+				},
+				{
+					"command": "forge.deleteObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@10"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@11"
 				},
 				{
 					"command": "forge.previewDerivative",
@@ -519,6 +539,6 @@
 		"@types/ejs": "^2.6.3",
 		"axios": "^0.19.0",
 		"ejs": "^2.6.2",
-		"forge-server-utils": "^5.0.0"
+		"forge-server-utils": "^5.1.0"
 	}
 }
