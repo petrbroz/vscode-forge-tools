@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.13.1] - 2019-09-16
+
+- Fixed
+  - The "Windows upload fix" has been re-introduced
+
 ## [0.13.0] - 2019-09-12
 
 - Added
