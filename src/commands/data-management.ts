@@ -222,7 +222,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 		return;
 	}
 
-	const filepath = uri[0].path;
+	const filepath = process.platform === 'win32' ? uri[0].path.substr(1) : uri[0].path;
 	let fd = -1;
     try {
 		fd = fs.openSync(filepath, 'r');
