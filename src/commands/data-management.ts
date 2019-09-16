@@ -213,16 +213,21 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 	if (!uri) {
 		return;
 	}
-    const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].path) });
+    const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].fsPath) });
     if (!name) {
 		return;
 	}
+	// Warn users against uploading files without extension (which is needed by Model Derivative service)
+	if (!path.extname(name)) {
+		await vscode.window.showWarningMessage('Objects with no file extension in their name cannot be translated by Model Derivative service.');
+	}
+
     const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
     if (!contentType) {
 		return;
 	}
 
-	const filepath = uri[0].path;
+	const filepath = uri[0].fsPath;
 	let fd = -1;
     try {
 		fd = fs.openSync(filepath, 'r');
