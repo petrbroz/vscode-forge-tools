@@ -539,6 +539,6 @@
 		"@types/ejs": "^2.6.3",
 		"axios": "^0.19.0",
 		"ejs": "^2.6.2",
-		"forge-server-utils": "^5.1.0"
+		"forge-server-utils": "^5.2.0"
 	}
 }
