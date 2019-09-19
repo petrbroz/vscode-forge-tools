@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Support for downloading SVF derivatives
+
 ## [0.13.1] - 2019-09-16
 
 - Fixed
