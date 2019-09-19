@@ -330,13 +330,13 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
 
 			const urnDir = path.join(baseDir, urn);
-			if (!fs.existsSync(urnDir)) { fse.mkdirpSync(urnDir); }
+			fse.ensureDirSync(urnDir);
     		for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
 				if (cancelled) { return; }
 				const guid = derivative.guid;
 				progress.report({ message: `Downloading derivative ${guid}` });
-        		const guidDir = path.join(urnDir, guid);
-				if (!fs.existsSync(guidDir)) { fse.mkdirpSync(guidDir); }
+				const guidDir = path.join(urnDir, guid);
+				fse.ensureDirSync(guidDir);
         		const svf = await context.modelDerivativeClient.getDerivative(urn, derivative.urn);
 				fs.writeFileSync(path.join(guidDir, 'output.svf'), svf);
 
@@ -350,7 +350,7 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 						const assetData = await context.modelDerivativeClient.getDerivative(urn, baseUri + '/' + asset.URI);
 						const assetPath = path.join(guidDir, asset.URI);
 						const assetFolder = path.dirname(assetPath);
-						if (!fs.existsSync(assetFolder)) { fse.mkdirpSync(assetFolder); }
+						fse.ensureDirSync(assetFolder);
 						fs.writeFileSync(assetPath, assetData);
 					}
 				}
