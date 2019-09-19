@@ -61,6 +61,21 @@ The _Data & Derivatives_ view allows you to browse [Forge Data Management](https
 
 ![Translate object and view derivatives](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/translate-and-preview.gif)
 
+For objects that have already been translated using the Model Derivative service, you can use a command (or a context menu item) called `Download Object Derivatives` which will download the SVF file (proprietary format used for viewing 3D content in Forge Viewer) and all its dependencies into a folder you pick,
+similarly to the functionality provided by https://extract.autodesk.io. All the content will be stored using the following subfolder structure:
+
+```
+<output folder>/
+    <model urn>/
+        <viewable guid>/
+            output.svf
+            <additional files and subfolders>
+        <viewable guid>/
+            output.svf
+            <additional files and subfolders>
+    <files shared by all viewables>
+```
+
 ### Design Automation View
 
 The _Design Automation_ can be used for browsing [Forge Design Automation](https://forge.autodesk.com/en/docs/design-automation/v2/developers_guide/overview) entities such as app bundles and activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
