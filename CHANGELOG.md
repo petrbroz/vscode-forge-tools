@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Support for downloading SVF derivatives
+  - After downloading an OSS object, the notification window provides a button
+  for opening the file (using the default application)
 
 ## [0.13.1] - 2019-09-16
 

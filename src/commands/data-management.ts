@@ -356,7 +356,10 @@ export async function downloadObject(object: IObject | undefined, context: ICont
 			const arrayBuffer = await context.dataManagementClient.downloadObject(bucketKey, objectKey);
 			fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
 		});
-        vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`);
+		const action = await vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`, 'Open File');
+		if (action === 'Open File') {
+			vscode.env.openExternal(uri);
+		}
     } catch(err) {
 		showErrorMessage('Could not download file', err);
     }
