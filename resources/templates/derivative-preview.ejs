@@ -39,7 +39,7 @@
         });
 
         function onDocumentLoadSuccess(doc) {
-            const node = doc.getRoot().findByGuid('<%= guid %>');
+            const node = doc.getRoot().findByGuid('<%- guid %>');
             if (node) {
                 viewer.loadDocumentNode(doc, node);
             } else {
