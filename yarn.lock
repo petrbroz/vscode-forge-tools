@@ -201,6 +201,11 @@ commander@^2.12.1:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
   integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
 
+commander@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.2.tgz#6837c3fb677ad9933d1cfba42dd14d5117d6b39e"
+  integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -319,15 +324,27 @@ forever-agent@~0.6.1:
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-forge-server-utils@^5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-5.3.0.tgz#02ef41ba4b2cb897045318bbe72d7241135657a8"
-  integrity sha512-D8oRFQABbuq1BcuVFii2cobtM4C7Xft4f+PVCkwYU18mKpN0g4pOK1kZdnxV/pPCbQkoMYDnHGoWqlWUD4hcyQ==
+forge-convert-utils@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/forge-convert-utils/-/forge-convert-utils-0.4.1.tgz#5306cb0d8c49652d95b2aedba950250ae69855fe"
+  integrity sha512-dabRqRjzVL6Hjb45o/M7DdpNf0751F77vkEUilul5ouprnHpMQE3PvggA3iKtQWNLpYLw5WvIWQR3DLKvASNuw==
+  dependencies:
+    adm-zip "^0.4.13"
+    commander "^3.0.2"
+    forge-server-utils "^7.0.0"
+    fs-extra "^8.1.0"
+
+forge-server-utils@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-7.0.0.tgz#5caada52ecd9a5b047f21383a457e4a68a4427bd"
+  integrity sha512-2vlxlf1BojT1cMOSMxG/Jnf/jq1zCWcJtn+F3OUEYiZvtKv64ReSZ0BYP3njmBpeT67hmuHDLgEYgr6f9uKwVg==
   dependencies:
     "@types/adm-zip" "^0.4.32"
+    "@types/fs-extra" "^8.0.0"
     adm-zip "^0.4.13"
     axios "^0.19.0"
     form-data "^2.5.1"
+    fs-extra "^8.1.0"
 
 form-data@^2.5.1:
   version "2.5.1"

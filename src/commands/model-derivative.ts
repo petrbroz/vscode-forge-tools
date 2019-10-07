@@ -9,7 +9,7 @@ import {
 	ManifestHelper,
 	IDerivativeResourceChild
 } from 'forge-server-utils';
-import { parseManifest } from 'forge-server-utils/dist/svf';
+import { SvfReader } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 
@@ -340,14 +340,14 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
         		const svf = await context.modelDerivativeClient.getDerivative(urn, derivative.urn);
 				fs.writeFileSync(path.join(guidDir, 'output.svf'), svf);
 
-				const baseUri = derivative.urn.substr(0, derivative.urn.lastIndexOf('/'));
-				const { manifest, metadata } = parseManifest(svf as Buffer);
+				const reader = await SvfReader.FromDerivativeService(urn, guid, context.credentials);
+				const manifest = await reader.getManifest();
 				// TODO: download assets in parallel
 				for (const asset of manifest.assets) {
 					if (cancelled) { return; }
 					if (!asset.URI.startsWith('embed:')) {
 						progress.report({ message: `Downloading derivative ${guid} asset ${asset.URI}` });
-						const assetData = await context.modelDerivativeClient.getDerivative(urn, baseUri + '/' + asset.URI);
+						const assetData = await reader.getAsset(asset.URI);
 						const assetPath = path.join(guidDir, asset.URI);
 						const assetFolder = path.dirname(assetPath);
 						fse.ensureDirSync(assetFolder);

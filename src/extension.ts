@@ -57,6 +57,7 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	let context: IContext = {
 		extensionContext: _context,
+		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
 		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret),
 		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
 		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
@@ -313,9 +314,11 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		env = environments.find(environment => environment.title === name) as IEnvironment;
-		context.dataManagementClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
-		context.designAutomationClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
-		context.modelDerivativeClient.reset({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region);
+		const auth = { client_id: env.clientId, client_secret: env.clientSecret };
+		context.credentials = auth;
+		context.dataManagementClient.reset(auth, undefined, env.region as Region);
+		context.designAutomationClient.reset(auth, undefined, env.region as Region);
+		context.modelDerivativeClient.reset(auth, undefined, env.region as Region);
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
