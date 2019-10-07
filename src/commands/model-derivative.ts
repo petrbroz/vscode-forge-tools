@@ -9,7 +9,7 @@ import {
 	ManifestHelper,
 	IDerivativeResourceChild
 } from 'forge-server-utils';
-import { SvfReader } from 'forge-convert-utils';
+import { SvfReader, GltfWriter } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 
@@ -19,7 +19,7 @@ enum TranslationActions {
 }
 
 export async function translateObject(object: IObject | undefined, compressed: boolean, context: IContext) {
-    try {
+	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
 			if (!bucket) {
@@ -42,9 +42,9 @@ export async function translateObject(object: IObject | undefined, compressed: b
 			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
 		}
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
-    } catch(err) {
+	} catch (err) {
 		showErrorMessage('Could not translate object', err);
-    }
+	}
 }
 
 export async function previewDerivative(derivative: IDerivative | undefined, context: IContext) {
@@ -71,7 +71,7 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			{ enableScripts: true }
 		);
 		panel.webview.html = context.templateEngine.render('derivative-preview', { urn: derivative.urn, guid: derivative.guid, name: derivative.name, token });
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}
 }
@@ -102,7 +102,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
 		panel.webview.html = context.templateEngine.render('derivative-tree', { urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
-	} catch(err) {
+	} catch (err) {
 		showErrorMessage('Could not access derivative tree', err);
 	}
 }
@@ -133,7 +133,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
 		panel.webview.html = context.templateEngine.render('derivative-props', { urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
-	} catch(err) {
+	} catch (err) {
 		showErrorMessage('Could not access derivative properties', err);
 	}
 }
@@ -160,7 +160,7 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 		try {
 			const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
 			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
-		} catch(_) {
+		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
@@ -174,7 +174,7 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 					break;
 			}
 		}
-	} catch(err) {
+	} catch (err) {
 		showErrorMessage('Could not access object manifest', err);
 	}
 }
@@ -194,7 +194,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 
 		try {
 			await context.modelDerivativeClient.deleteManifest(urnify(object.objectId));
-		} catch(_) {
+		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
@@ -209,9 +209,9 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 			}
 		}
 		vscode.window.showInformationMessage(`Derivatives deleted: ${object.objectKey}`);
-	} catch(err) {
+	} catch (err) {
 		showErrorMessage('Could not delete derivatives', err);
-	}	
+	}
 }
 
 export async function viewObjectThumbnail(object: IObject | undefined, context: IContext) {
@@ -276,7 +276,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 				undefined,
 				context.extensionContext.subscriptions
 			);
-		} catch(_) {
+		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the thumbnails of ${object.objectId}, the object must be translated first.
 				Would you like to start the translation now?
@@ -290,7 +290,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 					break;
 			}
 		}
-	} catch(err) {
+	} catch (err) {
 		showErrorMessage('Could not access derivative thumbnails', err);
 	}
 }
@@ -326,18 +326,18 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 			});
 			progress.report({ message: 'Retrieving manifest' });
 			const manifest = await context.modelDerivativeClient.getManifest(urn);
-    		const helper = new ManifestHelper(manifest);
+			const helper = new ManifestHelper(manifest);
 			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
 
 			const urnDir = path.join(baseDir, urn);
 			fse.ensureDirSync(urnDir);
-    		for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
+			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
 				if (cancelled) { return; }
 				const guid = derivative.guid;
 				progress.report({ message: `Downloading derivative ${guid}` });
 				const guidDir = path.join(urnDir, guid);
 				fse.ensureDirSync(guidDir);
-        		const svf = await context.modelDerivativeClient.getDerivative(urn, derivative.urn);
+				const svf = await context.modelDerivativeClient.getDerivative(urn, derivative.urn);
 				fs.writeFileSync(path.join(guidDir, 'output.svf'), svf);
 
 				const reader = await SvfReader.FromDerivativeService(urn, guid, context.credentials);
@@ -354,13 +354,75 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 						fs.writeFileSync(assetPath, assetData);
 					}
 				}
-    		}
+			}
 		});
 		const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
 		if (action === 'Open Folder') {
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
-	} catch(err) {
+	} catch (err) {
 		vscode.window.showErrorMessage(`Could not download derivatives: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function downloadDerivativeGLTF(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
+		if (!outputFolderUri) {
+			return;
+		}
+
+		const baseDir = outputFolderUri[0].fsPath;
+		const urn = urnify(object.objectId);
+		let cancelled = false;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Downloading glTF: ${object.objectKey}`,
+			cancellable: true
+		}, async (progress, token) => {
+			token.onCancellationRequested(() => {
+				cancelled = true;
+			});
+			progress.report({ message: 'Retrieving manifest' });
+			const manifest = await context.modelDerivativeClient.getManifest(urn);
+			const helper = new ManifestHelper(manifest);
+			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
+
+			const urnDir = path.join(baseDir, urn);
+			fse.ensureDirSync(urnDir);
+			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
+				if (cancelled) { return; }
+				const guid = derivative.guid;
+				progress.report({ message: `Converting derivative ${guid}` });
+				const guidDir = path.join(urnDir, guid);
+				fse.ensureDirSync(guidDir);
+				const helper = new ManifestHelper(await context.modelDerivativeClient.getManifest(urn));
+				const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
+				const writer = new GltfWriter(guidDir);
+				for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
+					const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
+					const svf = await reader.read();
+					writer.write(svf);
+				}
+				writer.close();
+			}
+		});
+		const action = await vscode.window.showInformationMessage(`Derivative translation to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
+		if (action === 'Open Folder') {
+			vscode.env.openExternal(vscode.Uri.file(baseDir));
+		}
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not convert derivatives: ${JSON.stringify(err.message)}`);
 	}
 }

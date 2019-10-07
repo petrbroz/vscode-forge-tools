@@ -205,7 +205,12 @@
 			},
 			{
 				"command": "forge.downloadDerivative",
-				"title": "Download Object Derivatives",
+				"title": "Download Object Derivatives as SVF",
+				"category": "Forge Model Derivative"
+			},
+			{
+				"command": "forge.downloadDerivativeGltf",
+				"title": "Download Object Derivatives as glTF",
 				"category": "Forge Model Derivative"
 			},
 			{
@@ -369,34 +374,39 @@
 					"group": "navigation@6"
 				},
 				{
-					"command": "forge.renameObject",
+					"command": "forge.downloadDerivativeGltf",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@7"
 				},
 				{
-					"command": "forge.copyObject",
+					"command": "forge.renameObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@8"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "forge.copyObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@9"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@10"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@11"
 				},
 				{
-					"command": "forge.deleteObjectManifest",
+					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@12"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@13"
 				},
 				{
 					"command": "forge.previewDerivative",

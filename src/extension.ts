@@ -146,6 +146,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.downloadDerivative', async (object?: IObject) => {
 		await mdc.downloadDerivativeSVF(object, context);
 	});
+	vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
+		await mdc.downloadDerivativeGLTF(object, context);
+	});
 
 	// Setup design automation view
 	let designAutomationDataProvider = new dap.DesignAutomationDataProvider(context, env.clientId);
