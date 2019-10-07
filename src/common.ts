@@ -12,8 +12,10 @@ import {
     urnify
 } from 'forge-server-utils';
 import { IDerivative } from './interfaces/model-derivative';
+import { IAuthOptions } from 'forge-server-utils/dist/common';
 
 export interface IContext {
+    credentials: IAuthOptions;
     extensionContext: vscode.ExtensionContext;
 	authenticationClient: AuthenticationClient;
 	dataManagementClient: DataManagementClient;
