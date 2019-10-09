@@ -7,6 +7,7 @@ import {
     DataManagementClient,
     ModelDerivativeClient,
     DesignAutomationClient,
+    WebhooksClient,
     IBucket,
     IObject,
     urnify
@@ -20,7 +21,8 @@ export interface IContext {
 	authenticationClient: AuthenticationClient;
 	dataManagementClient: DataManagementClient;
 	modelDerivativeClient: ModelDerivativeClient;
-	designAutomationClient: DesignAutomationClient;
+    designAutomationClient: DesignAutomationClient;
+    webhookClient: WebhooksClient;
 	templateEngine: TemplateEngine;
 }
 

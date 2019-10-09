@@ -87,6 +87,10 @@
 					"name": "Data & Derivatives"
 				},
 				{
+					"id": "forgeWebhooksView",
+					"name": "Webhooks"
+				},
+				{
 					"id": "forgeDesignAutomationView",
 					"name": "Design Automation"
 				}
