@@ -6,6 +6,7 @@ import {
 	DataManagementClient,
 	ModelDerivativeClient,
 	DesignAutomationClient,
+	WebhooksClient,
 	IActivityDetail
 } from 'forge-server-utils';
 import * as dmp from './providers/data-management';
@@ -17,6 +18,8 @@ import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
+import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
+import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
 
 interface IEnvironment {
 	title: string;
@@ -62,6 +65,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
 		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
+		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
 		templateEngine: new TemplateEngine(_context)
 	};
 
@@ -300,6 +304,34 @@ export function activate(_context: vscode.ExtensionContext) {
 		await dac.createWorkitem(('fullid' in entry) ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`, context);
 	});
 
+	// Setup webhooks view
+	let webhooksDataProvider = new WebhooksDataProvider(context);
+	let webhooksView = vscode.window.createTreeView('forgeWebhooksView', { treeDataProvider: webhooksDataProvider });
+	context.extensionContext.subscriptions.push(webhooksView);
+
+	// Setup webhooks commands
+	vscode.commands.registerCommand('forge.createWebhook', async (event: IWebhookEvent) => {
+		// TODO: create webhooks from command palette
+		await createWebhook(event, context, function() {
+			webhooksDataProvider.refresh(event);
+		});
+	});
+	vscode.commands.registerCommand('forge.updateWebhook', async (webhook: IWebhook) => {
+		// TODO: update webhooks from command palette
+		await updateWebhook(webhook, context, function() {
+			webhooksDataProvider.refresh();
+		});
+	});
+	vscode.commands.registerCommand('forge.deleteWebhook', async (webhook: IWebhook) => {
+		// TODO: delete webhooks from command palette
+		await deleteWebhook(webhook, context);
+		webhooksDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
+		// TODO: view webhook details from command palette
+		await viewWebhookDetails(webhook, context);
+	});
+
 	// Setup rest
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'Forge Env: ' + env.title;
@@ -322,6 +354,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		context.dataManagementClient.reset(auth, undefined, env.region as Region);
 		context.designAutomationClient.reset(auth, undefined, env.region as Region);
 		context.modelDerivativeClient.reset(auth, undefined, env.region as Region);
+		context.webhookClient.reset(auth, undefined, env.region as Region);
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();

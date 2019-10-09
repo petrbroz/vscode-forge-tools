@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -85,6 +85,10 @@
 				{
 					"id": "forgeDataManagementView",
 					"name": "Data & Derivatives"
+				},
+				{
+					"id": "forgeWebhooksView",
+					"name": "Webhooks"
 				},
 				{
 					"id": "forgeDesignAutomationView",
@@ -307,6 +311,26 @@
 				"command": "forge.createWorkitem",
 				"title": "Create Workitem",
 				"category": "Forge Design Automation"
+			},
+			{
+				"command": "forge.viewWebhookDetails",
+				"title": "View Webhook Details",
+				"category": "Forge Webhooks"
+			},
+			{
+				"command": "forge.createWebhook",
+				"title": "Create Webhook",
+				"category": "Forge Webhooks"
+			},
+			{
+				"command": "forge.updateWebhook",
+				"title": "Update Webhook",
+				"category": "Forge Webhooks"
+			},
+			{
+				"command": "forge.deleteWebhook",
+				"title": "Delete Webhook",
+				"category": "Forge Webhooks"
 			}
 		],
 		"menus": {
@@ -537,6 +561,26 @@
 					"command": "forge.deleteActivityVersion",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
 					"group": "navigation@3"
+				},
+				{
+					"command": "forge.viewWebhookDetails",
+					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.updateWebhook",
+					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@2"
+				},
+				{
+					"command": "forge.deleteWebhook",
+					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@3"
+				},
+				{
+					"command": "forge.createWebhook",
+					"when": "view == forgeWebhooksView && viewItem == event",
+					"group": "navigation@1"
 				}
 			]
 		}
@@ -561,7 +605,7 @@
 		"axios": "^0.19.0",
 		"ejs": "^2.6.2",
 		"forge-convert-utils": "^0.4.1",
-		"forge-server-utils": "^7.0.0",
+		"forge-server-utils": "^7.1.2",
 		"fs-extra": "^8.1.0"
 	}
 }

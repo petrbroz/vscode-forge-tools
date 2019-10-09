@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.0] - 2019-10-09
+
+- Added
+  - Listing, creating, updating, and deleting webhooks
+  - Viewing details of a webhook
+
 ## [1.1.0] - 2019-10-07
 
 - Added
