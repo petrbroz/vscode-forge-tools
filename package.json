@@ -323,6 +323,11 @@
 				"category": "Forge Webhooks"
 			},
 			{
+				"command": "forge.updateWebhook",
+				"title": "Update Webhook",
+				"category": "Forge Webhooks"
+			},
+			{
 				"command": "forge.deleteWebhook",
 				"title": "Delete Webhook",
 				"category": "Forge Webhooks"
@@ -563,9 +568,14 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "forge.deleteWebhook",
+					"command": "forge.updateWebhook",
 					"when": "view == forgeWebhooksView && viewItem == hook",
 					"group": "navigation@2"
+				},
+				{
+					"command": "forge.deleteWebhook",
+					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@3"
 				},
 				{
 					"command": "forge.createWebhook",

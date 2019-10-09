@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
 import { IWebhook, IWebhookEvent } from '../providers/webhooks';
-import { WebhookSystem } from 'forge-server-utils';
+import { WebhookSystem, IWebhook as IWebhookDetails, IUpdateWebhookParams } from 'forge-server-utils';
 
 function webhookScopes(system: WebhookSystem): string[] {
 	let scopes: string[] = [];
@@ -102,5 +102,58 @@ export async function deleteWebhook(webhook: IWebhook, context: IContext) {
 		vscode.window.showInformationMessage(`Webhook removed: ${id}`);
 	} catch(err) {
 		showErrorMessage('Could not remove webhook', err);
+	}
+}
+
+export async function updateWebhook(webhook: IWebhook, context: IContext, successCallback?: () => void) {
+	try {
+		const { system, event, id } = webhook;
+		let webhookDetail: IWebhookDetails | null = null;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Retrieving webhook data: ${webhook.id}`,
+			cancellable: false
+		}, async (progress, token) => {
+			webhookDetail = await context.webhookClient.getHookDetails(system, event, id);
+		});
+		const scopes = webhookScopes(webhook.system);
+		const panel = vscode.window.createWebviewPanel(
+			'webhook-details',
+			`Webhook: ${id}`,
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		panel.webview.html = context.templateEngine.render('webhook-details', { webhook: webhookDetail, mode: 'update', scopes });
+		// Handle messages from the webview
+		panel.webview.onDidReceiveMessage(
+			message => {
+				switch (message.command) {
+					case 'update':
+						context.webhookClient.updateHook(webhook.system, webhook.event, webhook.id, {
+							//callbackUrl: message.webhook.status, // changing callback doesn't seem to be supported
+							status: message.webhook.status,
+							//scope: message.webhook.scope // changing scope doesn't seem to be supported
+						} as IUpdateWebhookParams)
+						.then((_: any) => {
+							panel.dispose();
+							vscode.window.showInformationMessage(`Webhook updated: ${webhook.id}`);
+							if (successCallback) {
+								successCallback();
+							}
+						})
+						.catch((err: any) => {
+							vscode.window.showErrorMessage(`Could not update webhook: ${err})`);
+						});
+						break;
+					case 'cancel':
+						panel.dispose();
+						break;
+				}
+			},
+			undefined,
+			context.extensionContext.subscriptions
+		);
+	} catch (err) {
+		showErrorMessage('Could not retrieve webhook', err);
 	}
 }

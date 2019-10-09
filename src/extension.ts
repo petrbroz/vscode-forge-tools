@@ -19,7 +19,7 @@ import * as mdi from './interfaces/model-derivative';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
-import { viewWebhookDetails, createWebhook, deleteWebhook } from './commands/webhooks';
+import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
 
 interface IEnvironment {
 	title: string;
@@ -316,14 +316,20 @@ export function activate(_context: vscode.ExtensionContext) {
 			webhooksDataProvider.refresh(event);
 		});
 	});
-	vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
-		// TODO: view webhook details from command palette
-		await viewWebhookDetails(webhook, context);
+	vscode.commands.registerCommand('forge.updateWebhook', async (webhook: IWebhook) => {
+		// TODO: update webhooks from command palette
+		await updateWebhook(webhook, context, function() {
+			webhooksDataProvider.refresh();
+		});
 	});
 	vscode.commands.registerCommand('forge.deleteWebhook', async (webhook: IWebhook) => {
 		// TODO: delete webhooks from command palette
 		await deleteWebhook(webhook, context);
 		webhooksDataProvider.refresh();
+	});
+	vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
+		// TODO: view webhook details from command palette
+		await viewWebhookDetails(webhook, context);
 	});
 
 	// Setup rest

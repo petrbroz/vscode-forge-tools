@@ -44,7 +44,7 @@
         <div class="form-group row">
             <label for="hook-scope" class="col-sm-2 col-form-label">Scope</label>
             <div class="col-sm-4">
-                <% if (mode === 'read') { %>
+                <% if (mode === 'read' || mode === 'update') { %>
                     <select id="hook-scope-key" class="form-control" readonly>
                         <% for (const key of scopes) { %>
                             <% if (webhook.scope[key]) { %>
@@ -67,7 +67,7 @@
                 <% } %>
             </div>
             <div class="col-sm-6">
-                <% if (mode === 'read') { %>
+                <% if (mode === 'read' || mode === 'update') { %>
                     <input type="text" class="form-control" id="hook-scope" value="<%= Object.values(webhook.scope)[0] %>" readonly>
                 <% } else { %>
                     <input type="text" class="form-control" id="hook-scope" value="<%= Object.values(webhook.scope)[0] %>">
@@ -103,7 +103,7 @@
         <div class="form-group row">
             <label for="hook-callback" class="col-sm-2 col-form-label">Callback URL</label>
             <div class="col-sm-10">
-                <% if (mode === 'read') { %>
+                <% if (mode === 'read' || mode === 'update') { %>
                     <input type="text" class="form-control" id="hook-callback" value="<%= webhook.callbackUrl %>" readonly>
                 <% } else { %>
                     <input type="text" class="form-control" id="hook-callback" value="<%= webhook.callbackUrl %>">
@@ -140,7 +140,7 @@
                     <button type="button" id="create" class="btn btn-primary">Create</button>
                     <button type="button" id="cancel" class="btn btn-secondary">Cancel</button>
                 <% } else if (mode === 'update') { %>
-                    <button type="button" id="update" class="btn btn-primary">Update</button>
+                    <button type="button" id="create" class="btn btn-primary">Update</button>
                     <button type="button" id="cancel" class="btn btn-secondary">Cancel</button>
                 <% } %>
             </div>
@@ -157,6 +157,7 @@
                     command: '<%= mode %>',
                     webhook: {
                         callbackUrl: $('#hook-callback').val(),
+                        status: $('#hook-status').val(),
                         scope: {
                             [$('#hook-scope-key').val()]: $('#hook-scope').val()
                         }
