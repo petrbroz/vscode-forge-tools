@@ -19,7 +19,7 @@ import * as mdi from './interfaces/model-derivative';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
-import { viewWebhookDetails, createWebhook } from './commands/webhooks';
+import { viewWebhookDetails, createWebhook, deleteWebhook } from './commands/webhooks';
 
 interface IEnvironment {
 	title: string;
@@ -319,6 +319,11 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
 		// TODO: view webhook details from command palette
 		await viewWebhookDetails(webhook, context);
+	});
+	vscode.commands.registerCommand('forge.deleteWebhook', async (webhook: IWebhook) => {
+		// TODO: delete webhooks from command palette
+		await deleteWebhook(webhook, context);
+		webhooksDataProvider.refresh();
 	});
 
 	// Setup rest

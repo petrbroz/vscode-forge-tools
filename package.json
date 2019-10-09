@@ -321,6 +321,11 @@
 				"command": "forge.createWebhook",
 				"title": "Create Webhook",
 				"category": "Forge Webhooks"
+			},
+			{
+				"command": "forge.deleteWebhook",
+				"title": "Delete Webhook",
+				"category": "Forge Webhooks"
 			}
 		],
 		"menus": {
@@ -556,6 +561,11 @@
 					"command": "forge.viewWebhookDetails",
 					"when": "view == forgeWebhooksView && viewItem == hook",
 					"group": "navigation@1"
+				},
+				{
+					"command": "forge.deleteWebhook",
+					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@2"
 				},
 				{
 					"command": "forge.createWebhook",

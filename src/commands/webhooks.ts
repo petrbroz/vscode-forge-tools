@@ -88,3 +88,19 @@ export async function viewWebhookDetails(webhook: IWebhook, context: IContext) {
 		showErrorMessage('Could not access webhook', err);
 	}
 }
+
+export async function deleteWebhook(webhook: IWebhook, context: IContext) {
+	try {
+        const { system, event, id } = webhook;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Removing webhook: ${webhook.id}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await context.webhookClient.deleteHook(system, event, id);
+		});
+		vscode.window.showInformationMessage(`Webhook removed: ${id}`);
+	} catch(err) {
+		showErrorMessage('Could not remove webhook', err);
+	}
+}
