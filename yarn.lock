@@ -346,6 +346,18 @@ forge-server-utils@^7.0.0:
     form-data "^2.5.1"
     fs-extra "^8.1.0"
 
+forge-server-utils@^7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-7.1.0.tgz#693467ce94fd918f0804181b41c950726c98035d"
+  integrity sha512-bH5iy8coPmcxI5rAqwTKa3HJ61ato5o78Sl2Ob3+vhFn3plvArdPzkzJ3I+lthqE8RSe7SUEs6Px+1NJaDGiBA==
+  dependencies:
+    "@types/adm-zip" "^0.4.32"
+    "@types/fs-extra" "^8.0.0"
+    adm-zip "^0.4.13"
+    axios "^0.19.0"
+    form-data "^2.5.1"
+    fs-extra "^8.1.0"
+
 form-data@^2.5.1:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/form-data/-/form-data-2.5.1.tgz#f2cbec57b5e59e23716e128fe44d4e5dd23895f4"
