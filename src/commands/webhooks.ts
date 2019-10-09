@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
 import { IWebhook } from '../providers/webhooks';
+import { WebhookSystem } from 'forge-server-utils';
 
 export async function viewWebhookDetails(webhook: IWebhook, context: IContext) {
 	try {
@@ -17,7 +18,24 @@ export async function viewWebhookDetails(webhook: IWebhook, context: IContext) {
 				vscode.ViewColumn.One,
 				{ enableScripts: false }
 			);
-			panel.webview.html = context.templateEngine.render('webhook-details', { webhook: webhookDetail });
+
+			// Collect scope keys available for specific webhook system
+			let scopes: string[] = [];
+			switch (webhook.system) {
+				case WebhookSystem.Data:
+				case WebhookSystem.RevitCloudWorksharing:
+					scopes.push('folder');
+					break;
+				case WebhookSystem.Derivative:
+					scopes.push('workflow');
+					break;
+				case WebhookSystem.FusionLifecycle:
+					scopes.push('workspace');
+					scopes.push('workflow.transition');
+					break;
+			}
+
+			panel.webview.html = context.templateEngine.render('webhook-details', { webhook: webhookDetail, mode: 'read', scopes });
 		});
 	} catch(err) {
 		showErrorMessage('Could not access webhook', err);
