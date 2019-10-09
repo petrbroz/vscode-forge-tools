@@ -41,19 +41,24 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 		message => {
 			switch (message.command) {
 				case 'create':
-					context.webhookClient.createHook(entry.system, entry.event, {
-						callbackUrl: message.webhook.callbackUrl,
-						scope: message.webhook.scope
-					})
-					.then(id => {
-						panel.dispose();
-						vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
-						if (successCallback) {
-							successCallback();
+					vscode.window.withProgress({
+						location: vscode.ProgressLocation.Notification,
+						title: `Creating webhook`,
+						cancellable: false
+					}, async (progress, token) => {
+						try {
+							const id = await context.webhookClient.createHook(entry.system, entry.event, {
+								callbackUrl: message.webhook.callbackUrl,
+								scope: message.webhook.scope
+							});
+							panel.dispose();
+							vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
+							if (successCallback) {
+								successCallback();
+							}
+						} catch (err) {
+							vscode.window.showErrorMessage(`Could not create webhook: ${err})`);
 						}
-					})
-					.catch(err => {
-						vscode.window.showErrorMessage(`Could not create webhook: ${err})`);
 					});
 					break;
 				case 'cancel':
@@ -129,20 +134,25 @@ export async function updateWebhook(webhook: IWebhook, context: IContext, succes
 			message => {
 				switch (message.command) {
 					case 'update':
-						context.webhookClient.updateHook(webhook.system, webhook.event, webhook.id, {
-							//callbackUrl: message.webhook.status, // changing callback doesn't seem to be supported
-							status: message.webhook.status,
-							//scope: message.webhook.scope // changing scope doesn't seem to be supported
-						} as IUpdateWebhookParams)
-						.then((_: any) => {
-							panel.dispose();
-							vscode.window.showInformationMessage(`Webhook updated: ${webhook.id}`);
-							if (successCallback) {
-								successCallback();
+						vscode.window.withProgress({
+							location: vscode.ProgressLocation.Notification,
+							title: `Updating webhook ${id}`,
+							cancellable: false
+						}, async (progress, token) => {
+							try {
+								await context.webhookClient.updateHook(webhook.system, webhook.event, webhook.id, {
+									//callbackUrl: message.webhook.status, // changing callback doesn't seem to be supported
+									status: message.webhook.status,
+									//scope: message.webhook.scope // changing scope doesn't seem to be supported
+								});
+								panel.dispose();
+								vscode.window.showInformationMessage(`Webhook updated: ${id}`);
+								if (successCallback) {
+									successCallback();
+								}
+							} catch (err) {
+								vscode.window.showErrorMessage(`Could not update webhook: ${err})`);
 							}
-						})
-						.catch((err: any) => {
-							vscode.window.showErrorMessage(`Could not update webhook: ${err})`);
 						});
 						break;
 					case 'cancel':
