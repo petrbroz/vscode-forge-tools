@@ -45,9 +45,9 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 						callbackUrl: message.webhook.callbackUrl,
 						scope: message.webhook.scope
 					})
-					.then(_ => {
+					.then(id => {
 						panel.dispose();
-						vscode.window.showInformationMessage(`Webhook created`);
+						vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
 						if (successCallback) {
 							successCallback();
 						}
