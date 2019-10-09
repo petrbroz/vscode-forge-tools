@@ -15,7 +15,7 @@ interface IWebhookEvent {
     event: WebhookEvent;
 }
 
-interface IWebhook {
+export interface IWebhook {
     type: 'hook';
     system: WebhookSystem;
     event: WebhookEvent;

@@ -311,6 +311,11 @@
 				"command": "forge.createWorkitem",
 				"title": "Create Workitem",
 				"category": "Forge Design Automation"
+			},
+			{
+				"command": "forge.viewWebhookDetails",
+				"title": "View Webhook Details",
+				"category": "Forge Webhooks"
 			}
 		],
 		"menus": {
@@ -541,6 +546,11 @@
 					"command": "forge.deleteActivityVersion",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
 					"group": "navigation@3"
+				},
+				{
+					"command": "forge.viewWebhookDetails",
+					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@1"
 				}
 			]
 		}

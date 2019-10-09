@@ -18,7 +18,8 @@ import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
-import { WebhooksDataProvider } from './providers/webhooks';
+import { WebhooksDataProvider, IWebhook } from './providers/webhooks';
+import { viewWebhookDetails } from './commands/webhooks';
 
 interface IEnvironment {
 	title: string;
@@ -309,6 +310,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(webhooksView);
 
 	// Setup webhooks commands
+	vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
+		await viewWebhookDetails(webhook, context);
+	});
 
 	// Setup rest
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
