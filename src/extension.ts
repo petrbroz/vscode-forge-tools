@@ -18,8 +18,8 @@ import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
-import { WebhooksDataProvider, IWebhook } from './providers/webhooks';
-import { viewWebhookDetails } from './commands/webhooks';
+import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
+import { viewWebhookDetails, createWebhook } from './commands/webhooks';
 
 interface IEnvironment {
 	title: string;
@@ -310,7 +310,14 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(webhooksView);
 
 	// Setup webhooks commands
+	vscode.commands.registerCommand('forge.createWebhook', async (event: IWebhookEvent) => {
+		// TODO: create webhooks from command palette
+		await createWebhook(event, context, function() {
+			webhooksDataProvider.refresh(event);
+		});
+	});
 	vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
+		// TODO: view webhook details from command palette
 		await viewWebhookDetails(webhook, context);
 	});
 

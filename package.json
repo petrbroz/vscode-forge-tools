@@ -316,6 +316,11 @@
 				"command": "forge.viewWebhookDetails",
 				"title": "View Webhook Details",
 				"category": "Forge Webhooks"
+			},
+			{
+				"command": "forge.createWebhook",
+				"title": "Create Webhook",
+				"category": "Forge Webhooks"
 			}
 		],
 		"menus": {
@@ -550,6 +555,11 @@
 				{
 					"command": "forge.viewWebhookDetails",
 					"when": "view == forgeWebhooksView && viewItem == hook",
+					"group": "navigation@1"
+				},
+				{
+					"command": "forge.createWebhook",
+					"when": "view == forgeWebhooksView && viewItem == event",
 					"group": "navigation@1"
 				}
 			]

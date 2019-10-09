@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import { WebhookSystem, WebhookEvent } from 'forge-server-utils';
 import { IContext } from '../common';
 
-interface IWebhookSystem {
+export interface IWebhookSystem {
     type: 'system';
     name: string;
     system: WebhookSystem;
 }
 
-interface IWebhookEvent {
+export interface IWebhookEvent {
     type: 'event';
     name: string;
     system: WebhookSystem;
