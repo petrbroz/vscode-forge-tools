@@ -24,7 +24,7 @@ function webhookScopes(system: WebhookSystem): string[] {
 export async function createWebhook(entry: IWebhookEvent, context: IContext, successCallback?: () => void) {
 	const scopes = webhookScopes(entry.system);
 	const panel = vscode.window.createWebviewPanel(
-		'webhook-details',
+		'create-webhook',
 		`New webhook`,
 		vscode.ViewColumn.One,
 		{ enableScripts: true }
@@ -118,7 +118,7 @@ export async function updateWebhook(webhook: IWebhook, context: IContext, succes
 		});
 		const scopes = webhookScopes(webhook.system);
 		const panel = vscode.window.createWebviewPanel(
-			'webhook-details',
+			'update-webhook',
 			`Webhook: ${id}`,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
