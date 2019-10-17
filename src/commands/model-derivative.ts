@@ -409,13 +409,77 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 				fse.ensureDirSync(guidDir);
 				const helper = new ManifestHelper(await context.modelDerivativeClient.getManifest(urn));
 				const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
-				const writer = new GltfWriter(guidDir);
+				const writer = new GltfWriter(guidDir, { deduplicate: false, compress: false, binary: false, log: (msg: string) => progress.report({ message: msg }) });
 				for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
+					if (cancelled) { return; }
 					const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
 					const svf = await reader.read();
 					writer.write(svf);
 				}
-				writer.close();
+				await writer.close();
+			}
+		});
+		const action = await vscode.window.showInformationMessage(`Derivative translation to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
+		if (action === 'Open Folder') {
+			vscode.env.openExternal(vscode.Uri.file(baseDir));
+		}
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not convert derivatives: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function downloadDerivativeGLB(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
+		if (!outputFolderUri) {
+			return;
+		}
+
+		const baseDir = outputFolderUri[0].fsPath;
+		const urn = urnify(object.objectId);
+		let cancelled = false;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Downloading glTF: ${object.objectKey}`,
+			cancellable: true
+		}, async (progress, token) => {
+			token.onCancellationRequested(() => {
+				cancelled = true;
+			});
+			progress.report({ message: 'Retrieving manifest' });
+			const manifest = await context.modelDerivativeClient.getManifest(urn);
+			const helper = new ManifestHelper(manifest);
+			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
+
+			const urnDir = path.join(baseDir, urn);
+			fse.ensureDirSync(urnDir);
+			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
+				if (cancelled) { return; }
+				const guid = derivative.guid;
+				progress.report({ message: `Converting derivative ${guid}` });
+				const guidDir = path.join(urnDir, guid);
+				fse.ensureDirSync(guidDir);
+				const helper = new ManifestHelper(await context.modelDerivativeClient.getManifest(urn));
+				const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
+				const writer = new GltfWriter(guidDir, { deduplicate: true, compress: true, binary: true, log: (msg: string) => progress.report({ message: msg }) });
+				for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
+					if (cancelled) { return; }
+					const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
+					const svf = await reader.read();
+					writer.write(svf);
+				}
+				await writer.close();
 			}
 		});
 		const action = await vscode.window.showInformationMessage(`Derivative translation to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
