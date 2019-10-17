@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Additional webhook properties: filter, hookAttribute
+  - Deleting buckets
 
 ## [1.2.0] - 2019-10-09
 

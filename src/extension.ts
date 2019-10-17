@@ -118,6 +118,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.generateSignedUrl', async (object?: IObject) => {
 		await dmc.generateSignedUrl(object, context);
 	});
+	vscode.commands.registerCommand('forge.deleteBucket', async (bucket?: IBucket) => {
+		await dmc.deleteBucket(bucket, context);
+		simpleStorageDataProvider.refresh();
+	});
 
 	// Model derivative commands
 	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {

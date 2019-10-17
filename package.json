@@ -168,6 +168,11 @@
 				"category": "Forge Data Management"
 			},
 			{
+				"command": "forge.deleteBucket",
+				"title": "Delete Bucket",
+				"category": "Forge Data Management"
+			},
+			{
 				"command": "forge.translateObject",
 				"title": "Translate Object",
 				"category": "Forge Model Derivative"
@@ -366,6 +371,11 @@
 					"command": "forge.deleteBucketObjects",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
 					"group": "navigation@4"
+				},
+				{
+					"command": "forge.deleteBucket",
+					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"group": "navigation@5"
 				},
 				{
 					"command": "forge.viewObjectDetails",
@@ -605,7 +615,7 @@
 		"axios": "^0.19.0",
 		"ejs": "^2.6.2",
 		"forge-convert-utils": "^0.4.1",
-		"forge-server-utils": "^7.1.2",
+		"forge-server-utils": "^7.2.1",
 		"fs-extra": "^8.1.0"
 	}
 }

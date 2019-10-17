@@ -551,3 +551,25 @@ export async function generateSignedUrl(object: IObject | undefined, context: IC
 		showErrorMessage('Could not generate signed URL', err);
 	}
 }
+
+export async function deleteBucket(bucket: IBucket | undefined, context: IContext) {
+	try {
+		if (!bucket) {
+			bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+		}
+		const { bucketKey } = bucket;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Deleting bucket: ${bucketKey}`,
+			cancellable: false
+		}, async (progress, token) => {
+			await context.dataManagementClient.deleteBucket(bucketKey);
+		});
+        vscode.window.showInformationMessage(`Bucket deleted: ${bucketKey}`);
+    } catch(err) {
+		showErrorMessage('Could not delete bucket', err);
+    }
+}
