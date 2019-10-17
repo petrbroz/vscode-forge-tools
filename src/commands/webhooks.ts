@@ -49,7 +49,9 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 						try {
 							const id = await context.webhookClient.createHook(entry.system, entry.event, {
 								callbackUrl: message.webhook.callbackUrl,
-								scope: message.webhook.scope
+								scope: message.webhook.scope,
+								filter: message.webhook.filter,
+								hookAttribute: message.webhook.hookAttribute
 							});
 							panel.dispose();
 							vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
@@ -141,9 +143,9 @@ export async function updateWebhook(webhook: IWebhook, context: IContext, succes
 						}, async (progress, token) => {
 							try {
 								await context.webhookClient.updateHook(webhook.system, webhook.event, webhook.id, {
-									//callbackUrl: message.webhook.status, // changing callback doesn't seem to be supported
 									status: message.webhook.status,
-									//scope: message.webhook.scope // changing scope doesn't seem to be supported
+									filter: message.webhook.filter,
+									hookAttribute: message.webhook.hookAttribute
 								});
 								panel.dispose();
 								vscode.window.showInformationMessage(`Webhook updated: ${id}`);
