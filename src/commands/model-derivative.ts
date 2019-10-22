@@ -342,17 +342,26 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 
 				const reader = await SvfReader.FromDerivativeService(urn, guid, context.credentials);
 				const manifest = await reader.getManifest();
+				let failedAssetUris = [];
 				// TODO: download assets in parallel
 				for (const asset of manifest.assets) {
 					if (cancelled) { return; }
 					if (!asset.URI.startsWith('embed:')) {
 						progress.report({ message: `Downloading derivative ${guid} asset ${asset.URI}` });
-						const assetData = await reader.getAsset(asset.URI);
-						const assetPath = path.join(guidDir, asset.URI);
-						const assetFolder = path.dirname(assetPath);
-						fse.ensureDirSync(assetFolder);
-						fs.writeFileSync(assetPath, assetData);
+						try {
+							const assetData = await reader.getAsset(asset.URI);
+							const assetPath = path.join(guidDir, asset.URI);
+							const assetFolder = path.dirname(assetPath);
+							fse.ensureDirSync(assetFolder);
+							fs.writeFileSync(assetPath, assetData);
+						} catch(err) {
+							failedAssetUris.push(asset.URI);
+						}
 					}
+				}
+
+				if (failedAssetUris.length > 0) {
+					vscode.window.showWarningMessage('Some of the SVF assets could not be downloaded:\n' + failedAssetUris.join('\n'));
 				}
 			}
 		});
