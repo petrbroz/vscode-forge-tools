@@ -48,10 +48,40 @@ function getEnvironments(): IEnvironment[] {
 	return environments;
 }
 
+async function setupNewEnvironment() {
+	try {
+		const choice = await vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings.', 'Enter Forge Credentials');
+		if (choice === 'Enter Forge Credentials') {
+			const clientId = await vscode.window.showInputBox({ prompt: 'Enter Forge client ID', ignoreFocusOut: true });
+			if (!clientId) {
+				return;
+			}
+			const clientSecret = await vscode.window.showInputBox({ prompt: 'Enter Forge client secret', ignoreFocusOut: true });
+			if (!clientSecret) {
+				return;
+			}
+			const region = await vscode.window.showQuickPick(['US', 'EMEA'], { placeHolder: 'Choose your Forge region', ignoreFocusOut: true });
+			if (!region) {
+				return;
+			}
+			const title = await vscode.window.showInputBox({ prompt: 'Give your new environment a name', ignoreFocusOut: true });
+			if (!title) {
+				return;
+			}
+			const environments: IEnvironment[] = [{ title, clientId, clientSecret, region }];
+			await vscode.workspace.getConfiguration(undefined, null).update('autodesk.forge.environments', environments);
+			vscode.commands.executeCommand('workbench.action.reloadWindow');
+		}
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not setup Forge environment: ${err}`);
+	}
+}
+
 export function activate(_context: vscode.ExtensionContext) {
 	const environments = getEnvironments();
-	if (environments.length === 0 || !environments[0].clientId || !environments[0].clientSecret) {
-		vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings and reload the editor.');
+	if (environments.length === 0) {
+		// If no environment is configured, offer a guided process for creating one using vscode UI
+		setupNewEnvironment();
 		return;
 	}
 	let env = environments[0];
