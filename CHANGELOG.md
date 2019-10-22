@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2019-10-22
+
 - Added
   - Support for downloadong derivatives as glb (glTF binary format) with Draco compression
   - Default sorting of OSS and webhook entries in the tree view.
