@@ -472,7 +472,7 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 				fse.ensureDirSync(guidDir);
 				const helper = new ManifestHelper(await context.modelDerivativeClient.getManifest(urn));
 				const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
-				const writer = new GltfWriter(guidDir, { deduplicate: true, compress: true, binary: true, log: (msg: string) => progress.report({ message: msg }) });
+				const writer = new GltfWriter(guidDir, { deduplicate: true, compress: true, binary: true, skipUnusedUvs: true, log: (msg: string) => progress.report({ message: msg }) });
 				for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
 					if (cancelled) { return; }
 					const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
