@@ -6,7 +6,7 @@ import {
     urnify
 } from 'forge-server-utils';
 import { IDerivative } from '../interfaces/model-derivative';
-import { IContext } from '../common';
+import { IContext, stringPropertySorter } from '../common';
 
 export interface IHint {
     hint: string;
@@ -72,14 +72,14 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             if (element) {
                 if (isBucket(element)) {
                     const objects = await this._context.dataManagementClient.listObjects(element.bucketKey);
-                    return objects;
+                    return objects.sort(stringPropertySorter('objectKey'));
                 } else if (isObject(element)) {
                     const urn = urnify(element.objectId);
                     try {
                         const manifest = await this._context.modelDerivativeClient.getManifest(urn);
                         switch (manifest.status) {
                             case 'success':
-                                return this._getManifestDerivatives(manifest, urn);
+                                return this._getManifestDerivatives(manifest, urn).sort(stringPropertySorter('name'));
                             case 'failed':
                                 return [this._getManifestErrorHint(manifest, urn)];
                             default:
@@ -98,7 +98,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 }
             } else {
                 const buckets = await this._context.dataManagementClient.listBuckets();
-                return buckets;
+                return buckets.sort(stringPropertySorter('bucketKey'));
             }
         } catch(err) {
             vscode.window.showErrorMessage('Could not load objects or buckets: ' + JSON.stringify(err));
