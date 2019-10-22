@@ -112,3 +112,11 @@ export function showErrorMessage(title: string, err: any) {
     }
     vscode.window.showErrorMessage(msg);
 }
+
+export function stringPropertySorter<T>(propName: keyof T) {
+    return function (a: T, b: T): number {
+        if (a[propName] < b[propName]) { return -1; }
+        else if (a[propName] > b[propName]) { return +1; }
+        else { return 0; }
+    };
+}

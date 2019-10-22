@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2019-10-22
+
+- Added
+  - Support for downloadong derivatives as glb (glTF binary format) with Draco compression
+  - Default sorting of OSS and webhook entries in the tree view.
+  - When running the extension for first time, offer a guided process for configuring new environment using vscode UI
+- Fixed
+  - When downloading an SVF and certain assets cannot be accessed, issue a warning and continue
+
 ## [1.3.0] - 2019-10-17
 
 - Added
