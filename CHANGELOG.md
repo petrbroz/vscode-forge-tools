@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.1] - 2019-11-01
+
 - Added
   - Command and menu item for copying URN of an object to clipboard
 - Changed
