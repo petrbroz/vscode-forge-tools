@@ -203,6 +203,11 @@
 				"category": "Forge Model Derivative"
 			},
 			{
+				"command": "forge.copyObjectUrn",
+				"title": "Copy Object URN to Clipboard",
+				"category": "Forge Model Derivative"
+			},
+			{
 				"command": "forge.deleteObjectManifest",
 				"title": "Delete Derivatives",
 				"category": "Forge Model Derivative"
@@ -398,59 +403,64 @@
 					"group": "navigation@3"
 				},
 				{
-					"command": "forge.viewObjectManifest",
+					"command": "forge.copyObjectUrn",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@4"
 				},
 				{
-					"command": "forge.viewObjectThumbnail",
+					"command": "forge.viewObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@5"
 				},
 				{
-					"command": "forge.downloadDerivative",
+					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@6"
 				},
 				{
-					"command": "forge.downloadDerivativeGltf",
+					"command": "forge.downloadDerivative",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@7"
 				},
 				{
-					"command": "forge.downloadDerivativeGlb",
+					"command": "forge.downloadDerivativeGltf",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@8"
 				},
 				{
-					"command": "forge.renameObject",
+					"command": "forge.downloadDerivativeGlb",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@9"
 				},
 				{
-					"command": "forge.copyObject",
+					"command": "forge.renameObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@10"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "forge.copyObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@11"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "forge.generateSignedUrl",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@12"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@13"
 				},
 				{
-					"command": "forge.deleteObjectManifest",
+					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "navigation@14"
+				},
+				{
+					"command": "forge.deleteObjectManifest",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "navigation@15"
 				},
 				{
 					"command": "forge.previewDerivative",

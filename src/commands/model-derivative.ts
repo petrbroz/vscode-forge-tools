@@ -483,3 +483,24 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 		vscode.window.showErrorMessage(`Could not convert derivatives: ${JSON.stringify(err.message)}`);
 	}
 }
+
+export async function copyObjectUrn(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		const urn = urnify(object.objectId);
+		await vscode.env.clipboard.writeText(urn);
+		vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`,);
+	} catch (err) {
+		showErrorMessage('Could not obtain object URN', err);
+	}
+}
