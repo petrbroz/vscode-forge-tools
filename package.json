@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -203,6 +203,11 @@
 				"category": "Forge Model Derivative"
 			},
 			{
+				"command": "forge.copyObjectUrn",
+				"title": "Copy Object URN to Clipboard",
+				"category": "Forge Model Derivative"
+			},
+			{
 				"command": "forge.deleteObjectManifest",
 				"title": "Delete Derivatives",
 				"category": "Forge Model Derivative"
@@ -360,247 +365,252 @@
 				{
 					"command": "forge.viewBucketDetails",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.uploadObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation@2"
+					"group": "1_action@1"
 				},
 				{
 					"command": "forge.createEmptyObject",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation@3"
+					"group": "1_action@2"
 				},
 				{
 					"command": "forge.deleteBucketObjects",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation@4"
+					"group": "3_remove@1"
 				},
 				{
 					"command": "forge.deleteBucket",
 					"when": "view == forgeDataManagementView && viewItem == bucket",
-					"group": "navigation@5"
+					"group": "3_remove@2"
 				},
 				{
 					"command": "forge.viewObjectDetails",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@1"
-				},
-				{
-					"command": "forge.translateObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@2"
-				},
-				{
-					"command": "forge.translateArchive",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@3"
+					"group": "0_view@1"
 				},
 				{
 					"command": "forge.viewObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@4"
+					"group": "0_view@2"
 				},
 				{
 					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@5"
-				},
-				{
-					"command": "forge.downloadDerivative",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@6"
-				},
-				{
-					"command": "forge.downloadDerivativeGltf",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@7"
-				},
-				{
-					"command": "forge.downloadDerivativeGlb",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@8"
-				},
-				{
-					"command": "forge.renameObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@9"
-				},
-				{
-					"command": "forge.copyObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@10"
-				},
-				{
-					"command": "forge.generateSignedUrl",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@11"
+					"group": "0_view@3"
 				},
 				{
 					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@12"
+					"group": "1_action_dm@1"
+				},
+				{
+					"command": "forge.renameObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_dm@2"
+				},
+				{
+					"command": "forge.copyObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_dm@3"
+				},
+				{
+					"command": "forge.generateSignedUrl",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_dm@4"
+				},
+				{
+					"command": "forge.copyObjectUrn",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@1"
+				},
+				{
+					"command": "forge.translateObject",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@2"
+				},
+				{
+					"command": "forge.translateArchive",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@3"
+				},
+				{
+					"command": "forge.downloadDerivative",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@4"
+				},
+				{
+					"command": "forge.downloadDerivativeGltf",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@5"
+				},
+				{
+					"command": "forge.downloadDerivativeGlb",
+					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@6"
 				},
 				{
 					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@13"
+					"group": "3_remove@1"
 				},
 				{
 					"command": "forge.deleteObjectManifest",
 					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "navigation@14"
+					"group": "3_remove@2"
 				},
 				{
 					"command": "forge.previewDerivative",
 					"when": "view == forgeDataManagementView && viewItem == derivative",
-					"group": "navigation@1"
+					"group": "0_view@1"
 				},
 				{
 					"command": "forge.viewDerivativeTree",
 					"when": "view == forgeDataManagementView && viewItem == derivative",
-					"group": "navigation@2"
+					"group": "0_view@2"
 				},
 				{
 					"command": "forge.viewDerivativeProps",
 					"when": "view == forgeDataManagementView && viewItem == derivative",
-					"group": "navigation@3"
+					"group": "0_view@3"
 				},
 				{
 					"command": "forge.createAppBundle",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundles",
-					"group": "navigation@1"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.updateAppBundle",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
-					"group": "navigation@1"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteAppBundle",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
-					"group": "navigation@2"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-appbundle",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.deleteAppBundleAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
-					"group": "navigation@3"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.createAppBundleAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-aliases",
-					"group": "navigation@1"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.updateAppBundleAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
-					"group": "navigation@2"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.viewAppBundleVersionDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.deleteAppBundleVersion",
 					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
-					"group": "navigation@2"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.createActivity",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-activities",
-					"group": "navigation@1"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteActivity",
 					"when": "view == forgeDesignAutomationView && viewItem == owned-activity",
-					"group": "navigation@1"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.updateActivity",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@2"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.createWorkitem",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@4"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.viewActivityDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.createWorkitem",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
-					"group": "navigation@2"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@5"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.createActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-aliases",
-					"group": "navigation@1"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.updateActivityAlias",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
-					"group": "navigation@3"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.viewActivityVersionDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.updateActivity",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
-					"group": "navigation@2"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteActivityVersion",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
-					"group": "navigation@3"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.viewWebhookDetails",
 					"when": "view == forgeWebhooksView && viewItem == hook",
-					"group": "navigation@1"
+					"group": "0_view"
 				},
 				{
 					"command": "forge.updateWebhook",
 					"when": "view == forgeWebhooksView && viewItem == hook",
-					"group": "navigation@2"
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteWebhook",
 					"when": "view == forgeWebhooksView && viewItem == hook",
-					"group": "navigation@3"
+					"group": "3_remove"
 				},
 				{
 					"command": "forge.createWebhook",
 					"when": "view == forgeWebhooksView && viewItem == event",
-					"group": "navigation@1"
+					"group": "2_modify"
 				}
 			]
 		}
@@ -624,7 +634,7 @@
 		"@types/fs-extra": "^8.0.0",
 		"axios": "^0.19.0",
 		"ejs": "^2.6.2",
-		"forge-convert-utils": "^0.6.4",
+		"forge-convert-utils": "^1.0.2",
 		"forge-server-utils": "^7.2.1",
 		"fs-extra": "^8.1.0"
 	}

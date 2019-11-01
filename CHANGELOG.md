@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.1] - 2019-11-01
+
+- Added
+  - Command and menu item for copying URN of an object to clipboard
+- Changed
+  - Context menu items now organized in various groups for easier navigation (until vscode API adds support for sub-menus)
+
 ## [1.4.0] - 2019-10-22
 
 - Added
