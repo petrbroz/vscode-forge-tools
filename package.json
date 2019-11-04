@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.4.1",
+	"version": "1.4.2",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -233,6 +233,15 @@
 				"category": "Forge Model Derivative"
 			},
 			{
+				"command": "forge.refreshDesignAutomationTree",
+				"title": "Refresh Design Automation Tree",
+				"category": "Forge Design Automation",
+				"icon": {
+					"light": "resources/icons/dark/refresh.svg",
+					"dark": "resources/icons/light/refresh.svg"
+				}
+			},
+			{
 				"command": "forge.createAppBundle",
 				"title": "Create App Bundle",
 				"category": "Forge Design Automation"
@@ -358,6 +367,11 @@
 				{
 					"command": "forge.createBucket",
 					"when": "view == forgeDataManagementView",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.refreshDesignAutomationTree",
+					"when": "view == forgeDesignAutomationView",
 					"group": "navigation"
 				}
 			],

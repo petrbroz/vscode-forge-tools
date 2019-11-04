@@ -25,8 +25,8 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         this._clientId = clientId;
     }
 
-    refresh() {
-        this._onDidChangeTreeData.fire();
+    refresh(entry?: DesignAutomationEntry | null) {
+        this._onDidChangeTreeData.fire(entry);
     }
 
     getTreeItem(element: DesignAutomationEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

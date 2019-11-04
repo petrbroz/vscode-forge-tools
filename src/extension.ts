@@ -200,6 +200,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(designAutomationView);
 
 	// Setup design automation commands
+	vscode.commands.registerCommand('forge.refreshDesignAutomationTree', () => {
+		designAutomationDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.createAppBundle', async () => {
 		await dac.uploadAppBundle(undefined, context);
 		designAutomationDataProvider.refresh();
