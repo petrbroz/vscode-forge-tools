@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.3] - 2019-11-13
+
 - Changed
   - Model Derivative manifests, props, and trees are now open as raw JSONs
   - Instead of "Translate Object as ZIP", there's now a "Translate Object (Advanced)";
