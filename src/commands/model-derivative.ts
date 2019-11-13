@@ -7,7 +7,8 @@ import {
 	urnify,
 	ThumbnailSize,
 	ManifestHelper,
-	IDerivativeResourceChild
+	IDerivativeResourceChild,
+	IDerivativeOutputType
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
@@ -18,7 +19,7 @@ enum TranslationActions {
 	TranslateAsArchive = 'Translate as Archive'
 }
 
-export async function translateObject(object: IObject | undefined, compressed: boolean, context: IContext) {
+export async function translateObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -32,16 +33,57 @@ export async function translateObject(object: IObject | undefined, compressed: b
 		}
 
 		const urn = urnify(object.objectId);
-		if (compressed) {
-			const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'Enter the filename of the root design' });
-			if (!rootDesignFilename) {
+		await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+	} catch (err) {
+		showErrorMessage('Could not translate object', err);
+	}
+}
+
+export async function translateObjectCustom(object: IObject | undefined, context: IContext, onStart?: () => void) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
 				return;
 			}
-			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
-		} else {
-			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
 		}
-		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+
+		const urn = urnify(object.objectId);
+		const panel = vscode.window.createWebviewPanel(
+			'custom-translation',
+			'Custom Model Derivative Job',
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		panel.webview.html = context.templateEngine.render('custom-translation', { urn });
+		panel.webview.onDidReceiveMessage(
+			async (message) => {
+				switch (message.command) {
+					case 'start':
+						const { compressedRootDesign, switchLoader, generateMasterViews } = message.parameters;
+						// TODO: support additional flags in IDerivativeOutputType
+						const outputOptions = { type: 'svf', views: ['2d', '3d'], switchLoader, generateMasterViews } as IDerivativeOutputType;
+						// TODO: support custom region
+						await context.modelDerivativeClient.submitJob(urn, [outputOptions], compressedRootDesign, true);
+						panel.dispose();
+						vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+						if (onStart) {
+							onStart();
+						}
+						break;
+					case 'cancel':
+						panel.dispose();
+						break;
+				}
+			},
+			undefined,
+			context.extensionContext.subscriptions
+		);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
 	}
@@ -168,10 +210,10 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
 			switch (action) {
 				case TranslationActions.Translate:
-					await translateObject(object, false, context);
+					await translateObject(object, context);
 					break;
 				case TranslationActions.TranslateAsArchive:
-					await translateObject(object, true, context);
+					await translateObject(object, context);
 					break;
 			}
 		}
@@ -250,10 +292,10 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
 			switch (action) {
 				case TranslationActions.Translate:
-					await translateObject(object, false, context);
+					await translateObject(object, context);
 					break;
 				case TranslationActions.TranslateAsArchive:
-					await translateObject(object, true, context);
+					await translateObject(object, context);
 					break;
 			}
 		}
