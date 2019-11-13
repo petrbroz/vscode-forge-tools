@@ -7,7 +7,8 @@ import {
 	urnify,
 	ThumbnailSize,
 	ManifestHelper,
-	IDerivativeResourceChild
+	IDerivativeResourceChild,
+	IDerivativeOutputType
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
@@ -18,7 +19,7 @@ enum TranslationActions {
 	TranslateAsArchive = 'Translate as Archive'
 }
 
-export async function translateObject(object: IObject | undefined, compressed: boolean, context: IContext) {
+export async function translateObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -32,16 +33,57 @@ export async function translateObject(object: IObject | undefined, compressed: b
 		}
 
 		const urn = urnify(object.objectId);
-		if (compressed) {
-			const rootDesignFilename = await vscode.window.showInputBox({ prompt: 'Enter the filename of the root design' });
-			if (!rootDesignFilename) {
+		await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+	} catch (err) {
+		showErrorMessage('Could not translate object', err);
+	}
+}
+
+export async function translateObjectCustom(object: IObject | undefined, context: IContext, onStart?: () => void) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
 				return;
 			}
-			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], rootDesignFilename, true);
-		} else {
-			await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
 		}
-		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+
+		const urn = urnify(object.objectId);
+		const panel = vscode.window.createWebviewPanel(
+			'custom-translation',
+			'Custom Model Derivative Job',
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+		panel.webview.html = context.templateEngine.render('custom-translation', { urn });
+		panel.webview.onDidReceiveMessage(
+			async (message) => {
+				switch (message.command) {
+					case 'start':
+						const { compressedRootDesign, switchLoader, generateMasterViews } = message.parameters;
+						// TODO: support additional flags in IDerivativeOutputType
+						const outputOptions = { type: 'svf', views: ['2d', '3d'], switchLoader, generateMasterViews } as IDerivativeOutputType;
+						// TODO: support custom region
+						await context.modelDerivativeClient.submitJob(urn, [outputOptions], compressedRootDesign, true);
+						panel.dispose();
+						vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+						if (onStart) {
+							onStart();
+						}
+						break;
+					case 'cancel':
+						panel.dispose();
+						break;
+				}
+			},
+			undefined,
+			context.extensionContext.subscriptions
+		);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
 	}
@@ -92,16 +134,10 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				return;
 			}
 		}
-		const panel = vscode.window.createWebviewPanel(
-			'derivative-tree',
-			'Tree: ' + derivative.name,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		panel.webview.html = context.templateEngine.render('spinner', {});
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
-		panel.webview.html = context.templateEngine.render('derivative-tree', { urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
+		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid);
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(tree, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
 		showErrorMessage('Could not access derivative tree', err);
 	}
@@ -123,16 +159,10 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				return;
 			}
 		}
-		const panel = vscode.window.createWebviewPanel(
-			'derivative-props',
-			'Properties: ' + derivative.name,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		panel.webview.html = context.templateEngine.render('spinner', {});
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
-		panel.webview.html = context.templateEngine.render('derivative-props', { urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
+		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid);
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(props, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
 		showErrorMessage('Could not access derivative properties', err);
 	}
@@ -150,30 +180,9 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 				return;
 			}
 		}
-
-		const panel = vscode.window.createWebviewPanel(
-			'object-manifest',
-			'Manifest: ' + object.objectKey,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		try {
-			const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
-			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
-		} catch (_) {
-			const action = await vscode.window.showInformationMessage(`
-				In order to access the manifest of ${object.objectId}, the object must be translated first.
-				Would you like to start the translation now?
-			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
-			switch (action) {
-				case TranslationActions.Translate:
-					await translateObject(object, false, context);
-					break;
-				case TranslationActions.TranslateAsArchive:
-					await translateObject(object, true, context);
-					break;
-			}
-		}
+		const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
 		showErrorMessage('Could not access object manifest', err);
 	}
@@ -201,10 +210,10 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
 			switch (action) {
 				case TranslationActions.Translate:
-					await translateObject(object, false, context);
+					await translateObject(object, context);
 					break;
 				case TranslationActions.TranslateAsArchive:
-					await translateObject(object, true, context);
+					await translateObject(object, context);
 					break;
 			}
 		}
@@ -283,10 +292,10 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
 			switch (action) {
 				case TranslationActions.Translate:
-					await translateObject(object, false, context);
+					await translateObject(object, context);
 					break;
 				case TranslationActions.TranslateAsArchive:
-					await translateObject(object, true, context);
+					await translateObject(object, context);
 					break;
 			}
 		}

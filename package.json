@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -178,8 +178,8 @@
 				"category": "Forge Model Derivative"
 			},
 			{
-				"command": "forge.translateArchive",
-				"title": "Translate Object as Zip",
+				"command": "forge.translateObjectCustom",
+				"title": "Translate Object (Advanced)",
 				"category": "Forge Model Derivative"
 			},
 			{
@@ -189,17 +189,17 @@
 			},
 			{
 				"command": "forge.viewDerivativeTree",
-				"title": "View Derivative Tree",
+				"title": "View Derivative Tree JSON",
 				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.viewDerivativeProps",
-				"title": "View Derivative Properties",
+				"title": "View Derivative Properties JSON",
 				"category": "Forge Model Derivative"
 			},
 			{
 				"command": "forge.viewObjectManifest",
-				"title": "View Object Manifest",
+				"title": "View Object Manifest JSON",
 				"category": "Forge Model Derivative"
 			},
 			{
@@ -447,7 +447,7 @@
 					"group": "1_action_md@2"
 				},
 				{
-					"command": "forge.translateArchive",
+					"command": "forge.translateObjectCustom",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "1_action_md@3"
 				},

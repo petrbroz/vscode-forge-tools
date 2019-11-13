@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.3] - 2019-11-13
+
+- Changed
+  - Model Derivative manifests, props, and trees are now open as raw JSONs
+  - Instead of "Translate Object as ZIP", there's now a "Translate Object (Advanced)";
+  this option opens a webview where additional translation properties can be configured
+- Added
+  - Support for configuring advanced properties (such as `switchLoader` and `generateMasterViews`)
+  when starting a custom Model Derivative translation job
+
 ## [1.4.2] - 2019-11-04
 
 - Added
