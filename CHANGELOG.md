@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Model Derivative manifests, props, and trees are now open as raw JSONs
+
 ## [1.4.2] - 2019-11-04
 
 - Added

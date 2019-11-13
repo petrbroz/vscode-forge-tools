@@ -92,16 +92,10 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				return;
 			}
 		}
-		const panel = vscode.window.createWebviewPanel(
-			'derivative-tree',
-			'Tree: ' + derivative.name,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		panel.webview.html = context.templateEngine.render('spinner', {});
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid) as any;
-		panel.webview.html = context.templateEngine.render('derivative-tree', { urn: derivative.urn, guid: derivative.guid, objects: tree.data.objects });
+		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid);
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(tree, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
 		showErrorMessage('Could not access derivative tree', err);
 	}
@@ -123,16 +117,10 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				return;
 			}
 		}
-		const panel = vscode.window.createWebviewPanel(
-			'derivative-props',
-			'Properties: ' + derivative.name,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		panel.webview.html = context.templateEngine.render('spinner', {});
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid) as any;
-		panel.webview.html = context.templateEngine.render('derivative-props', { urn: derivative.urn, guid: derivative.guid, objects: props.data.collection });
+		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid);
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(props, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
 		showErrorMessage('Could not access derivative properties', err);
 	}
@@ -150,30 +138,9 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 				return;
 			}
 		}
-
-		const panel = vscode.window.createWebviewPanel(
-			'object-manifest',
-			'Manifest: ' + object.objectKey,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
-		try {
-			const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
-			panel.webview.html = context.templateEngine.render('object-manifest', { object, manifest });
-		} catch (_) {
-			const action = await vscode.window.showInformationMessage(`
-				In order to access the manifest of ${object.objectId}, the object must be translated first.
-				Would you like to start the translation now?
-			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
-			switch (action) {
-				case TranslationActions.Translate:
-					await translateObject(object, false, context);
-					break;
-				case TranslationActions.TranslateAsArchive:
-					await translateObject(object, true, context);
-					break;
-			}
-		}
+		const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
 		showErrorMessage('Could not access object manifest', err);
 	}
