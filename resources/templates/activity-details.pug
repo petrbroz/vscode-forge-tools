@@ -1,0 +1,154 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title
+      case mode
+        when 'read'
+          | Activity: #{id}
+        when 'create'
+          | Create Activity
+        when 'update'
+          | Update Activity
+  body
+    - readMode = (mode === 'read')
+    form
+      .form-group.row
+        // ID
+        label.col-sm-2.form-label(for='activity-id') ID
+        .col-sm-10
+          input#activity-id.form-control(type='text', value=id, placeholder='Activity Name', readonly=readMode)
+      .form-group.row
+        // Description
+        label.col-sm-2.form-label(for='activity-description') Description
+        .col-sm-10
+          input#activity-description.form-control(type='text', value=description, placeholder='Activity Description', readonly=readMode)
+      .form-group.row
+        // Engine
+        label.col-sm-2.form-label(for='activity-engine') Engine
+        .col-sm-10
+          if readMode
+            input#activity-engine.form-control(type='text', value=engine, readonly)
+          else
+            select#activity-engine.form-control
+              each _engine in options.engines
+                option(value=_engine, selected=(_engine === engine))= _engine
+      .form-group.row
+        // Command Lines
+        label.col-sm-2.form-label(for='command-lines') Command Lines
+        .col-sm-10
+          table#command-lines.table.table-sm.table-bordered
+            tbody
+              each line in commandLine
+                tr
+                  if readMode
+                    td(scope='col')
+                       input.form-control(type='text', name='command-line', value=line, readonly)
+                  else
+                    td(style='width: 95%')
+                      input.form-control(type='text', name='command-line', value=line, placeholder='Enter New Command')
+                    td(style='width: 5%')
+                      button.form-control.btn.btn-outline-success.fas.fa-magic(type='button', name='preset-command-line', data-action='preset', title='Pre-generate initial command structure based on existing settings')
+                    td(style='width: 5%')
+                      button.form-control.btn.btn-outline-danger.fas.fa-trash-alt(type='button', name='remove-command-line', data-action='remove')
+          if mode !== 'read'
+            button.btn.btn-outline-primary.float-right(type='button', name='add-command-line')
+              i.fas.fa-plus-circle
+              |  Command Line
+      .form-group.row
+        // Parameters
+        label.col-sm-2.form-label(for='parameters') Parameters
+        .col-sm-10
+          table#parameters.table.table-sm.table-bordered
+            thead
+              tr
+                th(scope='col') ID
+                th(scope='col') Verb
+                th(scope='col') Description
+                th(scope='col') Local Name
+                th.small(scope='col', title='Required') Req.
+                th.small(scope='col', title='Zipped') Zip
+                th.small(scope='col', title='On Demand') On Dem.
+                if mode !== 'read'
+                  th(style='width: 5%;')
+            tbody
+              each param in Object.keys(parameters)
+                tr
+                  if readMode
+                    td(scope='row')
+                      input.form-control(type='text', name='param-name', value=param, readonly)
+                    td
+                      input.form-control(type='text', name='param-verb', value=parameters[param].verb, readonly)
+                    td
+                      input.form-control(type='text', name='param-desc', value=parameters[param].description, readonly)
+                    td
+                      input.form-control(type='text', name='param-local', value=parameters[param].localName, readonly)
+                    td
+                      input.form-control(type='checkbox', name='param-required', checked=(parameters[param].required), disabled)
+                    td
+                      input.form-control(type='checkbox', name='param-zip', checked=(parameters[param].zip), disabled)
+                    td
+                      input.form-control(type='checkbox', name='param-ondemand', checked=(parameters[param].ondemand), disabled)
+                  else
+                    td
+                      input.form-control(type='text', name='param-name', value=param, placeholder='Parameter Name')
+                    td
+                      select.form-control(name='param-verb')
+                        option(value='get', selected=(!parameters[param].verb || parameters[param].verb === 'get')) Get
+                        option(value='put', selected=(parameters[param].verb === 'put')) Put
+                        option(value='post', selected=(parameters[param].verb === 'post')) Post
+                        option(value='patch', selected=(parameters[param].verb === 'patch')) Patch
+                    td
+                      input.form-control(type='text', name='param-desc', value=parameters[param].description, placeholder='Description')
+                    td
+                      input.form-control(type='text', name='param-local', value=parameters[param].localName, placeholder='Local Name')
+                    td
+                      input.form-control(type='checkbox', name='param-required', checked=(parameters[param].required))
+                    td
+                      input.form-control(type='checkbox', name='param-zip', checked=(parameters[param].zip))
+                    td
+                      input.form-control(type='checkbox', name='param-ondemand', checked=(parameters[param].ondemand))
+                    td
+                      button.form-control.btn.btn-outline-danger.fas.fa-trash-alt(type='button', name='remove-parameter', data-action='remove')
+          if mode !== 'read'
+            button.btn.btn-outline-primary.float-right(type='button', name='add-parameter')
+              i.fas.fa-plus-circle
+              |  Parameter
+      .form-group.row
+        // App Bundles
+        label.col-sm-2.form-label(for='appbundles') App Bundles
+        .col-sm-10
+          table#appbundles.table.table-sm.table-bordered
+            tbody
+              each bundle in appbundles
+                tr
+                  if readMode
+                    td(style='width: 100%')
+                      input.form-control(type='text', name='appbundle', value=bundle, readonly)
+                  else
+                    td(style='width: 95%')
+                      select.form-control(name='appbundle')
+                        each appbundle in options.appBundles
+                          option(value=appbundle, selected=(appbundle === bundle))= appbundle
+                    td(style='width: 5%')
+                      button.form-control.btn.btn-outline-danger.fas.fa-trash-alt(type='button', name='remove-appbundle', data-action='remove')
+          if mode !== 'read'
+            button.btn.btn-outline-primary.float-right(type='button', name='add-appbundle')
+              i.fas.fa-plus-circle
+              |  App Bundle
+      .form-group.row
+        .col
+          case mode
+            when 'create'
+              button#create.btn.btn-primary(type='button') Create
+              button#cancel.btn.btn-secondary(type='button') Cancel
+            when 'update'
+              button#create.btn.btn-primary(type='button') Update
+              button#cancel.btn.btn-secondary(type='button') Cancel
+    include partials/scripts.pug
+    if mode !== 'read'
+      select(id='appbundles-template', style='display: none;')
+        each appbundle in options.appBundles
+          option(value=appbundle)= appbundle
+      script
+        include scripts/activity-details.js        

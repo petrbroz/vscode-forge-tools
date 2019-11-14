@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
-import * as ejs from 'ejs';
+import * as pug from 'pug';
 import {
     AuthenticationClient,
     DataManagementClient,
@@ -28,18 +27,18 @@ export interface IContext {
 
 export class TemplateEngine {
     private _context: vscode.ExtensionContext;
-    private _cache: Map<string, ejs.TemplateFunction>;
+    private _cache: Map<string, pug.compileTemplate>;
 
     constructor(context: vscode.ExtensionContext) {
         this._context = context;
         this._cache = new Map();
     }
 
-    render(templateName: string, data: ejs.Data): string {
+    render(templateName: string, data: any): string {
         if (!this._cache.has(templateName)) {
-            const templatePath = this._context.asAbsolutePath(path.join('resources', 'templates', templateName + '.ejs'));
-            const template = fs.readFileSync(templatePath, { encoding: 'utf8' });
-            this._cache.set(templateName, ejs.compile(template));
+            const templateFolderPath = this._context.asAbsolutePath(path.join('resources', 'templates'));
+            const templatePath = path.join(templateFolderPath, templateName + '.pug');
+            this._cache.set(templateName, pug.compileFile(templatePath, { basedir: templateFolderPath }));
         }
         const func = this._cache.get(templateName);
         if (!func) {

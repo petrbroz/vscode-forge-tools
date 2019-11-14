@@ -1,0 +1,89 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Workitem: #{activity.id}
+  body
+    form
+      .form-group.row
+        // Activity ID
+        label.col-sm-2.form-label(for='activity-id') Activity
+        .col-sm-10
+          input#activity-id.form-control(type='text', value=activity.id, readonly)
+      if activity.parameters
+        .form-group.row
+          label.col-sm-2.form-label(for='parameters') Parameters
+          .col-sm-10
+            table#parameters.table.table-sm.table-bordered
+              thead
+                tr
+                  th(scope='col') Name
+                  th(scope='col') URL
+                  th(scope='col') Verb
+                  th.small(scope='col') Optional
+                  th(scope='col') Local Name
+                  th(scope='col') Path in Zip
+                  th(scope='col') Headers
+              tbody
+                each param in Object.keys(activity.parameters)
+                  tr
+                    td
+                      input.form-control(type='text', name='param-name', value=param, readonly)
+                    td
+                      input.form-control(type='text', name='param-value', value='', placeholder='Value')
+                    td
+                      select.form-control(name='param-verb')
+                        option(value='get', selected=(!activity.parameters[param].verb || activity.parameters[param].verb === 'get')) Get 
+                        option(value='put', selected=(activity.parameters[param].verb === 'put')) Put
+                        option(value='post', selected=(activity.parameters[param].verb === 'post')) Post
+                        option(value='patch', selected=(activity.parameters[param].verb === 'patch')) Patch
+                    td
+                      input.form-control(type='checkbox', name='param-optional')
+                    td
+                      input.form-control(type='text', name='param-local', value='', placeholder='Local Name')
+                    td
+                      input.form-control(type='text', name='param-pathinzip', value='', placeholder='Path in Zip')
+                    td
+                      input.form-control(type='text', name='param-headers', value='', placeholder='HeaderA:ValueA;HeaderB:ValueB')
+      .form-group.row
+        .col
+          button#start.btn.btn-primary(type='button') Run
+          button#cancel.btn.btn-secondary(type='button') Cancel
+    include partials/scripts.pug
+    script.
+      const vscode = acquireVsCodeApi();
+      let parameters = {};
+      $('#start').click(function () {
+        $('#parameters > tbody > tr').each(function () {
+          const $row = $(this);
+          const name = $row.find("input[name='param-name']").val();
+          parameters[name] = {
+            url: $row.find("input[name='param-value']").val(),
+            verb: $row.find("select[name='param-verb']").val(),
+            optional: $row.find("input[name='param-optional']")[0].checked
+          };
+          const localName = $row.find("input[name='param-local']").val();
+          if (localName) {
+            parameters[name].localName = localName;
+          }
+          const pathInZip = $row.find("input[name='param-pathinzip']").val();
+          if (pathInZip) {
+            parameters[name].pathInZip = pathInZip;
+          }
+          const headers = $row.find("input[name='param-headers']").val();
+          if (headers) {
+            parameters[name].headers = {};
+            for (const header of headers.split(';')) {
+              const tokens = header.split(':');
+              parameters[name].headers[tokens[0].trim()] = tokens[1].trim();
+            }
+          }
+        });
+        vscode.postMessage({
+          command: 'start',
+          parameters
+        });
+      });
+      $('#cancel').click(function () {
+        vscode.postMessage({ command: 'cancel' });
+      });

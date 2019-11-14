@@ -1,0 +1,35 @@
+body {
+  padding: 1em;
+}
+
+body,
+.table,
+.form-label,
+.form-check-label {
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-editor-background);
+}
+
+.form-control,
+.form-control:read-only,
+.form-check-input,
+.form-check-input:read-only {
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border-color: var(--vscode-input-border);
+}
+
+.form-control:disabled,
+.form-check-input:disabled {
+  opacity: 0.75;
+}
+
+.btn.btn-primary,
+.btn.btn-secondary {
+  margin: 0.5em;
+}
+
+th.small {
+  font-size: 0.5rem;
+  width: 5%;
+}

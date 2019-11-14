@@ -1,0 +1,32 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Object: #{object.objectKey}
+  body
+    form
+      .form-group.row
+        label.col-sm-2.form-label(for='object-id') Object ID
+        .col-sm-10
+          input#object-id.form-control(type='text', value=object.objectId, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='object-key') Object Key
+        .col-sm-10
+          input#object-key.form-control(type='text', value=object.objectKey, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='bucket-key') Bucket Key
+        .col-sm-10
+          input#bucket-key.form-control(type='text', value=object.bucketKey, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='object-size') Size
+        .col-sm-10
+          input#object-size.form-control(type='text', value=object.size, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='object-sha1') SHA1
+        .col-sm-10
+          input#object-sha1.form-control(type='text', value=object.sha1, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='object-location') Location
+        .col-sm-10
+          input#object-location.form-control(type='text', value=object.location, readonly)
+    include partials/scripts.pug
