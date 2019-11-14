@@ -20,8 +20,5 @@ html(lang='en')
         | 400x400px
         a(data-thumbnail-size='large', href='#') (download)
     include partials/scripts.pug
-    script.
-      const vscode = acquireVsCodeApi();
-      $('body > figure a').on('click', (ev) => {
-        vscode.postMessage({ command: 'download', thumbnailSize: $(ev.target).data('thumbnail-size') });
-      });
+    script
+      include scripts/object-thumbnail.js

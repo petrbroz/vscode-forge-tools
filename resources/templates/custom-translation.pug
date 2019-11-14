@@ -29,18 +29,5 @@ html(lang='en')
           button#start.btn.btn-primary(type='button') Run
           button#cancel.btn.btn-secondary(type='button') Cancel
     include partials/scripts.pug
-    script.
-      const vscode = acquireVsCodeApi();
-      $('#start').click(function () {
-        vscode.postMessage({
-          command: 'start',
-          parameters: {
-            compressedRootDesign: $('#root-filename').val(),
-            switchLoader: $('#switch-loader').is(':checked'),
-            generateMasterViews: $('#master-views').is(':checked')
-          }
-        });
-      });
-      $('#cancel').click(function () {
-        vscode.postMessage({ command: 'cancel' });
-      });
+    script
+      include scripts/custom-translation.js

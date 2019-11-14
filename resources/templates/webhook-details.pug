@@ -6,9 +6,9 @@ html(lang='en')
       case mode
         when 'read'
         when 'update'
-          title Webhook: #{webhook.hookId}
+          | Webhook: #{webhook.hookId}
         when 'create'
-          title New Webhook
+          | New Webhook
   body
     - readMode = (mode === 'read')
     - readUpdateMode = (mode === 'read' || mode === 'update')
@@ -78,22 +78,7 @@ html(lang='en')
               button#cancel.btn.btn-secondary(type='button') Cancel
     include partials/scripts.pug
     if (mode !== 'read')
-      script.
-        const vscode = acquireVsCodeApi();
-        $('#create').click(function() {
-          vscode.postMessage({
-            command: '#{mode}',
-            webhook: {
-              callbackUrl: $('#hook-callback').val(),
-              status: $('#hook-status').val(),
-              scope: {
-                [$('#hook-scope-key').val()]: $('#hook-scope').val()
-              },
-              filter: $('#hook-filter').val(),
-              hookAttribute: JSON.parse($('#hook-attribute').val()),
-            }
-          });
-        });
-        $('#cancel').click(function() {
-          vscode.postMessage({ command: 'cancel' });
-        });
+      script
+        const COMMAND = '#{mode}';
+      script
+        include scripts/webhook-details.js
