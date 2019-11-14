@@ -10,9 +10,19 @@
             padding: 1em;
         }
 
-        body, .form-control, .form-control-plaintext {
+        body, .table, .form-label, .form-check-label {
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
+        }
+
+        .form-control, .form-control:read-only, .form-check-input, .form-check-input:read-only {
+            color: var(--vscode-input-foreground);
+            background-color: var(--vscode-input-background);
+            border-color: var(--vscode-input-border);
+        }
+
+        .form-control:disabled, .form-check-input:disabled {
+            opacity: 0.75;
         }
     </style>
     <title>Object: <%= object.objectKey %></title>
@@ -20,37 +30,37 @@
 <body>
     <form>
         <div class="form-group row">
-            <label for="object-id" class="col-sm-2 col-form-label">Object ID</label>
+            <label for="object-id" class="col-sm-2 form-label">Object ID</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="object-id" value="<%= object.objectId %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="object-key" class="col-sm-2 col-form-label">Object Key</label>
+            <label for="object-key" class="col-sm-2 form-label">Object Key</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="object-key" value="<%= object.objectKey %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="bucket-key" class="col-sm-2 col-form-label">Bucket Key</label>
+            <label for="bucket-key" class="col-sm-2 form-label">Bucket Key</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="bucket-key" value="<%= object.bucketKey %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="object-size" class="col-sm-2 col-form-label">Size</label>
+            <label for="object-size" class="col-sm-2 form-label">Size</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="object-size" value="<%= object.size %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="object-sha1" class="col-sm-2 col-form-label">SHA1</label>
+            <label for="object-sha1" class="col-sm-2 form-label">SHA1</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="object-sha1" value="<%= object.sha1 %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="object-location" class="col-sm-2 col-form-label">Location</label>
+            <label for="object-location" class="col-sm-2 form-label">Location</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="object-location" value="<%= object.location %>" readonly>
             </div>

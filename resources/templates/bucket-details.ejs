@@ -10,9 +10,19 @@
             padding: 1em;
         }
 
-        body, .form-control, .form-control-plaintext {
+        body, .table, .form-label, .form-check-label {
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
+        }
+
+        .form-control, .form-control:read-only, .form-check-input, .form-check-input:read-only {
+            color: var(--vscode-input-foreground);
+            background-color: var(--vscode-input-background);
+            border-color: var(--vscode-input-border);
+        }
+
+        .form-control:disabled, .form-check-input:disabled {
+            opacity: 0.75;
         }
     </style>
     <title>Bucket: <%= bucket.bucketKey %></title>
@@ -20,31 +30,31 @@
 <body>
     <form>
         <div class="form-group row">
-            <label for="bucket-key" class="col-sm-2 col-form-label">Key</label>
+            <label for="bucket-key" class="col-sm-2 form-label">Key</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="bucket-key" value="<%= bucket.bucketKey %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="bucket-owner" class="col-sm-2 col-form-label">Owner</label>
+            <label for="bucket-owner" class="col-sm-2 form-label">Owner</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="bucket-owner" value="<%= bucket.bucketOwner %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="created-date" class="col-sm-2 col-form-label">Created</label>
+            <label for="created-date" class="col-sm-2 form-label">Created</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="created-date" value="<%= new Date(bucket.createdDate) %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label for="policy-key" class="col-sm-2 col-form-label">Policy</label>
+            <label for="policy-key" class="col-sm-2 form-label">Policy</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="policy-key" value="<%= bucket.policyKey %>" readonly>
             </div>
         </div>
         <div class="form-group row">
-            <label class="col-sm-2 col-form-label">Permissions</label>
+            <label class="col-sm-2 form-label">Permissions</label>
             <div class="col-sm-10">
                 <table class="table table-sm">
                     <thead>

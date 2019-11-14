@@ -10,9 +10,19 @@
             padding: 1em;
         }
 
-        body, .form-control, .form-control-plaintext, .table {
+        body, .table, .form-label, .form-check-label {
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
+        }
+
+        .form-control, .form-control:read-only, .form-check-input, .form-check-input:read-only {
+            color: var(--vscode-input-foreground);
+            background-color: var(--vscode-input-background);
+            border-color: var(--vscode-input-border);
+        }
+
+        .form-control:disabled, .form-check-input:disabled {
+            opacity: 0.75;
         }
 
         th.small {
@@ -28,7 +38,7 @@
     <form>
         <div class="form-group row">
             <!-- Activity ID -->
-            <label for="activity-id" class="col-sm-2 col-form-label">Activity</label>
+            <label for="activity-id" class="col-sm-2 form-label">Activity</label>
             <div class="col-sm-10">
                 <input type="text" id="activity-id" class="form-control" value="<%= activity.id %>" readonly>
             </div>
@@ -36,7 +46,7 @@
         <% if (activity.parameters) { %>
             <div class="form-group row">
                 <!-- Parameters -->
-                <label for="parameters" class="col-sm-2 col-form-label">Parameters</label>
+                <label for="parameters" class="col-sm-2 form-label">Parameters</label>
                 <div class="col-sm-10">
                     <table id="parameters" class="table table-sm table-bordered">
                         <thead>

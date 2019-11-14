@@ -10,9 +10,19 @@
             padding: 1em;
         }
 
-        body, .form-control, .form-control-plaintext {
+        body, .table, .form-label, .form-check-label {
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
+        }
+
+        .form-control, .form-control:read-only, .form-check-input, .form-check-input:read-only {
+            color: var(--vscode-input-foreground);
+            background-color: var(--vscode-input-background);
+            border-color: var(--vscode-input-border);
+        }
+
+        .form-control:disabled, .form-check-input:disabled {
+            opacity: 0.75;
         }
     </style>
     <% if (mode === 'read' || mode === 'update') { %>
@@ -24,25 +34,25 @@
 <body>
     <form>
         <div class="form-group row">
-            <label for="hook-system" class="col-sm-2 col-form-label">System</label>
+            <label for="hook-system" class="col-sm-2 form-label">System</label>
             <div class="col-sm-4">
                 <input type="text" class="form-control" id="hook-system" value="<%= webhook.system %>" readonly>
             </div>
-            <label for="hook-event" class="col-sm-2 col-form-label">Event</label>
+            <label for="hook-event" class="col-sm-2 form-label">Event</label>
             <div class="col-sm-4">
                 <input type="text" class="form-control" id="hook-event" value="<%= webhook.event %>" readonly>
             </div>
         </div>
         <% if (mode === 'read' || mode === 'update') { %>
             <div class="form-group row">
-                <label for="hook-id" class="col-sm-2 col-form-label">ID</label>
+                <label for="hook-id" class="col-sm-2 form-label">ID</label>
                 <div class="col-sm-10">
                     <input type="text" class="form-control" id="hook-id" value="<%= webhook.hookId %>" readonly>
                 </div>
             </div>
         <% } %>
         <div class="form-group row">
-            <label for="hook-scope" class="col-sm-2 col-form-label">Scope</label>
+            <label for="hook-scope" class="col-sm-2 form-label">Scope</label>
             <div class="col-sm-4">
                 <% if (mode === 'read' || mode === 'update') { %>
                     <select id="hook-scope-key" class="form-control" readonly>
@@ -75,7 +85,7 @@
             </div>
         </div>
         <div class="form-group row">
-            <label for="hook-status" class="col-sm-2 col-form-label">Status</label>
+            <label for="hook-status" class="col-sm-2 form-label">Status</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
                     <select id="hook-status" class="form-control" readonly>
@@ -101,7 +111,7 @@
             </div>
         </div>
         <div class="form-group row">
-            <label for="hook-filter" class="col-sm-2 col-form-label">Filter</label>
+            <label for="hook-filter" class="col-sm-2 form-label">Filter</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
                     <input type="text" class="form-control" id="hook-filter" value="<%= webhook.filter %>" readonly>
@@ -111,7 +121,7 @@
             </div>
         </div>
         <div class="form-group row">
-            <label for="hook-attribute" class="col-sm-2 col-form-label">Attributes</label>
+            <label for="hook-attribute" class="col-sm-2 form-label">Attributes</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
                     <input type="text" class="form-control" id="hook-attribute" value="<%= JSON.stringify(webhook.hookAttribute) %>" readonly>
@@ -121,7 +131,7 @@
             </div>
         </div>
         <div class="form-group row">
-            <label for="hook-callback" class="col-sm-2 col-form-label">Callback URL</label>
+            <label for="hook-callback" class="col-sm-2 form-label">Callback URL</label>
             <div class="col-sm-10">
                 <% if (mode === 'read' || mode === 'update') { %>
                     <input type="text" class="form-control" id="hook-callback" value="<%= webhook.callbackUrl %>" readonly>
@@ -132,23 +142,23 @@
         </div>
         <% if (mode === 'read' || mode === 'update') { %>
             <div class="form-group row">
-                <label for="hook-urn" class="col-sm-2 col-form-label">URN</label>
+                <label for="hook-urn" class="col-sm-2 form-label">URN</label>
                 <div class="col-sm-10">
                     <input type="text" class="form-control" id="hook-urn" value="<%= webhook.urn %>" readonly>
                 </div>
             </div>
             <div class="form-group row">
-                <label for="hook-tenant" class="col-sm-2 col-form-label">Tenant</label>
+                <label for="hook-tenant" class="col-sm-2 form-label">Tenant</label>
                 <div class="col-sm-10">
                     <input type="text" class="form-control" id="hook-tenant" value="<%= webhook.tenant %>" readonly>
                 </div>
             </div>
             <div class="form-group row">
-                <label for="hook-createdby" class="col-sm-2 col-form-label">Created By</label>
+                <label for="hook-createdby" class="col-sm-2 form-label">Created By</label>
                 <div class="col-sm-4">
                     <input type="text" class="form-control" id="hook-createdby" value="<%= webhook.createdBy %>" readonly>
                 </div>
-                <label for="hook-createddate" class="col-sm-2 col-form-label">Created Date</label>
+                <label for="hook-createddate" class="col-sm-2 form-label">Created Date</label>
                 <div class="col-sm-4">
                     <input type="text" class="form-control" id="hook-createddate" value="<%= webhook.createdDate %>" readonly>
                 </div>

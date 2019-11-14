@@ -10,9 +10,19 @@
             padding: 1em;
         }
 
-        body, .form-control, .form-control-plaintext, .table {
+        body, .table, .form-label, .form-check-label {
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
+        }
+
+        .form-control, .form-control:read-only, .form-check-input, .form-check-input:read-only {
+            color: var(--vscode-input-foreground);
+            background-color: var(--vscode-input-background);
+            border-color: var(--vscode-input-border);
+        }
+
+        .form-control:disabled, .form-check-input:disabled {
+            opacity: 0.75;
         }
     </style>
     <title>
@@ -23,21 +33,21 @@
     <form>
         <!-- Object URN -->
         <div class="form-group row">
-            <label for="input-urn" class="col-sm-2 col-form-label">URN</label>
+            <label for="input-urn" class="col-sm-2 form-label">URN</label>
             <div class="col-sm-10">
                 <input type="text" id="input-urn" class="form-control" value="<%= urn %>" readonly>
             </div>
         </div>
         <!-- Root Filename -->
         <div class="form-group row">
-            <label for="root-filename" class="col-sm-2 col-form-label">Root Filename</label>
+            <label for="root-filename" class="col-sm-2 form-label">Root Filename</label>
             <div class="col-sm-10">
                 <input type="text" id="root-filename" class="form-control" value="" placeholder="Name of the root design file if the URN is a compressed archive">
             </div>
         </div>
         <!-- Output Region -->
         <!-- <div class="form-group row">
-            <label for="output-region" class="col-sm-2 col-form-label">Region</label>
+            <label for="output-region" class="col-sm-2 form-label">Region</label>
             <div class="col-sm-10">
                 <select id="output-region" class="form-control">
                     <option value="US">US</option>

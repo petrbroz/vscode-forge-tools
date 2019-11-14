@@ -11,9 +11,19 @@
             padding: 1em;
         }
 
-        body, .form-control, .form-control-plaintext, .table {
+        body, .table, .form-label, .form-check-label {
             color: var(--vscode-editor-foreground);
             background-color: var(--vscode-editor-background);
+        }
+
+        .form-control, .form-control:read-only, .form-check-input, .form-check-input:read-only {
+            color: var(--vscode-input-foreground);
+            background-color: var(--vscode-input-background);
+            border-color: var(--vscode-input-border);
+        }
+
+        .form-control:disabled, .form-check-input:disabled {
+            opacity: 0.75;
         }
 
         .table {
@@ -39,7 +49,7 @@
     <form>
         <div class="form-group row">
             <!-- ID -->
-            <label for="activity-id" class="col-sm-2 col-form-label">ID</label>
+            <label for="activity-id" class="col-sm-2 form-label">ID</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
                     <input type="text" id="activity-id" class="form-control" value="<%= id %>" placeholder="Activity Name" readonly>
@@ -50,7 +60,7 @@
         </div>
         <div class="form-group row">
             <!-- Description -->
-            <label for="activity-description" class="col-sm-2 col-form-label">Description</label>
+            <label for="activity-description" class="col-sm-2 form-label">Description</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
                     <input type="text" id="activity-description" class="form-control" value="<%= description %>" placeholder="Activity Description" readonly>
@@ -61,7 +71,7 @@
         </div>
         <div class="form-group row">
             <!-- Engine -->
-            <label for="activity-engine" class="col-sm-2 col-form-label">Engine</label>
+            <label for="activity-engine" class="col-sm-2 form-label">Engine</label>
             <div class="col-sm-10">
                 <% if (mode === 'read') { %>
                     <input type="text" id="activity-engine" class="form-control" value="<%= engine %>" readonly>
@@ -80,7 +90,7 @@
         </div>
         <div class="form-group row">
             <!-- Command Lines -->
-            <label for="command-lines" class="col-sm-2 col-form-label">Command Lines</label>
+            <label for="command-lines" class="col-sm-2 form-label">Command Lines</label>
             <div class="col-sm-10">                
                 <table id="command-lines" class="table table-sm table-bordered">
                     <tbody>
@@ -112,7 +122,7 @@
         </div>
         <div class="form-group row">
             <!-- Parameters -->
-            <label for="parameters" class="col-sm-2 col-form-label">Parameters</label>
+            <label for="parameters" class="col-sm-2 form-label">Parameters</label>
             <div class="col-sm-10">
                 <table id="parameters" class="table table-sm table-bordered">
                     <thead>
@@ -220,7 +230,7 @@
         </div>
         <div class="form-group row">
             <!-- App Bundles -->
-            <label for="appbundles" class="col-sm-2 col-form-label">App Bundles</label>
+            <label for="appbundles" class="col-sm-2 form-label">App Bundles</label>
             <div class="col-sm-10">
                 <table id="appbundles" class="table table-sm table-bordered">
                     <tbody>
