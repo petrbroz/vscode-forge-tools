@@ -1,0 +1,28 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title App Bundle: #{bundle.id}
+  body
+    form
+      .form-group.row
+        label.col-sm-2.form-label(for='bundle-id') ID
+        .col-sm-10
+          input#bundle-id.form-control(type='text', value=bundle.id, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='bundle-version') Version
+        .col-sm-10
+          input#bundle-version.form-control(type='text', value=bundle.version, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='bundle-engine') Engine
+        .col-sm-10
+          input#bundle-engine.form-control(type='text', value=bundle.engine, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='bundle-description') Description
+        .col-sm-10
+          input#bundle-description.form-control(type='text', value=bundle.description, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='bundle-package') Package
+        .col-sm-10
+          input#bundle-package.form-control(type='text', value=bundle.package, readonly)
+    include partials/scripts.pug

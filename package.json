@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.4.3",
+	"version": "1.4.4",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -640,16 +640,16 @@
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
 		"tslint": "^5.12.1",
-		"typescript": "^3.6.2",
+		"typescript": "^3.7.2",
 		"vscode": "^1.1.36"
 	},
 	"dependencies": {
-		"@types/ejs": "^2.6.3",
 		"@types/fs-extra": "^8.0.0",
+		"@types/pug": "^2.0.4",
 		"axios": "^0.19.0",
-		"ejs": "^2.6.2",
-		"forge-convert-utils": "^1.0.2",
-		"forge-server-utils": "^7.2.1",
-		"fs-extra": "^8.1.0"
+		"forge-convert-utils": "^1.1.1",
+		"forge-server-utils": "^8.0.6",
+		"fs-extra": "^8.1.0",
+		"pug": "^2.0.4"
 	}
 }

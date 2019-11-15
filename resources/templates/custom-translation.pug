@@ -1,0 +1,33 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Custom Model Derivative Job
+  body
+    form
+      // Object URN
+      .form-group.row
+        label.col-sm-2.form-label(for='input-urn') URN
+        .col-sm-10
+          input#input-urn.form-control(type='text', value=urn, readonly)
+      // Root Filename
+      .form-group.row
+        label.col-sm-2.form-label(for='root-filename') Root Filename
+        .col-sm-10
+          input#root-filename.form-control(type='text', value='', placeholder='Name of the root design file if the URN is a compressed archive')
+      .form-group.row
+        // Switch Loader
+        .form-check.col-2.ml-3
+          input#switch-loader.form-check-input(type='checkbox', value='false')
+          label.form-check-label(for='switch-loader') Switch Loader
+        // Generate Master Views
+        .form-check.col-3
+          input#master-views.form-check-input(type='checkbox', value='false')
+          label.form-check-label(for='master-views') Generate Master Views
+      .form-group.row
+        .col
+          button#start.btn.btn-primary(type='button') Run
+          button#cancel.btn.btn-secondary(type='button') Cancel
+    include partials/scripts.pug
+    script
+      include scripts/custom-translation.js

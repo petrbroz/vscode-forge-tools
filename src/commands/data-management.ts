@@ -227,6 +227,10 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 		return;
 	}
 
+	// URL-encode the name
+	// TODO: move this to forge-server-utils
+	const encodedName = encodeURIComponent(name) as string;
+
 	const filepath = uri[0].fsPath;
 	let fd = -1;
     try {
@@ -250,7 +254,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 			const fileContentHash = await computeFileHash(filepath);
 			let ranges: IResumableUploadRange[];
 			try {
-				ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, name, fileContentHash);
+				ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, encodedName, fileContentHash);
 			} catch(err) {
 				ranges = [];
 			}
@@ -266,7 +270,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 					}
 					const chunkSize = Math.min(range.start - lastByte, chunkBytes);
 					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+					await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
 					progress.report({ increment: 100 * chunkSize / totalBytes });
 					lastByte += chunkSize;
 				}
@@ -281,7 +285,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 				}
 				const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
 				fs.readSync(fd, buff, 0, chunkSize, lastByte);
-				await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+				await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
 				progress.report({ increment: 100 * chunkSize / totalBytes });
 				lastByte += chunkSize;
 			}

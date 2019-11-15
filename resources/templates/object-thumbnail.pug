@@ -1,0 +1,24 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Thumbnail: #{object.objectKey}
+  body
+    figure
+      img(src=smallDataURI, alt=object.objectKey)
+      figcaption
+        | 100x100px
+        a(data-thumbnail-size='small', href='#') (download)
+    figure
+      img(src=mediumDataURI, alt=object.objectKey)
+      figcaption
+        | 200x200px
+        a(data-thumbnail-size='medium', href='#') (download)
+    figure
+      img(src=largeDataURI, alt=object.objectKey)
+      figcaption
+        | 400x400px
+        a(data-thumbnail-size='large', href='#') (download)
+    include partials/scripts.pug
+    script
+      include scripts/object-thumbnail.js

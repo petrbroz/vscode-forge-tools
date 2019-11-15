@@ -1,0 +1,37 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Bucket: #{bucket.bucketKey}
+  body
+    form
+      .form-group.row
+        label.col-sm-2.form-label(for='bucket-key') Key
+        .col-sm-10
+          input#bucket-key.form-control(type='text', value=bucket.bucketKey, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='bucket-owner') Owner
+        .col-sm-10
+          input#bucket-owner.form-control(type='text', value=bucket.bucketOwner, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='created-date') Created
+        .col-sm-10
+          input#created-date.form-control(type='text', value=new Date(bucket.createdDate), readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='policy-key') Policy
+        .col-sm-10
+          input#policy-key.form-control(type='text', value=bucket.policyKey, readonly)
+      .form-group.row
+        label.col-sm-2.form-label Permissions
+        .col-sm-10
+          table.table.table-sm
+            thead
+              tr
+                th(scope='col') Client ID
+                th(scope='col') Access
+            tbody
+              each permission in bucket.permissions
+                tr
+                  td= permission.authId
+                  td= permission.access
+    include partials/scripts.pug
