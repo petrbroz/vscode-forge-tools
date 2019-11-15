@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Changed
   - Styling of various webviews now more consistent, and reusing more of vscode theme variables
+- Fixed
+  - URL-encode OSS object names
 
 ## [1.4.3] - 2019-11-13
 
