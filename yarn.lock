@@ -510,10 +510,22 @@ forge-convert-utils@^1.1.1:
     fs-extra "^8.1.0"
     gltf-pipeline "^2.1.4"
 
-forge-server-utils@^7.0.0, forge-server-utils@^7.2.1:
+forge-server-utils@^7.0.0:
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-7.2.1.tgz#66acf23e81cd8dcea2fb20e17bc1e0b6076f2027"
   integrity sha512-+xKZR2Qkc7e6v4f6V5S+Z6FgMgNC8pnvxt0aIv3qTKQx5q/8wWF43inZjcw5zrXQEecwy+4fwsZ5+RtKliE05Q==
+  dependencies:
+    "@types/adm-zip" "^0.4.32"
+    "@types/fs-extra" "^8.0.0"
+    adm-zip "^0.4.13"
+    axios "^0.19.0"
+    form-data "^2.5.1"
+    fs-extra "^8.1.0"
+
+forge-server-utils@^8.0.6:
+  version "8.0.6"
+  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-8.0.6.tgz#157e4e27294b6677687fe08021e5be37256c48b1"
+  integrity sha512-1rv8kzbSf5DI/AHJzBA8Vk9IeQwEvKXI1ri+KQ6aLsIazPvQoag90EHeAXJfFJFZpYbz+JC1G3W7V20nKy0tEw==
   dependencies:
     "@types/adm-zip" "^0.4.32"
     "@types/fs-extra" "^8.0.0"
