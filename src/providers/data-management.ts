@@ -131,7 +131,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             };
         } else {
             return {
-                hint:'Translation failed (hover for mmore info)',
+                hint:'Translation failed (hover for more info)',
                 tooltip: 'Oops, there\'s no more info :('
             };
         }
