@@ -15,7 +15,7 @@ import * as mdc from './commands/model-derivative';
 import * as dac from './commands/design-automation';
 import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
-import { Region } from 'forge-server-utils/dist/common';
+import { Region, RegionDa } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 
 interface IEnvironment {
@@ -23,6 +23,8 @@ interface IEnvironment {
 	clientId: string;
 	clientSecret: string;
 	region: string;
+	regionDa: string | undefined;
+	host: string | undefined;
 }
 
 function getEnvironments(): IEnvironment[] {
@@ -32,13 +34,16 @@ function getEnvironments(): IEnvironment[] {
 		const oldClientId = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.clientId') || '';
 		const oldClientSecret = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.clientSecret') || '';
 		const oldDataRegion = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.dataRegion') || 'US';
+		
 		if (oldClientId && oldClientSecret) {
 			vscode.window.showInformationMessage('The settings format has changed. Please see the README for more details.');
 			environments.push({
 				title: '(no title)',
 				clientId: oldClientId,
 				clientSecret: oldClientSecret,
-				region: oldDataRegion
+				region: oldDataRegion,
+				regionDa: undefined,
+				host: undefined
 			});
 		}
 	}
@@ -58,10 +63,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	let context: IContext = {
 		extensionContext: _context,
 		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
-		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret),
-		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
-		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
-		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
+		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret, env.host),
+		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.regionDa as RegionDa),
 		templateEngine: new TemplateEngine(_context)
 	};
 
@@ -319,9 +324,9 @@ export function activate(_context: vscode.ExtensionContext) {
 		env = environments.find(environment => environment.title === name) as IEnvironment;
 		const auth = { client_id: env.clientId, client_secret: env.clientSecret };
 		context.credentials = auth;
-		context.dataManagementClient.reset(auth, undefined, env.region as Region);
-		context.designAutomationClient.reset(auth, undefined, env.region as Region);
-		context.modelDerivativeClient.reset(auth, undefined, env.region as Region);
+		context.dataManagementClient.reset(auth, env.host, env.region as Region);
+		context.designAutomationClient.resetDA(auth, env.host, env.region as Region, env.regionDa as RegionDa);
+		context.modelDerivativeClient.reset(auth, env.host, env.region as Region);
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
