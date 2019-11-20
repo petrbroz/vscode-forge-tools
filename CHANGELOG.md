@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.5] - 2019-11-20
+
 - Added
   - Configurable Forge host
   - Configurable Design Automation availability region (thanks [@mivasi](https://github.com/mivasi)!)
