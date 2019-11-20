@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Configurable Forge host
-  - Configurable Design Automation availability region
+  - Configurable Design Automation availability region (thanks [@mivasi](https://github.com/mivasi)!)
+  - Force download of derivative tree or props that are too large
 
 ## [1.4.4] - 2019-11-15
 
