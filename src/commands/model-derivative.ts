@@ -8,7 +8,9 @@ import {
 	ThumbnailSize,
 	ManifestHelper,
 	IDerivativeResourceChild,
-	IDerivativeOutputType
+	IDerivativeOutputType,
+	IDerivativeProps,
+	IDerivativeTree
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
@@ -135,9 +137,26 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 			}
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid);
-		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(tree, null, 4), language: 'json' });
-		await vscode.window.showTextDocument(doc, { preview: false });
+		let tree: IDerivativeTree | undefined = undefined;
+		try {
+			tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid);
+		} catch (err) {
+			const action = await vscode.window.showInformationMessage(`
+				Cannot obtain viewable tree, possibly because the content is too large.
+				Would you like to try and force the tree content download?
+			`, 'Force', 'Cancel');
+			switch (action) {
+				case 'Force':
+					tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid, true);
+					break;
+				case 'Cancel':
+					break;
+			}
+		}
+		if (tree) {
+			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(tree, null, 4), language: 'json' });
+			await vscode.window.showTextDocument(doc, { preview: false });
+		}
 	} catch (err) {
 		showErrorMessage('Could not access derivative tree', err);
 	}
@@ -160,9 +179,26 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 			}
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid);
-		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(props, null, 4), language: 'json' });
-		await vscode.window.showTextDocument(doc, { preview: false });
+		let props: IDerivativeProps | undefined = undefined;
+		try {
+			props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid);
+		} catch (err) {
+			const action = await vscode.window.showInformationMessage(`
+				Cannot obtain viewable properties, possibly because the content is too large.
+				Would you like to try and force the property content download?
+			`, 'Force', 'Cancel');
+			switch (action) {
+				case 'Force':
+					props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid, true);
+					break;
+				case 'Cancel':
+					break;
+			}
+		}
+		if (props) {
+			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(props, null, 4), language: 'json' });
+			await vscode.window.showTextDocument(doc, { preview: false });
+		}
 	} catch (err) {
 		showErrorMessage('Could not access derivative properties', err);
 	}
