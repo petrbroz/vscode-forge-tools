@@ -21,11 +21,19 @@ import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
 
+// TODO: reuse the enum from forge-server-utils
+enum DesignAutomationRegion {
+    US_WEST = 'us-west',
+    US_EAST = 'us-east'
+}
+
 interface IEnvironment {
 	title: string;
 	clientId: string;
 	clientSecret: string;
-	region: string;
+	region?: string;
+	host?: string;
+	designAutomationRegion?: string;
 }
 
 function getEnvironments(): IEnvironment[] {
@@ -35,6 +43,7 @@ function getEnvironments(): IEnvironment[] {
 		const oldClientId = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.clientId') || '';
 		const oldClientSecret = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.clientSecret') || '';
 		const oldDataRegion = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.dataRegion') || 'US';
+
 		if (oldClientId && oldClientSecret) {
 			vscode.window.showInformationMessage('The settings format has changed. Please see the README for more details.');
 			environments.push({
@@ -91,11 +100,11 @@ export function activate(_context: vscode.ExtensionContext) {
 	let context: IContext = {
 		extensionContext: _context,
 		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
-		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret),
-		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
-		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
-		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
-		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, undefined, env.region as Region),
+		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret, env.host),
+		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
+		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		templateEngine: new TemplateEngine(_context)
 	};
 
@@ -393,11 +402,11 @@ export function activate(_context: vscode.ExtensionContext) {
 		env = environments.find(environment => environment.title === name) as IEnvironment;
 		const auth = { client_id: env.clientId, client_secret: env.clientSecret };
 		context.credentials = auth;
-		context.dataManagementClient.reset(auth, undefined, env.region as Region);
-		context.designAutomationClient.reset(auth, undefined, env.region as Region);
-		context.modelDerivativeClient.reset(auth, undefined, env.region as Region);
-		context.webhookClient.reset(auth, undefined, env.region as Region);
-		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret);
+		context.dataManagementClient.reset(auth, env.host, env.region as Region);
+		context.modelDerivativeClient.reset(auth, env.host, env.region as Region);
+		context.designAutomationClient.reset(auth, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion);
+		context.webhookClient.reset(auth, env.host, env.region as Region);
+		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);

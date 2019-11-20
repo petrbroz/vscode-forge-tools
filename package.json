@@ -57,14 +57,28 @@
 								"type": "string",
 								"description": "Forge client secret"
 							},
+							"host": {
+								"type": "string",
+								"description": "Forge API host",
+								"default": "https://developer.api.autodesk.com"
+							},
 							"region": {
 								"type": "string",
-								"description": "Data Region",
+								"description": "Forge availability region",
 								"enum": [
 									"US",
 									"EMEA"
 								],
 								"default": "US"
+							},
+							"designAutomationRegion": {
+								"type": "string",
+								"description": "Forge Design Automation availability region",
+								"enum": [
+									"us-west",
+									"us-east"
+								],
+								"default": "us-east"
 							}
 						}
 					}
@@ -648,7 +662,7 @@
 		"@types/pug": "^2.0.4",
 		"axios": "^0.19.0",
 		"forge-convert-utils": "^1.1.1",
-		"forge-server-utils": "^8.0.6",
+		"forge-server-utils": "^8.0.7",
 		"fs-extra": "^8.1.0",
 		"pug": "^2.0.4"
 	}
