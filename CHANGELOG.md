@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Forced request of large MD tree or properties (introduced in previous release)
+  is now downloaded to a local file instead of being open in a new document tab
+  (vscode limits the document size to 50MB)
+
 ## [1.4.5] - 2019-11-20
 
 - Added
