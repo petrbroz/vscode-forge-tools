@@ -137,24 +137,45 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 			}
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
+		let forceDownload = false;
 		let tree: IDerivativeTree | undefined = undefined;
 		try {
 			tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid);
 		} catch (err) {
-			const action = await vscode.window.showInformationMessage(`
-				Cannot obtain viewable tree, possibly because the content is too large.
-				Would you like to try and force the tree content download?
-			`, 'Force', 'Cancel');
-			switch (action) {
-				case 'Force':
-					tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid, true);
-					break;
-				case 'Cancel':
-					break;
+			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
+			// In that case, offer an option of downloading the content to a local file.
+			if (err.isAxiosError && err.response.status === 413) {
+				const action = await vscode.window.showInformationMessage(`
+					Cannot obtain viewable tree, possibly because the content is too large.
+					Would you like to try and force-download the tree JSON?
+				`, 'Force Download', 'Cancel');
+				switch (action) {
+					case 'Force Download':
+						// TODO: redirect the downloaded data directly into a file stream
+						tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid, true);
+						forceDownload = true;
+						break;
+					case 'Cancel':
+						break;
+				}
+			} else {
+				throw err;
 			}
 		}
-		if (tree) {
-			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(tree, null, 4), language: 'json' });
+		if (forceDownload) {
+			const defaultPath = vscode.workspace.asRelativePath('tree.json');
+			const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(defaultPath) });
+			if (uri) {
+				fse.ensureFileSync(uri.fsPath);
+				fse.writeJsonSync(uri.fsPath, tree, { spaces: 4 });
+				const action = await vscode.window.showInformationMessage(`Tree downloaded to ${uri.fsPath}.`, 'Open Folder');
+				if (action === 'Open Folder') {
+					vscode.env.openExternal(vscode.Uri.file(path.dirname(uri.fsPath)));
+				}
+			}
+		} else {
+			const content = JSON.stringify(tree);
+			const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		}
 	} catch (err) {
@@ -179,24 +200,45 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 			}
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
+		let forceDownload = false;
 		let props: IDerivativeProps | undefined = undefined;
 		try {
 			props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid);
 		} catch (err) {
-			const action = await vscode.window.showInformationMessage(`
-				Cannot obtain viewable properties, possibly because the content is too large.
-				Would you like to try and force the property content download?
-			`, 'Force', 'Cancel');
-			switch (action) {
-				case 'Force':
-					props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid, true);
-					break;
-				case 'Cancel':
-					break;
+			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
+			// In that case, offer an option of downloading the content to a local file.
+			if (err.isAxiosError && err.response.status === 413) {
+				const action = await vscode.window.showInformationMessage(`
+					Cannot obtain viewable properties, possibly because the content is too large.
+					Would you like to try and force-download the property JSON?
+				`, 'Force Download', 'Cancel');
+				switch (action) {
+					case 'Force Download':
+						// TODO: redirect the downloaded data directly into a file stream
+						props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid, true);
+						forceDownload = true;
+						break;
+					case 'Cancel':
+						break;
+				}
+			} else {
+				throw err;
 			}
 		}
-		if (props) {
-			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(props, null, 4), language: 'json' });
+		if (forceDownload) {
+			const defaultPath = vscode.workspace.asRelativePath('properties.json');
+			const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(defaultPath) });
+			if (uri) {
+				fse.ensureFileSync(uri.fsPath);
+				fse.writeJsonSync(uri.fsPath, props, { spaces: 4 });
+				const action = await vscode.window.showInformationMessage(`Properties downloaded to ${uri.fsPath}.`, 'Open Folder');
+				if (action === 'Open Folder') {
+					vscode.env.openExternal(vscode.Uri.file(path.dirname(uri.fsPath)));
+				}
+			}
+		} else {
+			const content = JSON.stringify(props);
+			const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		}
 	} catch (err) {
