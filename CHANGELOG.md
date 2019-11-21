@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Show progress when retrieving Model Derivative tree or properties
 - Changed
   - Forced request of large MD tree or properties (introduced in previous release)
   is now downloaded to a local file instead of being open in a new document tab

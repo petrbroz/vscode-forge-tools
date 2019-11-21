@@ -137,10 +137,17 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 			}
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
+		const urn = derivative.urn, guid = graphicsNode.guid;
 		let forceDownload = false;
 		let tree: IDerivativeTree | undefined = undefined;
 		try {
-			tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Retrieving viewable tree`,
+				cancellable: false
+			}, async (progress, token) => {
+				tree = await context.modelDerivativeClient.getViewableTree(urn, guid);
+			});
 		} catch (err) {
 			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
@@ -151,9 +158,15 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				`, 'Force Download', 'Cancel');
 				switch (action) {
 					case 'Force Download':
-						// TODO: redirect the downloaded data directly into a file stream
-						tree = await context.modelDerivativeClient.getViewableTree(derivative.urn, graphicsNode.guid, true);
-						forceDownload = true;
+						await vscode.window.withProgress({
+							location: vscode.ProgressLocation.Notification,
+							title: `Downloading viewable tree`,
+							cancellable: false
+						}, async (progress, token) => {
+							// TODO: redirect the downloaded data directly into a file stream
+							tree = await context.modelDerivativeClient.getViewableTree(urn, guid, true);
+							forceDownload = true;
+						});
 						break;
 					case 'Cancel':
 						break;
@@ -200,10 +213,17 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 			}
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
+		const urn = derivative.urn, guid = graphicsNode.guid;
 		let forceDownload = false;
 		let props: IDerivativeProps | undefined = undefined;
 		try {
-			props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Retrieving viewable properties`,
+				cancellable: false
+			}, async (progress, token) => {
+				props = await context.modelDerivativeClient.getViewableProperties(urn, guid);
+			});
 		} catch (err) {
 			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
@@ -214,9 +234,15 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				`, 'Force Download', 'Cancel');
 				switch (action) {
 					case 'Force Download':
-						// TODO: redirect the downloaded data directly into a file stream
-						props = await context.modelDerivativeClient.getViewableProperties(derivative.urn, graphicsNode.guid, true);
-						forceDownload = true;
+						await vscode.window.withProgress({
+							location: vscode.ProgressLocation.Notification,
+							title: `Downloading viewable properties`,
+							cancellable: false
+						}, async (progress, token) => {
+							// TODO: redirect the downloaded data directly into a file stream
+							props = await context.modelDerivativeClient.getViewableProperties(urn, guid, true);
+							forceDownload = true;
+						});
 						break;
 					case 'Cancel':
 						break;
