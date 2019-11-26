@@ -19,6 +19,14 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     private _onDidChangeTreeData: vscode.EventEmitter<DesignAutomationEntry | null> = new vscode.EventEmitter<DesignAutomationEntry | null>();
 
 	readonly onDidChangeTreeData?: vscode.Event<DesignAutomationEntry | null> = this._onDidChangeTreeData.event;
+    
+    public get clientId() : string {
+        return this._clientId;
+    }
+
+    public set clientId(value: string) {
+        this._clientId = value;
+    }
 
     constructor(context: IContext, clientId: string) {
         this._context = context;
