@@ -408,6 +408,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		context.webhookClient.reset(auth, env.host, env.region as Region);
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
 		simpleStorageDataProvider.refresh();
+		designAutomationDataProvider.clientId = env.clientId;
 		designAutomationDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
 	});
