@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.6] - 2019-11-26
+
 - Added
   - Show progress when retrieving Model Derivative tree or properties
 - Changed
