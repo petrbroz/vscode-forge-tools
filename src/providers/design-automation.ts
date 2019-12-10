@@ -15,22 +15,12 @@ type DesignAutomationEntry =
 
 export class DesignAutomationDataProvider implements vscode.TreeDataProvider<DesignAutomationEntry> {
     private _context: IContext;
-    private _clientId: string;
     private _onDidChangeTreeData: vscode.EventEmitter<DesignAutomationEntry | null> = new vscode.EventEmitter<DesignAutomationEntry | null>();
 
 	readonly onDidChangeTreeData?: vscode.Event<DesignAutomationEntry | null> = this._onDidChangeTreeData.event;
-    
-    public get clientId() : string {
-        return this._clientId;
-    }
 
-    public set clientId(value: string) {
-        this._clientId = value;
-    }
-
-    constructor(context: IContext, clientId: string) {
+    constructor(context: IContext) {
         this._context = context;
-        this._clientId = clientId;
     }
 
     refresh(entry?: DesignAutomationEntry | null) {
@@ -104,15 +94,17 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getOwnedAppBundles(entry: dai.IOwnedAppBundlesEntry): Promise<dai.IAppBundleEntry[]> {
+        const nickname = await this._context.designAutomationClient.getNickname();
         const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
-        const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
+        const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === nickname) as DesignAutomationID[];
         const uniqueIDs = new Set(filteredIDs.map(item => item.id));
-        return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'owned-appbundle', client: this._clientId, appbundle: appbundle, label: appbundle }));
+        return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'owned-appbundle', client: nickname, appbundle: appbundle, label: appbundle }));
     }
 
     private async _getSharedAppBundles(entry: dai.ISharedAppBundlesEntry): Promise<dai.ISharedAppBundleEntry[]> {
+        const nickname = await this._context.designAutomationClient.getNickname();
         const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
-        const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
+        const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== nickname) as DesignAutomationID[];
         return filteredIDs.map(id => ({ type: 'shared-appbundle', fullid: id.toString(), label: id.toString() }));
     }
 
@@ -136,15 +128,17 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getOwnedActivities(entry: dai.IOwnedActivitiesEntry): Promise<dai.IActivityEntry[]> {
+        const nickname = await this._context.designAutomationClient.getNickname();
         const activityIDs = await this._context.designAutomationClient.listActivities();
-        const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === this._clientId) as DesignAutomationID[];
+        const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === nickname) as DesignAutomationID[];
         const uniqueIDs = new Set<string>(filteredIDs.map(id => id.id));
-        return Array.from(uniqueIDs.values()).map(activity => ({ type: 'owned-activity', client: this._clientId, activity: activity, label: activity }));
+        return Array.from(uniqueIDs.values()).map(activity => ({ type: 'owned-activity', client: nickname, activity: activity, label: activity }));
     }
 
     private async _getSharedActivities(entry: dai.ISharedActivitiesEntry): Promise<dai.ISharedActivityEntry[]> {
+        const nickname = await this._context.designAutomationClient.getNickname();
         const activityIDs = await this._context.designAutomationClient.listActivities();
-        const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== this._clientId) as DesignAutomationID[];
+        const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== nickname) as DesignAutomationID[];
         return filteredIDs.map(id => ({ type: 'shared-activity', fullid: id.toString(), label: id.toString() }));
     }
 
