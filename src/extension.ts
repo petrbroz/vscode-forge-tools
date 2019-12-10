@@ -203,7 +203,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	});
 
 	// Setup design automation view
-	let designAutomationDataProvider = new dap.DesignAutomationDataProvider(context, env.clientId);
+	let designAutomationDataProvider = new dap.DesignAutomationDataProvider(context);
 	let designAutomationView = vscode.window.createTreeView('forgeDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
 	context.extensionContext.subscriptions.push(designAutomationView);
 
@@ -408,7 +408,6 @@ export function activate(_context: vscode.ExtensionContext) {
 		context.webhookClient.reset(auth, env.host, env.region as Region);
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
 		simpleStorageDataProvider.refresh();
-		designAutomationDataProvider.clientId = env.clientId;
 		designAutomationDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
 	});

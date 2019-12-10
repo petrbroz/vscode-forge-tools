@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.7] - 2019-12-10
+
+- Fixed
+  - DA appBundles and activities now separated into shared/owned properly using nicknames
+
 ## [1.4.6] - 2019-11-26
 
 - Added
