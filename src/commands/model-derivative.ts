@@ -69,7 +69,7 @@ export async function translateObjectCustom(object: IObject | undefined, context
 					case 'start':
 						const { compressedRootDesign, switchLoader, generateMasterViews } = message.parameters;
 						// TODO: support additional flags in IDerivativeOutputType
-						const outputOptions = { type: 'svf', views: ['2d', '3d'], switchLoader, generateMasterViews } as IDerivativeOutputType;
+						const outputOptions = { type: 'svf', views: ['2d', '3d'], advanced: { switchLoader, generateMasterViews } } as IDerivativeOutputType;
 						// TODO: support custom region
 						await context.modelDerivativeClient.submitJob(urn, [outputOptions], compressedRootDesign, true);
 						panel.dispose();
