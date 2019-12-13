@@ -233,7 +233,7 @@
 			},
 			{
 				"command": "forge.downloadDerivative",
-				"title": "Download Object Derivatives as SVF",
+				"title": "Download Object Derivatives as SVF & F2D",
 				"category": "Forge Model Derivative"
 			},
 			{

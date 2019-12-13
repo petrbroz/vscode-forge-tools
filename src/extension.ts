@@ -190,7 +190,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		await mdc.viewObjectThumbnail(object, context);
 	});
 	vscode.commands.registerCommand('forge.downloadDerivative', async (object?: IObject) => {
-		await mdc.downloadDerivativeSVF(object, context);
+		await mdc.downloadDerivatives(object, context);
 	});
 	vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
 		await mdc.downloadDerivativeGLTF(object, context);

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
+import * as zlib from 'zlib';
 import {
 	IObject,
 	urnify,
@@ -408,7 +409,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 	}
 }
 
-export async function downloadDerivativeSVF(object: IObject | undefined, context: IContext) {
+export async function downloadDerivatives(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -444,10 +445,11 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 
 			const urnDir = path.join(baseDir, urn);
 			fse.ensureDirSync(urnDir);
+			// Download all SVF derivatives
 			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
 				if (cancelled) { return; }
 				const guid = derivative.guid;
-				progress.report({ message: `Downloading derivative ${guid}` });
+				progress.report({ message: `Downloading SVF derivative ${guid}` });
 				const guidDir = path.join(urnDir, guid);
 				fse.ensureDirSync(guidDir);
 				const svf = await context.modelDerivativeClient.getDerivative(urn, derivative.urn);
@@ -460,7 +462,7 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 				for (const asset of manifest.assets) {
 					if (cancelled) { return; }
 					if (!asset.URI.startsWith('embed:')) {
-						progress.report({ message: `Downloading derivative ${guid} asset ${asset.URI}` });
+						progress.report({ message: `Downloading SVF derivative ${guid} asset ${asset.URI}` });
 						try {
 							const assetData = await reader.getAsset(asset.URI);
 							const assetPath = path.join(guidDir, asset.URI);
@@ -475,6 +477,32 @@ export async function downloadDerivativeSVF(object: IObject | undefined, context
 
 				if (failedAssetUris.length > 0) {
 					vscode.window.showWarningMessage('Some of the SVF assets could not be downloaded:\n' + failedAssetUris.join('\n'));
+				}
+			}
+			// Download all F2D derivatives
+			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-f2d')) {
+				if (cancelled) { return; }
+				const guid = derivative.guid;
+				progress.report({ message: `Downloading F2D derivative ${guid}` });
+				const guidDir = path.join(urnDir, guid);
+				fse.ensureDirSync(guidDir);
+				const baseUrn = derivative.urn.substr(0, derivative.urn.lastIndexOf('/'));
+				const manifestGzip = await context.modelDerivativeClient.getDerivative(urn, baseUrn + '/manifest.json.gz');
+				fs.writeFileSync(path.join(guidDir, 'manifest.json.gz'), manifestGzip);
+				const manifestGunzip = zlib.gunzipSync(manifestGzip);
+				const manifest = JSON.parse(manifestGunzip.toString());
+				let failedAssetUris = [];
+				for (const asset of manifest.assets) {
+					progress.report({ message: `Downloading F2D derivative ${guid} asset ${asset.id}` });
+					try {
+						const assetData = await context.modelDerivativeClient.getDerivative(urn, baseUrn + '/' + asset.URI);
+						fs.writeFileSync(path.join(guidDir, asset.URI), assetData);
+					} catch(err) {
+						failedAssetUris.push(asset.id);
+					}
+				}
+				if (failedAssetUris.length > 0) {
+					vscode.window.showWarningMessage('Some of the F2D assets could not be downloaded:\n' + failedAssetUris.join('\n'));
 				}
 			}
 		});
