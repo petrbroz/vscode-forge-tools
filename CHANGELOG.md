@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.9] - 2020-01-14
+
 - Added
   - Experimental support for downloading F2D derivatives
   - New configuration option: viewer extensions to be used when previewing derivatives

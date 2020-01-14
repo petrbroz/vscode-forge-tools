@@ -30,11 +30,13 @@ While in Visual Studio Code:
 
 This extension contributes the following settings:
 
-- `autodesk.forge.environments`: Array of objects representing different Forge environments; objects contain the following properties:
+- `autodesk.forge.environments`: array of objects representing different Forge environments; objects contain the following properties:
   - `title` - unique name of the environment (will be shown in status bar and when switching to other environments)
   - `clientId` - Forge client ID
   - `clientSecret` - Forge client secret
   - `region` - data region for storing Forge content (can be `US` or `EMEA`; `US` by default)
+- `autodesk.forge.viewer.extensions`: array of viewer [extensions](https://forge.autodesk.com/en/docs/viewer/v6/reference/Extensions)
+(for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be used when previewing derivatives
 
 Here's an example of an environment list:
 
