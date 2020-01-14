@@ -4,7 +4,7 @@ html(lang='en')
     meta(charset='UTF-8')
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     meta(http-equiv='X-UA-Compatible', content='ie=edge')
-    link(rel='stylesheet', href='https://developer.api.autodesk.com/modelderivative/v2/viewers/7.0.*/style.min.css', type='text/css')
+    link(rel='stylesheet', href='https://developer.api.autodesk.com/modelderivative/v2/viewers/7.9.*/style.css', type='text/css')
     title Preview: #{name}
     style.
       html, body {
@@ -17,10 +17,18 @@ html(lang='en')
       }
   body
     #viewer
-    script(src='https://developer.api.autodesk.com/modelderivative/v2/viewers/7.0.*/viewer3D.min.js')
+    script(src='https://developer.api.autodesk.com/modelderivative/v2/viewers/7.9.*/viewer3D.js')
     script.
+      // Hack: disable writing to document.cookie to prevent the i18n library to throw an exception
+      // (writing to document.cookie is not allowed when a webpage comes from a data URI)
+      Object.defineProperty(document, 'cookie', { get: () => '', set: () => {}})
+
       const ACCESS_TOKEN = '#{token.access_token}';
       const URN = '!{urn}';
       const GUID = '!{guid}';
+      console.log(`ACCESS_TOKEN: ${ACCESS_TOKEN}`);
+      console.log(`URN: ${URN}`);
+      console.log(`GUID: ${GUID}`);
+      console.log(`LMV_VIEWER_VERSION: ${LMV_VIEWER_VERSION}`);
     script
       include scripts/derivative-preview.js

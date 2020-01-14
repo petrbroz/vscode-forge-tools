@@ -8,13 +8,16 @@ const options = {
 };
 
 let viewer;
+console.log('Calling viewer initializer...');
 Autodesk.Viewing.Initializer(options, function () {
     viewer = new Autodesk.Viewing.Private.GuiViewer3D(container);
     viewer.start();
+    console.log('Loading document...');
     Autodesk.Viewing.Document.load('urn:' + URN, onDocumentLoadSuccess, onDocumentLoadFailure);
 });
 
 function onDocumentLoadSuccess(doc) {
+    console.log('Document loaded...');
     const node = doc.getRoot().findByGuid(GUID);
     if (node) {
         viewer.loadDocumentNode(doc, node);
@@ -25,6 +28,7 @@ function onDocumentLoadSuccess(doc) {
 }
 
 function onDocumentLoadFailure(err, msg) {
+    console.log('Document loading failed...');
     container.classList.add('alert', 'alert-danger');
     container.innerText = `Document loading failed (${msg})`;
 }
