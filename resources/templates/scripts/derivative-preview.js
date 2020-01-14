@@ -10,7 +10,7 @@ const options = {
 let viewer;
 console.log('Calling viewer initializer...');
 Autodesk.Viewing.Initializer(options, function () {
-    viewer = new Autodesk.Viewing.Private.GuiViewer3D(container);
+    viewer = new Autodesk.Viewing.Private.GuiViewer3D(container, VIEWER_CONFIG);
     viewer.start();
     console.log('Loading document...');
     Autodesk.Viewing.Document.load('urn:' + URN, onDocumentLoadSuccess, onDocumentLoadFailure);

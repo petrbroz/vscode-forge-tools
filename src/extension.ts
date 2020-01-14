@@ -105,7 +105,10 @@ export function activate(_context: vscode.ExtensionContext) {
 		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
 		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		templateEngine: new TemplateEngine(_context)
+		templateEngine: new TemplateEngine(_context),
+		previewSettings: {
+			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || []
+		}
 	};
 
 	// Setup data management view

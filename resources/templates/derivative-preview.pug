@@ -22,10 +22,10 @@ html(lang='en')
       // Hack: disable writing to document.cookie to prevent the i18n library to throw an exception
       // (writing to document.cookie is not allowed when a webpage comes from a data URI)
       Object.defineProperty(document, 'cookie', { get: () => '', set: () => {}})
-
       const ACCESS_TOKEN = '#{token.access_token}';
       const URN = '!{urn}';
       const GUID = '!{guid}';
+      const VIEWER_CONFIG = JSON.parse('!{viewer.config}');
       console.log(`ACCESS_TOKEN: ${ACCESS_TOKEN}`);
       console.log(`URN: ${URN}`);
       console.log(`GUID: ${GUID}`);

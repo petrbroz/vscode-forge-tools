@@ -82,6 +82,14 @@
 							}
 						}
 					}
+				},
+				"autodesk.forge.viewer.extensions": {
+					"scope": "resource",
+					"type": "array",
+					"description": "Viewer extensions to be used when previewing derivatives",
+					"items": {
+						"type": "string"
+					}
 				}
 			}
 		},

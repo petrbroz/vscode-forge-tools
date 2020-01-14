@@ -115,7 +115,15 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-		panel.webview.html = context.templateEngine.render('derivative-preview', { urn: derivative.urn, guid: derivative.guid, name: derivative.name, token });
+		panel.webview.html = context.templateEngine.render('derivative-preview', {
+			viewer: {
+				config: JSON.stringify({ extensions: context.previewSettings.extensions })
+			},
+			urn: derivative.urn,
+			guid: derivative.guid,
+			name: derivative.name,
+			token
+		});
 	} catch (err) {
 		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
 	}

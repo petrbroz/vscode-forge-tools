@@ -14,6 +14,10 @@ import {
 import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'forge-server-utils/dist/common';
 
+export interface IPreviewSettings {
+	extensions: string[];
+}
+
 export interface IContext {
     credentials: IAuthOptions;
     extensionContext: vscode.ExtensionContext;
@@ -22,7 +26,8 @@ export interface IContext {
 	modelDerivativeClient: ModelDerivativeClient;
     designAutomationClient: DesignAutomationClient;
     webhookClient: WebhooksClient;
-	templateEngine: TemplateEngine;
+    templateEngine: TemplateEngine;
+    previewSettings: IPreviewSettings;
 }
 
 export class TemplateEngine {
