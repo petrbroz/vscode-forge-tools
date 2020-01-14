@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.4.8",
+	"version": "1.4.9",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -81,6 +81,14 @@
 								"default": "us-east"
 							}
 						}
+					}
+				},
+				"autodesk.forge.viewer.extensions": {
+					"scope": "resource",
+					"type": "array",
+					"description": "Viewer extensions to be used when previewing derivatives",
+					"items": {
+						"type": "string"
 					}
 				}
 			}
@@ -233,7 +241,7 @@
 			},
 			{
 				"command": "forge.downloadDerivative",
-				"title": "Download Object Derivatives as SVF",
+				"title": "Download Object Derivatives as SVF & F2D",
 				"category": "Forge Model Derivative"
 			},
 			{
