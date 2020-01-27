@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.4.10] - 2020-01-27
+
 - Changed
   - Design Automation activities can now be created without appbundles (thanks [@mivasi](https://github.com/mivasi)!)
   - Design Automation work items can now be triggered multiple times form the same tab (thanks [@mivasi](https://github.com/mivasi)!)
