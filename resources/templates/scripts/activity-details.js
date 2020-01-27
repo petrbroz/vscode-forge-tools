@@ -7,7 +7,8 @@ function collectActivity() {
         engine: $('#activity-engine').val(),
         commandLine: $("#command-lines input[name='command-line']").map(function () { return $(this).val(); }).get(),
         appBundles: $("#appbundles select[name='appbundle']").map(function () { return $(this).val(); }).get(),
-        parameters: {}
+        parameters: {},
+        settings: {}
     };
     $('#parameters > tbody > tr').each(function () {
         const $row = $(this);
@@ -21,6 +22,25 @@ function collectActivity() {
             ondemand: $row.find("input[name='param-ondemand']")[0].checked
         };
     });
+    
+    $('#settings-string > tbody > tr').each(function () {
+        const $row = $(this);
+        const name = $row.find("input[name='setting-name']").val();
+        activity.settings[name] = {
+            value: $row.find("input[name='setting-value']").val(),
+            isEnvironmentVariable: $row.find("input[name='setting-env']")[0].checked
+        };
+    });
+
+    $('#settings-url > tbody > tr').each(function () {
+        const $row = $(this);
+        const name = $row.find("input[name='setting-name']").val();
+        activity.settings[name] = {
+            url: $row.find("input[name='setting-url']").val(),
+            verb: $row.find("select[name='setting-verb']").val()
+        };
+    });
+
     return activity;
 }
 
@@ -116,7 +136,70 @@ $("button[name='add-parameter']").click(function () {
     `);
 });
 
+$("button[name='add-setting-string']").click(function () {
+    $('#settings-string > tbody').append(`
+        <tr>
+            <td>
+                <input type="text" name="setting-name" class="form-control" value="" placeholder="Setting Name">
+            </td>
+            
+            <td>
+                <input type="text" name="setting-value" class="form-control" value="" placeholder="Setting Value">
+            </td>
+            
+            <td>
+                <input type="checkbox" name="setting-env" class="form-control">
+            </td>
+            
+            <td>
+                <button type="button" name="remove-setting-string" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
+            </td>
+        </tr>
+    `);
+});
+
+$("button[name='add-setting-url']").click(function () {
+    $('#settings-url > tbody').append(`
+        <tr>
+            <td>
+                <input type="text" name="setting-name" class="form-control" value="" placeholder="Setting Name">
+            </td>
+            
+            <td>
+                <input type="text" name="setting-url" class="form-control" value="" placeholder="Setting Url">
+            </td>
+            
+            <td>
+                <select name="setting-verb" class="form-control">
+                    <option value="get">Get</option>
+                    <option value="put">Put</option>
+                    <option value="post">Post</option>
+                    <option value="patch">Patch</option>
+                </select>
+            </td>
+            
+            <td>
+                <button type="button" name="remove-setting-url" class="form-control btn btn-outline-danger fas fa-trash-alt" data-action="remove"></button>
+            </td>
+        </tr>
+    `);
+});
+
 $('#parameters > tbody').click(function (ev) {
+    const $target = $(ev.target);
+    if ($target.data('action') === 'remove') {
+        $target.closest('tr').remove();
+    }
+});
+
+$('#settings-string > tbody').click(function (ev) {
+    const $target = $(ev.target);
+    if ($target.data('action') === 'remove') {
+        $target.closest('tr').remove();
+    }
+});
+
+$('#settings-url > tbody').click(function (ev) {
     const $target = $(ev.target);
     if ($target.data('action') === 'remove') {
         $target.closest('tr').remove();
