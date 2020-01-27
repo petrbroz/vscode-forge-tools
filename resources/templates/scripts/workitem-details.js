@@ -1,8 +1,9 @@
 const vscode = acquireVsCodeApi();
 
 $('#start').click(function () {
+    let parameters = {};
+    
     $('#parameters > tbody > tr').each(function () {
-        let parameters = {};
         const $row = $(this);
         const name = $row.find("input[name='param-name']").val();
         parameters[name] = {

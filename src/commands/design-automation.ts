@@ -125,11 +125,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 
 export async function createActivity(successCallback: (activity: IActivityDetail) => void, context: IContext) {
 	async function create(params: any, panel: vscode.WebviewPanel) {
-		if (params.appBundles.length === 0) {
-			vscode.window.showErrorMessage('At least one app bundle must be provided.');
-			return;
-		}
-
+		
 		try {
 			const activity = await context.designAutomationClient.createActivity(
 				params.id,
@@ -206,11 +202,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 
 export async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCallback: (activity: IActivityDetail) => void, context: IContext) {
 	async function update(params: any, panel: vscode.WebviewPanel) {
-		if (params.appBundles.length === 0) {
-			vscode.window.showErrorMessage('At least one app bundle must be provided.');
-			return;
-		}
-
+		
 		try {
 			const activity = await context.designAutomationClient.updateActivity(
 				params.id,
@@ -520,7 +512,10 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 				'workitem',
 				`Workitem: ${activity.id}`,
 				vscode.ViewColumn.One,
-				{ enableScripts: true }
+				{
+					enableScripts: true,
+					retainContextWhenHidden: true
+				}
 			);
 			panel.webview.html = context.templateEngine.render('workitem', { activity });
 			// Handle messages from the webview
@@ -529,7 +524,7 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 					switch (message.command) {
 						case 'start':
 							run(message.parameters);
-							panel.dispose();
+							//panel.dispose();
 							break;
 						case 'cancel':
 							panel.dispose();
