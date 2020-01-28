@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
-import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam } from 'forge-server-utils';
+import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from 'forge-server-utils';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
@@ -15,6 +15,29 @@ function sleep(ms: number) {
     return new Promise(function(resolve, reject) {
         setTimeout(function() { resolve(); }, ms);
     });
+}
+
+interface SettingsSplitByType {
+	strings: {[name: string]: ICodeOnEngineStringSetting};
+	urls: {[name: string]: ICodeOnEngineUrlSetting};
+}
+
+function splitCodeOnEngineSettingsByType(settings: {[name: string]: (ICodeOnEngineStringSetting | ICodeOnEngineUrlSetting)}) : SettingsSplitByType {
+	let result: SettingsSplitByType = {
+		strings: {},
+		urls: {}
+	};
+
+	for (let settingName of Object.keys(settings)) {
+		let setting: (ICodeOnEngineStringSetting | ICodeOnEngineUrlSetting) = settings[settingName];
+
+		if ((setting as ICodeOnEngineStringSetting).value) {
+			result.strings[settingName] = setting as ICodeOnEngineStringSetting;
+		} else if ((setting as ICodeOnEngineUrlSetting).url) {
+			result.urls[settingName] = setting as ICodeOnEngineUrlSetting;
+		}
+	}
+	return result;	
 }
 
 export async function uploadAppBundle(name: string | undefined, context: IContext) {
@@ -107,6 +130,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 				{ enableScripts: true }
 			);
 			const daid = DesignAutomationID.parse(activityDetail.id);
+			let settingsSplitted = splitCodeOnEngineSettingsByType(activityDetail.settings || {});
 			panel.webview.html = context.templateEngine.render('activity-details', {
 				mode: 'read',
 				id: (daid !== null) ? daid.id : activityDetail.id,
@@ -115,6 +139,8 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 				engine: activityDetail.engine,
 				commandLine: activityDetail.commandLine,
 				parameters: activityDetail.parameters || {},
+				settingsString: settingsSplitted.strings || {},
+				settingsUrl: settingsSplitted.urls || {},
 				appbundles: activityDetail.appbundles || []
 			});
 		});
@@ -133,7 +159,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 				params.commandLine,
 				params.appBundles,
 				params.parameters,
-				undefined,
+				params.settings,
 				params.description
 			);
 			panel.dispose();
@@ -174,6 +200,12 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			parameters: {
 				'': {}
 			},
+			settingsString: {
+				'': {}
+			},
+			settingsUrl: {
+				'': {}
+			},
 			appbundles: [availableAppBundles[0]],
 			options: {
 				engines: availableEngines,
@@ -210,7 +242,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 				params.commandLine,
 				params.appBundles,
 				params.parameters,
-				undefined,
+				params.settings,
 				params.description
 			);
 			panel.dispose();
@@ -245,6 +277,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 			{ enableScripts: true }
 		);
 		const daid = DesignAutomationID.parse(originalActivity.id) as DesignAutomationID;
+		let settingsSplitted = splitCodeOnEngineSettingsByType(originalActivity.settings || {});
 		panel.webview.html = context.templateEngine.render('activity-details', {
 			mode: 'update',
 			id: (daid !== null) ? daid.id : originalActivity.id,
@@ -253,6 +286,8 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 			engine: originalActivity.engine,
 			commandLine: originalActivity.commandLine,
 			parameters: originalActivity.parameters,
+			settingsString: settingsSplitted.strings,
+			settingsUrl: settingsSplitted.urls,
 			appbundles: originalActivity.appbundles,
 			options: {
 				engines: availableEngines,
