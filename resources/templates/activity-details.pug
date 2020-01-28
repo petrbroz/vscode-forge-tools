@@ -115,6 +115,77 @@ html(lang='en')
               i.fas.fa-plus-circle
               |  Parameter
       .form-group.row
+        // Settings
+        label.col-sm-2.form-label(for='settings') Settings
+        .col-sm-10
+          table#settings-string.table.table-sm.table-bordered
+            thead
+              tr
+                th(scope='col') ID
+                th(scope='col') Value
+                th.small(scope='col', title='IsEnv') IsEnv.
+                if mode !== 'read'
+                  th(style='width: 5%;')
+            tbody
+              each setting in Object.keys(settingsString)
+                tr
+                  if readMode
+                    td(scope='row')
+                      input.form-control(type='text', name='setting-name', value=setting, readonly)
+                    td
+                      input.form-control(type='text', name='setting-value', value=settingsString[setting].value, readonly)
+                    td
+                      input.form-control(type='checkbox', name='setting-env', checked=(settingsString[setting].isEnvironmentVariable), disabled)
+                  else
+                    td
+                      input.form-control(type='text', name='setting-name', value=setting, placeholder='Setting Name')
+                    td
+                      input.form-control(type='text', name='setting-value', value=settingsString[setting].value, placeholder='Setting Value')
+                    td
+                      input.form-control(type='checkbox', name='setting-env', checked=(settingsString[setting].isEnvironmentVariable))
+                    td
+                      button.form-control.btn.btn-outline-danger.fas.fa-trash-alt(type='button', name='remove-setting-string', data-action='remove')
+          if mode !== 'read'
+            button.btn.btn-outline-primary.float-right(type='button', name='add-setting-string')
+              i.fas.fa-plus-circle
+              |  Setting String
+
+          table#settings-url.table.table-sm.table-bordered
+            thead
+              tr
+                th(scope='col') ID
+                th(scope='col') Url
+                th(scope='col') Verb
+                if mode !== 'read'
+                  th(style='width: 5%;')
+            tbody
+              each setting in Object.keys(settingsUrl)
+                tr
+                  if readMode
+                    td(scope='row')
+                      input.form-control(type='text', name='setting-name', value=setting, readonly)
+                    td
+                      input.form-control(type='text', name='setting-url', value=settingsUrl[setting].url, readonly)
+                    td
+                      input.form-control(type='text', name='setting-verb', value=settingsUrl[setting].verb, readonly)
+                  else
+                    td
+                      input.form-control(type='text', name='setting-name', value=setting, placeholder='Setting Name')
+                    td
+                      input.form-control(type='text', name='setting-url', value=settingsUrl[setting].url, placeholder='Setting Url')
+                    td
+                      select.form-control(name='setting-verb')
+                        option(value='get', selected=(!settingsUrl[setting].verb || settingsUrl[setting].verb === 'get')) Get
+                        option(value='put', selected=(settingsUrl[setting].verb === 'put')) Put
+                        option(value='post', selected=(settingsUrl[setting].verb === 'post')) Post
+                        option(value='patch', selected=(settingsUrl[setting].verb === 'patch')) Patch
+                    td
+                      button.form-control.btn.btn-outline-danger.fas.fa-trash-alt(type='button', name='remove-setting-url', data-action='remove')
+          if mode !== 'read'
+            button.btn.btn-outline-primary.float-right(type='button', name='add-setting-url')
+              i.fas.fa-plus-circle
+              |  Setting Url
+      .form-group.row
         // App Bundles
         label.col-sm-2.form-label(for='appbundles') App Bundles
         .col-sm-10
