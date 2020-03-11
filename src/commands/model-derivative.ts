@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as zlib from 'zlib';
+import { gltfToGlb } from 'gltf-pipeline';
 import {
 	IObject,
 	urnify,
@@ -563,7 +564,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 				progress.report({ message: `Converting derivative ${derivative.guid}` });
 				const guidDir = path.join(urnDir, derivative.guid);
 				fse.ensureDirSync(guidDir);
-				const writer = new GltfWriter({ deduplicate: false, compress: false, binary: false, log: (msg: string) => progress.report({ message: msg }) });
+				const writer = new GltfWriter({ deduplicate: false, log: (msg: string) => progress.report({ message: msg }) });
 				const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
 				const svf = await reader.read();
 				await writer.write(svf, guidDir);
@@ -601,7 +602,7 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 		let cancelled = false;
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Downloading glTF: ${object.objectKey}`,
+			title: `Downloading glb: ${object.objectKey}`,
 			cancellable: true
 		}, async (progress, token) => {
 			token.onCancellationRequested(() => {
@@ -617,11 +618,16 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 				if (cancelled) { return; }
 				progress.report({ message: `Converting derivative ${derivative.guid}` });
 				const guidDir = path.join(urnDir, derivative.guid);
+				const tmpDir = path.join(guidDir, 'tmp');
 				fse.ensureDirSync(guidDir);
-				const writer = new GltfWriter({ deduplicate: true, compress: true, binary: true, skipUnusedUvs: true, log: (msg: string) => progress.report({ message: msg }) });
+				const writer = new GltfWriter({ deduplicate: true, skipUnusedUvs: true, log: (msg: string) => progress.report({ message: msg }) });
 				const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
 				const svf = await reader.read();
-				await writer.write(svf, guidDir);
+				await writer.write(svf, tmpDir);
+				const gltf = fse.readJsonSync(path.join(tmpDir, 'output.gltf'));
+				const glb = await gltfToGlb(gltf, { resourceDirectory: tmpDir, separate: false, dracoOptions: { compressionLevel: 10 } });
+				fse.writeFileSync(path.join(guidDir, 'output.glb'), glb.glb);
+				fse.removeSync(tmpDir);
 			}
 		});
 		const action = await vscode.window.showInformationMessage(`Derivative translation to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');

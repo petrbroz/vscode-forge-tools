@@ -669,9 +669,10 @@
 		"@types/fs-extra": "^8.0.0",
 		"@types/pug": "^2.0.4",
 		"axios": "^0.19.0",
-		"forge-convert-utils": "^1.1.1",
+		"forge-convert-utils": "^3.1.1",
 		"forge-server-utils": "^8.0.13",
 		"fs-extra": "^8.1.0",
+		"gltf-pipeline": "^2.1.8",
 		"pug": "^2.0.4"
 	}
 }
