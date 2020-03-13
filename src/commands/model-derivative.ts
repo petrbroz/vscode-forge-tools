@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as zlib from 'zlib';
+import { gltfToGlb } from 'gltf-pipeline';
 import {
 	IObject,
 	urnify,
@@ -13,7 +14,7 @@ import {
 	IDerivativeProps,
 	IDerivativeTree
 } from 'forge-server-utils';
-import { SvfReader, GltfWriter } from 'forge-convert-utils';
+import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, OtgDownloader } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 
@@ -417,7 +418,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 	}
 }
 
-export async function downloadDerivatives(object: IObject | undefined, context: IContext) {
+export async function downloadDerivativesSVF(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -443,83 +444,118 @@ export async function downloadDerivatives(object: IObject | undefined, context: 
 			title: `Downloading SVF: ${object.objectKey}`,
 			cancellable: true
 		}, async (progress, token) => {
+			let cancelled = false;
+			const svfDownloader = new SvfDownloader(context.credentials);
+			const svfDownloadTask = svfDownloader.download(urn, {
+				outputDir: baseDir,
+				log: (message: string) => progress.report({ message })
+			});
 			token.onCancellationRequested(() => {
+				svfDownloadTask.cancel();
 				cancelled = true;
 			});
-			progress.report({ message: 'Retrieving manifest' });
-			const manifest = await context.modelDerivativeClient.getManifest(urn);
-			const helper = new ManifestHelper(manifest);
-			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
-
-			const urnDir = path.join(baseDir, urn);
-			fse.ensureDirSync(urnDir);
-			// Download all SVF derivatives
-			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
-				if (cancelled) { return; }
-				const guid = derivative.guid;
-				progress.report({ message: `Downloading SVF derivative ${guid}` });
-				const guidDir = path.join(urnDir, guid);
-				fse.ensureDirSync(guidDir);
-				const svf = await context.modelDerivativeClient.getDerivative(urn, derivative.urn);
-				fs.writeFileSync(path.join(guidDir, 'output.svf'), svf);
-
-				const reader = await SvfReader.FromDerivativeService(urn, guid, context.credentials);
-				const manifest = await reader.getManifest();
-				let failedAssetUris = [];
-				// TODO: download assets in parallel
-				for (const asset of manifest.assets) {
-					if (cancelled) { return; }
-					if (!asset.URI.startsWith('embed:')) {
-						progress.report({ message: `Downloading SVF derivative ${guid} asset ${asset.URI}` });
-						try {
-							const assetData = await reader.getAsset(asset.URI);
-							const assetPath = path.join(guidDir, asset.URI);
-							const assetFolder = path.dirname(assetPath);
-							fse.ensureDirSync(assetFolder);
-							fs.writeFileSync(assetPath, assetData);
-						} catch(err) {
-							failedAssetUris.push(asset.URI);
-						}
-					}
-				}
-
-				if (failedAssetUris.length > 0) {
-					vscode.window.showWarningMessage('Some of the SVF assets could not be downloaded:\n' + failedAssetUris.join('\n'));
-				}
-			}
-			// Download all F2D derivatives
-			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-f2d')) {
-				if (cancelled) { return; }
-				const guid = derivative.guid;
-				progress.report({ message: `Downloading F2D derivative ${guid}` });
-				const guidDir = path.join(urnDir, guid);
-				fse.ensureDirSync(guidDir);
-				const baseUrn = derivative.urn.substr(0, derivative.urn.lastIndexOf('/'));
-				const manifestGzip = await context.modelDerivativeClient.getDerivative(urn, baseUrn + '/manifest.json.gz');
-				fs.writeFileSync(path.join(guidDir, 'manifest.json.gz'), manifestGzip);
-				const manifestGunzip = zlib.gunzipSync(manifestGzip);
-				const manifest = JSON.parse(manifestGunzip.toString());
-				let failedAssetUris = [];
-				for (const asset of manifest.assets) {
-					progress.report({ message: `Downloading F2D derivative ${guid} asset ${asset.id}` });
-					try {
-						const assetData = await context.modelDerivativeClient.getDerivative(urn, baseUrn + '/' + asset.URI);
-						fs.writeFileSync(path.join(guidDir, asset.URI), assetData);
-					} catch(err) {
-						failedAssetUris.push(asset.id);
-					}
-				}
-				if (failedAssetUris.length > 0) {
-					vscode.window.showWarningMessage('Some of the F2D assets could not be downloaded:\n' + failedAssetUris.join('\n'));
-				}
-			}
+			await svfDownloadTask.ready;
 		});
 		const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
 		if (action === 'Open Folder') {
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		vscode.window.showErrorMessage(`Could not download derivatives: ${JSON.stringify(err.message)}`);
+		vscode.window.showErrorMessage(`Could not download SVF: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function downloadDerivativesF2D(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
+		if (!outputFolderUri) {
+			return;
+		}
+
+		const baseDir = outputFolderUri[0].fsPath;
+		const urn = urnify(object.objectId);
+		let cancelled = false;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Downloading F2D: ${object.objectKey}`,
+			cancellable: true
+		}, async (progress, token) => {
+			let cancelled = false;
+			const f2dDownloader = new F2dDownloader(context.credentials);
+			const f2dDownloadTask = f2dDownloader.download(urn, {
+				outputDir: baseDir,
+				log: (message: string) => progress.report({ message })
+			});
+			token.onCancellationRequested(() => {
+				f2dDownloadTask.cancel();
+				cancelled = true;
+			});
+			await f2dDownloadTask.ready;
+		});
+		const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
+		if (action === 'Open Folder') {
+			vscode.env.openExternal(vscode.Uri.file(baseDir));
+		}
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not download F2D: ${JSON.stringify(err.message)}`);
+	}
+}
+
+export async function downloadDerivativesOTG(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
+		if (!outputFolderUri) {
+			return;
+		}
+
+		const baseDir = outputFolderUri[0].fsPath;
+		const urn = urnify(object.objectId);
+		let cancelled = false;
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Downloading OTG: ${object.objectKey}`,
+			cancellable: true
+		}, async (progress, token) => {
+			let cancelled = false;
+			const otgDownloader = new OtgDownloader(context.credentials);
+			const otgDownloadTask = otgDownloader.download(urn, {
+				outputDir: baseDir,
+				log: (message: string) => progress.report({ message })
+			});
+			token.onCancellationRequested(() => {
+				otgDownloadTask.cancel();
+				cancelled = true;
+			});
+			await otgDownloadTask.ready;
+		});
+		const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
+		if (action === 'Open Folder') {
+			vscode.env.openExternal(vscode.Uri.file(baseDir));
+		}
+	} catch (err) {
+		vscode.window.showErrorMessage(`Could not download OTG: ${JSON.stringify(err.message)}`);
 	}
 }
 
@@ -563,7 +599,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 				progress.report({ message: `Converting derivative ${derivative.guid}` });
 				const guidDir = path.join(urnDir, derivative.guid);
 				fse.ensureDirSync(guidDir);
-				const writer = new GltfWriter({ deduplicate: false, compress: false, binary: false, log: (msg: string) => progress.report({ message: msg }) });
+				const writer = new GltfWriter({ deduplicate: false, log: (msg: string) => progress.report({ message: msg }) });
 				const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
 				const svf = await reader.read();
 				await writer.write(svf, guidDir);
@@ -601,7 +637,7 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 		let cancelled = false;
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Downloading glTF: ${object.objectKey}`,
+			title: `Downloading glb: ${object.objectKey}`,
 			cancellable: true
 		}, async (progress, token) => {
 			token.onCancellationRequested(() => {
@@ -617,11 +653,16 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 				if (cancelled) { return; }
 				progress.report({ message: `Converting derivative ${derivative.guid}` });
 				const guidDir = path.join(urnDir, derivative.guid);
+				const tmpDir = path.join(guidDir, 'tmp');
 				fse.ensureDirSync(guidDir);
-				const writer = new GltfWriter({ deduplicate: true, compress: true, binary: true, skipUnusedUvs: true, log: (msg: string) => progress.report({ message: msg }) });
+				const writer = new GltfWriter({ deduplicate: true, skipUnusedUvs: true, log: (msg: string) => progress.report({ message: msg }) });
 				const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
 				const svf = await reader.read();
-				await writer.write(svf, guidDir);
+				await writer.write(svf, tmpDir);
+				const gltf = fse.readJsonSync(path.join(tmpDir, 'output.gltf'));
+				const glb = await gltfToGlb(gltf, { resourceDirectory: tmpDir, separate: false, dracoOptions: { compressionLevel: 10 } });
+				fse.writeFileSync(path.join(guidDir, 'output.glb'), glb.glb);
+				fse.removeSync(tmpDir);
 			}
 		});
 		const action = await vscode.window.showInformationMessage(`Derivative translation to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
