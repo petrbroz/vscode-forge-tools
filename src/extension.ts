@@ -192,8 +192,14 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject) => {
 		await mdc.viewObjectThumbnail(object, context);
 	});
-	vscode.commands.registerCommand('forge.downloadDerivative', async (object?: IObject) => {
-		await mdc.downloadDerivatives(object, context);
+	vscode.commands.registerCommand('forge.downloadDerivativeSvf', async (object?: IObject) => {
+		await mdc.downloadDerivativesSVF(object, context);
+	});
+	vscode.commands.registerCommand('forge.downloadDerivativeF2d', async (object?: IObject) => {
+		await mdc.downloadDerivativesF2D(object, context);
+	});
+	vscode.commands.registerCommand('forge.downloadDerivativeOtg', async (object?: IObject) => {
+		await mdc.downloadDerivativesOTG(object, context);
 	});
 	vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
 		await mdc.downloadDerivativeGLTF(object, context);
