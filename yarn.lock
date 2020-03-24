@@ -537,10 +537,10 @@ forever-agent@~0.6.1:
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-forge-convert-utils@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/forge-convert-utils/-/forge-convert-utils-3.3.0.tgz#eebb9502cdb12f49d56dc014f4d7cc0222209eee"
-  integrity sha512-Myhn9wLIeHf0b6lmGXWZ//NKSco3EyRg/izmn8CgxU4QVVCTAyeLAi0bxvgX0aXnI6zknAXIgDmRlPtbrBFeLw==
+forge-convert-utils@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/forge-convert-utils/-/forge-convert-utils-3.4.0.tgz#1247bc3b2084dd4757fc7d41fbd7a94d4f0468cf"
+  integrity sha512-8ldp7N4szeqezjCGK9QF91o5eku7y1Svd8Tdal8xiJaSBw1aoHUOfUIRRG8hUJa93P08HohyiaqAPyc3uPD+tA==
   dependencies:
     adm-zip "^0.4.13"
     commander "^3.0.2"
