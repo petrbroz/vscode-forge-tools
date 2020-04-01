@@ -30,7 +30,8 @@
 	],
 	"activationEvents": [
 		"onView:forgeDataManagementView",
-		"onView:forgeDesignAutomationView"
+		"onView:forgeDesignAutomationView",
+		"onView:forgeHubsView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -106,7 +107,11 @@
 			"forgeViewContainer": [
 				{
 					"id": "forgeDataManagementView",
-					"name": "Data & Derivatives"
+					"name": "Buckets & Derivatives"
+				},
+				{
+					"id": "forgeHubsView",
+					"name": "Hubs & Derivatives"
 				},
 				{
 					"id": "forgeWebhooksView",

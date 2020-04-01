@@ -7,6 +7,7 @@ import {
     ModelDerivativeClient,
     DesignAutomationClient,
     WebhooksClient,
+    BIM360Client,
     IBucket,
     IObject,
     urnify
@@ -26,6 +27,7 @@ export interface IContext {
 	modelDerivativeClient: ModelDerivativeClient;
     designAutomationClient: DesignAutomationClient;
     webhookClient: WebhooksClient;
+    bim360Client: BIM360Client;
     templateEngine: TemplateEngine;
     previewSettings: IPreviewSettings;
 }

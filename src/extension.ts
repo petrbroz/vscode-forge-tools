@@ -7,6 +7,7 @@ import {
 	ModelDerivativeClient,
 	DesignAutomationClient,
 	WebhooksClient,
+	BIM360Client,
 	IActivityDetail
 } from 'forge-server-utils';
 import * as dmp from './providers/data-management';
@@ -21,6 +22,7 @@ import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
 import { login } from './commands/authentication';
+import { HubsDataProvider } from './providers/hubs';
 
 const LoginServerPort = 8123;
 
@@ -108,6 +110,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
 		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		templateEngine: new TemplateEngine(_context),
 		previewSettings: {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || []
@@ -213,6 +216,16 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject) => {
 		await mdc.copyObjectUrn(object, context);
 	});
+
+	// Setup hubs view
+	let hubsDataProvider = new HubsDataProvider(context);
+	let hubsView = vscode.window.createTreeView('forgeHubsView', { treeDataProvider: hubsDataProvider });
+	context.extensionContext.subscriptions.push(hubsView);
+
+	// Hubs commands
+	// vscode.commands.registerCommand('forge.refreshBuckets', () => {
+	// 	simpleStorageDataProvider.refresh();
+	// });
 
 	// Setup design automation view
 	let designAutomationDataProvider = new dap.DesignAutomationDataProvider(context);
@@ -405,9 +418,12 @@ export function activate(_context: vscode.ExtensionContext) {
 		delete (context.designAutomationClient as any).auth; // TODO: clear the auth object in the reset method
 		context.webhookClient.reset(context.credentials, env.host, env.region as Region);
 		delete (context.webhookClient as any).auth; // TODO: clear the auth object in the reset method
+		context.bim360Client.reset(context.credentials, env.host, env.region as Region);
+		delete (context.bim360Client as any).auth; // TODO: clear the auth object in the reset method
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
+		hubsDataProvider.refresh();
 	}
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
