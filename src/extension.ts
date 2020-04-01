@@ -20,7 +20,9 @@ import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
-import { login } from './commands/bim360';
+import { login } from './commands/authentication';
+
+const LoginServerPort = 8123;
 
 // TODO: reuse the enum from forge-server-utils
 enum DesignAutomationRegion {
@@ -394,6 +396,20 @@ export function activate(_context: vscode.ExtensionContext) {
 	});
 
 	// Setup rest
+	function refreshAll() {
+		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
+		delete (context.dataManagementClient as any).auth; // TODO: clear the auth object in the reset method
+		context.modelDerivativeClient.reset(context.credentials, env.host, env.region as Region);
+		delete (context.modelDerivativeClient as any).auth; // TODO: clear the auth object in the reset method
+		context.designAutomationClient.reset(context.credentials, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion);
+		delete (context.designAutomationClient as any).auth; // TODO: clear the auth object in the reset method
+		context.webhookClient.reset(context.credentials, env.host, env.region as Region);
+		delete (context.webhookClient as any).auth; // TODO: clear the auth object in the reset method
+		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
+		simpleStorageDataProvider.refresh();
+		designAutomationDataProvider.refresh();
+	}
+
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'Forge Env: ' + env.title;
 		statusBarItem.command = 'forge.switchEnvironment';
@@ -403,8 +419,43 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(envStatusBarItem);
 	updateEnvironmentStatus(envStatusBarItem);
 
+	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
+		if ('token' in context.credentials) {
+			statusBarItem.text = 'Forge Auth: 3-legged';
+			statusBarItem.command = 'forge.logout';
+		} else {
+			statusBarItem.text = 'Forge Auth: 2-legged';
+			statusBarItem.command = 'forge.login';
+		}
+		statusBarItem.show();
+	}
+	const authStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+	context.extensionContext.subscriptions.push(authStatusBarItem);
+	updateAuthStatus(authStatusBarItem);
+
 	vscode.commands.registerCommand('forge.login', async () => {
-		await login(env.clientId, 'http://localhost', context);
+		try {
+			const data = await login(env.clientId, LoginServerPort, context);
+			const token = data.get('access_token');
+			const expires = data.get('expires_in');
+			const tokenType = data.get('token_type');
+			if (!token || !expires || tokenType !== 'Bearer') {
+				throw new Error('Authentication data missing or incorrect.');
+			}
+			context.credentials = { token };
+			refreshAll();
+			updateAuthStatus(authStatusBarItem);
+			vscode.window.showInformationMessage(`You are now logged in! The session will expire in ${expires} seconds.`);
+		} catch (err) {
+			vscode.window.showWarningMessage(`Could not log in: ${err}`);
+		}
+	});
+
+	vscode.commands.registerCommand('forge.logout', async () => {
+		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
+		refreshAll();
+		updateAuthStatus(authStatusBarItem);
+		vscode.window.showInformationMessage(`You have been logged out.`);
 	});
 
 	vscode.commands.registerCommand('forge.switchEnvironment', async () => {
@@ -414,15 +465,8 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		env = environments.find(environment => environment.title === name) as IEnvironment;
-		const auth = { client_id: env.clientId, client_secret: env.clientSecret };
-		context.credentials = auth;
-		context.dataManagementClient.reset(auth, env.host, env.region as Region);
-		context.modelDerivativeClient.reset(auth, env.host, env.region as Region);
-		context.designAutomationClient.reset(auth, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion);
-		context.webhookClient.reset(auth, env.host, env.region as Region);
-		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
-		simpleStorageDataProvider.refresh();
-		designAutomationDataProvider.refresh();
+		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
+		refreshAll();
 		updateEnvironmentStatus(envStatusBarItem);
 	});
 }

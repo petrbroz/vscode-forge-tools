@@ -392,6 +392,11 @@
 				"command": "forge.login",
 				"title": "Login",
 				"category": "Forge Authentication"
+			},
+			{
+				"command": "forge.logout",
+				"title": "Logout",
+				"category": "Forge Authentication"
 			}
 		],
 		"menus": {

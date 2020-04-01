@@ -1,0 +1,34 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Visual Studio Code Forge Tools: Login
+  body.bg-light
+    .container
+      .row
+        .col
+          h1.display-3 Visual Studio Code Forge Tools
+          h1.display-4 Login
+          ol
+            li Go to <a href="https://forge.autodesk.com/myapps">https://forge.autodesk.com/myapps</a>
+            li Find your application with client ID <em>#{clientId}</em>
+            li Temporarily set its redirect URI to <em>http://localhost:#{port}/vscode-forge-tools/auth/callback</em>
+            li Hit the <em>Login</em> button below
+      .row
+        .col
+          a#login.btn.btn-outline-primary Login
+          a#cancel.btn.btn-outline-secondary Cancel
+    include partials/scripts.pug
+    script.
+      const baseUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
+      document.getElementById('login').addEventListener('click', () => {
+        const url = new URL('https://developer.api.autodesk.com/authentication/v1/authorize');
+        url.searchParams.set('client_id', '#{clientId}');
+        url.searchParams.set('redirect_uri', baseUrl + '/vscode-forge-tools/auth/callback');
+        url.searchParams.set('response_type', 'token');
+        url.searchParams.set('scope', 'data:read');
+        window.location.replace(url.toString());
+      });
+      document.getElementById('cancel').addEventListener('click', () => {
+        window.location.replace(baseUrl + '/vscode-forge-tools/auth/cancel');
+      });
