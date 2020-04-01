@@ -20,6 +20,7 @@ import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
+import { login } from './commands/bim360';
 
 // TODO: reuse the enum from forge-server-utils
 enum DesignAutomationRegion {
@@ -401,6 +402,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	const envStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 	context.extensionContext.subscriptions.push(envStatusBarItem);
 	updateEnvironmentStatus(envStatusBarItem);
+
+	vscode.commands.registerCommand('forge.login', async () => {
+		await login(env.clientId, 'http://localhost', context);
+	});
 
 	vscode.commands.registerCommand('forge.switchEnvironment', async () => {
 		const environments = getEnvironments();

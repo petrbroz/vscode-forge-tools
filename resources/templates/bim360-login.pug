@@ -1,0 +1,23 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title BIM360 Login
+  body
+    h1 BIM360 Login
+    form
+      .form-group.row
+        label.col-sm-2.form-label(for='client-id') Client ID
+        .col-sm-10
+          input#client-id.form-control(type='text', value=clientId, placeholder='Forge Client ID')
+      .form-group.row
+        label.col-sm-2.form-label(for='redirect-uri') Description
+        .col-sm-10
+          input#redirect-uri.form-control(type='text', value=redirectUri, placeholder='Auth Redirection URI')
+    .row
+      a#login.btn.btn-primary Login
+    .row
+      iframe(src='http://www.google.com')
+    include partials/scripts.pug
+    script
+      include scripts/bim360-login.js
