@@ -411,16 +411,26 @@ export function activate(_context: vscode.ExtensionContext) {
 	// Setup rest
 	function refreshAll() {
 		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
-		delete (context.dataManagementClient as any).auth; // TODO: clear the auth object in the reset method
 		context.modelDerivativeClient.reset(context.credentials, env.host, env.region as Region);
-		delete (context.modelDerivativeClient as any).auth; // TODO: clear the auth object in the reset method
 		context.designAutomationClient.reset(context.credentials, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion);
-		delete (context.designAutomationClient as any).auth; // TODO: clear the auth object in the reset method
 		context.webhookClient.reset(context.credentials, env.host, env.region as Region);
-		delete (context.webhookClient as any).auth; // TODO: clear the auth object in the reset method
 		context.bim360Client.reset(context.credentials, env.host, env.region as Region);
-		delete (context.bim360Client as any).auth; // TODO: clear the auth object in the reset method
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
+		if ('token' in context.credentials) {
+			// TODO: clear the auth object in the reset method
+			delete (context.dataManagementClient as any).auth;
+			delete (context.modelDerivativeClient as any).auth;
+			delete (context.designAutomationClient as any).auth;
+			delete (context.webhookClient as any).auth;
+			delete (context.bim360Client as any).auth;
+		} else {
+			// TODO: clear the token object in the reset method
+			delete (context.dataManagementClient as any).token;
+			delete (context.modelDerivativeClient as any).token;
+			delete (context.designAutomationClient as any).token;
+			delete (context.webhookClient as any).token;
+			delete (context.bim360Client as any).token;
+		}
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		hubsDataProvider.refresh();
@@ -461,17 +471,20 @@ export function activate(_context: vscode.ExtensionContext) {
 			context.credentials = { token };
 			refreshAll();
 			updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged in! The session will expire in ${expires} seconds.`);
+			vscode.window.showInformationMessage(`You are now logged in. All calls to Forge APIs will use the 3-legged token for as long as it is valid (${expires} seconds), or until you manually log out.`);
 		} catch (err) {
 			vscode.window.showWarningMessage(`Could not log in: ${err}`);
 		}
 	});
 
 	vscode.commands.registerCommand('forge.logout', async () => {
-		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
-		refreshAll();
-		updateAuthStatus(authStatusBarItem);
-		vscode.window.showInformationMessage(`You have been logged out.`);
+		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to logout and go back to 2-legged authentication?' });
+		if (answer === 'Yes') {
+			context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
+			refreshAll();
+			updateAuthStatus(authStatusBarItem);
+			vscode.window.showInformationMessage(`You are now logged out. All calls to Forge APIs will use the 2-legged authentication.`);
+		}
 	});
 
 	vscode.commands.registerCommand('forge.switchEnvironment', async () => {
