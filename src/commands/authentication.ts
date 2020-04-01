@@ -5,10 +5,11 @@ import { IContext } from '../common';
 
 export async function login(clientId: string, port: number, context: IContext): Promise<Map<string, string>> {
     const timeout = 2 * 60 * 1000; // Wait for 2 minutes
+    const scopes = ['data:read', 'viewables:read'];
     return new Promise(function (resolve, reject) {
         const server = http.createServer(function (req, res) {
             if (req.url === '/') {
-                res.write(context.templateEngine.render('login', { clientId, port }));
+                res.write(context.templateEngine.render('login', { clientId, port, scopes }));
                 res.end();
             } else if (req.url === '/vscode-forge-tools/auth/callback') {
                 res.write(context.templateEngine.render('login-callback', {}));

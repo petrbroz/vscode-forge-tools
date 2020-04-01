@@ -1,4 +1,8 @@
 import * as vscode from 'vscode';
+import {
+    urnify
+} from 'forge-server-utils';
+import { IDerivative } from '../interfaces/model-derivative';
 import { IContext } from '../common';
 
 export interface IHint {
@@ -40,7 +44,7 @@ export interface IVersion {
     name: string;
 }
 
-type HubsEntry = IHub | IProject | IFolder | IItem | IVersion | IHint;
+type HubsEntry = IHub | IProject | IFolder | IItem | IVersion | IDerivative | IHint;
 
 function isHub(entry: HubsEntry): entry is IHub {
     return (<IHub>entry).kind === 'hub';
@@ -60,6 +64,10 @@ function isItem(entry: HubsEntry): entry is IItem {
 
 function isVersion(entry: HubsEntry): entry is IVersion {
     return (<IVersion>entry).kind === 'version';
+}
+
+function isDerivative(entry: HubsEntry): entry is IDerivative {
+    return (<IDerivative>entry).guid !== undefined;
 }
 
 function isHint(entry: HubsEntry): entry is IHint {
@@ -101,6 +109,10 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
             node.contextValue = 'version';
             return node;
+        } else if (isDerivative(entry)) {
+            const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.None);
+            node.contextValue = 'derivative';
+            return node;
         } else {
             const node = new vscode.TreeItem('', vscode.TreeItemCollapsibleState.None);
             node.description = entry.hint;
@@ -121,6 +133,8 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             return this._getFolderContents(entry.projectId, entry.id);
         } else if (isItem(entry)) {
             return this._getItemVersions(entry.projectId, entry.id);
+        } else if (isVersion(entry)) {
+            return this._getVersionDerivatives(entry.id);
         } else {
             return [];
         }
@@ -233,6 +247,35 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve item versions.',
+                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+            }];
+        }
+    }
+
+    async _getVersionDerivatives(versionId: string): Promise<(IDerivative | IHint)[]> {
+        try {
+            const urn = urnify(versionId).replace('/', '_');
+            const manifest = await this._context.modelDerivativeClient.getManifest(urn);
+            if (manifest.status !== 'success') {
+                throw new Error('Unexpected manifest status: ' + manifest.status);
+            }
+            const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+            if (!svf || !svf.children) {
+                return [];
+            } else {
+                return svf.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
+                    return {
+                        urn,
+                        name: geometry.name,
+                        role: geometry.role,
+                        guid: geometry.guid,
+                        bubble: geometry
+                    };
+                });
+            }
+        } catch (err) {
+            return [{
+                hint: 'Could not retrieve derivatives.',
                 tooltip: 'Try logging in with the 3-legged OAuth workflow.'
             }];
         }

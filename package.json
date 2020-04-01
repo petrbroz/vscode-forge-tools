@@ -535,17 +535,17 @@
 				},
 				{
 					"command": "forge.previewDerivative",
-					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"when": "viewItem == derivative",
 					"group": "0_view@1"
 				},
 				{
 					"command": "forge.viewDerivativeTree",
-					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"when": "viewItem == derivative",
 					"group": "0_view@2"
 				},
 				{
 					"command": "forge.viewDerivativeProps",
-					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"when": "viewItem == derivative",
 					"group": "0_view@3"
 				},
 				{

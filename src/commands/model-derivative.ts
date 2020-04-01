@@ -109,7 +109,9 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 				return;
 			}
 		}
-		const token = await context.authenticationClient.authenticate(['viewables:read']);
+		const token = 'token' in context.credentials
+			? { access_token: context.credentials.token }
+			: await context.authenticationClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-preview',
 			'Preview: ' + derivative.name,

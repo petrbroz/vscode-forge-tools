@@ -3,6 +3,10 @@ html(lang='en')
   head
     include partials/head.pug
     title Visual Studio Code Forge Tools: Login
+  style.
+    .btn {
+      margin: 0.5em;
+    }
   body.bg-light
     .container
       .row
@@ -16,8 +20,8 @@ html(lang='en')
             li Hit the <em>Login</em> button below
       .row
         .col
-          a#login.btn.btn-outline-primary Login
-          a#cancel.btn.btn-outline-secondary Cancel
+          a#login.btn.btn-outline-primary(href="#") Login
+          a#cancel.btn.btn-outline-secondary(href="#") Cancel
     include partials/scripts.pug
     script.
       const baseUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
@@ -26,7 +30,7 @@ html(lang='en')
         url.searchParams.set('client_id', '#{clientId}');
         url.searchParams.set('redirect_uri', baseUrl + '/vscode-forge-tools/auth/callback');
         url.searchParams.set('response_type', 'token');
-        url.searchParams.set('scope', 'data:read');
+        url.searchParams.set('scope', '#{scopes.join(' ')}');
         window.location.replace(url.toString());
       });
       document.getElementById('cancel').addEventListener('click', () => {
