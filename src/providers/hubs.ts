@@ -1,9 +1,13 @@
 import * as vscode from 'vscode';
 import {
-    urnify
+    urnify as _urnify
 } from 'forge-server-utils';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext } from '../common';
+
+function urnify(id: string): string {
+    return _urnify(id).replace('/', '_');
+}
 
 export interface IHint {
     hint: string;
@@ -254,8 +258,8 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getVersionDerivatives(versionId: string): Promise<(IDerivative | IHint)[]> {
         try {
-            const urn = urnify(versionId).replace('/', '_');
-            const manifest = await this._context.modelDerivativeClient.getManifest(urn);
+            const urn = urnify(versionId);
+            const manifest = await this._context.modelDerivativeClient3L.getManifest(urn);
             if (manifest.status !== 'success') {
                 throw new Error('Unexpected manifest status: ' + manifest.status);
             }

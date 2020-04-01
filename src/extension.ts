@@ -107,7 +107,8 @@ export function activate(_context: vscode.ExtensionContext) {
 		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
 		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret, env.host),
 		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		modelDerivativeClient: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		modelDerivativeClient2L: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+		modelDerivativeClient3L: new ModelDerivativeClient({ token: '' }, env.host, env.region as Region),
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
 		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
@@ -409,33 +410,6 @@ export function activate(_context: vscode.ExtensionContext) {
 	});
 
 	// Setup rest
-	function refreshAll() {
-		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
-		context.modelDerivativeClient.reset(context.credentials, env.host, env.region as Region);
-		context.designAutomationClient.reset(context.credentials, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion);
-		context.webhookClient.reset(context.credentials, env.host, env.region as Region);
-		context.bim360Client.reset(context.credentials, env.host, env.region as Region);
-		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
-		if ('token' in context.credentials) {
-			// TODO: clear the auth object in the reset method
-			delete (context.dataManagementClient as any).auth;
-			delete (context.modelDerivativeClient as any).auth;
-			delete (context.designAutomationClient as any).auth;
-			delete (context.webhookClient as any).auth;
-			delete (context.bim360Client as any).auth;
-		} else {
-			// TODO: clear the token object in the reset method
-			delete (context.dataManagementClient as any).token;
-			delete (context.modelDerivativeClient as any).token;
-			delete (context.designAutomationClient as any).token;
-			delete (context.webhookClient as any).token;
-			delete (context.bim360Client as any).token;
-		}
-		simpleStorageDataProvider.refresh();
-		designAutomationDataProvider.refresh();
-		hubsDataProvider.refresh();
-	}
-
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'Forge Env: ' + env.title;
 		statusBarItem.command = 'forge.switchEnvironment';
@@ -446,7 +420,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	updateEnvironmentStatus(envStatusBarItem);
 
 	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
-		if ('token' in context.credentials) {
+		if (context.threeLeggedToken) {
 			statusBarItem.text = 'Forge Auth: 3-legged';
 			statusBarItem.command = 'forge.logout';
 		} else {
@@ -468,22 +442,28 @@ export function activate(_context: vscode.ExtensionContext) {
 			if (!token || !expires || tokenType !== 'Bearer') {
 				throw new Error('Authentication data missing or incorrect.');
 			}
-			context.credentials = { token };
-			refreshAll();
+			context.threeLeggedToken = token;
+			context.bim360Client.reset({ token: context.threeLeggedToken }, env.host, env.region as Region);
+			delete (context.bim360Client as any).auth; // TODO: remove 'auth' in the reset method
+			context.modelDerivativeClient3L.reset({ token: context.threeLeggedToken }, env.host, env.region as Region);
+			hubsDataProvider.refresh();
 			updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged in. All calls to Forge APIs will use the 3-legged token for as long as it is valid (${expires} seconds), or until you manually log out.`);
+			vscode.window.showInformationMessage(`You are now logged in. Autodesk Forge services requiring 3-legged authentication will be available for as long as the generated token is valid (${expires} seconds), or until you manually log out.`);
 		} catch (err) {
 			vscode.window.showWarningMessage(`Could not log in: ${err}`);
 		}
 	});
 
 	vscode.commands.registerCommand('forge.logout', async () => {
-		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to logout and go back to 2-legged authentication?' });
+		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to log out?' });
 		if (answer === 'Yes') {
-			context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
-			refreshAll();
+			delete context.threeLeggedToken;
+			context.bim360Client.reset(context.credentials, env.host, env.region as Region);
+			delete (context.bim360Client as any).token; // TODO: remove 'token' in the reset method
+			context.modelDerivativeClient3L.reset({ token: '' }, env.host, env.region as Region);
+			hubsDataProvider.refresh();
 			updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged out. All calls to Forge APIs will use the 2-legged authentication.`);
+			vscode.window.showInformationMessage(`You are now logged out. Autodesk Forge services requiring 3-legged authentication will no longer be available.`);
 		}
 	});
 
@@ -494,8 +474,18 @@ export function activate(_context: vscode.ExtensionContext) {
 			return;
 		}
 		env = environments.find(environment => environment.title === name) as IEnvironment;
+		delete context.threeLeggedToken;
 		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
-		refreshAll();
+		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
+		context.modelDerivativeClient2L.reset(context.credentials, env.host, env.region as Region);
+		context.modelDerivativeClient3L.reset({ token: '' }, env.host, env.region as Region);
+		context.designAutomationClient.reset(context.credentials, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion);
+		context.webhookClient.reset(context.credentials, env.host, env.region as Region);
+		context.bim360Client.reset(context.credentials, env.host, env.region as Region);
+		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
+		simpleStorageDataProvider.refresh();
+		designAutomationDataProvider.refresh();
+		hubsDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
 	});
 }
