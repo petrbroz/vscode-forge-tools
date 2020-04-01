@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "1.5.1",
+	"version": "1.6.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -30,7 +30,8 @@
 	],
 	"activationEvents": [
 		"onView:forgeDataManagementView",
-		"onView:forgeDesignAutomationView"
+		"onView:forgeDesignAutomationView",
+		"onView:forgeHubsView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -90,6 +91,12 @@
 					"items": {
 						"type": "string"
 					}
+				},
+				"autodesk.forge.authentication.port": {
+					"scope": "resource",
+					"type": "number",
+					"default": 8123,
+					"description": "Server port to use during 3-legged authentication workflows"
 				}
 			}
 		},
@@ -106,7 +113,11 @@
 			"forgeViewContainer": [
 				{
 					"id": "forgeDataManagementView",
-					"name": "Data & Derivatives"
+					"name": "Buckets & Derivatives"
+				},
+				{
+					"id": "forgeHubsView",
+					"name": "Hubs & Derivatives"
 				},
 				{
 					"id": "forgeWebhooksView",
@@ -387,6 +398,16 @@
 				"command": "forge.deleteWebhook",
 				"title": "Delete Webhook",
 				"category": "Forge Webhooks"
+			},
+			{
+				"command": "forge.login",
+				"title": "Login",
+				"category": "Forge Authentication"
+			},
+			{
+				"command": "forge.logout",
+				"title": "Logout",
+				"category": "Forge Authentication"
 			}
 		],
 		"menus": {
@@ -520,17 +541,17 @@
 				},
 				{
 					"command": "forge.previewDerivative",
-					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"when": "viewItem == derivative",
 					"group": "0_view@1"
 				},
 				{
 					"command": "forge.viewDerivativeTree",
-					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"when": "viewItem == derivative",
 					"group": "0_view@2"
 				},
 				{
 					"command": "forge.viewDerivativeProps",
-					"when": "view == forgeDataManagementView && viewItem == derivative",
+					"when": "viewItem == derivative",
 					"group": "0_view@3"
 				},
 				{

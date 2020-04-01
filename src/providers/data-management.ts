@@ -76,7 +76,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 } else if (isObject(element)) {
                     const urn = urnify(element.objectId);
                     try {
-                        const manifest = await this._context.modelDerivativeClient.getManifest(urn);
+                        const manifest = await this._context.modelDerivativeClient2L.getManifest(urn);
                         switch (manifest.status) {
                             case 'success':
                                 return this._getManifestDerivatives(manifest, urn).sort(stringPropertySorter('name'));

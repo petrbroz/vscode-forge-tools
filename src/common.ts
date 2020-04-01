@@ -7,6 +7,7 @@ import {
     ModelDerivativeClient,
     DesignAutomationClient,
     WebhooksClient,
+    BIM360Client,
     IBucket,
     IObject,
     urnify
@@ -23,11 +24,14 @@ export interface IContext {
     extensionContext: vscode.ExtensionContext;
 	authenticationClient: AuthenticationClient;
 	dataManagementClient: DataManagementClient;
-	modelDerivativeClient: ModelDerivativeClient;
+    modelDerivativeClient2L: ModelDerivativeClient; // client for 2-legged workflows
+    modelDerivativeClient3L: ModelDerivativeClient; // client for 3-legged workflows
     designAutomationClient: DesignAutomationClient;
     webhookClient: WebhooksClient;
+    bim360Client: BIM360Client;
     templateEngine: TemplateEngine;
     previewSettings: IPreviewSettings;
+    threeLeggedToken?: string;
 }
 
 export class TemplateEngine {
@@ -75,7 +79,7 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
     const urn = urnify(objectId);
-    const manifest = await context.modelDerivativeClient.getManifest(urn) as any;
+    const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
     const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
     if (!svf) {
         vscode.window.showWarningMessage(`No derivatives yet for ${urn}`);

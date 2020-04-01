@@ -2,11 +2,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import * as zlib from 'zlib';
 import { gltfToGlb } from 'gltf-pipeline';
 import {
 	IObject,
-	urnify,
+	urnify as _urnify, // TODO: add '/' to '_' mapping
 	ThumbnailSize,
 	ManifestHelper,
 	IDerivativeResourceChild,
@@ -23,6 +22,14 @@ enum TranslationActions {
 	TranslateAsArchive = 'Translate as Archive'
 }
 
+function urnify(id: string): string {
+	return _urnify(id).replace('/', '_');
+}
+
+function inHubs(urn: string): boolean {
+	return urn.indexOf('_') !== -1;
+}
+
 export async function translateObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
@@ -37,7 +44,7 @@ export async function translateObject(object: IObject | undefined, context: ICon
 		}
 
 		const urn = urnify(object.objectId);
-		await context.modelDerivativeClient.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		await context.modelDerivativeClient2L.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
@@ -73,7 +80,7 @@ export async function translateObjectCustom(object: IObject | undefined, context
 						// TODO: support additional flags in IDerivativeOutputType
 						const outputOptions = { type: 'svf', views: ['2d', '3d'], advanced: { switchLoader, generateMasterViews } } as IDerivativeOutputType;
 						// TODO: support custom region
-						await context.modelDerivativeClient.submitJob(urn, [outputOptions], compressedRootDesign, true);
+						await context.modelDerivativeClient2L.submitJob(urn, [outputOptions], compressedRootDesign, true);
 						panel.dispose();
 						vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						if (onStart) {
@@ -109,7 +116,9 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 				return;
 			}
 		}
-		const token = await context.authenticationClient.authenticate(['viewables:read']);
+		const token = inHubs(derivative.urn)
+			? { access_token: context.threeLeggedToken }
+			: await context.authenticationClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
 			'derivative-preview',
 			'Preview: ' + derivative.name,
@@ -148,6 +157,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const urn = derivative.urn, guid = graphicsNode.guid;
+		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		let forceDownload = false;
 		let tree: IDerivativeTree | undefined = undefined;
 		try {
@@ -156,7 +166,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				title: `Retrieving viewable tree`,
 				cancellable: false
 			}, async (progress, token) => {
-				tree = await context.modelDerivativeClient.getViewableTree(urn, guid);
+				tree = await client.getViewableTree(urn, guid);
 			});
 		} catch (err) {
 			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
@@ -174,7 +184,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 							cancellable: false
 						}, async (progress, token) => {
 							// TODO: redirect the downloaded data directly into a file stream
-							tree = await context.modelDerivativeClient.getViewableTree(urn, guid, true);
+							tree = await client.getViewableTree(urn, guid, true);
 							forceDownload = true;
 						});
 						break;
@@ -224,6 +234,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const urn = derivative.urn, guid = graphicsNode.guid;
+		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		let forceDownload = false;
 		let props: IDerivativeProps | undefined = undefined;
 		try {
@@ -232,7 +243,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				title: `Retrieving viewable properties`,
 				cancellable: false
 			}, async (progress, token) => {
-				props = await context.modelDerivativeClient.getViewableProperties(urn, guid);
+				props = await client.getViewableProperties(urn, guid);
 			});
 		} catch (err) {
 			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
@@ -250,7 +261,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 							cancellable: false
 						}, async (progress, token) => {
 							// TODO: redirect the downloaded data directly into a file stream
-							props = await context.modelDerivativeClient.getViewableProperties(urn, guid, true);
+							props = await client.getViewableProperties(urn, guid, true);
 							forceDownload = true;
 						});
 						break;
@@ -294,7 +305,9 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 				return;
 			}
 		}
-		const manifest = await context.modelDerivativeClient.getManifest(urnify(object.objectId));
+		const urn = urnify(object.objectId);
+		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		const manifest = await client.getManifest(urn);
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
@@ -315,8 +328,10 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 			}
 		}
 
+		const urn = urnify(object.objectId);
+		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		try {
-			await context.modelDerivativeClient.deleteManifest(urnify(object.objectId));
+			await client.deleteManifest(urn);
 		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
@@ -367,10 +382,12 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			{ enableScripts: true }
 		);
 		try {
+			// Hack: if there's a '_' in the urn, it's a version of an item from hubs, so we need a 3-legged token
 			const urn = urnify(objectId);
-			const small = await context.modelDerivativeClient.getThumbnail(urn, ThumbnailSize.Small);
-			const medium = await context.modelDerivativeClient.getThumbnail(urn, ThumbnailSize.Medium);
-			const large = await context.modelDerivativeClient.getThumbnail(urn, ThumbnailSize.Large);
+			const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+			const small = await client.getThumbnail(urn, ThumbnailSize.Small);
+			const medium = await client.getThumbnail(urn, ThumbnailSize.Medium);
+			const large = await client.getThumbnail(urn, ThumbnailSize.Large);
 			const pngToDataURI = (img: ArrayBuffer) => 'data:image/png;base64,' + Buffer.from(img).toString('base64');
 			panel.webview.html = context.templateEngine.render('object-thumbnail', {
 				object,
@@ -591,7 +608,8 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 			const urnDir = path.join(baseDir, urn);
 			fse.ensureDirSync(urnDir);
 			progress.report({ message: 'Retrieving manifest' });
-			const manifest = await context.modelDerivativeClient.getManifest(urn);
+			const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+			const manifest = await client.getManifest(urn);
 			const helper = new ManifestHelper(manifest);
 			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
 			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
@@ -646,7 +664,9 @@ export async function downloadDerivativeGLB(object: IObject | undefined, context
 			const urnDir = path.join(baseDir, urn);
 			fse.ensureDirSync(urnDir);
 			progress.report({ message: 'Retrieving manifest' });
-			const manifest = await context.modelDerivativeClient.getManifest(urn);
+			// Hack: if there's a '_' in the urn, it's a version of an item from hubs, so we need a 3-legged token
+			const client = urn.indexOf('_') !== -1 ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+			const manifest = await client.getManifest(urn);
 			const helper = new ManifestHelper(manifest);
 			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
 			for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {

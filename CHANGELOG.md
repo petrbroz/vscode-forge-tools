@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.6.0] - 2020-04-01
+
+- Added
+  - Basic support for 3-legged authentication, by running a temporary web server (port can be configured, by default 8123)
+  and generating an [implicit token](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/get-3-legged-token-implicit/)
+  - Basic support for browsing [Data Management](https://forge.autodesk.com/en/docs/data/v2/developers_guide/overview/) hubs,
+  projects, folders, items, and versions
+  - Support for previewing versions of items from hubs
+  - Support for getting tree/property JSONs of versions of items from hubs
+
 ## [1.5.1] - 2020-03-24
 
 - Fixed
