@@ -14,7 +14,7 @@ import {
 	IDerivativeTree
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, OtgDownloader } from 'forge-convert-utils';
-import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage } from '../common';
+import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 
 enum TranslationActions {
@@ -24,10 +24,6 @@ enum TranslationActions {
 
 function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
-}
-
-function inHubs(urn: string): boolean {
-	return urn.indexOf('_') !== -1;
 }
 
 export async function translateObject(object: IObject | undefined, context: IContext) {
@@ -116,7 +112,7 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 				return;
 			}
 		}
-		const token = inHubs(derivative.urn)
+		const token = inHubs(derivative.urn) && context.threeLeggedToken
 			? { access_token: context.threeLeggedToken }
 			: await context.authenticationClient.authenticate(['viewables:read']);
 		const panel = vscode.window.createWebviewPanel(
@@ -157,7 +153,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const urn = derivative.urn, guid = graphicsNode.guid;
-		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		let forceDownload = false;
 		let tree: IDerivativeTree | undefined = undefined;
 		try {
@@ -234,7 +230,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 		}
 		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
 		const urn = derivative.urn, guid = graphicsNode.guid;
-		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		let forceDownload = false;
 		let props: IDerivativeProps | undefined = undefined;
 		try {
@@ -306,7 +302,7 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 			}
 		}
 		const urn = urnify(object.objectId);
-		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		const manifest = await client.getManifest(urn);
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
@@ -329,7 +325,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 		}
 
 		const urn = urnify(object.objectId);
-		const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		try {
 			await client.deleteManifest(urn);
 		} catch (_) {
@@ -384,7 +380,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 		try {
 			// Hack: if there's a '_' in the urn, it's a version of an item from hubs, so we need a 3-legged token
 			const urn = urnify(objectId);
-			const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+			const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 			const small = await client.getThumbnail(urn, ThumbnailSize.Small);
 			const medium = await client.getThumbnail(urn, ThumbnailSize.Medium);
 			const large = await client.getThumbnail(urn, ThumbnailSize.Large);
@@ -608,7 +604,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 			const urnDir = path.join(baseDir, urn);
 			fse.ensureDirSync(urnDir);
 			progress.report({ message: 'Retrieving manifest' });
-			const client = inHubs(urn) ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+			const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 			const manifest = await client.getManifest(urn);
 			const helper = new ManifestHelper(manifest);
 			const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
@@ -709,7 +705,7 @@ export async function copyObjectUrn(object: IObject | undefined, context: IConte
 
 		const urn = urnify(object.objectId);
 		await vscode.env.clipboard.writeText(urn);
-		vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`,);
+		vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`);
 	} catch (err) {
 		showErrorMessage('Could not obtain object URN', err);
 	}
