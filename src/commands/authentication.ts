@@ -36,7 +36,7 @@ export async function login(clientId: string, port: number, context: IContext): 
                 res.statusCode = 404;
                 res.end();
             }
-        }).listen(8123);
+        }).listen(port);
         vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${port}`));
         setTimeout(() => {
             server.close();

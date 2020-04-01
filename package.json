@@ -91,6 +91,12 @@
 					"items": {
 						"type": "string"
 					}
+				},
+				"autodesk.forge.authentication.port": {
+					"scope": "resource",
+					"type": "number",
+					"default": 8123,
+					"description": "Server port to use during 3-legged authentication workflows"
 				}
 			}
 		},

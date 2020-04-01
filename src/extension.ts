@@ -24,7 +24,7 @@ import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from 
 import { login } from './commands/authentication';
 import { HubsDataProvider } from './providers/hubs';
 
-const LoginServerPort = 8123;
+const DefaultAuthPort = 8123;
 
 // TODO: reuse the enum from forge-server-utils
 enum DesignAutomationRegion {
@@ -435,7 +435,8 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	vscode.commands.registerCommand('forge.login', async () => {
 		try {
-			const data = await login(env.clientId, LoginServerPort, context);
+			const port = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.authentication.port') || DefaultAuthPort;
+			const data = await login(env.clientId, port, context);
 			const token = data.get('access_token');
 			const expires = data.get('expires_in');
 			const tokenType = data.get('token_type');
