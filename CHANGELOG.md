@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - JSON data coming from Model Derivative service is now prettified to enable syntax highlighting, collapsing,
+  and other vscode goodies
+
 ## [1.6.1] - 2020-04-02
 
 - Added
