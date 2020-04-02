@@ -16,14 +16,14 @@ import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'forge-server-utils/dist/common';
 
 export interface IPreviewSettings {
-	extensions: string[];
+    extensions: string[];
 }
 
 export interface IContext {
     credentials: IAuthOptions;
     extensionContext: vscode.ExtensionContext;
-	authenticationClient: AuthenticationClient;
-	dataManagementClient: DataManagementClient;
+    authenticationClient: AuthenticationClient;
+    dataManagementClient: DataManagementClient;
     modelDerivativeClient2L: ModelDerivativeClient; // client for 2-legged workflows
     modelDerivativeClient3L: ModelDerivativeClient; // client for 3-legged workflows
     designAutomationClient: DesignAutomationClient;
@@ -58,23 +58,23 @@ export class TemplateEngine {
 }
 
 export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
-	const buckets = await context.dataManagementClient.listBuckets();
-	const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
-	if (!bucketKey) {
-		return undefined;
-	} else {
-		return buckets.find(item => item.bucketKey === bucketKey);
-	}
+    const buckets = await context.dataManagementClient.listBuckets();
+    const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+    if (!bucketKey) {
+        return undefined;
+    } else {
+        return buckets.find(item => item.bucketKey === bucketKey);
+    }
 }
 
 export async function promptObject(context: IContext, bucketKey: string): Promise<IObject | undefined> {
-	const objects = await context.dataManagementClient.listObjects(bucketKey);
-	const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
-	if (!objectKey) {
-		return undefined;
-	} else {
-		return objects.find(item => item.objectKey === objectKey);
-	}
+    const objects = await context.dataManagementClient.listObjects(bucketKey);
+    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
+    if (!objectKey) {
+        return undefined;
+    } else {
+        return objects.find(item => item.objectKey === objectKey);
+    }
 }
 
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
@@ -95,12 +95,12 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
         };
     });
 
-	const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
-	if (!derivativeName) {
-		return undefined;
-	} else {
-		return derivatives.find(item => item.name === derivativeName);
-	}
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    if (!derivativeName) {
+        return undefined;
+    } else {
+        return derivatives.find(item => item.name === derivativeName);
+    }
 }
 
 export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
@@ -127,4 +127,8 @@ export function stringPropertySorter<T>(propName: keyof T) {
         else if (a[propName] > b[propName]) { return +1; }
         else { return 0; }
     };
+}
+
+export function inHubs(urn: string): boolean {
+    return urn.indexOf('_') !== -1;
 }

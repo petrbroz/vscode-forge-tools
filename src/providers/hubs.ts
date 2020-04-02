@@ -3,7 +3,7 @@ import {
     urnify as _urnify
 } from 'forge-server-utils';
 import { IDerivative } from '../interfaces/model-derivative';
-import { IContext } from '../common';
+import { IContext, inHubs } from '../common';
 
 function urnify(id: string): string {
     return _urnify(id).replace('/', '_');
@@ -82,7 +82,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
     private _context: IContext;
     private _onDidChangeTreeData: vscode.EventEmitter<HubsEntry | null> = new vscode.EventEmitter<HubsEntry | null>();
 
-	readonly onDidChangeTreeData?: vscode.Event<HubsEntry | null> = this._onDidChangeTreeData.event;
+    readonly onDidChangeTreeData?: vscode.Event<HubsEntry | null> = this._onDidChangeTreeData.event;
 
     constructor(context: IContext) {
         this._context = context;
@@ -259,7 +259,10 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
     async _getVersionDerivatives(versionId: string): Promise<(IDerivative | IHint)[]> {
         try {
             const urn = urnify(versionId);
-            const manifest = await this._context.modelDerivativeClient3L.getManifest(urn);
+            const client = this._context.threeLeggedToken
+                ? this._context.modelDerivativeClient3L
+                : this._context.modelDerivativeClient2L
+            const manifest = await client.getManifest(urn);
             if (manifest.status !== 'success') {
                 throw new Error('Unexpected manifest status: ' + manifest.status);
             }
