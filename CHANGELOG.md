@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Changed
   - JSON data coming from Model Derivative service is now prettified to enable syntax highlighting, collapsing,
   and other vscode goodies
+- Fixed
+  - Webhook UI can now create/edit webhooks again (kudos to https://github.com/adamenagy)
 
 ## [1.6.1] - 2020-04-02
 
