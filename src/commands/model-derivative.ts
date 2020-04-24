@@ -203,7 +203,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				}
 			}
 		} else {
-			const content = JSON.stringify(tree);
+			const content = JSON.stringify(tree, null, 4);
 			const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		}
@@ -280,7 +280,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				}
 			}
 		} else {
-			const content = JSON.stringify(props);
+			const content = JSON.stringify(props, null, 4);
 			const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		}

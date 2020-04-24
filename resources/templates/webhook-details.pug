@@ -78,7 +78,7 @@ html(lang='en')
               button#cancel.btn.btn-secondary(type='button') Cancel
     include partials/scripts.pug
     if (mode !== 'read')
-      script
+      script.
         const COMMAND = '#{mode}';
       script
         include scripts/webhook-details.js
