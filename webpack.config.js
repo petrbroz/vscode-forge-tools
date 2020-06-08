@@ -16,7 +16,6 @@ const config = {
     devtool: 'source-map',
     externals: {
         'vscode': 'commonjs vscode',
-        'cesium': 'commonjs cesium',
         'adm-zip': 'commonjs adm-zip',
         'pug-filters': 'commonjs pug-filters'
     },

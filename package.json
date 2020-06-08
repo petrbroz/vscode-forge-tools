@@ -31,7 +31,8 @@
 	"activationEvents": [
 		"onView:forgeDataManagementView",
 		"onView:forgeDesignAutomationView",
-		"onView:forgeHubsView"
+		"onView:forgeHubsView",
+		"onView:forgeWebhooksView"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -268,11 +269,6 @@
 			{
 				"command": "forge.downloadDerivativeGltf",
 				"title": "Download Object Derivatives as glTF",
-				"category": "Forge Model Derivative"
-			},
-			{
-				"command": "forge.downloadDerivativeGlb",
-				"title": "Download Object Derivatives as glb/Draco",
 				"category": "Forge Model Derivative"
 			},
 			{
@@ -525,11 +521,6 @@
 					"group": "1_action_md@7"
 				},
 				{
-					"command": "forge.downloadDerivativeGlb",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "1_action_md@8"
-				},
-				{
 					"command": "forge.deleteObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "3_remove@1"
@@ -716,7 +707,6 @@
 		"forge-convert-utils": "^3.4.0",
 		"forge-server-utils": "^8.0.13",
 		"fs-extra": "^8.1.0",
-		"gltf-pipeline": "^2.1.8",
 		"pug": "^2.0.4"
 	}
 }
