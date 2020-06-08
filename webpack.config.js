@@ -16,7 +16,6 @@ const config = {
     devtool: 'source-map',
     externals: {
         'vscode': 'commonjs vscode',
-        'adm-zip': 'commonjs adm-zip',
         'pug-filters': 'commonjs pug-filters'
     },
     resolve: {

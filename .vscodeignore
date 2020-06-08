@@ -8,5 +8,4 @@ tsconfig.json
 tslint.json
 webpack.config.js
 node_modules
-!node_modules/adm-zip
 !node_modules/pug-filters
