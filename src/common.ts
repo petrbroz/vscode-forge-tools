@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as pug from 'pug';
 import {
     AuthenticationClient,
     DataManagementClient,
@@ -35,20 +33,25 @@ export interface IContext {
 }
 
 export class TemplateEngine {
-    private _context: vscode.ExtensionContext;
-    private _cache: Map<string, pug.compileTemplate>;
+    private _cache: Map<string, Function>;
 
-    constructor(context: vscode.ExtensionContext) {
-        this._context = context;
+    constructor() {
         this._cache = new Map();
+        this._cache.set('activity-details', require('../resources/templates/activity-details.pug'));
+        this._cache.set('appbundle-details', require('../resources/templates/appbundle-details.pug'));
+        this._cache.set('bucket-details', require('../resources/templates/bucket-details.pug'));
+        this._cache.set('custom-translation', require('../resources/templates/custom-translation.pug'));
+        this._cache.set('derivative-preview', require('../resources/templates/derivative-preview.pug'));
+        this._cache.set('login-callback', require('../resources/templates/login-callback.pug'));
+        this._cache.set('login-message', require('../resources/templates/login-message.pug'));
+        this._cache.set('login', require('../resources/templates/login.pug'));
+        this._cache.set('object-details', require('../resources/templates/object-details.pug'));
+        this._cache.set('object-thumbnail', require('../resources/templates/object-thumbnail.pug'));
+        this._cache.set('webhook-details', require('../resources/templates/webhook-details.pug'));
+        this._cache.set('workitem', require('../resources/templates/workitem.pug'));
     }
 
     render(templateName: string, data: any): string {
-        if (!this._cache.has(templateName)) {
-            const templateFolderPath = this._context.asAbsolutePath(path.join('resources', 'templates'));
-            const templatePath = path.join(templateFolderPath, templateName + '.pug');
-            this._cache.set(templateName, pug.compileFile(templatePath, { basedir: templateFolderPath }));
-        }
         const func = this._cache.get(templateName);
         if (!func) {
             throw new Error('Unknown template: ' + templateName);
@@ -113,12 +116,29 @@ export async function promptEngine(context: IContext): Promise<string | undefine
     return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
 }
 
-export function showErrorMessage(title: string, err: any) {
-    let msg = title + ': ' + err.message;
-    if (err.response) {
-        msg += ' (' + JSON.stringify(err.response.data) + ')';
+export async function showErrorMessage(title: string, err: any) {
+    let msg = title;
+    let details = null;
+    if (typeof err === 'string') {
+        msg += ': ' + err;
+    } else if (typeof err === 'object') {
+        if (err.message) {
+            msg += ': ' + err.message;
+        }
+        if (err.response) {
+            details = err.response.data;
+        }
     }
-    vscode.window.showErrorMessage(msg);
+
+    if (details) {
+        const answer = await vscode.window.showErrorMessage(msg, 'Details');
+        if (answer === 'Details') {
+            const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(details, null, 4), language: 'json' });
+		    await vscode.window.showTextDocument(doc, { preview: false });
+        }
+    } else {
+        await vscode.window.showErrorMessage(msg);
+    }
 }
 
 export function stringPropertySorter<T>(propName: keyof T) {

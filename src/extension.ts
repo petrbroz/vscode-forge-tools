@@ -83,7 +83,7 @@ async function setupNewEnvironment() {
 				return;
 			}
 			const environments: IEnvironment[] = [{ title, clientId, clientSecret, region }];
-			await vscode.workspace.getConfiguration(undefined, null).update('autodesk.forge.environments', environments);
+			await vscode.workspace.getConfiguration().update('autodesk.forge.environments', environments, true);
 			vscode.commands.executeCommand('workbench.action.reloadWindow');
 		}
 	} catch (err) {
@@ -112,7 +112,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
 		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		templateEngine: new TemplateEngine(_context),
+		templateEngine: new TemplateEngine(),
 		previewSettings: {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || []
 		}
@@ -210,9 +210,6 @@ export function activate(_context: vscode.ExtensionContext) {
 	});
 	vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
 		await mdc.downloadDerivativeGLTF(object, context);
-	});
-	vscode.commands.registerCommand('forge.downloadDerivativeGlb', async (object?: IObject) => {
-		await mdc.downloadDerivativeGLB(object, context);
 	});
 	vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject) => {
 		await mdc.copyObjectUrn(object, context);

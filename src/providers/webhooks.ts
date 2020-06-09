@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { WebhookSystem, WebhookEvent } from 'forge-server-utils';
-import { IContext, stringPropertySorter } from '../common';
+import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 
 export interface IWebhookSystem {
     type: 'system';
@@ -84,7 +84,7 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
                     return result;
                 }).sort(stringPropertySorter('id'));
             } catch(err) {
-                vscode.window.showErrorMessage('Could not list webhooks: ' + JSON.stringify(err));
+                showErrorMessage(`Could not list webhooks`, err);
             }
         }
 

@@ -6,7 +6,7 @@ import {
     urnify
 } from 'forge-server-utils';
 import { IDerivative } from '../interfaces/model-derivative';
-import { IContext, stringPropertySorter } from '../common';
+import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 
 export interface IHint {
     hint: string;
@@ -101,7 +101,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 return buckets.sort(stringPropertySorter('bucketKey'));
             }
         } catch(err) {
-            vscode.window.showErrorMessage('Could not load objects or buckets: ' + JSON.stringify(err));
+            showErrorMessage(`Could not load objects or buckets`, err);
         }
         return [];
     }

@@ -448,7 +448,7 @@ export async function deleteActivityVersion(id: UnqualifiedID, version: number, 
 		});
 		vscode.window.showInformationMessage(`Activity version removed`);
 	} catch(err) {
-		vscode.window.showErrorMessage(`Could not remove activity version: ${JSON.stringify(err.message)}`);
+		showErrorMessage(`Could not remove activity version`, err);
 	}
 }
 
