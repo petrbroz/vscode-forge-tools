@@ -116,12 +116,29 @@ export async function promptEngine(context: IContext): Promise<string | undefine
     return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
 }
 
-export function showErrorMessage(title: string, err: any) {
-    let msg = title + ': ' + err.message;
-    if (err.response) {
-        msg += ' (' + JSON.stringify(err.response.data) + ')';
+export async function showErrorMessage(title: string, err: any) {
+    let msg = title;
+    let details = null;
+    if (typeof err === 'string') {
+        msg += ': ' + err;
+    } else if (typeof err === 'object') {
+        if (err.message) {
+            msg += ': ' + err.message;
+        }
+        if (err.response) {
+            details = err.response.data;
+        }
     }
-    vscode.window.showErrorMessage(msg);
+
+    if (details) {
+        const answer = await vscode.window.showErrorMessage(msg, 'Details');
+        if (answer === 'Details') {
+            const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(details, null, 4), language: 'json' });
+		    await vscode.window.showTextDocument(doc, { preview: false });
+        }
+    } else {
+        await vscode.window.showErrorMessage(msg);
+    }
 }
 
 export function stringPropertySorter<T>(propName: keyof T) {

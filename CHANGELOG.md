@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     - Pug templates are now precompiled during the build process
   - Download of derivatives in glb/Draco format no longer supported
     - The feature has been removed due to the excessive size of the `gltf-pipeline` dependency
+  - Where applicable, error notifications now provide a "Details" button that will display error details in a separate document
 - Fixed
   - When a Forge environment is auto-configured for the first time, it is saved globally, avoiding issues when no workspace is open
 

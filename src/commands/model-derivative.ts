@@ -130,7 +130,7 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			token
 		});
 	} catch (err) {
-		vscode.window.showErrorMessage(`Could not access object: ${JSON.stringify(err.message)}`);
+		showErrorMessage(`Could not access object`, err);
 	}
 }
 
@@ -473,7 +473,7 @@ export async function downloadDerivativesSVF(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		vscode.window.showErrorMessage(`Could not download SVF: ${JSON.stringify(err.message)}`);
+		showErrorMessage(`Could not download SVF`, err);
 	}
 }
 
@@ -520,7 +520,7 @@ export async function downloadDerivativesF2D(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		vscode.window.showErrorMessage(`Could not download F2D: ${JSON.stringify(err.message)}`);
+		showErrorMessage(`Could not download F2D`, err);
 	}
 }
 
@@ -567,7 +567,7 @@ export async function downloadDerivativesOTG(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		vscode.window.showErrorMessage(`Could not download OTG: ${JSON.stringify(err.message)}`);
+		showErrorMessage(`Could not download OTG`, err);
 	}
 }
 
@@ -623,7 +623,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		vscode.window.showErrorMessage(`Could not convert derivatives: ${JSON.stringify(err.message)}`);
+		showErrorMessage(`Could not convert derivatives`, err);
 	}
 }
 

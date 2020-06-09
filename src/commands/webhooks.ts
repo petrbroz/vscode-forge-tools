@@ -51,7 +51,7 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 								callbackUrl: message.webhook.callbackUrl,
 								scope: message.webhook.scope,
 								filter: message.webhook.filter,
-								hookAttribute: message.webhook.hookAttribute
+								hookAttribute: JSON.parse(message.webhook.hookAttribute)
 							});
 							panel.dispose();
 							vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
@@ -59,7 +59,7 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 								successCallback();
 							}
 						} catch (err) {
-							vscode.window.showErrorMessage(`Could not create webhook: ${err})`);
+							showErrorMessage(`Could not create webhook`, err);
 						}
 					});
 					break;
@@ -153,7 +153,7 @@ export async function updateWebhook(webhook: IWebhook, context: IContext, succes
 									successCallback();
 								}
 							} catch (err) {
-								vscode.window.showErrorMessage(`Could not update webhook: ${err})`);
+								showErrorMessage(`Could not update webhook`, err);
 							}
 						});
 						break;

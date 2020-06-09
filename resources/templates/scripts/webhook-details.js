@@ -10,7 +10,7 @@ $('#create').click(function () {
                 [$('#hook-scope-key').val()]: $('#hook-scope').val()
             },
             filter: $('#hook-filter').val(),
-            hookAttribute: JSON.parse($('#hook-attribute').val()),
+            hookAttribute: $('#hook-attribute').val(),
         }
     });
 });
