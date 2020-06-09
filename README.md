@@ -55,15 +55,15 @@ based on the _first_ environment in the list.
 > Note: if you have configured the extension both in the _User_ scope and in the _Workspace_ scope,
 the extension will present the list of environments from the _Workspace_ scope as it has higher precedence.
 
-### Data & Derivatives View
+### Buckets & Derivatives View
 
-The _Data & Derivatives_ view allows you to browse [Forge Data Management](https://forge.autodesk.com/en/docs/data/v2/developers_guide/overview) content, create buckets, upload/download objects, translate objects using [Forge Model Derivative](https://forge.autodesk.com/en/docs/model-derivative/v2) service, and access the resulting derivatives. All derivatives are listed as children of the corresponding object in the tree. If there are no derivatives yet, or if there's been a translation issue, the tree view will provide additional information.
+The _Buckets & Derivatives_ view allows you to browse [Forge Data Management](https://forge.autodesk.com/en/docs/data/v2/developers_guide/overview) OSS (object simple storage) content, create buckets, upload/download files, translate them using [Forge Model Derivative](https://forge.autodesk.com/en/docs/model-derivative/v2) service, and access the resulting derivatives. All derivatives are listed as children of their corresponding objects in the tree. If there are no derivatives yet, or if there's been an issue with the translation, the tree view will provide additional information.
 
 ![Create bucket and upload object](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/create-bucket-upload-file.gif)
 
 ![Translate object and view derivatives](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/translate-and-preview.gif)
 
-For objects that have already been translated using the Model Derivative service, you can use a command (or a context menu item) called `Download Object Derivatives` which will download the SVF file (proprietary format used for viewing 3D content in Forge Viewer) and all its dependencies into a folder you pick,
+For objects that have already been translated using the Model Derivative service, you can use a command (or a context menu item) called `Download Object Derivatives as SVF` which will download the SVF file (proprietary format used for viewing 3D content in Forge Viewer) and all its dependencies into a folder you pick,
 similarly to the functionality provided by https://extract.autodesk.io. All the content will be stored using the following subfolder structure:
 
 ```
@@ -78,9 +78,19 @@ similarly to the functionality provided by https://extract.autodesk.io. All the 
     <files shared by all viewables>
 ```
 
+Additional output formats are also supported, for example, F2D, OTG, or glTF.
+
+### Hubs & Derivatives View
+
+Experimental feature similar to the _Buckets & Derivatives_ view, but using a 3-legged authentication instead, allowing the user to browse their A360 hubs, BIM360 hubs, etc. In order for this view to be available, the user must first log into their Forge application with their Autodesk account. This can be done either by clicking the "Forge Auth" button in the bottom status bar, or by using the `forge.login` command. The extension will spin up a temporary web server on a preconfigured port (8123 by default), providing additional information about the login process, and waiting for a callback from the Autodesk servers.
+
+### Webhooks View
+
+The _Webhooks_ view can be used to browse and configure the [Forge Webhooks](https://forge.autodesk.com/en/docs/webhooks/v1/developers_guide/overview) service.
+
 ### Design Automation View
 
-The _Design Automation_ can be used for browsing [Forge Design Automation](https://forge.autodesk.com/en/docs/design-automation/v2/developers_guide/overview) entities such as app bundles and activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
+The _Design Automation_ can be used for browsing [Forge Design Automation](https://forge.autodesk.com/en/docs/design-automation/v3/developers_guide/overview) entities such as app bundles and activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
 
 ![Design Automation Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/design-automation-preview.gif)
 
@@ -88,9 +98,8 @@ The _Design Automation_ can be used for browsing [Forge Design Automation](https
 
 - clone the repository
 - install and setup dependencies: `yarn install`
-- open the project in vscode and launch the _Run Extension_ task; new vscode window will open
+- open the project in vscode and launch the _Launch Extension_ task; new vscode window will open
 - make sure you have at least one set of Forge credentials configured (see [Getting Started](#getting-started) and [Extension Settings](#extension-settings))
 - click on the Forge icon in the sidebar and start browsing
 
-> When debugging a webview inside vscode, you can open Chrome Dev Tools for it
-> using the standard shortcut (`Option`+`Command`+`I` on macOS, `Control`+`Shift`+`I` on Windows)
+> When debugging a webview inside vscode, use the `Developer: Open Webview Developer Tools` and the `Developer: Reload Window` commands.
