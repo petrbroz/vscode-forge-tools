@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.0.0] - 2020-06-09
+
 - Changed
   - The extension is now bundled with webpack, improving the installation and load times
     - Pug templates are now precompiled during the build process
