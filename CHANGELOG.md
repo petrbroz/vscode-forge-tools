@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Where applicable, error notifications now provide a "Details" button that will display error details in a separate document
 - Fixed
   - When a Forge environment is auto-configured for the first time, it is saved globally, avoiding issues when no workspace is open
+  - Fixed typo in auto-generated Design Automation activity command lines
 
 ## [1.6.2] - 2020-04-24
 
