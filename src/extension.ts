@@ -83,7 +83,7 @@ async function setupNewEnvironment() {
 				return;
 			}
 			const environments: IEnvironment[] = [{ title, clientId, clientSecret, region }];
-			await vscode.workspace.getConfiguration(undefined, null).update('autodesk.forge.environments', environments);
+			await vscode.workspace.getConfiguration().update('autodesk.forge.environments', environments, true);
 			vscode.commands.executeCommand('workbench.action.reloadWindow');
 		}
 	} catch (err) {
