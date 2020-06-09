@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - The extension is now bundled with webpack, improving the installation and load times
+    - Pug templates are now precompiled during the build process
+  - Download of derivatives in glb/Draco format no longer supported
+    - The feature has been removed due to the excessive size of the `gltf-pipeline` dependency
+- Fixed
+  - When a Forge environment is auto-configured for the first time, it is saved globally, avoiding issues when no workspace is open
+
 ## [1.6.2] - 2020-04-24
 
 - Changed
