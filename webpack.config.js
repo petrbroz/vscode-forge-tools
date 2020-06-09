@@ -15,8 +15,7 @@ const config = {
     },
     devtool: 'source-map',
     externals: {
-        'vscode': 'commonjs vscode',
-        'pug-filters': 'commonjs pug-filters' // Cannot be bundled ("the request of a dependency is an expression")
+        'vscode': 'commonjs vscode'
     },
     resolve: {
         extensions: ['.ts', '.js']
@@ -29,6 +28,15 @@ const config = {
                 use: [
                     {
                         loader: 'ts-loader'
+                    }
+                ]
+            },
+            {
+                test: /\.pug$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'pug-loader'
                     }
                 ]
             }

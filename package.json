@@ -693,6 +693,8 @@
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
 		"@types/vscode": "1.31",
+		"pug": "^3.0.0",
+		"pug-loader": "^2.4.0",
 		"ts-loader": "^7.0.5",
 		"tslint": "^5.12.1",
 		"typescript": "^3.7.2",
@@ -702,11 +704,9 @@
 	},
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
-		"@types/pug": "^2.0.4",
 		"axios": "^0.19.0",
 		"forge-convert-utils": "^3.5.0",
 		"forge-server-utils": "^8.1.0",
-		"fs-extra": "^9.0.0",
-		"pug": "^3.0.0"
+		"fs-extra": "^9.0.0"
 	}
 }
