@@ -264,7 +264,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             const urn = urnify(versionId);
             const client = this._context.threeLeggedToken
                 ? this._context.modelDerivativeClient3L
-                : this._context.modelDerivativeClient2L
+                : this._context.modelDerivativeClient2L;
             const manifest = await client.getManifest(urn);
             if (manifest.status !== 'success') {
                 throw new Error('Unexpected manifest status: ' + manifest.status);
