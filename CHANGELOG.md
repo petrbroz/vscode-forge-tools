@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Hidden/internal folders in the _Hubs & Derivatives_ view are now prefixed with "(hidden)"
+
 ## [2.0.0] - 2020-06-09
 
 - Changed

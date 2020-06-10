@@ -193,6 +193,9 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                     id: folder.id,
                     name: folder.displayName || '<no name>'
                 };
+                if (folder.hidden) {
+                    entry.name = '(hidden) ' + entry.name;
+                }
                 return entry;
             });
         } catch (err) {
