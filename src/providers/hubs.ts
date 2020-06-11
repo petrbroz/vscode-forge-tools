@@ -88,8 +88,8 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         this._context = context;
     }
 
-    refresh(entry?: HubsEntry | null) {
-        this._onDidChangeTreeData.fire(entry);
+    refresh(entry?: HubsEntry) {
+        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(entry: HubsEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

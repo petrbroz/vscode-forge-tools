@@ -23,7 +23,7 @@
 		"extension"
 	],
 	"engines": {
-		"vscode": "^1.31.0"
+		"vscode": "^1.45.0"
 	},
 	"categories": [
 		"Other"
@@ -693,7 +693,7 @@
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"@types/vscode": "1.31",
+		"@types/vscode": "1.45",
 		"pug": "^3.0.0",
 		"pug-loader": "^2.4.0",
 		"ts-loader": "^7.0.5",
