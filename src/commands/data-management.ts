@@ -222,7 +222,10 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 		await vscode.window.showWarningMessage('Objects with no file extension in their name cannot be translated by Model Derivative service.');
 	}
 
-    const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
+    if (!contentType) {
+		contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	}
     if (!contentType) {
 		return;
 	}
@@ -320,7 +323,10 @@ export async function createEmptyObject(bucket: IBucket | undefined, context: IC
     if (!name) {
 		return;
 	}
-    const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
+	if (!contentType) {
+		contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	}
     if (!contentType) {
 		return;
 	}

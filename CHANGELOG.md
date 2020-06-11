@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Changed
   - Hidden/internal folders in the _Hubs & Derivatives_ view are now prefixed with "(hidden)"
+- Added
+  - New settings option: `autodesk.forge.data.defaultContentType` (default: `application/octet-stream`)
+    - When non-empty, all uploaded files and created objects in OSS will use this setting as their content type
 
 ## [2.0.0] - 2020-06-09
 

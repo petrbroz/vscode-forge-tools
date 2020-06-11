@@ -98,6 +98,12 @@
 					"type": "number",
 					"default": 8123,
 					"description": "Server port to use during 3-legged authentication workflows"
+				},
+				"autodesk.forge.data.defaultContentType": {
+					"scope": "resource",
+					"type": "string",
+					"default": "application/octet-stream",
+					"description": "When defined, all uploaded files and empty objects created in OSS will use this content type."
 				}
 			}
 		},
