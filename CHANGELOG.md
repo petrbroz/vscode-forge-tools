@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Changed
   - Hidden/internal folders in the _Hubs & Derivatives_ view are now prefixed with "(hidden)"
+  - When downloading derivatives in glTF format, the main folder is now named after the OSS object ([#27](https://github.com/petrbroz/vscode-forge-tools/issues/27))
 - Added
   - New settings option: `autodesk.forge.data.defaultContentType` (default: `application/octet-stream`)
     - When non-empty, all uploaded files and created objects in OSS will use this setting as their content type
