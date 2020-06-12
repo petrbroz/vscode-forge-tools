@@ -1275,10 +1275,10 @@ forge-server-utils@^7.0.0:
     form-data "^2.5.1"
     fs-extra "^8.1.0"
 
-forge-server-utils@^8.1.0:
-  version "8.1.1"
-  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-8.1.1.tgz#ae3efd4e8eb3f6187915b27908b6e871dc0271d4"
-  integrity sha512-ytUMYL1+slqXw+NsR5UMZvS3uyiBuM3uqenbZiakLaGVZ7MOKzJ/koHq0+n5R0jxuIQJBf2aLvuXOmzXkEV/AA==
+forge-server-utils@^8.1.2:
+  version "8.1.2"
+  resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-8.1.2.tgz#429f2039a490d23a1ed6e4db57fe118fae2a778f"
+  integrity sha512-dZAlzCw/TjOVjDSx9AQUBSKVCrDIaUl9Uo3GWwGvMgWtJnjXS0vXGR/Lg9TKhv+ilOXHUH65GTdqKTXHZL6Z0g==
   dependencies:
     "@types/adm-zip" "^0.4.32"
     "@types/fs-extra" "^8.0.0"
