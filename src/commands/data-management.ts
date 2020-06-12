@@ -129,10 +129,12 @@ const AllowedMimeTypes = {
 };
 const DeleteBatchSize = 8;
 
-function computeFileHash(filename: string): Promise<string> {
+function computeFileHash(bucketKey: string, objectKey: string, filename: string): Promise<string> {
     return new Promise(function(resolve, reject) {
         const stream = fs.createReadStream(filename);
-        let hash = crypto.createHash('md5');
+		let hash = crypto.createHash('md5');
+		hash.update(bucketKey);
+		hash.update(objectKey);
         stream.on('data', function(chunk) {
             hash.update(chunk);
         });
@@ -205,8 +207,9 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 		// URL-encode the name
 		// TODO: move this to forge-server-utils
 		const encodedName = encodeURIComponent(name) as string;
-	
 		const filepath = uri.fsPath;
+		const hash = await computeFileHash(bucketKey, encodedName, filepath);
+		const stateKey = `upload:${hash}`;
 		let fd = -1;
 		try {
 			fd = fs.openSync(filepath, 'r');
@@ -225,10 +228,14 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 				progress.report({ increment: 0 });
 
 				// Check if any parts of the file have already been uploaded
-				const fileContentHash = await computeFileHash(filepath);
+				let uploadSessionID = context.extensionContext.globalState.get<string>(stateKey);
+				if (!uploadSessionID) {
+					uploadSessionID = crypto.randomBytes(8).toString('hex');
+					context.extensionContext.globalState.update(stateKey, uploadSessionID);
+				}
 				let ranges: IResumableUploadRange[];
 				try {
-					ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, encodedName, fileContentHash);
+					ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, encodedName, uploadSessionID);
 				} catch (err) {
 					ranges = [];
 				}
@@ -244,7 +251,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 						}
 						const chunkSize = Math.min(range.start - lastByte, chunkBytes);
 						fs.readSync(fd, buff, 0, chunkSize, lastByte);
-						await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+						await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
 						progress.report({ increment: 100 * chunkSize / totalBytes });
 						lastByte += chunkSize;
 					}
@@ -259,16 +266,18 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 					}
 					const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
 					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
+					await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
 					progress.report({ increment: 100 * chunkSize / totalBytes });
 					lastByte += chunkSize;
 				}
 			});
-	
+
 			if (cancelled) {
 				vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
 			} else {
 				vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
+				// Clear the resumable upload session info
+				context.extensionContext.globalState.update(stateKey, null);
 			}
 		} catch (err) {
 			showErrorMessage('Could not upload file', err);
