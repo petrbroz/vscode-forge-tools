@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.0.1] - 2020-06-12
+
 - Changed
   - Hidden/internal folders in the _Hubs & Derivatives_ view are now prefixed with "(hidden)"
   - When downloading derivatives in glTF format, the main folder is now named after the OSS object ([#27](https://github.com/petrbroz/vscode-forge-tools/issues/27))
