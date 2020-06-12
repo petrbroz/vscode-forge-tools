@@ -199,6 +199,8 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 }
 
 export async function uploadObject(bucket: IBucket | undefined, context: IContext) {
+	const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
+
 	async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
 		// URL-encode the name
 		// TODO: move this to forge-server-utils
@@ -209,7 +211,6 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 		try {
 			fd = fs.openSync(filepath, 'r');
 			const totalBytes = fs.statSync(filepath).size;
-			const chunkBytes = 2 << 20; // TODO: make the page size configurable
 			const buff = Buffer.alloc(chunkBytes);
 			let lastByte = 0;
 			let cancelled = false;

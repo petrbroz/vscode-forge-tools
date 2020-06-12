@@ -104,6 +104,12 @@
 					"type": "string",
 					"default": "application/octet-stream",
 					"description": "When defined, all uploaded files and empty objects created in OSS will use this content type."
+				},
+				"autodesk.forge.data.uploadChunkSize": {
+					"scope": "resource",
+					"type": "number",
+					"default": 2097152,
+					"description": "Size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality."
 				}
 			}
 		},

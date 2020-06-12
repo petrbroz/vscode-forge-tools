@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - New settings option: `autodesk.forge.data.defaultContentType` (default: `application/octet-stream`)
     - When non-empty, all uploaded files and created objects in OSS will use this setting as their content type
   - Support for uploading multiple files to OSS at once ([#24](https://github.com/petrbroz/vscode-forge-tools/issues/24))
+  - Size of file chunks for the resumable upload to OSS can now be configured
 
 ## [2.0.0] - 2020-06-09
 
