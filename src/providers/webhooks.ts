@@ -46,8 +46,8 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
         this._context = context;
     }
 
-    refresh(entry?: WebhookEntry | null) {
-        this._onDidChangeTreeData.fire(entry);
+    refresh(entry?: WebhookEntry) {
+        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(entry: WebhookEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

@@ -88,8 +88,8 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         this._context = context;
     }
 
-    refresh(entry?: HubsEntry | null) {
-        this._onDidChangeTreeData.fire(entry);
+    refresh(entry?: HubsEntry) {
+        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(entry: HubsEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -193,6 +193,9 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                     id: folder.id,
                     name: folder.displayName || '<no name>'
                 };
+                if (folder.hidden) {
+                    entry.name = '(hidden) ' + entry.name;
+                }
                 return entry;
             });
         } catch (err) {
@@ -261,7 +264,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             const urn = urnify(versionId);
             const client = this._context.threeLeggedToken
                 ? this._context.modelDerivativeClient3L
-                : this._context.modelDerivativeClient2L
+                : this._context.modelDerivativeClient2L;
             const manifest = await client.getManifest(urn);
             if (manifest.status !== 'success') {
                 throw new Error('Unexpected manifest status: ' + manifest.status);

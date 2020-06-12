@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.0.1] - 2020-06-12
+
+- Changed
+  - Hidden/internal folders in the _Hubs & Derivatives_ view are now prefixed with "(hidden)"
+  - When downloading derivatives in glTF format, the main folder is now named after the OSS object ([#27](https://github.com/petrbroz/vscode-forge-tools/issues/27))
+- Added
+  - New settings option: `autodesk.forge.data.defaultContentType` (default: `application/octet-stream`)
+    - When non-empty, all uploaded files and created objects in OSS will use this setting as their content type
+  - Support for uploading multiple files to OSS at once ([#24](https://github.com/petrbroz/vscode-forge-tools/issues/24))
+  - Size of file chunks for the resumable upload to OSS can now be configured
+- Fixed
+  - Reuploading the same file to OSS after it was deleted now works properly
+    - This workflow was broken due to the resumable upload feature
+
 ## [2.0.0] - 2020-06-09
 
 - Changed

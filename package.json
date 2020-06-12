@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -23,7 +23,7 @@
 		"extension"
 	],
 	"engines": {
-		"vscode": "^1.31.0"
+		"vscode": "^1.45.0"
 	},
 	"categories": [
 		"Other"
@@ -98,6 +98,18 @@
 					"type": "number",
 					"default": 8123,
 					"description": "Server port to use during 3-legged authentication workflows"
+				},
+				"autodesk.forge.data.defaultContentType": {
+					"scope": "resource",
+					"type": "string",
+					"default": "application/octet-stream",
+					"description": "When defined, all uploaded files and empty objects created in OSS will use this content type."
+				},
+				"autodesk.forge.data.uploadChunkSize": {
+					"scope": "resource",
+					"type": "number",
+					"default": 2097152,
+					"description": "Size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality."
 				}
 			}
 		},
@@ -687,12 +699,13 @@
 		"vscode:prepublish": "webpack --mode production",
 		"webpack": "webpack --mode development",
 		"webpack-dev": "webpack --mode development --watch",
-		"test-compile": "tsc -p ./"
+		"test-compile": "tsc -p ./",
+		"lint": "tslint --project ."
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"@types/vscode": "1.31",
+		"@types/vscode": "1.45",
 		"pug": "^3.0.0",
 		"pug-loader": "^2.4.0",
 		"ts-loader": "^7.0.5",

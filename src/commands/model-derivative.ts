@@ -589,18 +589,20 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 			return;
 		}
 
+		const { objectKey } = object;
 		const baseDir = outputFolderUri[0].fsPath;
 		const urn = urnify(object.objectId);
 		let cancelled = false;
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Downloading glTF: ${object.objectKey}`,
+			title: `Downloading glTF: ${objectKey}`,
 			cancellable: true
 		}, async (progress, token) => {
 			token.onCancellationRequested(() => {
 				cancelled = true;
 			});
-			const urnDir = path.join(baseDir, urn);
+			// Store all viewables under a folder named after the OSS object key.
+			const urnDir = path.join(baseDir, objectKey.replace(/[^a-zA-Z0-9\.]/g, '_').toLowerCase());
 			fse.ensureDirSync(urnDir);
 			progress.report({ message: 'Retrieving manifest' });
 			const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;

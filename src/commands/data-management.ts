@@ -129,10 +129,12 @@ const AllowedMimeTypes = {
 };
 const DeleteBatchSize = 8;
 
-function computeFileHash(filename: string): Promise<string> {
+function computeFileHash(bucketKey: string, objectKey: string, filename: string): Promise<string> {
     return new Promise(function(resolve, reject) {
         const stream = fs.createReadStream(filename);
-        let hash = crypto.createHash('md5');
+		let hash = crypto.createHash('md5');
+		hash.update(bucketKey);
+		hash.update(objectKey);
         stream.on('data', function(chunk) {
             hash.update(chunk);
         });
@@ -199,6 +201,94 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 }
 
 export async function uploadObject(bucket: IBucket | undefined, context: IContext) {
+	const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
+
+	async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
+		// URL-encode the name
+		// TODO: move this to forge-server-utils
+		const encodedName = encodeURIComponent(name) as string;
+		const filepath = uri.fsPath;
+		const hash = await computeFileHash(bucketKey, encodedName, filepath);
+		const stateKey = `upload:${hash}`;
+		let fd = -1;
+		try {
+			fd = fs.openSync(filepath, 'r');
+			const totalBytes = fs.statSync(filepath).size;
+			const buff = Buffer.alloc(chunkBytes);
+			let lastByte = 0;
+			let cancelled = false;
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Uploading file: ${filepath}`,
+				cancellable: true
+			}, async (progress, token) => {
+				token.onCancellationRequested(() => {
+					cancelled = true;
+				});
+				progress.report({ increment: 0 });
+
+				// Check if any parts of the file have already been uploaded
+				let uploadSessionID = context.extensionContext.globalState.get<string>(stateKey);
+				if (!uploadSessionID) {
+					uploadSessionID = crypto.randomBytes(8).toString('hex');
+					context.extensionContext.globalState.update(stateKey, uploadSessionID);
+				}
+				let ranges: IResumableUploadRange[];
+				try {
+					ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, encodedName, uploadSessionID);
+				} catch (err) {
+					ranges = [];
+				}
+
+				// Upload potential missing data before each successfully uploaded range
+				for (const range of ranges) {
+					if (cancelled) {
+						return;
+					}
+					while (lastByte < range.start) {
+						if (cancelled) {
+							return;
+						}
+						const chunkSize = Math.min(range.start - lastByte, chunkBytes);
+						fs.readSync(fd, buff, 0, chunkSize, lastByte);
+						await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
+						progress.report({ increment: 100 * chunkSize / totalBytes });
+						lastByte += chunkSize;
+					}
+					progress.report({ increment: 100 * (range.end + 1 - lastByte) / totalBytes });
+					lastByte = range.end + 1;
+				}
+	
+				// Upload potential missing data after the last successfully uploaded range
+				while (lastByte < totalBytes - 1) {
+					if (cancelled) {
+						return;
+					}
+					const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
+					fs.readSync(fd, buff, 0, chunkSize, lastByte);
+					await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
+					progress.report({ increment: 100 * chunkSize / totalBytes });
+					lastByte += chunkSize;
+				}
+			});
+
+			if (cancelled) {
+				vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
+			} else {
+				vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
+				// Clear the resumable upload session info
+				context.extensionContext.globalState.update(stateKey, null);
+			}
+		} catch (err) {
+			showErrorMessage('Could not upload file', err);
+		} finally {
+			if (fd !== -1) {
+				fs.closeSync(fd);
+				fd = -1;
+			}
+		}
+	}
+
 	if (!bucket) {
 		bucket = await promptBucket(context);
 		if (!bucket) {
@@ -209,100 +299,33 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 	const { bucketKey } = bucket;
 
 	// Collect inputs
-    const uri = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false });
-	if (!uri) {
-		return;
-	}
-    const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uri[0].fsPath) });
-    if (!name) {
-		return;
-	}
-	// Warn users against uploading files without extension (which is needed by Model Derivative service)
-	if (!path.extname(name)) {
-		await vscode.window.showWarningMessage('Objects with no file extension in their name cannot be translated by Model Derivative service.');
-	}
-
-    const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
-    if (!contentType) {
+    const uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: true });
+	if (!uris) {
 		return;
 	}
 
-	// URL-encode the name
-	// TODO: move this to forge-server-utils
-	const encodedName = encodeURIComponent(name) as string;
-
-	const filepath = uri[0].fsPath;
-	let fd = -1;
-    try {
-		fd = fs.openSync(filepath, 'r');
-		const totalBytes = fs.statSync(filepath).size;
-		const chunkBytes = 2 << 20; // TODO: make the page size configurable
-		const buff = Buffer.alloc(chunkBytes);
-		let lastByte = 0;
-		let cancelled = false;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Uploading file: ${filepath}`,
-			cancellable: true
-		}, async (progress, token) => {
-			token.onCancellationRequested(() => {
-				cancelled = true;
-			});
-			progress.report({ increment: 0 });
-
-			// Check if any parts of the file have already been uploaded
-			const fileContentHash = await computeFileHash(filepath);
-			let ranges: IResumableUploadRange[];
-			try {
-				ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, encodedName, fileContentHash);
-			} catch(err) {
-				ranges = [];
-			}
-
-			// Upload potential missing data before each successfully uploaded range
-			for (const range of ranges) {
-				if (cancelled) {
-					return;
-				}
-				while (lastByte < range.start) {
-					if (cancelled) {
-						return;
-					}
-					const chunkSize = Math.min(range.start - lastByte, chunkBytes);
-					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
-					progress.report({ increment: 100 * chunkSize / totalBytes });
-					lastByte += chunkSize;
-				}
-				progress.report({ increment: 100 * (range.end + 1 - lastByte) / totalBytes });
-				lastByte = range.end + 1;
-			}
-
-			// Upload potential missing data after the last successfully uploaded range
-			while (lastByte < totalBytes - 1) {
-				if (cancelled) {
-					return;
-				}
-				const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
-				fs.readSync(fd, buff, 0, chunkSize, lastByte);
-				await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, fileContentHash, contentType);
-				progress.report({ increment: 100 * chunkSize / totalBytes });
-				lastByte += chunkSize;
-			}
-		});
-
-		if (cancelled) {
-			vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
-		} else {
-			vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
+	if (uris.length === 1) {
+		const name = await vscode.window.showInputBox({ prompt: 'Enter object name', value: path.basename(uris[0].fsPath) });
+		if (!name) {
+			return;
 		}
-    } catch(err) {
-		showErrorMessage('Could not upload file', err);
-	} finally {
-		if (fd !== -1) {
-			fs.closeSync(fd);
-			fd = -1;
+		// Warn users against uploading files without extension (which is needed by Model Derivative service)
+		if (!path.extname(name)) {
+			await vscode.window.showWarningMessage('Objects with no file extension in their name cannot be translated by Model Derivative service.');
 		}
+		// Pick the content type for the uploaded file
+		let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
+		if (!contentType) {
+			contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+		}
+		if (!contentType) {
+			return;
+		}
+
+		await _upload(name, uris[0], context, bucketKey, contentType);
+	} else {
+		const uploads = uris.map(uri => _upload(path.basename(uri.fsPath), uri, context, bucketKey));
+		await Promise.all(uploads);
 	}
 }
 
@@ -320,7 +343,10 @@ export async function createEmptyObject(bucket: IBucket | undefined, context: IC
     if (!name) {
 		return;
 	}
-    const contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
+	if (!contentType) {
+		contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+	}
     if (!contentType) {
 		return;
 	}

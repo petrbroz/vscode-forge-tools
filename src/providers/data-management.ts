@@ -41,8 +41,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         this._context = context;
     }
 
-    refresh(entry?: SimpleStorageEntry | null) {
-        this._onDidChangeTreeData.fire(entry);
+    refresh(entry?: SimpleStorageEntry) {
+        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(element: SimpleStorageEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
