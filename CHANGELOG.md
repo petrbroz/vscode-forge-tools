@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - When a Forge API call fails, the `Show Details` option in the error popup now shows full HTTP response
+  - Updated 3rd party dependencies to clear audit warnings
+
 ## [2.0.2] - 2020-08-12
 
 - Changed
