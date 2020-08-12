@@ -118,22 +118,25 @@ export async function promptEngine(context: IContext): Promise<string | undefine
 
 export async function showErrorMessage(title: string, err: any) {
     let msg = title;
-    let details = null;
     if (typeof err === 'string') {
         msg += ': ' + err;
     } else if (typeof err === 'object') {
         if (err.message) {
             msg += ': ' + err.message;
         }
-        if (err.response) {
-            details = err.response.data;
-        }
     }
 
-    if (details) {
-        const answer = await vscode.window.showErrorMessage(msg, 'Details');
-        if (answer === 'Details') {
-            const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(details, null, 4), language: 'json' });
+    if (err.response) {
+        const answer = await vscode.window.showErrorMessage(msg, 'Show Details');
+        if (answer === 'Show Details') {
+            const raw = {
+                config: err.response.config,
+                data: err.response.data,
+                headers: err.response.headers,
+                status: err.response.status,
+                statusText: err.response.statusText
+            };
+            const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(raw, null, 4), language: 'json' });
 		    await vscode.window.showTextDocument(doc, { preview: false });
         }
     } else {
