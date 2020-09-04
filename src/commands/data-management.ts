@@ -275,9 +275,16 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 			if (cancelled) {
 				vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
 			} else {
-				vscode.window.showInformationMessage(`Upload complete: ${filepath}`);
 				// Clear the resumable upload session info
 				context.extensionContext.globalState.update(stateKey, null);
+				const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
+				if (res === 'Translate') {
+					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, encodedName);
+					vscode.commands.executeCommand('forge.translateObject', obj);
+				} else if (res === 'Translate (Custom)') {
+					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, encodedName);
+					vscode.commands.executeCommand('forge.translateObjectCustom', obj);
+				}
 			}
 		} catch (err) {
 			showErrorMessage('Could not upload file', err);
