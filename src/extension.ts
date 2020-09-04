@@ -21,7 +21,7 @@ import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
-import { login } from './commands/authentication';
+import { login, getAccessToken } from './commands/authentication';
 import { HubsDataProvider } from './providers/hubs';
 
 const DefaultAuthPort = 8123;
@@ -406,7 +406,11 @@ export function activate(_context: vscode.ExtensionContext) {
 		await viewWebhookDetails(webhook, context);
 	});
 
-	// Setup rest
+	// Setup the rest	
+	vscode.commands.registerCommand('forge.getAccessToken', async () => {
+		await getAccessToken(context);
+	});
+
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'Forge Env: ' + env.title;
 		statusBarItem.command = 'forge.switchEnvironment';

@@ -416,6 +416,11 @@
 				"command": "forge.logout",
 				"title": "Logout",
 				"category": "Forge Authentication"
+			},
+			{
+				"command": "forge.getAccessToken",
+				"title": "Generate Access Token",
+				"category": "Forge Authentication"
 			}
 		],
 		"menus": {

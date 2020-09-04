@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Updated 3rd party dependencies to clear audit warnings
 - Added
   - When an object is uploaded to OSS, user can immediately start its translation from the notification popup
+  - New command (`Forge Authentication: Generate Access Token`) to generate a 2-legged token for a specific set of scopes
 
 ## [2.0.2] - 2020-08-12
 
