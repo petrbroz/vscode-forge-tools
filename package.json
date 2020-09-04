@@ -225,7 +225,7 @@
 			},
 			{
 				"command": "forge.translateObjectCustom",
-				"title": "Translate Object (Advanced)",
+				"title": "Translate Object (Custom)",
 				"category": "Forge Model Derivative"
 			},
 			{
