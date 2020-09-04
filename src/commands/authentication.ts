@@ -1,7 +1,9 @@
 import * as http from 'http';
 import * as url from 'url';
 import * as vscode from 'vscode';
-import { IContext } from '../common';
+import { IContext, showErrorMessage } from '../common';
+
+const DefaultScopes = ['viewables:read', 'bucket:read', 'bucket:create', 'data:read', 'data:create', 'data:write', 'code:all']; // Make this list configurable?
 
 export async function login(clientId: string, port: number, context: IContext): Promise<Map<string, string>> {
     const timeout = 2 * 60 * 1000; // Wait for 2 minutes
@@ -43,4 +45,20 @@ export async function login(clientId: string, port: number, context: IContext): 
             reject('Session timed out.');
         }, timeout);
     });
+}
+
+export async function getAccessToken(context: IContext) {
+    const scopes = await vscode.window.showInputBox({ prompt: 'Enter the scopes for your token', value: DefaultScopes.join(' ') });
+    if (!scopes) {
+        return;
+    }
+    try {
+        const credentials = await context.authenticationClient.authenticate(scopes?.split(' ') || []);
+        const action = await vscode.window.showInformationMessage(`Access token generated (expires in: ${credentials.expires_in} seconds)`, 'Copy Token to Clipboard');
+        if (action === 'Copy Token to Clipboard') {
+            await vscode.env.clipboard.writeText(credentials.access_token);
+        }
+    } catch (err) {
+        showErrorMessage('Could not generate access token', err);
+    }
 }

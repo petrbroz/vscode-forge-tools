@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.0.2",
+	"version": "2.1.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -225,7 +225,7 @@
 			},
 			{
 				"command": "forge.translateObjectCustom",
-				"title": "Translate Object (Advanced)",
+				"title": "Translate Object (Custom)",
 				"category": "Forge Model Derivative"
 			},
 			{
@@ -415,6 +415,11 @@
 			{
 				"command": "forge.logout",
 				"title": "Logout",
+				"category": "Forge Authentication"
+			},
+			{
+				"command": "forge.getAccessToken",
+				"title": "Generate Access Token",
 				"category": "Forge Authentication"
 			}
 		],
