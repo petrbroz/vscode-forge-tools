@@ -204,11 +204,8 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 	const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
 
 	async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
-		// URL-encode the name
-		// TODO: move this to forge-server-utils
-		const encodedName = encodeURIComponent(name) as string;
 		const filepath = uri.fsPath;
-		const hash = await computeFileHash(bucketKey, encodedName, filepath);
+		const hash = await computeFileHash(bucketKey, name, filepath);
 		const stateKey = `upload:${hash}`;
 		let fd = -1;
 		try {
@@ -235,7 +232,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 				}
 				let ranges: IResumableUploadRange[];
 				try {
-					ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, encodedName, uploadSessionID);
+					ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, name, uploadSessionID);
 				} catch (err) {
 					ranges = [];
 				}
@@ -251,7 +248,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 						}
 						const chunkSize = Math.min(range.start - lastByte, chunkBytes);
 						fs.readSync(fd, buff, 0, chunkSize, lastByte);
-						await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
+						await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
 						progress.report({ increment: 100 * chunkSize / totalBytes });
 						lastByte += chunkSize;
 					}
@@ -266,7 +263,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 					}
 					const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
 					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await context.dataManagementClient.uploadObjectResumable(bucketKey, encodedName, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
+					await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
 					progress.report({ increment: 100 * chunkSize / totalBytes });
 					lastByte += chunkSize;
 				}
@@ -279,10 +276,10 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 				context.extensionContext.globalState.update(stateKey, null);
 				const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
 				if (res === 'Translate') {
-					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, encodedName);
+					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
 					vscode.commands.executeCommand('forge.translateObject', obj);
 				} else if (res === 'Translate (Custom)') {
-					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, encodedName);
+					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
 					vscode.commands.executeCommand('forge.translateObjectCustom', obj);
 				}
 			}
