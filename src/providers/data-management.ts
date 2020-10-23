@@ -107,7 +107,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
     }
 
     private _getManifestDerivatives(manifest: any, urn: string): IDerivative[] {
-        const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+        const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf' || deriv.outputType === 'svf2');
         if (!svf) {
             return [];
         }
@@ -117,6 +117,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                 name: geometry.name,
                 role: geometry.role,
                 guid: geometry.guid,
+                format: svf.outputType || 'svf',
                 bubble: geometry
             };
         });
