@@ -129,7 +129,9 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 		);
 		panel.webview.html = context.templateEngine.render('derivative-preview', {
 			viewer: {
-				config: JSON.stringify({ extensions: context.previewSettings.extensions })
+				config: JSON.stringify({ extensions: context.previewSettings.extensions }),
+				env: context.previewSettings.env || (derivative.format === 'svf2' ? 'MD20ProdUS' : 'AutodeskProduction'),
+				api: context.previewSettings.api || (derivative.format === 'svf2' ? 'D3S' : 'derivativeV2')
 			},
 			urn: derivative.urn,
 			guid: derivative.guid,

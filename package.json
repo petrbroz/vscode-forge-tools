@@ -88,10 +88,20 @@
 				"autodesk.forge.viewer.extensions": {
 					"scope": "resource",
 					"type": "array",
-					"description": "Viewer extensions to be used when previewing derivatives",
+					"description": "Viewer extensions to be used when previewing derivatives.",
 					"items": {
 						"type": "string"
 					}
+				},
+				"autodesk.forge.viewer.env": {
+					"scope": "resource",
+					"type": "string",
+					"description": "Custom Model Derivative environment used by the Forge Viewer. By default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)."
+				},
+				"autodesk.forge.viewer.api": {
+					"scope": "resource",
+					"type": "string",
+					"description": "Custom Model Derivative API used by the Forge Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
 				},
 				"autodesk.forge.authentication.port": {
 					"scope": "resource",
