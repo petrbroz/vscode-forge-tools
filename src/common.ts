@@ -15,6 +15,8 @@ import { IAuthOptions } from 'forge-server-utils/dist/common';
 
 export interface IPreviewSettings {
     extensions: string[];
+    env?: string;
+    api?: string;
 }
 
 export interface IContext {

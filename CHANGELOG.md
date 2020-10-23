@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.2.0] - 2020-10-23
+
+- Added
+  - Support for [SVF2](https://forge.autodesk.com/blog/svf2-public-beta-new-optimized-viewer-format)
+    - The `Translate Object (Custom)` command now supports choosing SVF or SVF2 as the output format
+    - The `Preview Derivative` command now configures the viewer's `env` and `api` based on whether the derivative is an SVF or an SVF2
+    - The viewer's `env` and `api` properties can be overridden using new configuration properties: `autodesk.forge.viewer.env` and `autodesk.forge.viewer.api`
+- Fixed
+  - Removed double url-encoding of uploaded objects' names (now handled by the Forge SDK library)
+
 ## [2.1.0] - 2020-09-04
 
 - Changed

@@ -3,5 +3,6 @@ export interface IDerivative {
     name: string;
     role: string;
     guid: string;
+    format: string;
     bubble: any;
 }

@@ -71,9 +71,16 @@ export async function translateObjectCustom(object: IObject | undefined, context
 			async (message) => {
 				switch (message.command) {
 					case 'start':
-						const { compressedRootDesign, switchLoader, generateMasterViews } = message.parameters;
+						const { compressedRootDesign, switchLoader, generateMasterViews, outputFormat } = message.parameters;
 						// TODO: support additional flags in IDerivativeOutputType
-						const outputOptions = { type: 'svf', views: ['2d', '3d'], advanced: { switchLoader, generateMasterViews } } as IDerivativeOutputType;
+						const outputOptions = {
+							type: outputFormat,
+							views: ['2d', '3d'],
+							advanced: {
+								switchLoader,
+								generateMasterViews
+							}
+						} as IDerivativeOutputType;
 						// TODO: support custom region
 						await context.modelDerivativeClient2L.submitJob(urn, [outputOptions], compressedRootDesign, true);
 						panel.dispose();
@@ -122,7 +129,9 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 		);
 		panel.webview.html = context.templateEngine.render('derivative-preview', {
 			viewer: {
-				config: JSON.stringify({ extensions: context.previewSettings.extensions })
+				config: JSON.stringify({ extensions: context.previewSettings.extensions }),
+				env: context.previewSettings.env || (derivative.format === 'svf2' ? 'MD20ProdUS' : 'AutodeskProduction'),
+				api: context.previewSettings.api || (derivative.format === 'svf2' ? 'D3S' : 'derivativeV2')
 			},
 			urn: derivative.urn,
 			guid: derivative.guid,

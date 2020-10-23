@@ -6,7 +6,8 @@ $('#start').click(function () {
         parameters: {
             compressedRootDesign: $('#root-filename').val(),
             switchLoader: $('#switch-loader').is(':checked'),
-            generateMasterViews: $('#master-views').is(':checked')
+            generateMasterViews: $('#master-views').is(':checked'),
+            outputFormat: $('#output-format').val()
         }
     });
 });

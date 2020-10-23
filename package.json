@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -88,10 +88,20 @@
 				"autodesk.forge.viewer.extensions": {
 					"scope": "resource",
 					"type": "array",
-					"description": "Viewer extensions to be used when previewing derivatives",
+					"description": "Viewer extensions to be used when previewing derivatives.",
 					"items": {
 						"type": "string"
 					}
+				},
+				"autodesk.forge.viewer.env": {
+					"scope": "resource",
+					"type": "string",
+					"description": "Custom Model Derivative environment used by the Forge Viewer. By default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)."
+				},
+				"autodesk.forge.viewer.api": {
+					"scope": "resource",
+					"type": "string",
+					"description": "Custom Model Derivative API used by the Forge Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
 				},
 				"autodesk.forge.authentication.port": {
 					"scope": "resource",
@@ -709,7 +719,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
-		"@types/node": "^10.12.21",
+		"@types/node": "^12.0.0",
 		"@types/vscode": "1.45",
 		"pug": "^3.0.0",
 		"pug-loader": "^2.4.0",

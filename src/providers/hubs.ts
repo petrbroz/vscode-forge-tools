@@ -269,7 +269,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             if (manifest.status !== 'success') {
                 throw new Error('Unexpected manifest status: ' + manifest.status);
             }
-            const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+            const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf' || deriv.outputType === 'svf2');
             if (!svf || !svf.children) {
                 return [];
             } else {
@@ -279,6 +279,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                         name: geometry.name,
                         role: geometry.role,
                         guid: geometry.guid,
+                        format: svf.outputType || 'svf',
                         bubble: geometry
                     };
                 });

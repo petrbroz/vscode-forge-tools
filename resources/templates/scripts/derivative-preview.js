@@ -1,7 +1,8 @@
 const container = document.getElementById('viewer');
 
-const options = {
-    env: 'AutodeskProduction',
+let options = {
+    env: VIEWER_ENV,
+    api: VIEWER_API,
     getAccessToken: function (callback) {
         callback(ACCESS_TOKEN, 3600);
     }

@@ -114,7 +114,9 @@ export function activate(_context: vscode.ExtensionContext) {
 		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		templateEngine: new TemplateEngine(),
 		previewSettings: {
-			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || []
+			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || [],
+			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),
+			api: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.api')
 		}
 	};
 
