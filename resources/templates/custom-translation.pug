@@ -10,6 +10,13 @@ html(lang='en')
         label.col-sm-2.form-label(for='input-urn') URN
         .col-sm-10
           input#input-urn.form-control(type='text', value=urn, readonly)
+      // Output type
+      .form-group.row
+        label.col-sm-2.form-label(for='output-format') Output Format
+        .col-sm-10
+          select#output-format.form-control
+            option(value="svf") SVF
+            option(value="svf2") SVF2
       // Root Filename
       .form-group.row
         label.col-sm-2.form-label(for='root-filename') Root Filename
