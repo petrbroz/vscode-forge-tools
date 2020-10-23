@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.2.0] - 2020-10-23
+
 - Added
   - Support for [SVF2](https://forge.autodesk.com/blog/svf2-public-beta-new-optimized-viewer-format)
     - The `Translate Object (Custom)` command now supports choosing SVF or SVF2 as the output format
