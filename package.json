@@ -719,7 +719,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
-		"@types/node": "^10.12.21",
+		"@types/node": "^12.0.0",
 		"@types/vscode": "1.45",
 		"pug": "^3.0.0",
 		"pug-loader": "^2.4.0",
