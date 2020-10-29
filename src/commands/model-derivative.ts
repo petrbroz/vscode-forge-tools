@@ -71,7 +71,14 @@ export async function translateObjectCustom(object: IObject | undefined, context
 			async (message) => {
 				switch (message.command) {
 					case 'start':
-						const { compressedRootDesign, switchLoader, generateMasterViews, outputFormat } = message.parameters;
+						const {
+							compressedRootDesign,
+							switchLoader,
+							generateMasterViews,
+							outputFormat,
+							workflowId,
+							workflowAttributes
+						} = message.parameters;
 						// TODO: support additional flags in IDerivativeOutputType
 						const outputOptions = {
 							type: outputFormat,
@@ -82,7 +89,14 @@ export async function translateObjectCustom(object: IObject | undefined, context
 							}
 						} as IDerivativeOutputType;
 						// TODO: support custom region
-						await context.modelDerivativeClient2L.submitJob(urn, [outputOptions], compressedRootDesign, true);
+						await context.modelDerivativeClient2L.submitJob(
+							urn,
+							[outputOptions],
+							compressedRootDesign,
+							true,
+							workflowId,
+							workflowAttributes ? JSON.parse(workflowAttributes) : {}
+						);
 						panel.dispose();
 						vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						if (onStart) {

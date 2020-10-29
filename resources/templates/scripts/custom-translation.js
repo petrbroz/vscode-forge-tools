@@ -7,7 +7,9 @@ $('#start').click(function () {
             compressedRootDesign: $('#root-filename').val(),
             switchLoader: $('#switch-loader').is(':checked'),
             generateMasterViews: $('#master-views').is(':checked'),
-            outputFormat: $('#output-format').val()
+            outputFormat: $('#output-format').val(),
+            workflowId: $('#workflow-id').val(),
+            workflowAttributes: $('#workflow-attr').val()
         }
     });
 });
