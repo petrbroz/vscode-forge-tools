@@ -51,7 +51,7 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 								callbackUrl: message.webhook.callbackUrl,
 								scope: message.webhook.scope,
 								filter: message.webhook.filter,
-								hookAttribute: JSON.parse(message.webhook.hookAttribute)
+								hookAttribute: message.webhook.hookAttribute ? JSON.parse(message.webhook.hookAttribute) : null
 							});
 							panel.dispose();
 							vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
@@ -145,7 +145,7 @@ export async function updateWebhook(webhook: IWebhook, context: IContext, succes
 								await context.webhookClient.updateHook(webhook.system, webhook.event, webhook.id, {
 									status: message.webhook.status,
 									filter: message.webhook.filter,
-									hookAttribute: message.webhook.hookAttribute
+									hookAttribute: message.webhook.hookAttribute ? JSON.parse(message.webhook.hookAttribute) : null
 								});
 								panel.dispose();
 								vscode.window.showInformationMessage(`Webhook updated: ${id}`);
