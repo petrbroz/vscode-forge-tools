@@ -25,11 +25,11 @@ html(lang='en')
       // Workflow ID and attributes
       .form-group.row
         label.col-2.form-label(for='workflow-id') Workflow ID
-        .col-4
+        .col-2
           input#workflow-id.form-control(type='text', value='', placeholder='')
-        label.col-2.form-label(for='workflow-attr') Workflow Attributes
-        .col-4
-          input#workflow-attr.form-control(type='text', value='{}', placeholder='')
+        label.col-3.form-label(for='workflow-attr') Workflow Attributes (JSON)
+        .col-5
+          input#workflow-attr.form-control(type='text', value='{}', placeholder='Enter a valid JSON')
       // Other options
       .form-group.row
         // Switch Loader
