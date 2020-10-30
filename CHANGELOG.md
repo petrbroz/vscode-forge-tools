@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Support for workflow IDs and attributes (used by Forge Webhooks) in the `Translate Object (Custom)` command.
 - Fixed
   - Issue with creating a webhook with no attribute data.
+  - Unhandled exception when trying to translate an object which has its derivatives available in another region
+    - Note that cross-region derivatives are not supported by the extension (see https://github.com/petrbroz/vscode-forge-tools#derivatives-in-custom-regions-and-status-code-406 for more info)
 
 ## [2.2.0] - 2020-10-23
 
