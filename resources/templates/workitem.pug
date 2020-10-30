@@ -18,7 +18,7 @@ html(lang='en')
               thead
                 tr
                   th(scope='col') Name
-                  th(scope='col') URL
+                  th(scope='col') Value
                   th(scope='col') Verb
                   th.small(scope='col') Optional
                   th(scope='col') Local Name
@@ -37,6 +37,7 @@ html(lang='en')
                         option(value='put', selected=(activity.parameters[param].verb === 'put')) Put
                         option(value='post', selected=(activity.parameters[param].verb === 'post')) Post
                         option(value='patch', selected=(activity.parameters[param].verb === 'patch')) Patch
+                        option(value='read', selected=(activity.parameters[param].verb === 'read')) Read
                     td
                       input.form-control(type='checkbox', name='param-optional')
                     td

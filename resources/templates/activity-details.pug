@@ -98,6 +98,7 @@ html(lang='en')
                         option(value='put', selected=(parameters[param].verb === 'put')) Put
                         option(value='post', selected=(parameters[param].verb === 'post')) Post
                         option(value='patch', selected=(parameters[param].verb === 'patch')) Patch
+                        option(value='read', selected=(parameters[param].verb === 'read')) Read
                     td
                       input.form-control(type='text', name='param-desc', value=parameters[param].description, placeholder='Description')
                     td
