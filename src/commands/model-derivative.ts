@@ -88,17 +88,24 @@ export async function translateObjectCustom(object: IObject | undefined, context
 								generateMasterViews
 							}
 						} as IDerivativeOutputType;
-						// TODO: support custom region
-						await context.modelDerivativeClient2L.submitJob(
-							urn,
-							[outputOptions],
-							compressedRootDesign,
-							true,
-							workflowId,
-							workflowAttributes ? JSON.parse(workflowAttributes) : {}
-						);
+						try {
+							await context.modelDerivativeClient2L.submitJob(
+								urn,
+								[outputOptions],
+								compressedRootDesign,
+								true,
+								workflowId,
+								workflowAttributes ? JSON.parse(workflowAttributes) : {}
+							);
+							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+						} catch (err) {
+							if (err.response && err.response.statusCode === 406) {
+								showErrorMessage('Could not translate object, likely because its derivatives exist in a different region. Please, delete the derivatives manually before translating the object again.', null);
+							} else {
+								showErrorMessage('Could not translate object', err);
+							}
+						}
 						panel.dispose();
-						vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						if (onStart) {
 							onStart();
 						}
