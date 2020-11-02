@@ -94,6 +94,17 @@ The _Design Automation_ can be used for browsing [Forge Design Automation](https
 
 ![Design Automation Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/design-automation-preview.gif)
 
+## Known Limitations & Issues
+
+### Derivatives in Custom Regions, and Status Code 406
+
+The Model Derivative APIs support outputting the derivatives in a region of your choice.
+In our code we always assume that the derivatives are stored in the same region as the input object.
+Note that this can cause issues, for example, when you use the `Translate Object` or `Translate Object (Custom)`
+command on an object for which the derivatives are already available in another region. In that case you will get
+an error with status code 406, and you will need to delete the derivatives manually
+(using the `Delete Derivatives` command) before being able to translate the object again.
+
 ## Development
 
 - clone the repository

@@ -22,6 +22,15 @@ html(lang='en')
         label.col-sm-2.form-label(for='root-filename') Root Filename
         .col-sm-10
           input#root-filename.form-control(type='text', value='', placeholder='Name of the root design file if the URN is a compressed archive')
+      // Workflow ID and attributes
+      .form-group.row
+        label.col-2.form-label(for='workflow-id') Workflow ID
+        .col-2
+          input#workflow-id.form-control(type='text', value='', placeholder='')
+        label.col-3.form-label(for='workflow-attr') Workflow Attributes (JSON)
+        .col-5
+          input#workflow-attr.form-control(type='text', value='{}', placeholder='Enter a valid JSON')
+      // Other options
       .form-group.row
         // Switch Loader
         .form-check.col-2.ml-3
