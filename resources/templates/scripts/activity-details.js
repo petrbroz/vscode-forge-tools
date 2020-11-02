@@ -112,6 +112,7 @@ $("button[name='add-parameter']").click(function () {
                     <option value="put">Put</option>
                     <option value="post">Post</option>
                     <option value="patch">Patch</option>
+                    <option value="read">Read</option>
                 </select>
             </td>
             <td>
