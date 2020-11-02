@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Support for workflow IDs and attributes (used by Forge Webhooks) in the `Translate Object (Custom)` command.
+  - Support for "read" verb in Design Automation work items (kudos https://github.com/mivasi).
 - Fixed
   - Issue with creating a webhook with no attribute data.
   - Unhandled exception when trying to translate an object which has its derivatives available in another region
