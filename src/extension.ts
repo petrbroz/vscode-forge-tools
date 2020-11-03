@@ -490,6 +490,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		hubsDataProvider.refresh();
+		webhooksDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
 	});
 }
