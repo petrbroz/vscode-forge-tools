@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Theme icons for OSS, Webhooks, and Design Automation tree views
+  - Button for manual refresh of the Webhookks tree view
+- Fixed
+  - Refreshing webhooks after switching to another environment
+
 ## [2.2.1] - 2020-11-02
 
 - Added
