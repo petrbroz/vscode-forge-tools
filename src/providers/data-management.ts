@@ -49,14 +49,17 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         if (isBucket(element)) {
             const node = new vscode.TreeItem(element.bucketKey, vscode.TreeItemCollapsibleState.Collapsed);
             node.contextValue = 'bucket';
+            node.iconPath = new vscode.ThemeIcon('folder');
             return node;
         } else if (isObject(element)) {
             const node = new vscode.TreeItem(element.objectKey, vscode.TreeItemCollapsibleState.Collapsed);
             node.contextValue = 'object';
+            node.iconPath = new vscode.ThemeIcon('file');
             return node;
         } else if (isDerivative(element)) {
             const node = new vscode.TreeItem(element.name, vscode.TreeItemCollapsibleState.None);
             node.contextValue = 'derivative';
+            node.iconPath = new vscode.ThemeIcon('file-binary');
             return node;
         } else {
             const node = new vscode.TreeItem('', vscode.TreeItemCollapsibleState.None);

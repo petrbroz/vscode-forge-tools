@@ -13,6 +13,25 @@ type DesignAutomationEntry =
     | dai.IActivityAliasesEntry | dai.IActivityAliasEntry
     | dai.IActivityVersionsEntry | dai.IActivityVersionEntry;
 
+const ThemeIconMap = {
+    'activity-alias': 'references',
+    'activity-aliases': 'references',
+    'activity-version': 'versions',
+    'activity-versions': 'versions',
+    'appbundle-alias': 'references',
+    'appbundle-aliases': 'references',
+    'appbundle-version': 'versions',
+    'appbundle-versions': 'versions',
+    'owned-activities': 'github-action',
+    'owned-activity': 'github-action',
+    'owned-appbundle': 'plug',
+    'owned-appbundles': 'plug',
+    'shared-activities': 'github-action',
+    'shared-activity': 'github-action',
+    'shared-appbundle': 'plug',
+    'shared-appbundles': 'plug',
+};
+
 export class DesignAutomationDataProvider implements vscode.TreeDataProvider<DesignAutomationEntry> {
     private _context: IContext;
     private _onDidChangeTreeData: vscode.EventEmitter<DesignAutomationEntry | null> = new vscode.EventEmitter<DesignAutomationEntry | null>();
@@ -53,6 +72,7 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
             default:
                 throw new Error('Unexpected entry type'); // Should never be hit
         }
+        node.iconPath = new vscode.ThemeIcon(ThemeIconMap[element.type]);
         node.contextValue = element.type;
         return node;
     }
