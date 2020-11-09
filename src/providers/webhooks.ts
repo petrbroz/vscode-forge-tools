@@ -53,15 +53,18 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
     getTreeItem(entry: WebhookEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (isWebhookSystem(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.iconPath = new vscode.ThemeIcon('group-by-ref-type');
             node.contextValue = 'system';
             return node;
         } else if (isWebhookEvent(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
             node.contextValue = 'event';
+            node.iconPath = new vscode.ThemeIcon('symbol-event');
             return node;
         } else {
             const node = new vscode.TreeItem(entry.id, vscode.TreeItemCollapsibleState.None);
             node.contextValue = 'hook';
+            node.iconPath = new vscode.ThemeIcon('megaphone');
             return node;
         }
     }

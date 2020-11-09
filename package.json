@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.2.1",
+	"version": "2.2.2",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -398,6 +398,15 @@
 				"category": "Forge Design Automation"
 			},
 			{
+				"command": "forge.refreshWebhooks",
+				"title": "Refresh Webhooks",
+				"category": "Forge Webhooks",
+				"icon": {
+					"light": "resources/icons/dark/refresh.svg",
+					"dark": "resources/icons/light/refresh.svg"
+				}
+			},
+			{
 				"command": "forge.viewWebhookDetails",
 				"title": "View Webhook Details",
 				"category": "Forge Webhooks"
@@ -448,6 +457,11 @@
 				{
 					"command": "forge.refreshDesignAutomationTree",
 					"when": "view == forgeDesignAutomationView",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.refreshWebhooks",
+					"when": "view == forgeWebhooksView",
 					"group": "navigation"
 				}
 			],

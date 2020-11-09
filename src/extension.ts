@@ -386,6 +386,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(webhooksView);
 
 	// Setup webhooks commands
+	vscode.commands.registerCommand('forge.refreshWebhooks', () => {
+		webhooksDataProvider.refresh();
+	});
 	vscode.commands.registerCommand('forge.createWebhook', async (event: IWebhookEvent) => {
 		// TODO: create webhooks from command palette
 		await createWebhook(event, context, function() {
@@ -490,6 +493,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		hubsDataProvider.refresh();
+		webhooksDataProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
 	});
 }
