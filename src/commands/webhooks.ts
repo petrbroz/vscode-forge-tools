@@ -27,7 +27,10 @@ export async function createWebhook(entry: IWebhookEvent, context: IContext, suc
 		'create-webhook',
 		`New webhook`,
 		vscode.ViewColumn.One,
-		{ enableScripts: true }
+        {
+            enableScripts: true,
+            retainContextWhenHidden: true
+        }
 	);
 	let webhook = {
 		system: entry.system,
@@ -87,7 +90,10 @@ export async function viewWebhookDetails(webhook: IWebhook, context: IContext) {
 				'webhook-details',
 				`Webhook: ${id}`,
 				vscode.ViewColumn.One,
-				{ enableScripts: false }
+				{
+                    enableScripts: false,
+                    retainContextWhenHidden: true
+                }
 			);
 			panel.webview.html = context.templateEngine.render('webhook-details', { webhook: webhookDetail, mode: 'read', scopes });
 		});
@@ -128,7 +134,10 @@ export async function updateWebhook(webhook: IWebhook, context: IContext, succes
 			'update-webhook',
 			`Webhook: ${id}`,
 			vscode.ViewColumn.One,
-			{ enableScripts: true }
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
 		);
 		panel.webview.html = context.templateEngine.render('webhook-details', { webhook: webhookDetail, mode: 'update', scopes });
 		// Handle messages from the webview

@@ -104,7 +104,10 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 				'appbundle-details',
 				`Details: ${appBundleDetail.id}`,
 				vscode.ViewColumn.One,
-				{ enableScripts: true }
+				{
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
 			);
 			panel.webview.html = context.templateEngine.render('appbundle-details', { bundle: appBundleDetail });
 		});
@@ -127,7 +130,10 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 				'activity-details',
 				`Details: ${activityDetail.id}`,
 				vscode.ViewColumn.One,
-				{ enableScripts: true }
+				{
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
 			);
 			const daid = DesignAutomationID.parse(activityDetail.id);
 			let settingsSplitted = splitCodeOnEngineSettingsByType(activityDetail.settings || {});
@@ -188,7 +194,10 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 			'new-activity',
 			`New Activity`,
 			vscode.ViewColumn.One,
-			{ enableScripts: true, retainContextWhenHidden: true }
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
 		);
 		panel.webview.html = context.templateEngine.render('activity-details', {
 			mode: 'create',
@@ -274,7 +283,10 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 			'update-activity',
 			`Activity: ${originalActivity.id}`,
 			vscode.ViewColumn.One,
-			{ enableScripts: true, retainContextWhenHidden: true }
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
 		);
 		const daid = DesignAutomationID.parse(originalActivity.id) as DesignAutomationID;
 		let settingsSplitted = splitCodeOnEngineSettingsByType(originalActivity.settings || {});
