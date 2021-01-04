@@ -145,7 +145,7 @@ $("button[name='add-setting-string']").click(function () {
             </td>
             
             <td>
-                <input type="text" name="setting-value" class="form-control" value="" placeholder="Setting Value">
+                <textarea name="setting-value" class="form-control" placeholder="Setting Value" rows=2></textarea>
             </td>
             
             <td>
