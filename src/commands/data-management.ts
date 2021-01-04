@@ -191,7 +191,10 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 				'bucket-details',
 				`Details: ${bucketKey}`,
 				vscode.ViewColumn.One,
-				{ enableScripts: false }
+				{
+                    enableScripts: false,
+                    retainContextWhenHidden: true
+                }
 			);
 			panel.webview.html = context.templateEngine.render('bucket-details', { bucket: bucketDetail });
 		});
@@ -415,7 +418,10 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 			'object-details',
 			'Details: ' + object.objectKey,
 			vscode.ViewColumn.One,
-			{ enableScripts: true }
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
 		);
 		panel.webview.html = context.templateEngine.render('object-details', { object });
 	} catch(err) {

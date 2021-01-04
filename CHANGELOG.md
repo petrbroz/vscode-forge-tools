@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.2.3] - 2021-01-04
+
+- Added
+  - Support for multiline settings in Design Automation activities
+- Fixed
+  - Various forms with user inputs (for example, when creating Design Automation activities) now retain their context even when the tab is hidden
+
 ## [2.2.2] - 2020-11-09
 
 - Added

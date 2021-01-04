@@ -64,7 +64,10 @@ export async function translateObjectCustom(object: IObject | undefined, context
 			'custom-translation',
 			'Custom Model Derivative Job',
 			vscode.ViewColumn.One,
-			{ enableScripts: true }
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
 		);
 		panel.webview.html = context.templateEngine.render('custom-translation', { urn });
 		panel.webview.onDidReceiveMessage(

@@ -134,20 +134,20 @@ html(lang='en')
                     td(scope='row')
                       input.form-control(type='text', name='setting-name', value=setting, readonly)
                     td
-                      input.form-control(type='text', name='setting-value', value=settingsString[setting].value, readonly)
+                      textarea.form-control(type='text', name='setting-value', rows=2, readonly)= settingsString[setting].value
                     td
                       input.form-control(type='checkbox', name='setting-env', checked=(settingsString[setting].isEnvironmentVariable), disabled)
                   else
                     td
                       input.form-control(type='text', name='setting-name', value=setting, placeholder='Setting Name')
                     td
-                      input.form-control(type='text', name='setting-value', value=settingsString[setting].value, placeholder='Setting Value')
+                      textarea.form-control(name='setting-value', placeholder='Setting Value', rows=2)= settingsString[setting].value
                     td
                       input.form-control(type='checkbox', name='setting-env', checked=(settingsString[setting].isEnvironmentVariable))
                     td
                       button.form-control.btn.btn-outline-danger.fas.fa-trash-alt(type='button', name='remove-setting-string', data-action='remove')
           if mode !== 'read'
-            button.btn.btn-outline-primary.float-right(type='button', name='add-setting-string')
+            button.btn.btn-outline-primary.float-right.mb-2(type='button', name='add-setting-string')
               i.fas.fa-plus-circle
               |  Setting String
 
