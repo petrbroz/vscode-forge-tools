@@ -542,6 +542,11 @@
 					"group": "1_action_md@1"
 				},
 				{
+					"command": "forge.copyObjectUrn",
+					"when": "view == forgeHubsView && viewItem == version",
+					"group": "1_action_md@1"
+				},
+				{
 					"command": "forge.translateObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "1_action_md@2"

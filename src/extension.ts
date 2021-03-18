@@ -221,7 +221,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
 		await mdc.downloadDerivativeGLTF(object, context);
 	});
-	vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject| hi.IVersion) => {
 		await mdc.copyObjectUrn(object, context);
 	});
 

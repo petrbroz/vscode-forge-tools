@@ -705,7 +705,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 	}
 }
 
-export async function copyObjectUrn(object: IObject | undefined, context: IContext) {
+export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -718,7 +718,7 @@ export async function copyObjectUrn(object: IObject | undefined, context: IConte
 			}
 		}
 
-		const urn = urnify(object.objectId);
+		let urn = getURN(object);
 		await vscode.env.clipboard.writeText(urn);
 		vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`);
 	} catch (err) {
