@@ -82,7 +82,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 	}
 }
 
-export async function translateObjectCustom(object: IObject | undefined, context: IContext, onStart?: () => void) {
+export async function translateObjectCustom(object: IObject | hi.IVersion | undefined, context: IContext, onStart?: () => void) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -95,7 +95,9 @@ export async function translateObjectCustom(object: IObject | undefined, context
 			}
 		}
 
-		const urn = urnify(object.objectId);
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
+
 		const panel = vscode.window.createWebviewPanel(
 			'custom-translation',
 			'Custom Model Derivative Job',
@@ -128,7 +130,7 @@ export async function translateObjectCustom(object: IObject | undefined, context
 							}
 						} as IDerivativeOutputType;
 						try {
-							await context.modelDerivativeClient2L.submitJob(
+							await client.submitJob(
 								urn,
 								[outputOptions],
 								compressedRootDesign,

@@ -187,8 +187,11 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh((object as IObject));
 		hubsDataProvider.refresh((object as hi.IVersion));
 	});
-	vscode.commands.registerCommand('forge.translateObjectCustom', async (object?: IObject) => {
-		await mdc.translateObjectCustom(object, context, () => { simpleStorageDataProvider.refresh(object); });
+	vscode.commands.registerCommand('forge.translateObjectCustom', async (object?: IObject | hi.IVersion) => {
+		await mdc.translateObjectCustom(object, context, () => { 
+			simpleStorageDataProvider.refresh((object as IObject));
+			hubsDataProvider.refresh((object as hi.IVersion));
+		});
 	});
 	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: mdi.IDerivative) => {
 		await mdc.previewDerivative(derivative, context);
