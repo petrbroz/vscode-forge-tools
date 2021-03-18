@@ -206,7 +206,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		await mdc.deleteObjectManifest(object, context);
 		simpleStorageDataProvider.refresh(object);
 	});
-	vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject | hi.IVersion) => {
 		await mdc.viewObjectThumbnail(object, context);
 	});
 	vscode.commands.registerCommand('forge.downloadDerivativeSvf', async (object?: IObject) => {

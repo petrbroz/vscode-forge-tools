@@ -27,13 +27,27 @@ function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
 }
 
-function getURN(object: IObject | hi.IVersion): string{
+
+function getKey(object: IObject | hi.IVersion): string{
 	if('objectId' in object){ //IObject
-		return urnify(object.objectId);
+		return object.objectKey;
 	}else if('itemId' in object){ //hi.IVersion
-		return urnify(object.id); 
+		return object.itemId; 
 	}
 	return '';
+}
+
+function getId(object: IObject | hi.IVersion): string{
+	if('objectId' in object){ //IObject
+		return object.objectId;
+	}else if('itemId' in object){ //hi.IVersion
+		return object.id; 
+	}
+	return '';
+}
+
+function getURN(object: IObject | hi.IVersion): string{
+	return urnify(getId(object));
 }
 
 function getModelDerivativeClientForObject(object: IObject | hi.IVersion, context: IContext): ModelDerivativeClient{
@@ -403,7 +417,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 	}
 }
 
-export async function viewObjectThumbnail(object: IObject | undefined, context: IContext) {
+export async function viewObjectThumbnail(object: IObject  | hi.IVersion | undefined, context: IContext) {
 	async function downloadThumbnail(buff: ArrayBuffer, defaultUri: vscode.Uri) {
 		const uri = await vscode.window.showSaveDialog({ defaultUri });
 		if (!uri) {
@@ -424,18 +438,24 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 				return;
 			}
 		}
-		const { objectId, objectKey } = object;
+
+		//const { objectId, objectKey } = object;
+
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
+		const manifest = await client.getManifest(urn);
+
+		let key = getKey(object);
+		let id = getId(object);
 
 		const panel = vscode.window.createWebviewPanel(
 			'object-thumbnail',
-			'Thumbnail: ' + object.objectKey,
+			'Thumbnail: ' + key,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
+
 		try {
-			// Hack: if there's a '_' in the urn, it's a version of an item from hubs, so we need a 3-legged token
-			const urn = urnify(objectId);
-			const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 			const small = await client.getThumbnail(urn, ThumbnailSize.Small);
 			const medium = await client.getThumbnail(urn, ThumbnailSize.Medium);
 			const large = await client.getThumbnail(urn, ThumbnailSize.Large);
@@ -453,13 +473,13 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 						case 'download':
 							switch (message.thumbnailSize) {
 								case 'small':
-									downloadThumbnail(small, vscode.Uri.file(objectKey + '.100x100.png'));
+									downloadThumbnail(small, vscode.Uri.file(key + '.100x100.png'));
 									break;
 								case 'medium':
-									downloadThumbnail(medium, vscode.Uri.file(objectKey + '.200x200.png'));
+									downloadThumbnail(medium, vscode.Uri.file(key + '.200x200.png'));
 									break;
 								case 'large':
-									downloadThumbnail(large, vscode.Uri.file(objectKey + '.400x400.png'));
+									downloadThumbnail(large, vscode.Uri.file(key + '.400x400.png'));
 									break;
 							}
 					}
@@ -469,7 +489,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			);
 		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
-				In order to access the thumbnails of ${object.objectId}, the object must be translated first.
+				In order to access the thumbnails of ${id}, the object must be translated first.
 				Would you like to start the translation now?
 			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
 			switch (action) {

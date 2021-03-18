@@ -512,6 +512,11 @@
 					"group": "0_view@3"
 				},
 				{
+					"command": "forge.viewObjectThumbnail",
+					"when": "view == forgeHubsView && viewItem == version",
+					"group": "0_view@3"
+				},
+				{
 					"command": "forge.downloadObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "1_action_dm@1"
