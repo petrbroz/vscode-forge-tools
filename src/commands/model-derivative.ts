@@ -26,7 +26,6 @@ function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
 }
 
-//hi.IVersion
 export async function translateObject(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
