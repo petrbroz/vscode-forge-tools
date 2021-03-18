@@ -1,81 +1,46 @@
 import * as vscode from 'vscode';
 import {
+	IBucket,
+    IObject,
+    IDerivativeManifest,
     urnify as _urnify
 } from 'forge-server-utils';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, inHubs } from '../common';
+import * as hi from '../interfaces/hubs';
 
 function urnify(id: string): string {
     return _urnify(id).replace('/', '_');
 }
 
-export interface IHint {
-    hint: string;
-    tooltip?: string;
+type HubsEntry = hi.IHub | hi.IProject | hi.IFolder | hi.IItem | hi.IVersion | IDerivative | hi.IHint;
+
+function isHub(entry: HubsEntry): entry is hi.IHub {
+    return (<hi.IHub>entry).kind === 'hub';
 }
 
-export interface IHub {
-    kind: 'hub';
-    id: string;
-    name: string;
+function isProject(entry: HubsEntry): entry is hi.IProject {
+    return (<hi.IProject>entry).kind === 'project';
 }
 
-export interface IProject {
-    kind: 'project';
-    hubId: string;
-    id: string;
-    name: string;
+function isFolder(entry: HubsEntry): entry is hi.IFolder {
+    return (<hi.IFolder>entry).kind === 'folder';
 }
 
-export interface IFolder {
-    kind: 'folder';
-    projectId: string;
-    id: string;
-    name: string;
+function isItem(entry: HubsEntry): entry is hi.IItem {
+    return (<hi.IItem>entry).kind === 'item';
 }
 
-export interface IItem {
-    kind: 'item';
-    projectId: string;
-    id: string;
-    name: string;
-}
-
-export interface IVersion {
-    kind: 'version';
-    itemId: string;
-    id: string;
-    name: string;
-}
-
-type HubsEntry = IHub | IProject | IFolder | IItem | IVersion | IDerivative | IHint;
-
-function isHub(entry: HubsEntry): entry is IHub {
-    return (<IHub>entry).kind === 'hub';
-}
-
-function isProject(entry: HubsEntry): entry is IProject {
-    return (<IProject>entry).kind === 'project';
-}
-
-function isFolder(entry: HubsEntry): entry is IFolder {
-    return (<IFolder>entry).kind === 'folder';
-}
-
-function isItem(entry: HubsEntry): entry is IItem {
-    return (<IItem>entry).kind === 'item';
-}
-
-function isVersion(entry: HubsEntry): entry is IVersion {
-    return (<IVersion>entry).kind === 'version';
+function isVersion(entry: HubsEntry): entry is hi.IVersion {
+    return (<hi.IVersion>entry).kind === 'version';
 }
 
 function isDerivative(entry: HubsEntry): entry is IDerivative {
     return (<IDerivative>entry).guid !== undefined;
 }
 
-function isHint(entry: HubsEntry): entry is IHint {
-    return (<IHint>entry).hint !== undefined;
+function isHint(entry: HubsEntry): entry is hi.IHint {
+    return (<hi.IHint>entry).hint !== undefined;
 }
 
 export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
@@ -138,7 +103,28 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } else if (isItem(entry)) {
             return this._getItemVersions(entry.projectId, entry.id);
         } else if (isVersion(entry)) {
-            return this._getVersionDerivatives(entry.id);
+            const urn = urnify(entry.id);
+            try {
+                const client = this._context.threeLeggedToken
+                    ? this._context.modelDerivativeClient3L
+                    : this._context.modelDerivativeClient2L;
+                const manifest = await client.getManifest(urn);
+                switch (manifest.status) {
+                    case 'success':
+                        return this._getVersionDerivatives(entry.id);
+                    case 'failed':
+                        return [this._getManifestErrorHint(manifest, urn)];
+                    default:
+                        // If still in progress, schedule auto-refresh in 1 second
+                        setTimeout(() => { this.refresh(entry); }, 1000);
+                        return [this._getManifestProgressHint(manifest, urn)];
+                }
+            } catch(err) {
+                return [{
+                    hint: 'No derivatives yet (hover for more info)',
+                    tooltip: 'There don\'t seem to be any derivatives yet.\nTry triggering a new translation job on the object.'
+                }];
+            }
         } else {
             return [];
         }
@@ -148,7 +134,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         try {
             const hubs = await this._context.bim360Client.listHubs();
             return hubs.map(hub => {
-                let entry: IHub = {
+                let entry: hi.IHub = {
                     kind: 'hub',
                     id: hub.id,
                     name: hub.name || '<no name>'
@@ -167,7 +153,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         try {
             const projects = await this._context.bim360Client.listProjects(hubId);
             return projects.map(project => {
-                let entry: IProject = {
+                let entry: hi.IProject = {
                     kind: 'project',
                     hubId,
                     id: project.id,
@@ -187,7 +173,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         try {
             const folders = await this._context.bim360Client.listTopFolders(hubId, projectId);
             return folders.map(folder => {
-                let entry: IFolder = {
+                let entry: hi.IFolder = {
                     kind: 'folder',
                     projectId,
                     id: folder.id,
@@ -212,7 +198,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             return items.map(item => {
                 switch (item.type) {
                     case 'folders':
-                        let folder: IFolder = {
+                        let folder: hi.IFolder = {
                             kind: 'folder',
                             projectId,
                             id: item.id,
@@ -220,7 +206,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                         };
                         return folder;
                     case 'items':
-                        let file: IItem = {
+                        let file: hi.IItem = {
                             kind: 'item',
                             projectId,
                             id: item.id,
@@ -243,7 +229,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         try {
             const versions = await this._context.bim360Client.listVersions(projectId, itemId);
             return versions.map(version => {
-                let entry: IVersion = {
+                let entry: hi.IVersion = {
                     kind: 'version',
                     itemId,
                     id: version.id,
@@ -259,7 +245,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         }
     }
 
-    async _getVersionDerivatives(versionId: string): Promise<(IDerivative | IHint)[]> {
+    async _getVersionDerivatives(versionId: string): Promise<(IDerivative | hi.IHint)[]> {
         try {
             const urn = urnify(versionId);
             const client = this._context.threeLeggedToken
@@ -290,5 +276,24 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                 tooltip: 'Try logging in with the 3-legged OAuth workflow.'
             }];
         }
+    }
+
+    private _getManifestErrorHint(manifest: any, urn: string): hi.IHint {
+        const failed = manifest.derivatives.find((deriv: any) => deriv.status === 'failed');
+        if (failed && failed.messages) {
+            return {
+                hint: 'Translation failed (hover for more info)',
+                tooltip: failed.messages.map((message: any) => message.code + ':\n' + message.message).join('\n\n')
+            };
+        } else {
+            return {
+                hint:'Translation failed (hover for more info)',
+                tooltip: 'Oops, there\'s no more info :('
+            };
+        }
+    }
+
+    private _getManifestProgressHint(manifest: IDerivativeManifest, urn: string): hi.IHint {
+        return { hint: `Translation in progress (${manifest.progress})` };
     }
 }

@@ -15,6 +15,7 @@ import {
 import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, OtgDownloader } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
+import * as hi from '../interfaces/hubs';
 
 enum TranslationActions {
 	Translate = 'Translate',
@@ -25,7 +26,8 @@ function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
 }
 
-export async function translateObject(object: IObject | undefined, context: IContext) {
+//hi.IVersion
+export async function translateObject(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -38,8 +40,17 @@ export async function translateObject(object: IObject | undefined, context: ICon
 			}
 		}
 
-		const urn = urnify(object.objectId);
-		await context.modelDerivativeClient2L.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		let urn = '';
+		if('objectId' in object){ //IObject
+			urn = urnify(object.objectId);
+			await context.modelDerivativeClient2L.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		}else if('itemId' in object){ //hi.IVersion
+			urn = urnify(object.id); 
+			
+			const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+			await client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		}
+		
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);

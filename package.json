@@ -533,7 +533,7 @@
 				},
 				{
 					"command": "forge.translateObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "viewItem == object || viewItem == version",
 					"group": "1_action_md@2"
 				},
 				{

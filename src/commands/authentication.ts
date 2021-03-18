@@ -3,11 +3,18 @@ import * as url from 'url';
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
 
-const DefaultScopes = ['viewables:read', 'bucket:read', 'bucket:create', 'data:read', 'data:create', 'data:write', 'code:all']; // Make this list configurable?
+const DefaultScopes = [
+    'viewables:read', 
+    'code:all', 
+    'bucket:create','bucket:read','bucket:update', 'bucket:delete', 
+    'data:read', 'data:write', 'data:create', 'data:search',
+    'account:read', 'account:write', 
+    'user:read', 'user:write',
+    'user-profile:read']; // Make this list configurable?
 
 export async function login(clientId: string, port: number, context: IContext): Promise<Map<string, string>> {
     const timeout = 2 * 60 * 1000; // Wait for 2 minutes
-    const scopes = ['data:read', 'viewables:read'];
+    const scopes = DefaultScopes; 
     return new Promise(function (resolve, reject) {
         const server = http.createServer(function (req, res) {
             if (req.url === '/') {
