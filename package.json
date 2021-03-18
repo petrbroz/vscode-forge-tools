@@ -502,6 +502,11 @@
 					"group": "0_view@2"
 				},
 				{
+					"command": "forge.viewObjectManifest",
+					"when": "view == forgeHubsView && viewItem == version",
+					"group": "0_view@2"
+				},
+				{
 					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "0_view@3"

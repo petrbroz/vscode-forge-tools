@@ -10,7 +10,8 @@ import {
 	IDerivativeResourceChild,
 	IDerivativeOutputType,
 	IDerivativeProps,
-	IDerivativeTree
+	IDerivativeTree,
+	ModelDerivativeClient
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, OtgDownloader } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
@@ -26,6 +27,25 @@ function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
 }
 
+function getURN(object: IObject | hi.IVersion): string{
+	if('objectId' in object){ //IObject
+		return urnify(object.objectId);
+	}else if('itemId' in object){ //hi.IVersion
+		return urnify(object.id); 
+	}
+	return '';
+}
+
+function getModelDerivativeClientForObject(object: IObject | hi.IVersion, context: IContext): ModelDerivativeClient{
+	if('objectId' in object){ //IObject
+		return context.modelDerivativeClient2L;
+	}else if('itemId' in object){ //hi.IVersion
+		const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		return client;
+	}
+	return context.modelDerivativeClient2L;
+}
+
 export async function translateObject(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
@@ -39,17 +59,9 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 			}
 		}
 
-		let urn = '';
-		if('objectId' in object){ //IObject
-			urn = urnify(object.objectId);
-			await context.modelDerivativeClient2L.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
-		}else if('itemId' in object){ //hi.IVersion
-			urn = urnify(object.id); 
-			
-			const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
-			await client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
-		}
-		
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
+		client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
@@ -331,7 +343,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 	}
 }
 
-export async function viewObjectManifest(object: IObject | undefined, context: IContext) {
+export async function viewObjectManifest(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -343,8 +355,9 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 				return;
 			}
 		}
-		const urn = urnify(object.objectId);
-		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
 		const manifest = await client.getManifest(urn);
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });

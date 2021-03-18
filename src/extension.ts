@@ -199,7 +199,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: mdi.IDerivative) => {
 		await mdc.viewDerivativeProps(derivative, context);
 	});
-	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject | hi.IVersion) => {
 		await mdc.viewObjectManifest(object, context);
 	});
 	vscode.commands.registerCommand('forge.deleteObjectManifest', async (object?: IObject) => {
