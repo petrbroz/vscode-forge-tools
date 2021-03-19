@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Support for various commands in the "Hubs & Derivatives" tree (kudos to [smorel](https://github.com/smorel)!)
+
 ## [2.2.3] - 2021-01-04
 
 - Added
