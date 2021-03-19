@@ -187,8 +187,11 @@ export function activate(_context: vscode.ExtensionContext) {
 		simpleStorageDataProvider.refresh((object as IObject));
 		hubsDataProvider.refresh((object as hi.IVersion));
 	});
-	vscode.commands.registerCommand('forge.translateObjectCustom', async (object?: IObject) => {
-		await mdc.translateObjectCustom(object, context, () => { simpleStorageDataProvider.refresh(object); });
+	vscode.commands.registerCommand('forge.translateObjectCustom', async (object?: IObject | hi.IVersion) => {
+		await mdc.translateObjectCustom(object, context, () => { 
+			simpleStorageDataProvider.refresh((object as IObject));
+			hubsDataProvider.refresh((object as hi.IVersion));
+		});
 	});
 	vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: mdi.IDerivative) => {
 		await mdc.previewDerivative(derivative, context);
@@ -199,14 +202,14 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: mdi.IDerivative) => {
 		await mdc.viewDerivativeProps(derivative, context);
 	});
-	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject | hi.IVersion) => {
 		await mdc.viewObjectManifest(object, context);
 	});
 	vscode.commands.registerCommand('forge.deleteObjectManifest', async (object?: IObject) => {
 		await mdc.deleteObjectManifest(object, context);
 		simpleStorageDataProvider.refresh(object);
 	});
-	vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject | hi.IVersion) => {
 		await mdc.viewObjectThumbnail(object, context);
 	});
 	vscode.commands.registerCommand('forge.downloadDerivativeSvf', async (object?: IObject) => {
@@ -221,7 +224,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
 		await mdc.downloadDerivativeGLTF(object, context);
 	});
-	vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject| hi.IVersion) => {
 		await mdc.copyObjectUrn(object, context);
 	});
 

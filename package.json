@@ -502,8 +502,18 @@
 					"group": "0_view@2"
 				},
 				{
+					"command": "forge.viewObjectManifest",
+					"when": "view == forgeHubsView && viewItem == version",
+					"group": "0_view@2"
+				},
+				{
 					"command": "forge.viewObjectThumbnail",
 					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "0_view@3"
+				},
+				{
+					"command": "forge.viewObjectThumbnail",
+					"when": "view == forgeHubsView && viewItem == version",
 					"group": "0_view@3"
 				},
 				{
@@ -532,6 +542,11 @@
 					"group": "1_action_md@1"
 				},
 				{
+					"command": "forge.copyObjectUrn",
+					"when": "view == forgeHubsView && viewItem == version",
+					"group": "1_action_md@1"
+				},
+				{
 					"command": "forge.translateObject",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "1_action_md@2"
@@ -544,6 +559,11 @@
 				{
 					"command": "forge.translateObjectCustom",
 					"when": "view == forgeDataManagementView && viewItem == object",
+					"group": "1_action_md@3"
+				},
+				{
+					"command": "forge.translateObjectCustom",
+					"when": "view == forgeHubsView && viewItem == version",
 					"group": "1_action_md@3"
 				},
 				{

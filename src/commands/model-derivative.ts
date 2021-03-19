@@ -10,7 +10,8 @@ import {
 	IDerivativeResourceChild,
 	IDerivativeOutputType,
 	IDerivativeProps,
-	IDerivativeTree
+	IDerivativeTree,
+	ModelDerivativeClient
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, OtgDownloader } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
@@ -26,6 +27,39 @@ function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
 }
 
+
+function getKey(object: IObject | hi.IVersion): string{
+	if('objectId' in object){ //IObject
+		return object.objectKey;
+	}else if('itemId' in object){ //hi.IVersion
+		return object.itemId; 
+	}
+	return '';
+}
+
+function getId(object: IObject | hi.IVersion): string{
+	if('objectId' in object){ //IObject
+		return object.objectId;
+	}else if('itemId' in object){ //hi.IVersion
+		return object.id; 
+	}
+	return '';
+}
+
+function getURN(object: IObject | hi.IVersion): string{
+	return urnify(getId(object));
+}
+
+function getModelDerivativeClientForObject(object: IObject | hi.IVersion, context: IContext): ModelDerivativeClient{
+	if('objectId' in object){ //IObject
+		return context.modelDerivativeClient2L;
+	}else if('itemId' in object){ //hi.IVersion
+		const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+		return client;
+	}
+	return context.modelDerivativeClient2L;
+}
+
 export async function translateObject(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
@@ -39,24 +73,16 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 			}
 		}
 
-		let urn = '';
-		if('objectId' in object){ //IObject
-			urn = urnify(object.objectId);
-			await context.modelDerivativeClient2L.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
-		}else if('itemId' in object){ //hi.IVersion
-			urn = urnify(object.id); 
-			
-			const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
-			await client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
-		}
-		
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
+		client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
 	}
 }
 
-export async function translateObjectCustom(object: IObject | undefined, context: IContext, onStart?: () => void) {
+export async function translateObjectCustom(object: IObject | hi.IVersion | undefined, context: IContext, onStart?: () => void) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -69,7 +95,9 @@ export async function translateObjectCustom(object: IObject | undefined, context
 			}
 		}
 
-		const urn = urnify(object.objectId);
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
+
 		const panel = vscode.window.createWebviewPanel(
 			'custom-translation',
 			'Custom Model Derivative Job',
@@ -102,7 +130,7 @@ export async function translateObjectCustom(object: IObject | undefined, context
 							}
 						} as IDerivativeOutputType;
 						try {
-							await context.modelDerivativeClient2L.submitJob(
+							await client.submitJob(
 								urn,
 								[outputOptions],
 								compressedRootDesign,
@@ -331,7 +359,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 	}
 }
 
-export async function viewObjectManifest(object: IObject | undefined, context: IContext) {
+export async function viewObjectManifest(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -343,8 +371,9 @@ export async function viewObjectManifest(object: IObject | undefined, context: I
 				return;
 			}
 		}
-		const urn = urnify(object.objectId);
-		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
+
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
 		const manifest = await client.getManifest(urn);
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
@@ -390,7 +419,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 	}
 }
 
-export async function viewObjectThumbnail(object: IObject | undefined, context: IContext) {
+export async function viewObjectThumbnail(object: IObject  | hi.IVersion | undefined, context: IContext) {
 	async function downloadThumbnail(buff: ArrayBuffer, defaultUri: vscode.Uri) {
 		const uri = await vscode.window.showSaveDialog({ defaultUri });
 		if (!uri) {
@@ -411,18 +440,24 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 				return;
 			}
 		}
-		const { objectId, objectKey } = object;
+
+		//const { objectId, objectKey } = object;
+
+		let urn = getURN(object);
+		let client = getModelDerivativeClientForObject(object, context);
+		const manifest = await client.getManifest(urn);
+
+		let key = getKey(object);
+		let id = getId(object);
 
 		const panel = vscode.window.createWebviewPanel(
 			'object-thumbnail',
-			'Thumbnail: ' + object.objectKey,
+			'Thumbnail: ' + key,
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
+
 		try {
-			// Hack: if there's a '_' in the urn, it's a version of an item from hubs, so we need a 3-legged token
-			const urn = urnify(objectId);
-			const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 			const small = await client.getThumbnail(urn, ThumbnailSize.Small);
 			const medium = await client.getThumbnail(urn, ThumbnailSize.Medium);
 			const large = await client.getThumbnail(urn, ThumbnailSize.Large);
@@ -440,13 +475,13 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 						case 'download':
 							switch (message.thumbnailSize) {
 								case 'small':
-									downloadThumbnail(small, vscode.Uri.file(objectKey + '.100x100.png'));
+									downloadThumbnail(small, vscode.Uri.file(key + '.100x100.png'));
 									break;
 								case 'medium':
-									downloadThumbnail(medium, vscode.Uri.file(objectKey + '.200x200.png'));
+									downloadThumbnail(medium, vscode.Uri.file(key + '.200x200.png'));
 									break;
 								case 'large':
-									downloadThumbnail(large, vscode.Uri.file(objectKey + '.400x400.png'));
+									downloadThumbnail(large, vscode.Uri.file(key + '.400x400.png'));
 									break;
 							}
 					}
@@ -456,7 +491,7 @@ export async function viewObjectThumbnail(object: IObject | undefined, context: 
 			);
 		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
-				In order to access the thumbnails of ${object.objectId}, the object must be translated first.
+				In order to access the thumbnails of ${id}, the object must be translated first.
 				Would you like to start the translation now?
 			`, TranslationActions.Translate, TranslationActions.TranslateAsArchive);
 			switch (action) {
@@ -672,7 +707,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 	}
 }
 
-export async function copyObjectUrn(object: IObject | undefined, context: IContext) {
+export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -685,7 +720,7 @@ export async function copyObjectUrn(object: IObject | undefined, context: IConte
 			}
 		}
 
-		const urn = urnify(object.objectId);
+		let urn = getURN(object);
 		await vscode.env.clipboard.writeText(urn);
 		vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`);
 	} catch (err) {
