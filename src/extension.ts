@@ -17,6 +17,7 @@ import * as mdc from './commands/model-derivative';
 import * as dac from './commands/design-automation';
 import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
+import * as hi  from './interfaces/hubs';
 import { Region } from 'forge-server-utils/dist/common';
 import { TemplateEngine, IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
@@ -125,6 +126,12 @@ export function activate(_context: vscode.ExtensionContext) {
 	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.extensionContext.subscriptions.push(dataManagementView);
 
+	
+	// Setup hubs view
+	let hubsDataProvider = new HubsDataProvider(context);
+	let hubsView = vscode.window.createTreeView('forgeHubsView', { treeDataProvider: hubsDataProvider });
+	context.extensionContext.subscriptions.push(hubsView);
+
 	// Data management commands
 	vscode.commands.registerCommand('forge.refreshBuckets', () => {
 		simpleStorageDataProvider.refresh();
@@ -175,9 +182,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	});
 
 	// Model derivative commands
-	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject) => {
+	vscode.commands.registerCommand('forge.translateObject', async (object?: IObject | hi.IVersion) => {
 		await mdc.translateObject(object, context);
-		simpleStorageDataProvider.refresh(object);
+		simpleStorageDataProvider.refresh((object as IObject));
+		hubsDataProvider.refresh((object as hi.IVersion));
 	});
 	vscode.commands.registerCommand('forge.translateObjectCustom', async (object?: IObject) => {
 		await mdc.translateObjectCustom(object, context, () => { simpleStorageDataProvider.refresh(object); });
@@ -217,10 +225,6 @@ export function activate(_context: vscode.ExtensionContext) {
 		await mdc.copyObjectUrn(object, context);
 	});
 
-	// Setup hubs view
-	let hubsDataProvider = new HubsDataProvider(context);
-	let hubsView = vscode.window.createTreeView('forgeHubsView', { treeDataProvider: hubsDataProvider });
-	context.extensionContext.subscriptions.push(hubsView);
 
 	// Hubs commands
 	// vscode.commands.registerCommand('forge.refreshBuckets', () => {

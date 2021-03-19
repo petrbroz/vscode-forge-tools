@@ -537,6 +537,11 @@
 					"group": "1_action_md@2"
 				},
 				{
+					"command": "forge.translateObject",
+					"when": "view == forgeHubsView && viewItem == version",
+					"group": "1_action_md@2"
+				},
+				{
 					"command": "forge.translateObjectCustom",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "1_action_md@3"
