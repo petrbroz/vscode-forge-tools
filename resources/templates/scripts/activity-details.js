@@ -10,6 +10,7 @@ function collectActivity() {
         parameters: {},
         settings: {}
     };
+
     $('#parameters > tbody > tr').each(function () {
         const $row = $(this);
         const name = $row.find("input[name='param-name']").val();
@@ -27,7 +28,7 @@ function collectActivity() {
         const $row = $(this);
         const name = $row.find("input[name='setting-name']").val();
         activity.settings[name] = {
-            value: $row.find("input[name='setting-value']").val(),
+            value: $row.find("textarea[name='setting-value']").val(),
             isEnvironmentVariable: $row.find("input[name='setting-env']")[0].checked
         };
     });
