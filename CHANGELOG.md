@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.3.1] - 2021-06-03
+
 - Added
   - When renaming OSS objects, a popup dialog informs why derivatives of that object are not available anymore (and how to resolve that situation)
 - Fixed
