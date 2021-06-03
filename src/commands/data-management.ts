@@ -486,7 +486,12 @@ export async function renameObject(object: IObject | undefined, context: IContex
 			await context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey);
 			await context.dataManagementClient.deleteObject(bucketKey, objectKey);
 		});
-        vscode.window.showInformationMessage(`Object successfully renamed to ${newObjectKey}`);
+        vscode.window.showInformationMessage(`
+            Object successfully renamed to ${newObjectKey}. Note that any derivatives created for
+            the object's original name will not be accesible now but they still exist. You can
+            either start another conversion job for this object with its new name, or rename
+            the object back to ${object.objectKey} to regain access to the derivatives.
+        `);
 	} catch(err) {
 		showErrorMessage('Could not rename object', err);
 	}
