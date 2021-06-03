@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - When renaming OSS objects, a popup dialog informs why derivatives of that object are not available anymore (and how to resolve that situation)
 - Fixed
   - Design Automation activity now extracts "settings" from the UI properly
   - Auto-generated command lines for Design Automation activities now quote all params
