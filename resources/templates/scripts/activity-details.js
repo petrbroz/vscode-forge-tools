@@ -62,13 +62,13 @@ function commandLinePreset() {
     // TODO: what's the command structure for additional inputs and app bundles?
     switch (engineId.name.toLowerCase()) {
         case 'autocad':
-            return `$(engine.path)\\\\accoreconsole.exe ${firstInputName ? `/i $(args[${firstInputName}].path)` : ''} ${firstBundle ? `/al $(appbundles[${firstBundle.name}].path)` : ''}`;
+            return `$(engine.path)\\\\accoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
         case '3dsmax':
-            return `$(engine.path)/3dsmaxbatch.exe ${firstInputName ? `-sceneFile \\"$(args[${firstInputName}].path)\"` : ''}`;
+            return `"$(engine.path)/3dsmaxbatch.exe" ${firstInputName ? `-sceneFile "$(args[${firstInputName}].path)"` : ''}`;
         case 'revit':
-            return `$(engine.path)\\\\revitcoreconsole.exe ${firstInputName ? `/i $(args[${firstInputName}].path)` : ''} ${firstBundle ? `/al $(appbundles[${firstBundle.name}].path)` : ''}`;
+            return `$(engine.path)\\\\revitcoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
         case 'inventor':
-            return `$(engine.path)\\\\InventorCoreConsole.exe ${firstInputName ? `/i $(args[${firstInputName}].path)` : ''} ${firstBundle ? `/al $(appbundles[${firstBundle.name}].path)` : ''}`;
+            return `$(engine.path)\\\\InventorCoreConsole.exe ${firstInputName ? `/i "$(args[${firstInputName}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
     }
     return '';
 }
