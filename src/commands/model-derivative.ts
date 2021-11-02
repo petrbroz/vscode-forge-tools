@@ -139,7 +139,7 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 								workflowAttributes ? JSON.parse(workflowAttributes) : {}
 							);
 							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
-						} catch (err: any) {
+						} catch (err) {
 							if (err.response && err.response.statusCode === 406) {
 								showErrorMessage('Could not translate object, likely because its derivatives exist in a different region. Please, delete the derivatives manually before translating the object again.', null);
 							} else {
@@ -234,7 +234,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 			}, async (progress, token) => {
 				tree = await client.getViewableTree(urn, guid);
 			});
-		} catch (err: any) {
+		} catch (err) {
 			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
 			if (err.isAxiosError && err.response.status === 413) {
@@ -311,7 +311,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 			}, async (progress, token) => {
 				props = await client.getViewableProperties(urn, guid);
 			});
-		} catch (err: any) {
+		} catch (err) {
 			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
 			if (err.isAxiosError && err.response.status === 413) {
