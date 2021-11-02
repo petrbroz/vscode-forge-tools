@@ -225,6 +225,9 @@ function registerDesignAutomationCommands(designAutomationDataProvider: dap.Desi
             await dac.viewAppBundleDetails(undefined, context);
         }
     });
+    vscode.commands.registerCommand('forge.viewAppBundleAliasDetails', async (entry?: dai.IAppBundleAliasEntry) => {
+        await dac.viewAppBundleAliasDetails(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
+    });
     vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: dai.IAppBundleVersionEntry) => {
         if (!entry) {
             vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -278,6 +281,9 @@ function registerDesignAutomationCommands(designAutomationDataProvider: dap.Desi
         }
         const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
         await dac.viewActivityDetails(id, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityAliasDetails', async (entry?: dai.IActivityAliasEntry) => {
+        await dac.viewActivityAliasDetails(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
     });
     vscode.commands.registerCommand('forge.viewActivityVersionDetails', async (entry?: dai.IActivityVersionEntry) => {
         if (!entry) {

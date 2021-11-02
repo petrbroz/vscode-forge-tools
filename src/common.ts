@@ -41,6 +41,7 @@ export class TemplateEngine {
         this._cache = new Map();
         this._cache.set('activity-details', require('../resources/templates/activity-details.pug'));
         this._cache.set('appbundle-details', require('../resources/templates/appbundle-details.pug'));
+        this._cache.set('alias-details', require('../resources/templates/alias-details.pug'));
         this._cache.set('bucket-details', require('../resources/templates/bucket-details.pug'));
         this._cache.set('custom-translation', require('../resources/templates/custom-translation.pug'));
         this._cache.set('derivative-preview', require('../resources/templates/derivative-preview.pug'));

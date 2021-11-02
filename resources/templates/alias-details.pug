@@ -1,0 +1,20 @@
+doctype html
+html(lang='en')
+  head
+    include partials/head.pug
+    title Alias: #{alias.id}
+  body
+    form
+      .form-group.row
+        label.col-sm-2.form-label(for='alias-id') ID
+        .col-sm-10
+          input#alias-id.form-control(type='text', value=alias.id, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='alias-version') Version
+        .col-sm-10
+          input#alias-version.form-control(type='text', value=alias.version, readonly)
+      .form-group.row
+        label.col-sm-2.form-label(for='alias-receiver') Receiver
+        .col-sm-10
+          input#alias-receiver.form-control(type='text', value=alias.receiver, readonly)
+    include partials/scripts.pug

@@ -116,6 +116,40 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 	}
 }
 
+export async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
+    try {
+		if (!id) {
+			id = await promptAppBundleFullID(context);
+			if (!id) {
+				return;
+			}
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting alias details: ${id}`,
+			cancellable: false
+        }, async (progress, token) => {
+            // TODO: add a method to the SDK for retrieve a single alias info
+            const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
+            const aliases = await context.designAutomationClient.listAppBundleAliases(daid.id);
+            const alias = aliases.find(entry => entry.id === daid.alias);
+			const panel = vscode.window.createWebviewPanel(
+				'appbundle-alias-details',
+				`Details: ${id}`,
+				vscode.ViewColumn.One,
+				{
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+			);
+			panel.webview.html = context.templateEngine.render('alias-details', { alias });
+		});
+	} catch(err) {
+		showErrorMessage('Could not access app bundle alias', err);
+	}
+}
+
 export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		await vscode.window.withProgress({
@@ -152,6 +186,40 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 		});
 	} catch(err) {
 		showErrorMessage('Could not access activity', err);
+	}
+}
+
+export async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
+    try {
+		if (!id) {
+			id = await promptAppBundleFullID(context);
+			if (!id) {
+				return;
+			}
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting alias details: ${id}`,
+			cancellable: false
+        }, async (progress, token) => {
+            // TODO: add a method to the SDK for retrieve a single alias info
+            const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
+            const aliases = await context.designAutomationClient.listActivityAliases(daid.id);
+            const alias = aliases.find(entry => entry.id === daid.alias);
+			const panel = vscode.window.createWebviewPanel(
+				'activity-alias-details',
+				`Details: ${id}`,
+				vscode.ViewColumn.One,
+				{
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+			);
+			panel.webview.html = context.templateEngine.render('alias-details', { alias });
+		});
+	} catch(err) {
+		showErrorMessage('Could not access activity alias', err);
 	}
 }
 

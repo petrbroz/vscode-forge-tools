@@ -323,6 +323,11 @@
 				"category": "Forge Design Automation"
 			},
 			{
+				"command": "forge.viewAppBundleAliasDetails",
+				"title": "View Alias Details",
+				"category": "Forge Design Automation"
+			},
+			{
 				"command": "forge.deleteAppBundle",
 				"title": "Delete App Bundle",
 				"category": "Forge Design Automation"
@@ -355,6 +360,11 @@
 			{
 				"command": "forge.viewActivityVersionDetails",
 				"title": "View Activity Details",
+				"category": "Forge Design Automation"
+			},
+            {
+				"command": "forge.viewActivityAliasDetails",
+				"title": "View Alias Details",
 				"category": "Forge Design Automation"
 			},
 			{
@@ -632,6 +642,11 @@
 					"group": "0_view"
 				},
 				{
+					"command": "forge.viewAppBundleAliasDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"group": "0_view"
+				},
+				{
 					"command": "forge.viewAppBundleDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == shared-appbundle",
 					"group": "0_view"
@@ -673,6 +688,11 @@
 				},
 				{
 					"command": "forge.viewActivityDetails",
+					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"group": "0_view"
+				},
+                {
+					"command": "forge.viewActivityAliasDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
