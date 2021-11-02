@@ -11,7 +11,7 @@ interface INameAndVersion {
 	version: number;
 }
 
-function sleep(ms: number) {
+function sleep(ms: number): Promise<void> {
     return new Promise(function(resolve, reject) {
         setTimeout(function() { resolve(); }, ms);
     });
@@ -116,6 +116,40 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 	}
 }
 
+export async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
+    try {
+		if (!id) {
+			id = await promptAppBundleFullID(context);
+			if (!id) {
+				return;
+			}
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting alias details: ${id}`,
+			cancellable: false
+        }, async (progress, token) => {
+            // TODO: add a method to the SDK for retrieve a single alias info
+            const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
+            const aliases = await context.designAutomationClient.listAppBundleAliases(daid.id);
+            const alias = aliases.find(entry => entry.id === daid.alias);
+			const panel = vscode.window.createWebviewPanel(
+				'appbundle-alias-details',
+				`Details: ${id}`,
+				vscode.ViewColumn.One,
+				{
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+			);
+			panel.webview.html = context.templateEngine.render('alias-details', { alias });
+		});
+	} catch(err) {
+		showErrorMessage('Could not access app bundle alias', err);
+	}
+}
+
 export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		await vscode.window.withProgress({
@@ -152,6 +186,40 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 		});
 	} catch(err) {
 		showErrorMessage('Could not access activity', err);
+	}
+}
+
+export async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
+    try {
+		if (!id) {
+			id = await promptAppBundleFullID(context);
+			if (!id) {
+				return;
+			}
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Getting alias details: ${id}`,
+			cancellable: false
+        }, async (progress, token) => {
+            // TODO: add a method to the SDK for retrieve a single alias info
+            const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
+            const aliases = await context.designAutomationClient.listActivityAliases(daid.id);
+            const alias = aliases.find(entry => entry.id === daid.alias);
+			const panel = vscode.window.createWebviewPanel(
+				'activity-alias-details',
+				`Details: ${id}`,
+				vscode.ViewColumn.One,
+				{
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+			);
+			panel.webview.html = context.templateEngine.render('alias-details', { alias });
+		});
+	} catch(err) {
+		showErrorMessage('Could not access activity alias', err);
 	}
 }
 
@@ -353,13 +421,14 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 		});
 		if (!appBundleVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating appbundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion));
+			await context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Appbundle alias created`);
 	} catch(err) {
@@ -375,13 +444,14 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 		});
 		if (!appBundleVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Updating appbundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion));
+			await context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Appbundle alias updated`);
 	} catch(err) {
@@ -476,13 +546,14 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 		});
 		if (!activityVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion));
+			await context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Activity alias created`);
 	} catch(err) {
@@ -498,13 +569,14 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 		});
 		if (!activityVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Updating activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion));
+			await context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {
