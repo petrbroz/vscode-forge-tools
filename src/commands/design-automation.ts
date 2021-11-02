@@ -353,13 +353,14 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 		});
 		if (!appBundleVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating appbundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion));
+			await context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Appbundle alias created`);
 	} catch(err) {
@@ -375,13 +376,14 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 		});
 		if (!appBundleVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Updating appbundle alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion));
+			await context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Appbundle alias updated`);
 	} catch(err) {
@@ -476,13 +478,14 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 		});
 		if (!activityVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Creating activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion));
+			await context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Activity alias created`);
 	} catch(err) {
@@ -498,13 +501,14 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 		});
 		if (!activityVersion) {
 			return;
-		}
+        }
+        const receiver = await vscode.window.showInputBox({ prompt: 'Enter receiver ID (optional)' });
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Updating activity alias: ${id}/${alias}`,
 			cancellable: false
 		}, async (progress, token) => {
-			await context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion));
+			await context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion), receiver);
 		});
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {

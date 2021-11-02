@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Support for sharing DA app bundle or activity aliases with other Forge apps
+
 ## [2.3.1] - 2021-06-03
 
 - Added
