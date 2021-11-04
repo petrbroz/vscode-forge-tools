@@ -792,7 +792,7 @@
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
 		"axios": "^0.21.1",
-		"forge-convert-utils": "^3.5.0",
+		"forge-convert-utils": "^3.6.2",
 		"forge-server-utils": "^8.3.4",
 		"fs-extra": "^9.0.0"
 	}

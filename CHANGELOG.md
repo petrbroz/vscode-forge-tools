@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - Failing SVF download when viewables contain special characters
+
 ## [2.3.2] - 2021-11-02
 
 - Added
