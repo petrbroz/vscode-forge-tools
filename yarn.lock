@@ -1258,17 +1258,17 @@ for-in@^1.0.2:
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
   integrity sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=
 
-forge-convert-utils@^3.5.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/forge-convert-utils/-/forge-convert-utils-3.6.0.tgz#36235955e085fbde477ad1a68d6d82d746665c30"
-  integrity sha512-N3emDIC6IWk7MX2fdDsBBfkK+xq/Ve2bEOCvYWV0HeHxzzO3kVHHK4S2yu8m//apEhgEeXVU8gjaNezDqYij1w==
+forge-convert-utils@^3.6.2:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/forge-convert-utils/-/forge-convert-utils-3.6.2.tgz#ba4aaf0252b97ad94dc81183227665411905f93c"
+  integrity sha512-Aq2+U4mhE1ECDDj2aiJzGSQswSMB4nc1hanFPdopobDezIH6cqhx+XwuiLePQhUay9aiBBgmyRz+FWy+lA7KBA==
   dependencies:
     adm-zip "^0.4.13"
     commander "^3.0.2"
-    forge-server-utils "^8.2.2"
+    forge-server-utils "^8.3.4"
     fs-extra "^8.1.0"
 
-forge-server-utils@^8.2.2, forge-server-utils@^8.3.4:
+forge-server-utils@^8.3.4:
   version "8.3.4"
   resolved "https://registry.yarnpkg.com/forge-server-utils/-/forge-server-utils-8.3.4.tgz#b25136958b2c33b43b74cc8a09bdf3e3857b3bdf"
   integrity sha512-2qt6cixy07gvuuM7NQitwSyrDpxvP6BfXmwor+MaO+C8w7Z0YefiOu6alYLJ4ypCEi8tlUN8OQujtXT0LH6dbA==
