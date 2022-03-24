@@ -48,6 +48,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	let context: IContext = {
 		extensionContext: _context,
 		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
+        environment: env,
 		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret, env.host),
 		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		modelDerivativeClient2L: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
@@ -393,9 +394,6 @@ function registerModelDerivativeCommands(context: IContext, simpleStorageDataPro
     });
     vscode.commands.registerCommand('forge.downloadDerivativeF2d', async (object?: IObject) => {
         await mdc.downloadDerivativesF2D(object, context);
-    });
-    vscode.commands.registerCommand('forge.downloadDerivativeOtg', async (object?: IObject) => {
-        await mdc.downloadDerivativesOTG(object, context);
     });
     vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
         await mdc.downloadDerivativeGLTF(object, context);

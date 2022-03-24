@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.3.3",
+	"version": "2.3.4",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -284,11 +284,6 @@
 				"category": "Forge Model Derivative"
 			},
 			{
-				"command": "forge.downloadDerivativeOtg",
-				"title": "Download Object Derivatives as OTG",
-				"category": "Forge Model Derivative"
-			},
-			{
 				"command": "forge.downloadDerivativeGltf",
 				"title": "Download Object Derivatives as glTF",
 				"category": "Forge Model Derivative"
@@ -362,7 +357,7 @@
 				"title": "View Activity Details",
 				"category": "Forge Design Automation"
 			},
-            {
+			{
 				"command": "forge.viewActivityAliasDetails",
 				"title": "View Alias Details",
 				"category": "Forge Design Automation"
@@ -587,11 +582,6 @@
 					"group": "1_action_md@5"
 				},
 				{
-					"command": "forge.downloadDerivativeOtg",
-					"when": "view == forgeDataManagementView && viewItem == object",
-					"group": "1_action_md@6"
-				},
-				{
 					"command": "forge.downloadDerivativeGltf",
 					"when": "view == forgeDataManagementView && viewItem == object",
 					"group": "1_action_md@7"
@@ -691,7 +681,7 @@
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
-                {
+				{
 					"command": "forge.viewActivityAliasDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
@@ -792,7 +782,7 @@
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
 		"axios": "^0.21.1",
-		"forge-convert-utils": "^3.6.2",
+		"forge-convert-utils": "^4.0.1",
 		"forge-server-utils": "^8.3.4",
 		"fs-extra": "^9.0.0"
 	}
