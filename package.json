@@ -357,7 +357,7 @@
 				"title": "View Activity Details",
 				"category": "Forge Design Automation"
 			},
-            {
+			{
 				"command": "forge.viewActivityAliasDetails",
 				"title": "View Alias Details",
 				"category": "Forge Design Automation"
@@ -681,7 +681,7 @@
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
-                {
+				{
 					"command": "forge.viewActivityAliasDetails",
 					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
@@ -782,7 +782,7 @@
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
 		"axios": "^0.21.1",
-		"forge-convert-utils": "^4.0.2",
+		"forge-convert-utils": "^4.0.1",
 		"forge-server-utils": "^8.3.4",
 		"fs-extra": "^9.0.0"
 	}
