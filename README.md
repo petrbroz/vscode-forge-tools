@@ -78,7 +78,7 @@ similarly to the functionality provided by https://extract.autodesk.io. All the 
     <files shared by all viewables>
 ```
 
-Additional output formats are also supported, for example, F2D, OTG, or glTF.
+Additional output formats are also supported, for example, F2D, or glTF.
 
 ### Hubs & Derivatives View
 

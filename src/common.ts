@@ -12,6 +12,7 @@ import {
 } from 'forge-server-utils';
 import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'forge-server-utils/dist/common';
+import { IEnvironment } from './environments';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -21,6 +22,7 @@ export interface IPreviewSettings {
 
 export interface IContext {
     credentials: IAuthOptions;
+    environment: IEnvironment;
     extensionContext: vscode.ExtensionContext;
     authenticationClient: AuthenticationClient;
     dataManagementClient: DataManagementClient;

@@ -13,7 +13,7 @@ import {
 	IDerivativeTree,
 	ModelDerivativeClient
 } from 'forge-server-utils';
-import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, OtgDownloader } from 'forge-convert-utils';
+import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'forge-convert-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
@@ -189,11 +189,22 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
+		let env = context.previewSettings.env;
+		if (!env) {
+			env = derivative.format === 'svf2' ? 'AutodeskProduction2' : 'AutodeskProduction';
+		}
+		let api = context.previewSettings.api;
+		if (!api) {
+			api = derivative.format === 'svf2' ? 'streamingV2' : 'derivativeV2';
+			if (context.environment.region === 'EMEA') {
+				api += '_EU';
+			}
+		}
 		panel.webview.html = context.templateEngine.render('derivative-preview', {
 			viewer: {
 				config: JSON.stringify({ extensions: context.previewSettings.extensions }),
-				env: context.previewSettings.env || (derivative.format === 'svf2' ? 'MD20ProdUS' : 'AutodeskProduction'),
-				api: context.previewSettings.api || (derivative.format === 'svf2' ? 'D3S' : 'derivativeV2')
+				env,
+				api
 			},
 			urn: derivative.urn,
 			guid: derivative.guid,
@@ -599,53 +610,6 @@ export async function downloadDerivativesF2D(object: IObject | undefined, contex
 		}
 	} catch (err) {
 		showErrorMessage(`Could not download F2D`, err);
-	}
-}
-
-export async function downloadDerivativesOTG(object: IObject | undefined, context: IContext) {
-	try {
-		if (!object) {
-			const bucket = await promptBucket(context);
-			if (!bucket) {
-				return;
-			}
-			object = await promptObject(context, bucket.bucketKey);
-			if (!object) {
-				return;
-			}
-		}
-
-		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
-		if (!outputFolderUri) {
-			return;
-		}
-
-		const baseDir = outputFolderUri[0].fsPath;
-		const urn = urnify(object.objectId);
-		let cancelled = false;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Downloading OTG: ${object.objectKey}`,
-			cancellable: true
-		}, async (progress, token) => {
-			let cancelled = false;
-			const otgDownloader = new OtgDownloader(context.credentials);
-			const otgDownloadTask = otgDownloader.download(urn, {
-				outputDir: baseDir,
-				log: (message: string) => progress.report({ message })
-			});
-			token.onCancellationRequested(() => {
-				otgDownloadTask.cancel();
-				cancelled = true;
-			});
-			await otgDownloadTask.ready;
-		});
-		const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
-		if (action === 'Open Folder') {
-			vscode.env.openExternal(vscode.Uri.file(baseDir));
-		}
-	} catch (err) {
-		showErrorMessage(`Could not download OTG`, err);
 	}
 }
 
