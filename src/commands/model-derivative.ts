@@ -75,7 +75,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
-		client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		client.submitJob(urn, [{ type: 'svf2', views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
