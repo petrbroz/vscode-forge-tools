@@ -32,17 +32,17 @@ export function getEnvironments(): IEnvironment[] {
 
 export async function setupNewEnvironment() {
     try {
-        const choice = await vscode.window.showInformationMessage('Forge credentials are missing. Configure them in VSCode settings.', 'Enter Forge Credentials');
-        if (choice === 'Enter Forge Credentials') {
-            const clientId = await vscode.window.showInputBox({ prompt: 'Enter Forge client ID', ignoreFocusOut: true });
+        const choice = await vscode.window.showInformationMessage('APS application credentials are missing. Configure them in VSCode settings.', 'Enter APS Credentials');
+        if (choice === 'Enter APS Credentials') {
+            const clientId = await vscode.window.showInputBox({ prompt: 'Enter APS client ID', ignoreFocusOut: true });
             if (!clientId) {
                 return;
             }
-            const clientSecret = await vscode.window.showInputBox({ prompt: 'Enter Forge client secret', ignoreFocusOut: true });
+            const clientSecret = await vscode.window.showInputBox({ prompt: 'Enter APS client secret', ignoreFocusOut: true });
             if (!clientSecret) {
                 return;
             }
-            const region = await vscode.window.showQuickPick(['US', 'EMEA'], { placeHolder: 'Choose your Forge region', ignoreFocusOut: true });
+            const region = await vscode.window.showQuickPick(['US', 'EMEA'], { placeHolder: 'Choose your APS region', ignoreFocusOut: true });
             if (!region) {
                 return;
             }
@@ -55,6 +55,6 @@ export async function setupNewEnvironment() {
             vscode.commands.executeCommand('workbench.action.reloadWindow');
         }
     } catch (err) {
-        vscode.window.showErrorMessage(`Could not setup Forge environment: ${err}`);
+        vscode.window.showErrorMessage(`Could not setup APS environment: ${err}`);
     }
 }

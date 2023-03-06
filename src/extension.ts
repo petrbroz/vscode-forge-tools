@@ -66,22 +66,22 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	// Setup buckets view
 	let simpleStorageDataProvider = new dmp.SimpleStorageDataProvider(context);
-	let dataManagementView = vscode.window.createTreeView('forgeDataManagementView', { treeDataProvider: simpleStorageDataProvider });
+	let dataManagementView = vscode.window.createTreeView('apsDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.extensionContext.subscriptions.push(dataManagementView);
 
 	// Setup hubs view
 	let hubsDataProvider = new HubsDataProvider(context);
-	let hubsView = vscode.window.createTreeView('forgeHubsView', { treeDataProvider: hubsDataProvider });
+	let hubsView = vscode.window.createTreeView('apsHubsView', { treeDataProvider: hubsDataProvider });
 	context.extensionContext.subscriptions.push(hubsView);
 
     // Setup design automation view
 	let designAutomationDataProvider = new dap.DesignAutomationDataProvider(context);
-	let designAutomationView = vscode.window.createTreeView('forgeDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
+	let designAutomationView = vscode.window.createTreeView('apsDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
 	context.extensionContext.subscriptions.push(designAutomationView);
 
 	// Setup webhooks view
 	let webhooksDataProvider = new WebhooksDataProvider(context);
-	let webhooksView = vscode.window.createTreeView('forgeWebhooksView', { treeDataProvider: webhooksDataProvider });
+	let webhooksView = vscode.window.createTreeView('apsWebhooksView', { treeDataProvider: webhooksDataProvider });
 	context.extensionContext.subscriptions.push(webhooksView);
 
 	registerDataManagementCommands(simpleStorageDataProvider, context);
@@ -90,7 +90,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	registerWebhookCommands(webhooksDataProvider, context);
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
-		statusBarItem.text = 'Forge Env: ' + env.title;
+		statusBarItem.text = 'APS Env: ' + env.title;
 		statusBarItem.command = 'forge.switchEnvironment';
 		statusBarItem.show();
 	}
@@ -128,7 +128,7 @@ export function activate(_context: vscode.ExtensionContext) {
 			context.modelDerivativeClient3L.reset({ token: context.threeLeggedToken }, env.host, env.region as Region);
 			hubsDataProvider.refresh();
 			updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged in. Autodesk Forge services requiring 3-legged authentication will be available for as long as the generated token is valid (${expires} seconds), or until you manually log out.`);
+			vscode.window.showInformationMessage(`You are now logged in. Autodesk Platform Services requiring 3-legged authentication will be available for as long as the generated token is valid (${expires} seconds), or until you manually log out.`);
 		} catch (err) {
 			vscode.window.showWarningMessage(`Could not log in: ${err}`);
 		}
@@ -143,13 +143,13 @@ export function activate(_context: vscode.ExtensionContext) {
 			context.modelDerivativeClient3L.reset({ token: '' }, env.host, env.region as Region);
 			hubsDataProvider.refresh();
 			updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged out. Autodesk Forge services requiring 3-legged authentication will no longer be available.`);
+			vscode.window.showInformationMessage(`You are now logged out. Autodesk Platform Services requiring 3-legged authentication will no longer be available.`);
 		}
 	});
 
 	vscode.commands.registerCommand('forge.switchEnvironment', async () => {
 		const environments = getEnvironments();
-		const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select Forge environment' });
+		const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select APS environment' });
 		if (!name) {
 			return;
 		}
