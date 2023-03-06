@@ -100,10 +100,10 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
 		if (context.threeLeggedToken) {
-			statusBarItem.text = 'Forge Auth: 3-legged';
+			statusBarItem.text = 'APS Auth: 3-legged';
 			statusBarItem.command = 'forge.logout';
 		} else {
-			statusBarItem.text = 'Forge Auth: 2-legged';
+			statusBarItem.text = 'APS Auth: 2-legged';
 			statusBarItem.command = 'forge.login';
 		}
 		statusBarItem.show();

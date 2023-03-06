@@ -10,10 +10,13 @@
 
 ![Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/screenshot.png)
 
+> Note: _Autodesk Forge_ is now _Autodesk Platform Services_ but you may still see the _Forge_ reference in different areas
+> when working with this extension. These references have been kept to prevent backwards compatibility issues.
+
 ## Requirements
 
 - [Visual Studio Code](https://code.visualstudio.com) version 1.31.0 or newer
-- APS application credentials ([tutorial](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
+- [APS application credentials](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app)
 
 ## Getting Started
 
@@ -23,7 +26,7 @@ While in Visual Studio Code:
 - Search for the _Autodesk Platform Services_ extension and install it
 - Open _User Settings_ (`Cmd`+`,` on macOS or `Ctrl`+`,` on Windows), and search for _autodesk env_
   - Note: switch to _User_ or _Workspace_ tab depending on whether you want to persist the settings globally (for all instances of vscode) or locally (for a specific workspace/folder)
-- In the _Autodesk > APS: Environments_ section, click _Edit in settings.json_ and define one or more environments as explained in the _Extension Settings_ section below
+- In the _Autodesk > Forge: Environments_ section, click _Edit in settings.json_ and define one or more environments as explained in the [Extension Settings](##extension-settings) section below
 - Switch to the new _Autodesk Platform Services_ sidebar and start browsing!
 
 ## Extension Settings
@@ -35,7 +38,7 @@ This extension contributes the following settings:
   - `clientId` (required) - APS client ID
   - `clientSecret` (required) - APS client secret
   - `region` - data region for storing design data; can be `US` (default) or `EMEA`
-- `autodesk.forge.viewer.extensions`: array of viewer [extensions](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions)
+- `autodesk.forge.viewer.extensions`: array of Viewer [extensions](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions)
 (for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be used when previewing derivatives
 
 Here's an example of an environment list:
