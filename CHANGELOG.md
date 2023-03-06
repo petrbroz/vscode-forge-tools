@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Branding from Autodesk Forge to Autodesk Platform Services
+
 ## [2.3.4] - 2022-03-24
 
 - Removed
