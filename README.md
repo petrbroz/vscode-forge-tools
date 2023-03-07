@@ -31,15 +31,19 @@ While in Visual Studio Code:
 
 ## Extension Settings
 
-This extension contributes the following settings:
+The extension exposes the following settings:
 
-- `autodesk.forge.environments`: array of objects representing different APS applications or "environments"; each environment can specify the following properties:
+- `autodesk.forge.environments` - array of objects representing different APS applications or "environments"; each environment can specify the following properties:
   - `title` (required) - unique name of the application (will be shown in status bar and when switching to other applications)
   - `clientId` (required) - APS client ID
   - `clientSecret` (required) - APS client secret
   - `region` - data region for storing design data; can be `US` (default) or `EMEA`
-- `autodesk.forge.viewer.extensions`: array of Viewer [extensions](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions)
-(for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be used when previewing derivatives
+- `autodesk.forge.authentication.port` - server port to use during 3-legged authentication workflows
+- `autodesk.forge.data.defaultContentType` - content type to use for all files uploaded to OSS
+- `autodesk.forge.data.uploadChunkSize` - size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality
+- `autodesk.forge.viewer.extensions` - array of Viewer [extensions](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions) (for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be used when previewing derivatives
+- `autodesk.forge.viewer.api` - API used by the viewer; by default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)
+- `autodesk.forge.viewer.env` - Environment used by the viewer; by default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)
 
 Here's an example of an environment list:
 
@@ -60,13 +64,13 @@ the extension will present the list of environments from the _Workspace_ scope a
 
 ### Buckets & Derivatives View
 
-The _Buckets & Derivatives_ view allows you to browse [Data Management](https://aps.autodesk.com/en/docs/data/v2/developers_guide/overview) OSS (object simple storage) content, create buckets, upload/download files, translate them using [Model Derivative](https://aps.autodesk.com/en/docs/model-derivative/v2) service, and access the resulting derivatives. All derivatives are listed as children of their corresponding objects in the tree. If there are no derivatives yet, or if there's been an issue with the translation, the tree view will provide additional information.
+The _Buckets & Derivatives_ view allows you to browse [Data Management](https://aps.autodesk.com/en/docs/data/v2/developers_guide/overview) OSS (object simple storage) content, create buckets, upload/download files, translate them using the [Model Derivative](https://aps.autodesk.com/en/docs/model-derivative/v2) service, and even access the generated derivatives. All derivatives are listed as children of their corresponding objects in the tree. If there are no derivatives yet, or if there's been an issue with the translation, the tree view will provide additional information.
 
 ![Create bucket and upload object](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/create-bucket-upload-file.gif)
 
 ![Translate object and view derivatives](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/translate-and-preview.gif)
 
-For objects that have already been translated using the Model Derivative service, you can use a command (or a context menu item) called `Download Object Derivatives as SVF` which will download the SVF file (proprietary format used for viewing 3D content in the APS Viewer) and all its dependencies into a folder you pick,
+For objects that have already been translated using the Model Derivative service, you can use a command (or a context menu item) called `Download Object Derivatives as SVF` which will download the SVF file (proprietary format used for viewing 3D content in the Viewer) and all its dependencies into a folder you pick,
 similarly to the functionality provided by https://extract.autodesk.io. All the content will be stored using the following subfolder structure:
 
 ```
