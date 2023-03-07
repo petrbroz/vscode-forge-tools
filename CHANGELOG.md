@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.4.0] - 2023-03-07
+
+- Changed
+  - Branding from Autodesk Forge to Autodesk Platform Services
+  - Updated npm dependencies
+  - Switched to SVF2 as the default output format
+
 ## [2.3.4] - 2022-03-24
 
 - Removed

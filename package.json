@@ -1,12 +1,12 @@
 {
 	"name": "vscode-forge-tools",
-	"displayName": "Autodesk Forge Tools",
+	"displayName": "Autodesk Platform Services",
 	"publisher": "petrbroz",
 	"icon": "resources/marketplace-logo.png",
-	"description": "Visual Studio Code extension for accessing Autodesk Forge services and content.",
+	"description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.3.4",
+	"version": "2.4.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -18,7 +18,7 @@
 	},
 	"keywords": [
 		"autodesk",
-		"forge",
+		"autodesk-platform-services",
 		"vscode",
 		"extension"
 	],
@@ -29,23 +29,23 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:forgeDataManagementView",
-		"onView:forgeDesignAutomationView",
-		"onView:forgeHubsView",
-		"onView:forgeWebhooksView"
+		"onView:apsDataManagementView",
+		"onView:apsDesignAutomationView",
+		"onView:apsHubsView",
+		"onView:apsWebhooksView"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"configuration": {
-			"title": "Forge",
+			"title": "Autodesk Platform Services",
 			"properties": {
 				"autodesk.forge.environments": {
 					"scope": "resource",
 					"type": "array",
-					"description": "List of Forge environments to switch between",
+					"description": "List of APS environments to switch between",
 					"items": {
 						"type": "object",
-						"title": "Forge environments",
+						"title": "APS environments",
 						"properties": {
 							"title": {
 								"type": "string",
@@ -53,20 +53,20 @@
 							},
 							"clientId": {
 								"type": "string",
-								"description": "Forge client ID"
+								"description": "APS client ID"
 							},
 							"clientSecret": {
 								"type": "string",
-								"description": "Forge client secret"
+								"description": "APS client secret"
 							},
 							"host": {
 								"type": "string",
-								"description": "Forge API host",
+								"description": "APS host URL",
 								"default": "https://developer.api.autodesk.com"
 							},
 							"region": {
 								"type": "string",
-								"description": "Forge availability region",
+								"description": "APS availability region",
 								"enum": [
 									"US",
 									"EMEA"
@@ -75,7 +75,7 @@
 							},
 							"designAutomationRegion": {
 								"type": "string",
-								"description": "Forge Design Automation availability region",
+								"description": "APS Design Automation availability region",
 								"enum": [
 									"us-west",
 									"us-east"
@@ -96,12 +96,12 @@
 				"autodesk.forge.viewer.env": {
 					"scope": "resource",
 					"type": "string",
-					"description": "Custom Model Derivative environment used by the Forge Viewer. By default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)."
+					"description": "Custom Model Derivative environment used by the APS Viewer. By default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)."
 				},
 				"autodesk.forge.viewer.api": {
 					"scope": "resource",
 					"type": "string",
-					"description": "Custom Model Derivative API used by the Forge Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
+					"description": "Custom Model Derivative API used by the APS Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
 				},
 				"autodesk.forge.authentication.port": {
 					"scope": "resource",
@@ -126,28 +126,28 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "forgeViewContainer",
-					"title": "Forge",
+					"id": "apsViewContainer",
+					"title": "Autodesk Platform Services",
 					"icon": "resources/sidebar-logo.svg"
 				}
 			]
 		},
 		"views": {
-			"forgeViewContainer": [
+			"apsViewContainer": [
 				{
-					"id": "forgeDataManagementView",
+					"id": "apsDataManagementView",
 					"name": "Buckets & Derivatives"
 				},
 				{
-					"id": "forgeHubsView",
+					"id": "apsHubsView",
 					"name": "Hubs & Derivatives"
 				},
 				{
-					"id": "forgeWebhooksView",
+					"id": "apsWebhooksView",
 					"name": "Webhooks"
 				},
 				{
-					"id": "forgeDesignAutomationView",
+					"id": "apsDesignAutomationView",
 					"name": "Design Automation"
 				}
 			]
@@ -176,122 +176,122 @@
 			{
 				"command": "forge.viewBucketDetails",
 				"title": "View Bucket Details",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.viewObjectDetails",
 				"title": "View Object Details",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.uploadObject",
 				"title": "Upload Object",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.createEmptyObject",
 				"title": "Create Empty Object",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.deleteBucketObjects",
 				"title": "Delete All Objects",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.downloadObject",
 				"title": "Download Object",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.renameObject",
 				"title": "Rename Object",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.copyObject",
 				"title": "Copy Object",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.deleteObject",
 				"title": "Delete Object",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.generateSignedUrl",
 				"title": "Generate Signed URL",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.deleteBucket",
 				"title": "Delete Bucket",
-				"category": "Forge Data Management"
+				"category": "Data Management"
 			},
 			{
 				"command": "forge.translateObject",
 				"title": "Translate Object",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.translateObjectCustom",
 				"title": "Translate Object (Custom)",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.previewDerivative",
 				"title": "Preview Derivative",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.viewDerivativeTree",
 				"title": "View Derivative Tree JSON",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.viewDerivativeProps",
 				"title": "View Derivative Properties JSON",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.viewObjectManifest",
 				"title": "View Object Manifest JSON",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.copyObjectUrn",
 				"title": "Copy Object URN to Clipboard",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.deleteObjectManifest",
 				"title": "Delete Derivatives",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.viewObjectThumbnail",
 				"title": "View Object Thumbnails",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.downloadDerivativeSvf",
 				"title": "Download Object Derivatives as SVF",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.downloadDerivativeF2d",
 				"title": "Download Object Derivatives as F2D",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.downloadDerivativeGltf",
 				"title": "Download Object Derivatives as glTF",
-				"category": "Forge Model Derivative"
+				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.refreshDesignAutomationTree",
 				"title": "Refresh Design Automation Tree",
-				"category": "Forge Design Automation",
+				"category": "Design Automation",
 				"icon": {
 					"light": "resources/icons/dark/refresh.svg",
 					"dark": "resources/icons/light/refresh.svg"
@@ -300,112 +300,112 @@
 			{
 				"command": "forge.createAppBundle",
 				"title": "Create App Bundle",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.updateAppBundle",
 				"title": "Update App Bundle",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.viewAppBundleDetails",
 				"title": "View App Bundle Details",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.viewAppBundleVersionDetails",
 				"title": "View App Bundle Details",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.viewAppBundleAliasDetails",
 				"title": "View Alias Details",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.deleteAppBundle",
 				"title": "Delete App Bundle",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.deleteAppBundleAlias",
 				"title": "Delete App Bundle Alias",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.createAppBundleAlias",
 				"title": "Create App Bundle Alias",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.updateAppBundleAlias",
 				"title": "Update App Bundle Alias",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.deleteAppBundleVersion",
 				"title": "Delete App Bundle Version",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.viewActivityDetails",
 				"title": "View Activity Details",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.viewActivityVersionDetails",
 				"title": "View Activity Details",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.viewActivityAliasDetails",
 				"title": "View Alias Details",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.createActivity",
 				"title": "Create Activity",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.updateActivity",
 				"title": "Update Activity",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.deleteActivity",
 				"title": "Delete Activity",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.deleteActivityAlias",
 				"title": "Delete Activity Alias",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.createActivityAlias",
 				"title": "Create Activity Alias",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.updateActivityAlias",
 				"title": "Update Activity Alias",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.deleteActivityVersion",
 				"title": "Delete Activity Version",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.createWorkitem",
 				"title": "Create Workitem",
-				"category": "Forge Design Automation"
+				"category": "Design Automation"
 			},
 			{
 				"command": "forge.refreshWebhooks",
 				"title": "Refresh Webhooks",
-				"category": "Forge Webhooks",
+				"category": "Webhooks",
 				"icon": {
 					"light": "resources/icons/dark/refresh.svg",
 					"dark": "resources/icons/light/refresh.svg"
@@ -414,186 +414,186 @@
 			{
 				"command": "forge.viewWebhookDetails",
 				"title": "View Webhook Details",
-				"category": "Forge Webhooks"
+				"category": "Webhooks"
 			},
 			{
 				"command": "forge.createWebhook",
 				"title": "Create Webhook",
-				"category": "Forge Webhooks"
+				"category": "Webhooks"
 			},
 			{
 				"command": "forge.updateWebhook",
 				"title": "Update Webhook",
-				"category": "Forge Webhooks"
+				"category": "Webhooks"
 			},
 			{
 				"command": "forge.deleteWebhook",
 				"title": "Delete Webhook",
-				"category": "Forge Webhooks"
+				"category": "Webhooks"
 			},
 			{
 				"command": "forge.login",
 				"title": "Login",
-				"category": "Forge Authentication"
+				"category": "Authentication"
 			},
 			{
 				"command": "forge.logout",
 				"title": "Logout",
-				"category": "Forge Authentication"
+				"category": "Authentication"
 			},
 			{
 				"command": "forge.getAccessToken",
 				"title": "Generate Access Token",
-				"category": "Forge Authentication"
+				"category": "Authentication"
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
 					"command": "forge.refreshBuckets",
-					"when": "view == forgeDataManagementView",
+					"when": "view == apsDataManagementView",
 					"group": "navigation"
 				},
 				{
 					"command": "forge.createBucket",
-					"when": "view == forgeDataManagementView",
+					"when": "view == apsDataManagementView",
 					"group": "navigation"
 				},
 				{
 					"command": "forge.refreshDesignAutomationTree",
-					"when": "view == forgeDesignAutomationView",
+					"when": "view == apsDesignAutomationView",
 					"group": "navigation"
 				},
 				{
 					"command": "forge.refreshWebhooks",
-					"when": "view == forgeWebhooksView",
+					"when": "view == apsWebhooksView",
 					"group": "navigation"
 				}
 			],
 			"view/item/context": [
 				{
 					"command": "forge.viewBucketDetails",
-					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.uploadObject",
-					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "1_action@1"
 				},
 				{
 					"command": "forge.createEmptyObject",
-					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "1_action@2"
 				},
 				{
 					"command": "forge.deleteBucketObjects",
-					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "3_remove@1"
 				},
 				{
 					"command": "forge.deleteBucket",
-					"when": "view == forgeDataManagementView && viewItem == bucket",
+					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "3_remove@2"
 				},
 				{
 					"command": "forge.viewObjectDetails",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@1"
 				},
 				{
 					"command": "forge.viewObjectManifest",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@2"
 				},
 				{
 					"command": "forge.viewObjectManifest",
-					"when": "view == forgeHubsView && viewItem == version",
+					"when": "view == apsHubsView && viewItem == version",
 					"group": "0_view@2"
 				},
 				{
 					"command": "forge.viewObjectThumbnail",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@3"
 				},
 				{
 					"command": "forge.viewObjectThumbnail",
-					"when": "view == forgeHubsView && viewItem == version",
+					"when": "view == apsHubsView && viewItem == version",
 					"group": "0_view@3"
 				},
 				{
 					"command": "forge.downloadObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@1"
 				},
 				{
 					"command": "forge.renameObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@2"
 				},
 				{
 					"command": "forge.copyObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@3"
 				},
 				{
 					"command": "forge.generateSignedUrl",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@4"
 				},
 				{
 					"command": "forge.copyObjectUrn",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@1"
 				},
 				{
 					"command": "forge.copyObjectUrn",
-					"when": "view == forgeHubsView && viewItem == version",
+					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@1"
 				},
 				{
 					"command": "forge.translateObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@2"
 				},
 				{
 					"command": "forge.translateObject",
-					"when": "view == forgeHubsView && viewItem == version",
+					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@2"
 				},
 				{
 					"command": "forge.translateObjectCustom",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@3"
 				},
 				{
 					"command": "forge.translateObjectCustom",
-					"when": "view == forgeHubsView && viewItem == version",
+					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@3"
 				},
 				{
 					"command": "forge.downloadDerivativeSvf",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@4"
 				},
 				{
 					"command": "forge.downloadDerivativeF2d",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@5"
 				},
 				{
 					"command": "forge.downloadDerivativeGltf",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@7"
 				},
 				{
 					"command": "forge.deleteObject",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "3_remove@1"
 				},
 				{
 					"command": "forge.deleteObjectManifest",
-					"when": "view == forgeDataManagementView && viewItem == object",
+					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "3_remove@2"
 				},
 				{
@@ -613,147 +613,147 @@
 				},
 				{
 					"command": "forge.createAppBundle",
-					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundles",
+					"when": "view == apsDesignAutomationView && viewItem == owned-appbundles",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.updateAppBundle",
-					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
+					"when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteAppBundle",
-					"when": "view == forgeDesignAutomationView && viewItem == owned-appbundle",
+					"when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.viewAppBundleAliasDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.viewAppBundleDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == shared-appbundle",
+					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.deleteAppBundleAlias",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.createAppBundleAlias",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-aliases",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-aliases",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.updateAppBundleAlias",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-alias",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.viewAppBundleVersionDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.deleteAppBundleVersion",
-					"when": "view == forgeDesignAutomationView && viewItem == appbundle-version",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.createActivity",
-					"when": "view == forgeDesignAutomationView && viewItem == owned-activities",
+					"when": "view == apsDesignAutomationView && viewItem == owned-activities",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteActivity",
-					"when": "view == forgeDesignAutomationView && viewItem == owned-activity",
+					"when": "view == apsDesignAutomationView && viewItem == owned-activity",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.viewActivityDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.viewActivityAliasDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.updateActivity",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.createWorkitem",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.viewActivityDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
+					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.createWorkitem",
-					"when": "view == forgeDesignAutomationView && viewItem == shared-activity",
+					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteActivityAlias",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.createActivityAlias",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-aliases",
+					"when": "view == apsDesignAutomationView && viewItem == activity-aliases",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.updateActivityAlias",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-alias",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.viewActivityVersionDetails",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"when": "view == apsDesignAutomationView && viewItem == activity-version",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.updateActivity",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"when": "view == apsDesignAutomationView && viewItem == activity-version",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteActivityVersion",
-					"when": "view == forgeDesignAutomationView && viewItem == activity-version",
+					"when": "view == apsDesignAutomationView && viewItem == activity-version",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.viewWebhookDetails",
-					"when": "view == forgeWebhooksView && viewItem == hook",
+					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "0_view"
 				},
 				{
 					"command": "forge.updateWebhook",
-					"when": "view == forgeWebhooksView && viewItem == hook",
+					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteWebhook",
-					"when": "view == forgeWebhooksView && viewItem == hook",
+					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "3_remove"
 				},
 				{
 					"command": "forge.createWebhook",
-					"when": "view == forgeWebhooksView && viewItem == event",
+					"when": "view == apsWebhooksView && viewItem == event",
 					"group": "2_modify"
 				}
 			]
@@ -770,7 +770,7 @@
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^12.0.0",
 		"@types/vscode": "1.45",
-		"pug": "^3.0.0",
+		"pug": "^2.0.0",
 		"pug-loader": "^2.4.0",
 		"ts-loader": "^7.0.5",
 		"tslint": "^5.12.1",

@@ -75,7 +75,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
-		client.submitJob(urn, [{ type: 'svf', views: ['2d', '3d'] }], undefined, true);
+		client.submitJob(urn, [{ type: 'svf2', views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
@@ -246,7 +246,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				tree = await client.getViewableTree(urn, guid);
 			});
 		} catch (err) {
-			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
+			// APS may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
 			if (err.isAxiosError && err.response.status === 413) {
 				const action = await vscode.window.showInformationMessage(`
@@ -323,7 +323,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				props = await client.getViewableProperties(urn, guid);
 			});
 		} catch (err) {
-			// Forge may respond with code 413 to indicate that the requested JSON data is too large.
+			// APS may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
 			if (err.isAxiosError && err.response.status === 413) {
 				const action = await vscode.window.showInformationMessage(`
