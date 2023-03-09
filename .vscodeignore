@@ -2,7 +2,6 @@
 .vscode-test
 out
 src
-docs
 .gitignore
 tsconfig.json
 tslint.json
