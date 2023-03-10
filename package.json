@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.4.0",
+	"version": "2.4.1",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
