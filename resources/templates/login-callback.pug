@@ -21,7 +21,7 @@ html(lang='en')
           params.set(tokens[0], tokens[1]);
         }
       });
-      const url = new URL(baseUrl + '/vscode-forge-tools/auth/save');
+      const url = new URL(baseUrl + '/autodesk-platform-services/auth/save');
       url.searchParams.set('access_token', params.get('access_token'));
       url.searchParams.set('expires_in', params.get('expires_in'));
       url.searchParams.set('token_type', params.get('token_type'));

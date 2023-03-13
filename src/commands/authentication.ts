@@ -20,15 +20,15 @@ export async function login(clientId: string, port: number, context: IContext): 
             if (req.url === '/') {
                 res.write(context.templateEngine.render('login', { clientId, port, scopes }));
                 res.end();
-            } else if (req.url === '/vscode-forge-tools/auth/callback') {
+            } else if (req.url === '/autodesk-platform-services/auth/callback') {
                 res.write(context.templateEngine.render('login-callback', {}));
                 res.end();
-            } else if (req.url === '/vscode-forge-tools/auth/cancel') {
+            } else if (req.url === '/autodesk-platform-services/auth/cancel') {
                 res.write(context.templateEngine.render('login-message', { message: 'Login process has been cancelled.' }));
                 res.end();
                 server.close();
                 reject('Cancelled by user.');
-            } else if (req.url?.startsWith('/vscode-forge-tools/auth/save')) {
+            } else if (req.url?.startsWith('/autodesk-platform-services/auth/save')) {
                 const parsedUrl = url.parse(req.url);
                 let params = new Map<string, string>();
                 for (const query of parsedUrl.query?.split('&') || []) {

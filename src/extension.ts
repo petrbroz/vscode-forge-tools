@@ -43,7 +43,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	}
 	let env = environments[0];
 
-	console.log('Extension "vscode-forge-tools" has been loaded.');
+	console.log('Extension "autodesk-platform-services" has been loaded.');
 
 	let context: IContext = {
 		extensionContext: _context,
