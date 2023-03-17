@@ -31,38 +31,8 @@ export interface IContext {
     designAutomationClient: DesignAutomationClient;
     webhookClient: WebhooksClient;
     bim360Client: BIM360Client;
-    templateEngine: TemplateEngine;
     previewSettings: IPreviewSettings;
     threeLeggedToken?: string;
-}
-
-export class TemplateEngine {
-    private _cache: Map<string, Function>;
-
-    constructor() {
-        this._cache = new Map();
-        // this._cache.set('activity-details', require('../resources/templates/activity-details.pug'));
-        // this._cache.set('appbundle-details', require('../resources/templates/appbundle-details.pug'));
-        // this._cache.set('alias-details', require('../resources/templates/alias-details.pug'));
-        // this._cache.set('bucket-details', require('../resources/templates/bucket-details.pug'));
-        // this._cache.set('custom-translation', require('../resources/templates/custom-translation.pug'));
-        // this._cache.set('derivative-preview', require('../resources/templates/derivative-preview.pug'));
-        // this._cache.set('login-callback', require('../resources/templates/login-callback.pug'));
-        // this._cache.set('login-message', require('../resources/templates/login-message.pug'));
-        // this._cache.set('login', require('../resources/templates/login.pug'));
-        // this._cache.set('object-details', require('../resources/templates/object-details.pug'));
-        // this._cache.set('object-thumbnail', require('../resources/templates/object-thumbnail.pug'));
-        // this._cache.set('webhook-details', require('../resources/templates/webhook-details.pug'));
-        // this._cache.set('workitem', require('../resources/templates/workitem.pug'));
-    }
-
-    render(templateName: string, data: any): string {
-        const func = this._cache.get(templateName);
-        if (!func) {
-            throw new Error('Unknown template: ' + templateName);
-        }
-        return func(data);
-    }
 }
 
 export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
