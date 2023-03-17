@@ -185,6 +185,22 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 	}
 }
 
+export async function copyBucketKey(bucket: IBucket | undefined, context: IContext) {
+	try {
+		if (!bucket) {
+			bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+		}
+
+		await vscode.env.clipboard.writeText(bucket.bucketKey);
+		vscode.window.showInformationMessage(`Bucket key copied to clipboard: ${bucket.bucketKey}`);
+	} catch (err) {
+		showErrorMessage('Could not obtain bucket key', err);
+	}
+}
+
 export async function uploadObject(bucket: IBucket | undefined, context: IContext) {
 	const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
 
@@ -398,6 +414,26 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 		// await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
 		showErrorMessage('Could not access object', err);
+	}
+}
+
+export async function copyObjectKey(object: IObject | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+
+		await vscode.env.clipboard.writeText(object.objectKey);
+		vscode.window.showInformationMessage(`Object key copied to clipboard: ${object.objectKey}`);
+	} catch (err) {
+		showErrorMessage('Could not obtain object key', err);
 	}
 }
 

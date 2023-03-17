@@ -179,8 +179,18 @@
 				"category": "Data Management"
 			},
 			{
+				"command": "forge.copyBucketKey",
+				"title": "Copy Bucket Key to Clipboard",
+				"category": "Data Management"
+			},
+			{
 				"command": "forge.viewObjectDetails",
 				"title": "View Object Details",
+				"category": "Data Management"
+			},
+			{
+				"command": "forge.copyObjectKey",
+				"title": "Copy Object Key to Clipboard",
 				"category": "Data Management"
 			},
 			{
@@ -474,7 +484,12 @@
 				{
 					"command": "forge.viewBucketDetails",
 					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "0_view"
+					"group": "0_view@1"
+				},
+				{
+					"command": "forge.copyBucketKey",
+					"when": "view == apsDataManagementView && viewItem == bucket",
+					"group": "0_view@2"
 				},
 				{
 					"command": "forge.uploadObject",
@@ -502,9 +517,14 @@
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.viewObjectManifest",
+					"command": "forge.copyObjectKey",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@2"
+				},
+				{
+					"command": "forge.viewObjectManifest",
+					"when": "view == apsDataManagementView && viewItem == object",
+					"group": "0_view@3"
 				},
 				{
 					"command": "forge.viewObjectManifest",

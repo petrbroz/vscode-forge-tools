@@ -413,12 +413,18 @@ function registerDataManagementCommands(simpleStorageDataProvider: dmp.SimpleSto
     vscode.commands.registerCommand('forge.viewBucketDetails', async (bucket?: IBucket) => {
         await dmc.viewBucketDetails(bucket, context);
     });
+    vscode.commands.registerCommand('forge.copyBucketKey', async (bucket?: IBucket) => {
+        await dmc.copyBucketKey(bucket, context);
+    });
     vscode.commands.registerCommand('forge.deleteBucketObjects', async (bucket?: IBucket) => {
         await dmc.deleteAllObjects(bucket, context);
         simpleStorageDataProvider.refresh();
     });
     vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
         await dmc.viewObjectDetails(object, context);
+    });
+    vscode.commands.registerCommand('forge.copyObjectKey', async (object?: IObject) => {
+        await dmc.copyObjectKey(object, context);
     });
     vscode.commands.registerCommand('forge.uploadObject', async (bucket?: IBucket) => {
         await dmc.uploadObject(bucket, context);
