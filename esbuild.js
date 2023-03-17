@@ -22,6 +22,9 @@ const webviewsConfig = {
     entryPoints: [
         './src/webviews/bucket-details.tsx',
         './src/webviews/object-details.tsx',
+        './src/webviews/custom-translation.tsx',
+        './src/webviews/thumbnails.tsx',
+        './src/webviews/derivative-preview.tsx',
     ],
     outdir: './out/webviews',
     splitting: true
