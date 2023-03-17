@@ -20,6 +20,8 @@ const webviewsConfig = {
     target: 'es2020',
     format: 'esm',
     entryPoints: [
+        './src/webviews/bucket-details.tsx',
+        './src/webviews/object-details.tsx',
     ],
     outdir: './out/webviews',
     splitting: true

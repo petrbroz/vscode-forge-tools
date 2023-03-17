@@ -9,6 +9,7 @@ import {
 	DataRetentionPolicy
 } from 'forge-server-utils';
 import { IContext, promptBucket, promptObject, showErrorMessage } from '../common';
+import { withProgress, createWebViewPanel } from '../common';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const AllowedMimeTypes = {
@@ -158,14 +159,8 @@ export async function createBucket(context: IContext) {
 	}
 
     try {
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Creating bucket: ${name}`,
-			cancellable: false
-		}, async (progress, token) => {
-			const bucket = await context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention);
-		});
-        vscode.window.showInformationMessage(`Bucket created: ${name}`);
+		const bucket = await withProgress(`Creating bucket: ${name}`, context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention));
+        vscode.window.showInformationMessage(`Bucket created: ${bucket.bucketKey}`);
     } catch (err) {
 		showErrorMessage('Could not create bucket', err);
     }
@@ -181,23 +176,10 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 		}
 
 		const { bucketKey } = bucket;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Getting bucket details: ${bucketKey}`,
-			cancellable: false
-		}, async (progress, token) => {
-			const bucketDetail = await context.dataManagementClient.getBucketDetails(bucketKey);
-			const panel = vscode.window.createWebviewPanel(
-				'bucket-details',
-				`Details: ${bucketKey}`,
-				vscode.ViewColumn.One,
-				{
-                    enableScripts: false,
-                    retainContextWhenHidden: true
-                }
-			);
-			panel.webview.html = context.templateEngine.render('bucket-details', { bucket: bucketDetail });
-		});
+		const bucketDetails = await withProgress(`Getting bucket details: ${bucketKey}`, context.dataManagementClient.getBucketDetails(bucketKey));
+		createWebViewPanel(context, 'bucket-details.js', 'bucket-details', `Bucket Details: ${bucketKey}`, { detail: bucketDetails });
+		// const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(bucketDetails, null, 4), language: 'json' });
+		// await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
 		showErrorMessage('Could not access bucket', err);
 	}
@@ -385,14 +367,8 @@ export async function downloadObject(object: IObject | undefined, context: ICont
 	}
 
     try {
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Downloading file: ${uri.fsPath}`,
-			cancellable: false
-		}, async (progress, token) => {
-			const arrayBuffer = await context.dataManagementClient.downloadObject(bucketKey, objectKey);
-			fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
-		});
+		const arrayBuffer = await withProgress(`Downloading file: ${uri.fsPath}`, context.dataManagementClient.downloadObject(bucketKey, objectKey));
+		fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
 		const action = await vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`, 'Open File');
 		if (action === 'Open File') {
 			vscode.env.openExternal(uri);
@@ -414,16 +390,12 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 				return;
 			}
 		}
-		const panel = vscode.window.createWebviewPanel(
-			'object-details',
-			'Details: ' + object.objectKey,
-			vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            }
-		);
-		panel.webview.html = context.templateEngine.render('object-details', { object });
+
+		const { objectKey, bucketKey } = object;
+		const objectDetails = await withProgress(`Getting object details: ${objectKey}`, context.dataManagementClient.getObjectDetails(bucketKey, objectKey));
+		createWebViewPanel(context, 'object-details.js', 'object-details', `Object Details: ${objectKey}`, { detail: objectDetails });
+		// const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
+		// await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
 		showErrorMessage('Could not access object', err);
 	}
@@ -447,13 +419,7 @@ export async function copyObject(object: IObject | undefined, context: IContext)
 		}
 
 		const { bucketKey, objectKey } = object;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Copying file: ${object.objectKey}`,
-			cancellable: false
-		}, async (progress, token) => {
-			await context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey);
-		});
+		await withProgress(`Copying file: ${object.objectKey}`, context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
         vscode.window.showInformationMessage(`Object copy created: ${newObjectKey}`);
 	} catch(err) {
 		showErrorMessage('Could not copy object', err);
@@ -478,14 +444,8 @@ export async function renameObject(object: IObject | undefined, context: IContex
 		}
 
 		const { bucketKey, objectKey } = object;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Renaming file: ${object.objectKey}`,
-			cancellable: false
-		}, async (progress, token) => {
-			await context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey);
-			await context.dataManagementClient.deleteObject(bucketKey, objectKey);
-		});
+		await withProgress(`Renaming file: ${object.objectKey}`, context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
+		await withProgress(`Renaming file: ${object.objectKey}`, context.dataManagementClient.deleteObject(bucketKey, objectKey));
         vscode.window.showInformationMessage(`
             Object successfully renamed to ${newObjectKey}. Note that any derivatives created for
             the object's original name will not be accesible now but they still exist. You can
@@ -510,13 +470,7 @@ export async function deleteObject(object: IObject | undefined, context: IContex
 			}
 		}
 		const { bucketKey, objectKey } = object;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Deleting object: ${object.objectKey}`,
-			cancellable: false
-		}, async (progress, token) => {
-			await context.dataManagementClient.deleteObject(bucketKey, objectKey);
-		});
+		await withProgress(`Deleting object: ${object.objectKey}`, context.dataManagementClient.deleteObject(bucketKey, objectKey));
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
     } catch(err) {
 		showErrorMessage('Could not delete object', err);
@@ -606,13 +560,7 @@ export async function deleteBucket(bucket: IBucket | undefined, context: IContex
 			}
 		}
 		const { bucketKey } = bucket;
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: `Deleting bucket: ${bucketKey}`,
-			cancellable: false
-		}, async (progress, token) => {
-			await context.dataManagementClient.deleteBucket(bucketKey);
-		});
+		await withProgress(`Deleting bucket: ${bucketKey}`, context.dataManagementClient.deleteBucket(bucketKey));
         vscode.window.showInformationMessage(`Bucket deleted: ${bucketKey}`);
     } catch(err) {
 		showErrorMessage('Could not delete bucket', err);
