@@ -31,38 +31,8 @@ export interface IContext {
     designAutomationClient: DesignAutomationClient;
     webhookClient: WebhooksClient;
     bim360Client: BIM360Client;
-    templateEngine: TemplateEngine;
     previewSettings: IPreviewSettings;
     threeLeggedToken?: string;
-}
-
-export class TemplateEngine {
-    private _cache: Map<string, Function>;
-
-    constructor() {
-        this._cache = new Map();
-        this._cache.set('activity-details', require('../resources/templates/activity-details.pug'));
-        this._cache.set('appbundle-details', require('../resources/templates/appbundle-details.pug'));
-        this._cache.set('alias-details', require('../resources/templates/alias-details.pug'));
-        this._cache.set('bucket-details', require('../resources/templates/bucket-details.pug'));
-        this._cache.set('custom-translation', require('../resources/templates/custom-translation.pug'));
-        this._cache.set('derivative-preview', require('../resources/templates/derivative-preview.pug'));
-        this._cache.set('login-callback', require('../resources/templates/login-callback.pug'));
-        this._cache.set('login-message', require('../resources/templates/login-message.pug'));
-        this._cache.set('login', require('../resources/templates/login.pug'));
-        this._cache.set('object-details', require('../resources/templates/object-details.pug'));
-        this._cache.set('object-thumbnail', require('../resources/templates/object-thumbnail.pug'));
-        this._cache.set('webhook-details', require('../resources/templates/webhook-details.pug'));
-        this._cache.set('workitem', require('../resources/templates/workitem.pug'));
-    }
-
-    render(templateName: string, data: any): string {
-        const func = this._cache.get(templateName);
-        if (!func) {
-            throw new Error('Unknown template: ' + templateName);
-        }
-        return func(data);
-    }
 }
 
 export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
@@ -159,4 +129,99 @@ export function stringPropertySorter<T>(propName: keyof T) {
 
 export function inHubs(urn: string): boolean {
     return urn.indexOf('_') !== -1;
+}
+
+export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
+    return vscode.window.withProgress<T>({
+        location: vscode.ProgressLocation.Notification,
+        title,
+        cancellable: false
+    }, (progress, token) => task);
+};
+
+export function createWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
+    let disposables: vscode.Disposable[] = [];
+    let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
+        enableScripts: true, // Enable javascript in the webview
+        localResourceRoots: [vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out')], // Restrict the webview to only load resources from the `out` directory
+        retainContextWhenHidden: true
+    });
+    panel.onDidDispose(() => {
+        while (disposables.length) {
+            const disposable = disposables.pop();
+            if (disposable) {
+                disposable.dispose();
+            }
+        }
+        panel.dispose();
+    }, null, disposables);
+    if (onMessage) {
+        panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
+    }
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
+    const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    panel.webview.html = /*html*/ `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; img-src data:">
+            <title>${title}</title>
+        </head>
+        <body>
+            <div id="root"></div>
+            <script type="module" nonce="${nonce}">
+                import { render } from '${scriptUri}';
+                render(document.getElementById('root'), ${JSON.stringify(props)});
+            </script>
+        </body>
+        </html>
+    `;
+    return panel;
+}
+
+export function createViewerWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
+    let disposables: vscode.Disposable[] = [];
+    let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
+        enableScripts: true // Enable javascript in the webview
+    });
+    panel.onDidDispose(() => {
+        while (disposables.length) {
+            const disposable = disposables.pop();
+            if (disposable) {
+                disposable.dispose();
+            }
+        }
+        panel.dispose();
+    }, null, disposables);
+    if (onMessage) {
+        panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
+    }
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
+    const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    panel.webview.html = /*html*/ `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1.0">
+            <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.css">
+            <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+            <title>${title}</title>
+            <style>
+                body { margin: 0; }
+                #root { position: absolute; inset: 0; }
+            </style>
+        </head>
+        <body>
+            <div id="root"></div>
+            <script type="module" nonce="${nonce}">
+                import { render } from '${scriptUri}';
+                render(document.getElementById('root'), JSON.parse('${JSON.stringify(props)}'));
+            </script>
+        </body>
+        </html>
+    `;
+    return panel;
 }

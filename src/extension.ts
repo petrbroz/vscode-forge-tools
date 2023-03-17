@@ -19,7 +19,7 @@ import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
 import * as hi  from './interfaces/hubs';
 import { Region } from 'forge-server-utils/dist/common';
-import { TemplateEngine, IContext } from './common';
+import { IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
 import { login, getAccessToken } from './commands/authentication';
@@ -56,7 +56,6 @@ export function activate(_context: vscode.ExtensionContext) {
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
 		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		templateEngine: new TemplateEngine(),
 		previewSettings: {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || [],
 			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),

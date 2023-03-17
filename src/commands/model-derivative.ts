@@ -17,6 +17,8 @@ import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'forge-conve
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
+import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
+import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
 
 enum TranslationActions {
 	Translate = 'Translate',
@@ -82,7 +84,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 	}
 }
 
-export async function translateObjectCustom(object: IObject | hi.IVersion | undefined, context: IContext, onStart?: () => void) {
+export async function translateObjectCustom(object: IObject | hi.IVersion | undefined, context: IContext, onSuccess?: () => void) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -98,67 +100,50 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
 
-		const panel = vscode.window.createWebviewPanel(
-			'custom-translation',
-			'Custom Model Derivative Job',
-			vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            }
-		);
-		panel.webview.html = context.templateEngine.render('custom-translation', { urn });
-		panel.webview.onDidReceiveMessage(
-			async (message) => {
-				switch (message.command) {
-					case 'start':
-						const {
-							compressedRootDesign,
+		let panel = createWebViewPanel<ICustomDerivativeProps>(context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn }, async (message: ICustomDerivativeMessage) => {
+			switch (message.type) {
+				case 'translate':
+					const {
+						outputFormat,
+						rootFilename,
+						switchLoader,
+						generateMasterViews,
+						workflowId,
+						workflowAttributes
+					} = message.data;
+					// TODO: support additional flags in IDerivativeOutputType
+					const outputOptions = {
+						type: outputFormat,
+						views: ['2d', '3d'],
+						advanced: {
 							switchLoader,
-							generateMasterViews,
-							outputFormat,
+							generateMasterViews
+						}
+					} as IDerivativeOutputType;
+					try {
+						await client.submitJob(
+							urn,
+							[outputOptions],
+							rootFilename,
+							true,
 							workflowId,
-							workflowAttributes
-						} = message.parameters;
-						// TODO: support additional flags in IDerivativeOutputType
-						const outputOptions = {
-							type: outputFormat,
-							views: ['2d', '3d'],
-							advanced: {
-								switchLoader,
-								generateMasterViews
-							}
-						} as IDerivativeOutputType;
-						try {
-							await client.submitJob(
-								urn,
-								[outputOptions],
-								compressedRootDesign,
-								true,
-								workflowId,
-								workflowAttributes ? JSON.parse(workflowAttributes) : {}
-							);
-							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
-						} catch (err) {
-							if (err.response && err.response.statusCode === 406) {
-								showErrorMessage('Could not translate object, likely because its derivatives exist in a different region. Please, delete the derivatives manually before translating the object again.', null);
-							} else {
-								showErrorMessage('Could not translate object', err);
-							}
+							workflowAttributes ? JSON.parse(workflowAttributes) : {}
+						);
+						vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
+					} catch (err: any) {
+						if (err.response && err.response.statusCode === 406) {
+							showErrorMessage('Could not translate object, likely because its derivatives exist in a different region. Please, delete the derivatives manually before translating the object again.', null);
+						} else {
+							showErrorMessage('Could not translate object', err);
 						}
-						panel.dispose();
-						if (onStart) {
-							onStart();
-						}
-						break;
-					case 'cancel':
-						panel.dispose();
-						break;
-				}
-			},
-			undefined,
-			context.extensionContext.subscriptions
-		);
+					}
+					panel.dispose();
+					if (onSuccess) {
+						onSuccess();
+					}
+					break;
+			}
+		});
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
 	}
@@ -183,12 +168,6 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 		const token = inHubs(derivative.urn) && context.threeLeggedToken
 			? { access_token: context.threeLeggedToken }
 			: await context.authenticationClient.authenticate(['viewables:read']);
-		const panel = vscode.window.createWebviewPanel(
-			'derivative-preview',
-			'Preview: ' + derivative.name,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
 		let env = context.previewSettings.env;
 		if (!env) {
 			env = derivative.format === 'svf2' ? 'AutodeskProduction2' : 'AutodeskProduction';
@@ -200,16 +179,20 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 				api += '_EU';
 			}
 		}
-		panel.webview.html = context.templateEngine.render('derivative-preview', {
-			viewer: {
-				config: JSON.stringify({ extensions: context.previewSettings.extensions }),
-				env,
-				api
-			},
+		createViewerWebViewPanel(context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
+			api, env,
+			token: token.access_token,
 			urn: derivative.urn,
 			guid: derivative.guid,
-			name: derivative.name,
-			token
+			config: {
+				extensions: context.previewSettings.extensions
+			}
+		}, message => {
+			switch (message.type) {
+				case 'error':
+					showErrorMessage(`Could not load viewable`, message.error);
+					break;
+			}
 		});
 	} catch (err) {
 		showErrorMessage(`Could not access object`, err);
@@ -238,14 +221,8 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 		let forceDownload = false;
 		let tree: IDerivativeTree | undefined = undefined;
 		try {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Retrieving viewable tree`,
-				cancellable: false
-			}, async (progress, token) => {
-				tree = await client.getViewableTree(urn, guid);
-			});
-		} catch (err) {
+			tree = await withProgress(`Retrieving viewable tree`, client.getViewableTree(urn, guid));
+		} catch (err: any) {
 			// APS may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
 			if (err.isAxiosError && err.response.status === 413) {
@@ -255,15 +232,9 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				`, 'Force Download', 'Cancel');
 				switch (action) {
 					case 'Force Download':
-						await vscode.window.withProgress({
-							location: vscode.ProgressLocation.Notification,
-							title: `Downloading viewable tree`,
-							cancellable: false
-						}, async (progress, token) => {
-							// TODO: redirect the downloaded data directly into a file stream
-							tree = await client.getViewableTree(urn, guid, true);
-							forceDownload = true;
-						});
+						// TODO: redirect the downloaded data directly into a file stream
+						tree = await withProgress(`Downloading viewable tree`, client.getViewableTree(urn, guid, true));
+						forceDownload = true;
 						break;
 					case 'Cancel':
 						break;
@@ -315,14 +286,8 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 		let forceDownload = false;
 		let props: IDerivativeProps | undefined = undefined;
 		try {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Retrieving viewable properties`,
-				cancellable: false
-			}, async (progress, token) => {
-				props = await client.getViewableProperties(urn, guid);
-			});
-		} catch (err) {
+			props = await withProgress(`Retrieving viewable properties`, client.getViewableProperties(urn, guid));
+		} catch (err: any) {
 			// APS may respond with code 413 to indicate that the requested JSON data is too large.
 			// In that case, offer an option of downloading the content to a local file.
 			if (err.isAxiosError && err.response.status === 413) {
@@ -332,15 +297,9 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				`, 'Force Download', 'Cancel');
 				switch (action) {
 					case 'Force Download':
-						await vscode.window.withProgress({
-							location: vscode.ProgressLocation.Notification,
-							title: `Downloading viewable properties`,
-							cancellable: false
-						}, async (progress, token) => {
-							// TODO: redirect the downloaded data directly into a file stream
-							props = await client.getViewableProperties(urn, guid, true);
-							forceDownload = true;
-						});
+						// TODO: redirect the downloaded data directly into a file stream
+						props = await withProgress(`Downloading viewable properties`, client.getViewableProperties(urn, guid, true));
+						forceDownload = true;
 						break;
 					case 'Cancel':
 						break;
@@ -385,7 +344,8 @@ export async function viewObjectManifest(object: IObject | hi.IVersion | undefin
 
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
-		const manifest = await client.getManifest(urn);
+		
+		const manifest = await withProgress(`Retrieving manifest for ${urn}`, client.getManifest(urn));
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
@@ -409,7 +369,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 		const urn = urnify(object.objectId);
 		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		try {
-			await client.deleteManifest(urn);
+			await withProgress(`Deleting manifest for ${urn}`, client.deleteManifest(urn));
 		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the manifest of ${object.objectId}, the object must be translated first.
@@ -452,54 +412,46 @@ export async function viewObjectThumbnail(object: IObject  | hi.IVersion | undef
 			}
 		}
 
-		//const { objectId, objectKey } = object;
-
 		let urn = getURN(object);
-		let client = getModelDerivativeClientForObject(object, context);
-		const manifest = await client.getManifest(urn);
-
 		let key = getKey(object);
 		let id = getId(object);
-
-		const panel = vscode.window.createWebviewPanel(
-			'object-thumbnail',
-			'Thumbnail: ' + key,
-			vscode.ViewColumn.One,
-			{ enableScripts: true }
-		);
+		let client = getModelDerivativeClientForObject(object, context);
 
 		try {
-			const small = await client.getThumbnail(urn, ThumbnailSize.Small);
-			const medium = await client.getThumbnail(urn, ThumbnailSize.Medium);
-			const large = await client.getThumbnail(urn, ThumbnailSize.Large);
-			const pngToDataURI = (img: ArrayBuffer) => 'data:image/png;base64,' + Buffer.from(img).toString('base64');
-			panel.webview.html = context.templateEngine.render('object-thumbnail', {
-				object,
-				smallDataURI: pngToDataURI(small),
-				mediumDataURI: pngToDataURI(medium),
-				largeDataURI: pngToDataURI(large)
+			const thumbnails = await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Downloading thumbnails: ${key}`,
+				cancellable: false
+			}, async (progress, token) => {
+				await client.getManifest(urn); // Check if the manifest exists
+				return await Promise.all([
+					client.getThumbnail(urn, ThumbnailSize.Small),
+					client.getThumbnail(urn, ThumbnailSize.Medium),
+					client.getThumbnail(urn, ThumbnailSize.Large)
+				]);
 			});
-			// Handle messages from the webview
-			panel.webview.onDidReceiveMessage(
-				message => {
-					switch (message.command) {
-						case 'download':
-							switch (message.thumbnailSize) {
-								case 'small':
-									downloadThumbnail(small, vscode.Uri.file(key + '.100x100.png'));
-									break;
-								case 'medium':
-									downloadThumbnail(medium, vscode.Uri.file(key + '.200x200.png'));
-									break;
-								case 'large':
-									downloadThumbnail(large, vscode.Uri.file(key + '.400x400.png'));
-									break;
-							}
-					}
-				},
-				undefined,
-				context.extensionContext.subscriptions
-			);
+			const pngToDataURI = (img: ArrayBuffer) => 'data:image/png;base64,' + Buffer.from(img).toString('base64');
+			createWebViewPanel(context, 'thumbnails.js', 'thumbnails', `Thumbnails: ${key}`, {
+				objectKey: key,
+				smallDataURI: pngToDataURI(thumbnails[0]),
+				mediumDataURI: pngToDataURI(thumbnails[1]),
+				largeDataURI: pngToDataURI(thumbnails[2])
+			}, (message: any) => {
+				switch (message.command) {
+					case 'download':
+						switch (message.thumbnailSize) {
+							case 'small':
+								downloadThumbnail(thumbnails[0], vscode.Uri.file(key + '.100x100.png'));
+								break;
+							case 'medium':
+								downloadThumbnail(thumbnails[1], vscode.Uri.file(key + '.200x200.png'));
+								break;
+							case 'large':
+								downloadThumbnail(thumbnails[2], vscode.Uri.file(key + '.400x400.png'));
+								break;
+						}
+				}
+			});
 		} catch (_) {
 			const action = await vscode.window.showInformationMessage(`
 				In order to access the thumbnails of ${id}, the object must be translated first.

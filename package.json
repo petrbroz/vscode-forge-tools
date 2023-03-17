@@ -34,7 +34,7 @@
 		"onView:apsHubsView",
 		"onView:apsWebhooksView"
 	],
-	"main": "./dist/extension.js",
+	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
 			"title": "Autodesk Platform Services",
@@ -245,17 +245,17 @@
 			},
 			{
 				"command": "forge.viewDerivativeTree",
-				"title": "View Derivative Tree JSON",
+				"title": "View Derivative Tree (JSON)",
 				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.viewDerivativeProps",
-				"title": "View Derivative Properties JSON",
+				"title": "View Derivative Properties (JSON)",
 				"category": "Model Derivative"
 			},
 			{
 				"command": "forge.viewObjectManifest",
-				"title": "View Object Manifest JSON",
+				"title": "View Object Manifest (JSON)",
 				"category": "Model Derivative"
 			},
 			{
@@ -760,24 +760,22 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "webpack --mode production",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch",
-		"test-compile": "tsc -p ./",
-		"lint": "tslint --project ."
+		"vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
+		"build": "node ./esbuild.js"
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^12.0.0",
+		"@types/react": "^18.0.28",
+		"@types/react-dom": "^18.0.11",
 		"@types/vscode": "1.45",
-		"pug": "^3.0.2",
-		"pug-loader": "^2.4.0",
-		"ts-loader": "^7.0.5",
+		"@vscode/webview-ui-toolkit": "^1.2.2",
+		"esbuild": "^0.17.11",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
 		"tslint": "^5.12.1",
 		"typescript": "^3.7.2",
-		"vscode-test": "^1.3.0",
-		"webpack": "^4.43.0",
-		"webpack-cli": "^3.3.11"
+		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
