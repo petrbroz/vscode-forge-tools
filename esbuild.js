@@ -28,6 +28,12 @@ const webviewsConfig = {
         './src/webviews/create-webhook.tsx',
         './src/webviews/update-webhook.tsx',
         './src/webviews/derivative-preview.tsx',
+        './src/webviews/appbundle-details.tsx',
+        './src/webviews/alias-details.tsx',
+        './src/webviews/activity-details.tsx',
+        './src/webviews/create-activity.tsx',
+        './src/webviews/update-activity.tsx',
+        './src/webviews/create-workitem.tsx'
     ],
     outdir: './out/webviews',
     splitting: true
