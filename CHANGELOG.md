@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.5.0] - 2023-03-20
+
 - Changed
   - (**MAJOR**) All custom webviews are now using the [vscode-webview-ui-toolkit](https://github.com/microsoft/vscode-webview-ui-toolkit)
 - Added
