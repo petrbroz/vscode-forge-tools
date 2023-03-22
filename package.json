@@ -249,6 +249,11 @@
 				"category": "Model Derivative"
 			},
 			{
+				"command": "forge.listViewables",
+				"title": "List Viewables (JSON)",
+				"category": "Model Derivative"
+			},
+			{
 				"command": "forge.previewDerivative",
 				"title": "Preview Derivative",
 				"category": "Model Derivative"
@@ -592,14 +597,24 @@
 					"group": "1_action_md@3"
 				},
 				{
-					"command": "forge.downloadDerivativeSvf",
+					"command": "forge.listViewables",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@4"
 				},
 				{
-					"command": "forge.downloadDerivativeF2d",
+					"command": "forge.listViewables",
+					"when": "view == apsHubsView && viewItem == version",
+					"group": "1_action_md@4"
+				},
+				{
+					"command": "forge.downloadDerivativeSvf",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@5"
+				},
+				{
+					"command": "forge.downloadDerivativeF2d",
+					"when": "view == apsDataManagementView && viewItem == object",
+					"group": "1_action_md@6"
 				},
 				{
 					"command": "forge.downloadDerivativeGltf",
