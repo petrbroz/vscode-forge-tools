@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - New command for retrieving list of viewables for specific URN as JSON
+- Fixed
+  - Retrieving derivative tree or metadata for 2D views generated from Revit designs
+
 ## [2.5.0] - 2023-03-20
 
 - Changed
