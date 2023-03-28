@@ -369,6 +369,9 @@ function registerModelDerivativeCommands(context: IContext, simpleStorageDataPro
             hubsDataProvider.refresh((object as hi.IVersion));
         });
     });
+    vscode.commands.registerCommand('forge.listViewables', async (object?: IObject | hi.IVersion) => {
+        await mdc.listViewables(object, context);
+    });
     vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: mdi.IDerivative) => {
         await mdc.previewDerivative(derivative, context);
     });

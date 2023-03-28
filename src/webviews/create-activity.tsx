@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox, VSCodeDivider } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import { IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from 'forge-server-utils';
 import { postMessage } from './common';
+import { Grid } from './components/Grid';
+import { Actions } from './components/Actions';
 
 export interface ICreateActivityProps {
     options: {
@@ -103,23 +105,23 @@ const CreateActivity = ({ options }: ICreateActivityProps) => {
         <div>
             <h1>Create Activity</h1>
 
-            <div style={{ display: 'grid', gap: '1em' }}>
+            <Grid>
                 <VSCodeTextField value={id} onChange={ev => setId((ev.target as any).value)} placeholder="Activity name">ID</VSCodeTextField>
                 <VSCodeTextField value={description} onChange={ev => setDescription((ev.target as any).value)} placeholder="Activity description">Description</VSCodeTextField>
                 <VSCodeDropdown value={engine} onChange={ev => setEngine((ev.target as any).value)}>
                     {options.engines.map(engine => <VSCodeOption value={engine}>{engine}</VSCodeOption>)}
                 </VSCodeDropdown>
-            </div>
+            </Grid>
 
             <h2>Commands</h2>
-            <div style={{ display: 'grid', gap: '1em', gridTemplateColumns: '1fr 8em' }}>
+            <Grid columns={'1fr 8em'}>
                 {commands.map((command, i) => (
                     <>
                         <VSCodeTextField key={`txt-${i}`} value={command} onChange={ev => updateCommand(i, (ev.target as any).value)}></VSCodeTextField>
                         <VSCodeButton appearance="secondary" key={`btn-${i}`} onClick={() => removeCommand(i)}>Remove</VSCodeButton>
                     </>
                 ))}
-            </div>
+            </Grid>
             <VSCodeButton appearance="secondary" onClick={addCommand} style={{ marginTop: '1em' }}>
                 Add Command {/* TODO: figure out a way to add icons (codicons?) */}
             </VSCodeButton>
@@ -241,7 +243,7 @@ const CreateActivity = ({ options }: ICreateActivityProps) => {
             </VSCodeButton>
 
             <h2>App Bundles</h2>
-            <div style={{ display: 'grid', gap: '1em', gridTemplateColumns: '1fr 8em' }}>
+            <Grid columns={'1fr 8em'}>
                 {appBundles.map((appBundle, i) => (
                     <>
                         <VSCodeDropdown key={`dropdown-${i}`} value={appBundle || options.appBundles[0]} onChange={ev => updateAppBundle(i, (ev.target as any).value)}>
@@ -250,13 +252,14 @@ const CreateActivity = ({ options }: ICreateActivityProps) => {
                         <VSCodeButton appearance="secondary" key={`btn-${i}`} onClick={() => removeAppBundle(i)}>Remove</VSCodeButton>
                     </>
                 ))}
-            </div>
+            </Grid>
             <VSCodeButton appearance="secondary" onClick={addAppBundle} style={{ marginTop: '1em' }}>
                 Add App Bundle {/* TODO: figure out a way to add icons (codicons?) */}
             </VSCodeButton>
 
-            <VSCodeDivider style={{ marginTop: '1em', marginBottom: '1em' }} />
-            <VSCodeButton onClick={createActivity}>Create</VSCodeButton>
+            <Actions>
+                <VSCodeButton onClick={createActivity}>Create</VSCodeButton>
+            </Actions>
         </div>
     );
 };

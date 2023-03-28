@@ -3,7 +3,9 @@ import ReactDOM from 'react-dom/client';
 import { useState } from 'react';
 import { VSCodeTextField, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import { IWebhook } from 'forge-server-utils';
+import { Grid } from './components/Grid';
 import { postMessage } from './common';
+import { Actions } from './components/Actions';
 
 export interface IUpdateWebhookProps {
     detail: IWebhook & { filter?: string; hookAttribute?: string; };
@@ -24,7 +26,7 @@ const UpdateWebhook = ({ detail, scopes }: IUpdateWebhookProps) => {
     return (
         <div>
             <h1>Update Webhook: {detail.hookId}</h1>
-            <div style={{ display: 'grid', gap: '1em', gridTemplateColumns: '1fr 1fr' }}>
+            <Grid columns={'1fr 1fr'}>
                 <VSCodeTextField readOnly value={detail.hookId}>ID</VSCodeTextField>
                 <VSCodeTextField readOnly value={detail.status}>Status</VSCodeTextField>
 
@@ -45,8 +47,11 @@ const UpdateWebhook = ({ detail, scopes }: IUpdateWebhookProps) => {
 
                 <VSCodeTextField value={filter} onChange={ev => setFilter((ev.target as any).value)}>Filter</VSCodeTextField>
                 <VSCodeTextField value={attributes} onChange={ev => setAttributes((ev.target as any).value)}>Attributes</VSCodeTextField>
-            </div>
-            <VSCodeButton onClick={updateWebhook} style={{ marginTop: '2em' }}>Update</VSCodeButton>
+            </Grid>
+
+            <Actions>
+                <VSCodeButton onClick={updateWebhook}>Update</VSCodeButton>
+            </Actions>
         </div>
     );
 };

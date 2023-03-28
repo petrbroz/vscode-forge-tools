@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox, VSCodeDivider } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import { IActivityDetail, IActivityParam, IWorkItemParam } from 'forge-server-utils';
 import { postMessage } from './common';
+import { Actions } from './components/Actions';
 
 export interface ICreateWorkItemProps {
     activity: IActivityDetail;
@@ -114,8 +115,9 @@ const CreateWorkItem = ({ activity }: ICreateWorkItemProps) => {
                 ))}
             </VSCodeDataGrid>
 
-            <VSCodeDivider style={{ marginTop: '1em', marginBottom: '1em' }} />
-            <VSCodeButton onClick={createWorkItem}>Create</VSCodeButton>
+            <Actions>
+                <VSCodeButton onClick={createWorkItem}>Create</VSCodeButton>
+            </Actions>
         </div>
     );
 };

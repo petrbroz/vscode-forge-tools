@@ -62,6 +62,32 @@ function getModelDerivativeClientForObject(object: IObject | hi.IVersion, contex
 	return context.modelDerivativeClient2L;
 }
 
+function findViewable(derivative: IDerivative): any {
+	return derivative.bubble.children.find((child: any) => child.role === 'graphics' || child.role === 'pdf-page');
+}
+
+export async function listViewables(object: IObject | hi.IVersion | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			object = await promptObject(context, bucket.bucketKey);
+			if (!object) {
+				return;
+			}
+		}
+		const urn = getURN(object);
+		const client = getModelDerivativeClientForObject(object, context);
+		const metadata = await withProgress(`Retrieving list of viewables`, client.getMetadata(urn));
+		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(metadata, null, 4), language: 'json' });
+		await vscode.window.showTextDocument(doc, { preview: false });
+	} catch (err) {
+		showErrorMessage('Could not retrieve viewables', err);
+	}
+}
+
 export async function translateObject(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
@@ -215,8 +241,9 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 				return;
 			}
 		}
-		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const urn = derivative.urn, guid = graphicsNode.guid;
+		const viewable = findViewable(derivative);
+		const { urn } = derivative;
+		const { guid } = viewable;
 		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		let forceDownload = false;
 		let tree: IDerivativeTree | undefined = undefined;
@@ -280,8 +307,9 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 				return;
 			}
 		}
-		const graphicsNode = derivative.bubble.children.find((child: any) => child.role === 'graphics');
-		const urn = derivative.urn, guid = graphicsNode.guid;
+		const viewable = findViewable(derivative);
+		const { urn } = derivative;
+		const { guid } = viewable;
 		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		let forceDownload = false;
 		let props: IDerivativeProps | undefined = undefined;

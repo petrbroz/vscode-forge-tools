@@ -2,6 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { IWebhook } from 'forge-server-utils';
+import { Grid } from './components/Grid';
 
 export interface IWebhookDetailsProps {
     detail: IWebhook & { filter?: string; hookAttribute?: string; };
@@ -10,7 +11,7 @@ export interface IWebhookDetailsProps {
 const WebhookDetails = ({ detail }: IWebhookDetailsProps) => (
     <div>
         <h1>Webhook Details: {detail.hookId}</h1>
-        <div style={{ display: 'grid', gap: '1em', gridTemplateColumns: '1fr 1fr' }}>
+        <Grid columns={'1fr 1fr'}>
             <VSCodeTextField readOnly value={detail.hookId}>ID</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.status}>Status</VSCodeTextField>
 
@@ -31,7 +32,7 @@ const WebhookDetails = ({ detail }: IWebhookDetailsProps) => (
 
             <VSCodeTextField readOnly value={detail.filter || ''}>Filter</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.hookAttribute ? JSON.stringify(detail.hookAttribute) : ''}>Attributes</VSCodeTextField>
-        </div>
+        </Grid>
     </div>
 );
 

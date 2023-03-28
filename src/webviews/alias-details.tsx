@@ -2,6 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { IAlias } from 'forge-server-utils';
+import { Grid } from './components/Grid';
 
 export interface IAliasDetailsProps {
     detail: IAlias;
@@ -10,11 +11,11 @@ export interface IAliasDetailsProps {
 const AliasDetails = ({ detail }: IAliasDetailsProps) => (
     <div>
         <h1>Alias Details: {detail.id}</h1>
-        <div style={{ display: 'grid', gap: '1em' }}>
+        <Grid>
             <VSCodeTextField readOnly value={detail.id}>ID</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.version.toString()}>Version</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.receiver || ''}>Receiver</VSCodeTextField>
-        </div>
+        </Grid>
     </div>
 );
 

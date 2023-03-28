@@ -2,6 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import { IActivityDetail, IActivityParam } from 'forge-server-utils';
+import { Grid } from './components/Grid';
 
 export interface IActivityDetailsProps {
     detail: IActivityDetail
@@ -95,11 +96,11 @@ const ActivityBundles = (props: { bundles: string[] }) => (
 const ActivityDetails = ({ detail }: IActivityDetailsProps) => (
     <div>
         <h1>Activity Details: {detail.id}</h1>
-        <div style={{ display: 'grid', gap: '1em' }}>
+        <Grid>
             <VSCodeTextField readOnly value={detail.id}>ID</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.description}>Description</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.engine}>Engine</VSCodeTextField>
-        </div>
+        </Grid>
 
         <h2>Commands</h2>
         <ActivityCommands commands={detail.commandLine} />
