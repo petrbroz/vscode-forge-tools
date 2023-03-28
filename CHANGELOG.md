@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.5.1] - 2023-03-28
+
 - Added
   - New command for retrieving list of viewables for specific URN as JSON
 - Changed
