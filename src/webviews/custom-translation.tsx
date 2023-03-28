@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { useState } from 'react';
 import { VSCodeTextField, VSCodeDropdown, VSCodeOption, VSCodeCheckbox, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import { postMessage } from './common';
+import { Grid } from './components/Grid';
+import { Actions } from './components/Actions';
 
 export interface ICustomDerivativeProps {
     urn: string;
@@ -45,7 +47,7 @@ const CustomDerivative = ({ urn }: ICustomDerivativeProps) => {
     return (
         <div>
             <h1>Custom Translation</h1>
-            <div style={{ display: 'grid', gap: '1em', gridTemplateColumns: '1fr 1fr', alignItems: 'end' }}>
+            <Grid columns={'1fr 1fr'}>
                 <VSCodeTextField readOnly value={urn} style={{ gridColumn: 'span 2' }}>URN</VSCodeTextField>
 
                 {/* TODO: add label to the dropdown */}
@@ -60,8 +62,11 @@ const CustomDerivative = ({ urn }: ICustomDerivativeProps) => {
 
                 <VSCodeTextField value={workflowId} onChange={ev => setWorkflowId((ev.target as any).value)}>Workflow ID</VSCodeTextField>
                 <VSCodeTextField value={workflowAttributes} onChange={ev => setWorkflowAttributes((ev.target as any).value)}>Workflow Attributes</VSCodeTextField>
-            </div>
-            <VSCodeButton onClick={startTranslation} style={{ marginTop: '2em' }}>Start</VSCodeButton>
+            </Grid>
+
+            <Actions>
+                <VSCodeButton onClick={startTranslation}>Start</VSCodeButton>
+            </Actions>
         </div>
     );
 };

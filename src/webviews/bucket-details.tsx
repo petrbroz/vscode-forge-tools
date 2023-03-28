@@ -2,6 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell } from '@vscode/webview-ui-toolkit/react';
 import { IBucketDetail } from 'forge-server-utils';
+import { Grid } from './components/Grid';
 
 export interface IBucketDetailsProps {
     detail: IBucketDetail;
@@ -10,12 +11,12 @@ export interface IBucketDetailsProps {
 const BucketDetails = ({ detail }: IBucketDetailsProps) => (
     <div>
         <h1>Bucket Details: {detail.bucketKey}</h1>
-        <div style={{ display: 'grid', gap: '1em' }}>
+        <Grid>
             <VSCodeTextField readOnly value={detail.bucketKey}>Bucket Key</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.bucketOwner}>Owner</VSCodeTextField>
             <VSCodeTextField readOnly value={new Date(detail.createdDate).toLocaleDateString()}>Created</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.policyKey}>Data Retention Policy</VSCodeTextField>
-        </div>
+        </Grid>
 
         <h2>Permissions</h2>
         <VSCodeDataGrid>

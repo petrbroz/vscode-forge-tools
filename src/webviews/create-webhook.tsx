@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { useState } from 'react';
 import { VSCodeTextField, VSCodeDropdown, VSCodeOption, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import { postMessage } from './common';
+import { Grid } from './components/Grid';
+import { Actions } from './components/Actions';
 
 export interface ICreateWebhookProps {
     system: string;
@@ -27,7 +29,7 @@ const CreateWebhook = ({ system, event, scopes }: ICreateWebhookProps) => {
     return (
         <div>
             <h1>Create Webhook</h1>
-            <div style={{ display: 'grid', gap: '1em', gridTemplateColumns: '1fr 1fr' }}>
+            <Grid columns={'1fr 1fr'}>
                 <VSCodeTextField readOnly value={system}>System</VSCodeTextField>
                 <VSCodeTextField readOnly value={event}>Event</VSCodeTextField>  
 
@@ -41,8 +43,11 @@ const CreateWebhook = ({ system, event, scopes }: ICreateWebhookProps) => {
 
                 <VSCodeTextField value={filter} onChange={ev => setFilter((ev.target as any).value)}>Filter</VSCodeTextField>
                 <VSCodeTextField value={attributes} onChange={ev => setAttributes((ev.target as any).value)}>Attributes</VSCodeTextField>
-            </div>
-            <VSCodeButton onClick={createWebhook} style={{ marginTop: '2em' }}>Create</VSCodeButton>
+            </Grid>
+
+            <Actions>
+                <VSCodeButton onClick={createWebhook}>Create</VSCodeButton>
+            </Actions>
         </div>
     );
 };
