@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - Specifying string settings when creating a DA activity (thanks for the heads up [MadhukarMoogala](https://github.com/orgs/autodesk-platform-services/people/MadhukarMoogala)!)
+
 ## [2.5.1] - 2023-03-28
 
 - Added
