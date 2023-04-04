@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.5.1",
+	"version": "2.5.2",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -328,13 +328,28 @@
 				"category": "Design Automation"
 			},
 			{
+				"command": "forge.viewAppBundleDetailsJson",
+				"title": "View App Bundle Details (JSON)",
+				"category": "Design Automation"
+			},
+			{
 				"command": "forge.viewAppBundleVersionDetails",
 				"title": "View App Bundle Details",
 				"category": "Design Automation"
 			},
 			{
+				"command": "forge.viewAppBundleVersionDetailsJson",
+				"title": "View App Bundle Details (JSON)",
+				"category": "Design Automation"
+			},
+			{
 				"command": "forge.viewAppBundleAliasDetails",
 				"title": "View Alias Details",
+				"category": "Design Automation"
+			},
+			{
+				"command": "forge.viewAppBundleAliasDetailsJson",
+				"title": "View Alias Details (JSON)",
 				"category": "Design Automation"
 			},
 			{
@@ -368,13 +383,28 @@
 				"category": "Design Automation"
 			},
 			{
+				"command": "forge.viewActivityDetailsJson",
+				"title": "View Activity Details (JSON)",
+				"category": "Design Automation"
+			},
+			{
 				"command": "forge.viewActivityVersionDetails",
 				"title": "View Activity Details",
 				"category": "Design Automation"
 			},
 			{
+				"command": "forge.viewActivityVersionDetailsJson",
+				"title": "View Activity Details (JSON)",
+				"category": "Design Automation"
+			},
+			{
 				"command": "forge.viewActivityAliasDetails",
 				"title": "View Alias Details",
+				"category": "Design Automation"
+			},
+			{
+				"command": "forge.viewActivityAliasDetailsJson",
+				"title": "View Alias Details (JSON)",
 				"category": "Design Automation"
 			},
 			{
@@ -667,12 +697,27 @@
 					"group": "0_view"
 				},
 				{
+					"command": "forge.viewAppBundleDetailsJson",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+					"group": "0_view"
+				},
+				{
 					"command": "forge.viewAppBundleAliasDetails",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
+					"command": "forge.viewAppBundleAliasDetailsJson",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+					"group": "0_view"
+				},
+				{
 					"command": "forge.viewAppBundleDetails",
+					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
+					"group": "0_view"
+				},
+				{
+					"command": "forge.viewAppBundleDetailsJson",
 					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
 					"group": "0_view"
 				},
@@ -697,6 +742,11 @@
 					"group": "0_view"
 				},
 				{
+					"command": "forge.viewAppBundleVersionDetailsJson",
+					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
+					"group": "0_view"
+				},
+				{
 					"command": "forge.deleteAppBundleVersion",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
 					"group": "3_remove"
@@ -717,7 +767,17 @@
 					"group": "0_view"
 				},
 				{
+					"command": "forge.viewActivityDetailsJson",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
+					"group": "0_view"
+				},
+				{
 					"command": "forge.viewActivityAliasDetails",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
+					"group": "0_view"
+				},
+				{
+					"command": "forge.viewActivityAliasDetailsJson",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
@@ -733,6 +793,11 @@
 				},
 				{
 					"command": "forge.viewActivityDetails",
+					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
+					"group": "0_view"
+				},
+				{
+					"command": "forge.viewActivityDetailsJson",
 					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
 					"group": "0_view"
 				},

@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.5.2] - 2023-04-04
+
+- Added
+  - Support for retrieving information about DA app bundles and activities in raw JSON
+- Fixed
+  - Specifying string settings when creating a DA activity (thanks for the heads up [MadhukarMoogala](https://github.com/orgs/autodesk-platform-services/people/MadhukarMoogala)!)
+
 ## [2.5.1] - 2023-03-28
 
 - Added

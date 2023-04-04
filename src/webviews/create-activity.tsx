@@ -190,7 +190,7 @@ const CreateActivity = ({ options }: ICreateActivityProps) => {
                 {stringSettings.map((setting, i) => (
                     <VSCodeDataGridRow key={i + 1}>
                         <VSCodeDataGridCell grid-column="1">
-                            <VSCodeTextField value={setting.name} onChange={ev => updateStringSetting(i, { ...setting, id: (ev.target as any).value })} />
+                            <VSCodeTextField value={setting.name} onChange={ev => updateStringSetting(i, { ...setting, name: (ev.target as any).value })} />
                         </VSCodeDataGridCell>
                         <VSCodeDataGridCell grid-column="2">
                             <VSCodeTextField value={setting.value} onChange={ev => updateStringSetting(i, { ...setting, value: (ev.target as any).value })} />
