@@ -225,8 +225,18 @@ function registerDesignAutomationCommands(designAutomationDataProvider: dap.Desi
             await dac.viewAppBundleDetails(undefined, context);
         }
     });
+    vscode.commands.registerCommand('forge.viewAppBundleDetailsJson', async (entry?: dai.IAppBundleAliasEntry | dai.ISharedAppBundleEntry) => {
+        if (entry) {
+            await dac.viewAppBundleDetailsJSON('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);
+        } else {
+            await dac.viewAppBundleDetailsJSON(undefined, context);
+        }
+    });
     vscode.commands.registerCommand('forge.viewAppBundleAliasDetails', async (entry?: dai.IAppBundleAliasEntry) => {
         await dac.viewAppBundleAliasDetails(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleAliasDetailsJson', async (entry?: dai.IAppBundleAliasEntry) => {
+        await dac.viewAppBundleAliasDetailsJSON(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
     });
     vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: dai.IAppBundleVersionEntry) => {
         if (!entry) {
@@ -234,6 +244,13 @@ function registerDesignAutomationCommands(designAutomationDataProvider: dap.Desi
             return;
         }
         await dac.viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, context);
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleVersionDetailsJson', async (entry?: dai.IAppBundleVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await dac.viewAppBundleDetailsJSON({ name: entry.appbundle, version: entry.version }, context);
     });
     vscode.commands.registerCommand('forge.deleteAppBundle', async (entry?: dai.IAppBundleEntry) => {
         if (!entry) {
@@ -282,8 +299,19 @@ function registerDesignAutomationCommands(designAutomationDataProvider: dap.Desi
         const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
         await dac.viewActivityDetails(id, context);
     });
+    vscode.commands.registerCommand('forge.viewActivityDetailsJson', async (entry?: dai.IActivityAliasEntry | dai.ISharedActivityEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
+        await dac.viewActivityDetailsJSON(id, context);
+    });
     vscode.commands.registerCommand('forge.viewActivityAliasDetails', async (entry?: dai.IActivityAliasEntry) => {
         await dac.viewActivityAliasDetails(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityAliasDetailsJson', async (entry?: dai.IActivityAliasEntry) => {
+        await dac.viewActivityAliasDetailsJSON(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
     });
     vscode.commands.registerCommand('forge.viewActivityVersionDetails', async (entry?: dai.IActivityVersionEntry) => {
         if (!entry) {
@@ -291,6 +319,13 @@ function registerDesignAutomationCommands(designAutomationDataProvider: dap.Desi
             return;
         }
         await dac.viewActivityDetails({ name: entry.activity, version: entry.version }, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityVersionDetailsJson', async (entry?: dai.IActivityVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await dac.viewActivityDetailsJSON({ name: entry.activity, version: entry.version }, context);
     });
     vscode.commands.registerCommand('forge.deleteActivity', async (entry?: dai.IActivityEntry) => {
         if (!entry) {
