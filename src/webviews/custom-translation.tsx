@@ -9,6 +9,7 @@ import { svf2 } from '../providers/model-derivative';
 
 export interface ICustomDerivativeProps {
     urn: string;
+    availableFormats: string[];
 }
 
 export interface ICustomDerivativeMessage {
@@ -23,7 +24,7 @@ export interface ICustomDerivativeMessage {
     }
 }
 
-const CustomDerivative = ({ urn }: ICustomDerivativeProps) => {
+const CustomDerivative = ({ urn, availableFormats }: ICustomDerivativeProps) => {
     const [outputFormat, setOutputFormat] = useState(svf2);
     const [rootFilename, setRootFilename] = useState('');
     const [switchLoader, setSwitchLoader] = useState(false);

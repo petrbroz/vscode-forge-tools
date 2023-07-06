@@ -19,7 +19,7 @@ import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
-import { svf2 } from '../providers/model-derivative';
+import { ModelDerivativeFormats, svf2 } from '../providers/model-derivative';
 
 enum TranslationActions {
 	Translate = 'Translate',
@@ -51,6 +51,15 @@ function getId(object: IObject | hi.IVersion): string{
 
 function getURN(object: IObject | hi.IVersion): string{
 	return urnify(getId(object));
+}
+
+function getFileExtension(object: IObject | hi.IVersion): string {
+	if ("objectKey" in object) {
+		const pathParts = object.objectKey.split(".");
+
+		return pathParts[pathParts.length - 1].toLowerCase();
+	}
+	return "";
 }
 
 function getModelDerivativeClientForObject(object: IObject | hi.IVersion, context: IContext): ModelDerivativeClient{
@@ -127,7 +136,19 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
 
-		let panel = createWebViewPanel<ICustomDerivativeProps>(context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn }, async (message: ICustomDerivativeMessage) => {
+		const formats = await getModelDerivativeFormats(context);
+
+		const extension = getFileExtension(object);
+
+		const availableFormats = formats.findAvailableOutputFormats(extension);
+
+		if (availableFormats.length === 0) {
+			showErrorMessage("Source file format is not supported by Model derivative service", {});
+
+			return;
+		}
+
+		let panel = createWebViewPanel<ICustomDerivativeProps>(context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats }, async (message: ICustomDerivativeMessage) => {
 			switch (message.type) {
 				case 'translate':
 					const {
@@ -671,4 +692,13 @@ export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, c
 	} catch (err) {
 		showErrorMessage('Could not obtain object URN', err);
 	}
+}
+
+let modelDerivativeFormats: ModelDerivativeFormats | null = null;
+
+async function getModelDerivativeFormats(context: IContext) {
+	if (modelDerivativeFormats === null)
+		modelDerivativeFormats = await ModelDerivativeFormats.create(context);
+
+	return modelDerivativeFormats;
 }
