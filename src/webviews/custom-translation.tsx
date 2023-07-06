@@ -25,7 +25,7 @@ export interface ICustomDerivativeMessage {
 }
 
 const CustomDerivative = ({ urn, availableFormats }: ICustomDerivativeProps) => {
-    const [outputFormat, setOutputFormat] = useState(svf2);
+    const [outputFormat, setOutputFormat] = useState(availableFormats.find(x => x === svf2) || availableFormats[0]);
     const [rootFilename, setRootFilename] = useState('');
     const [switchLoader, setSwitchLoader] = useState(false);
     const [generateMasterViews, setGenerateMasterViews] = useState(false);
@@ -46,6 +46,8 @@ const CustomDerivative = ({ urn, availableFormats }: ICustomDerivativeProps) => 
         });
     }
 
+    const outputFormats = availableFormats.map(x => <VSCodeOption value={x} key={x}>Output format: {x.toUpperCase()}</VSCodeOption>)
+
     return (
         <div>
             <h1>Custom Translation</h1>
@@ -54,8 +56,7 @@ const CustomDerivative = ({ urn, availableFormats }: ICustomDerivativeProps) => 
 
                 {/* TODO: add label to the dropdown */}
                 <VSCodeDropdown value={outputFormat} onChange={ev => setOutputFormat((ev.target as any).value)}>
-                    <VSCodeOption value="svf">Output format: SVF</VSCodeOption>
-                    <VSCodeOption value="svf2">Output format: SVF2</VSCodeOption>
+                    {outputFormats}
                 </VSCodeDropdown>
                 <VSCodeTextField value={rootFilename} onChange={ev => setRootFilename((ev.target as any).value)}>Root Filename</VSCodeTextField>
 
