@@ -693,6 +693,29 @@ export async function downloadDerivativesCustom(object: IDerivative | undefined,
 				return;
 			}
 		}
+
+		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
+		if (!outputFolderUri) {
+			return;
+		}
+
+		const baseDir = outputFolderUri[0].fsPath;
+		const targetFileName = path.join(baseDir, object.name);
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Downloading the derivative: ${object.name}`,
+			cancellable: false
+		}, async () => {
+			fse.ensureDirSync(baseDir);
+			const content = await context.modelDerivativeClient2L.getDerivative(object!.urn, encodeURI(object!.bubble.fileUrn));			
+			await fse.writeFile(targetFileName, new Uint8Array(content));
+		});
+
+		const action = await vscode.window.showInformationMessage('Derivative downloaded successfully', 'Open Folder');
+		if (action === 'Open Folder') {
+			vscode.env.openExternal(vscode.Uri.file(baseDir));
+		}
 	} catch (err) {
 		showErrorMessage(`Could not download the derivative`, err);
 	}
