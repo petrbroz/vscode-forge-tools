@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import {
     AuthenticationClient,
     DataManagementClient,
@@ -92,12 +93,10 @@ export async function promptCustomDerivative(context: IContext, objectId: string
         .flatMap((deriv: any) => deriv.children.filter((child: any) => child.role === deriv.outputType))
         .map((resource: any) => {
             const fileUrn: string = resource.urn;
-            const filePathParts = fileUrn.split("/");
-
 
             return {
                 urn,
-                name: filePathParts[filePathParts.length - 1],
+                name: path.basename(fileUrn),
                 role: resource.role,
                 guid: resource.guid,
                 format: resource.role,
