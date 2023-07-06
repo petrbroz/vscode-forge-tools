@@ -87,7 +87,7 @@ export async function promptCustomDerivative(context: IContext, objectId: string
     const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
 
     const derivatives: IDerivative[] = manifest.derivatives
-        .find((deriv: any) => formats.hasOutput(deriv.outputType))
+        .filter((deriv: any) => formats.hasOutput(deriv.outputType))
         .filter((deriv: any) => !isViewableFormat(deriv.outputType))
         .flatMap((deriv: any) => deriv.children.filter((child: any) => child.role === deriv.outputType))
         .map((resource: any) => {
