@@ -55,9 +55,7 @@ function getURN(object: IObject | hi.IVersion): string{
 
 function getFileExtension(object: IObject | hi.IVersion): string {
 	if ("objectKey" in object) {
-		const pathParts = object.objectKey.split(".");
-
-		return pathParts[pathParts.length - 1].toLowerCase();
+		return path.extname(object.objectKey).substring(1).toLowerCase();
 	}
 	return "";
 }
