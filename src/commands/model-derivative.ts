@@ -109,6 +109,18 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 			}
 		}
 
+		const formats = await getModelDerivativeFormats(context);
+
+		const extension = getFileExtension(object);
+
+		const availableFormats = formats.findAvailableOutputFormats(extension);
+
+		if (!availableFormats.find(x => x === svf2)) {
+			showErrorMessage("The conversion to SVF2 is not supported for this file by Model derivative service", {});
+
+			return;
+		}
+
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
 		client.submitJob(urn, [{ type: svf2, views: ['2d', '3d'] }], undefined, true);
