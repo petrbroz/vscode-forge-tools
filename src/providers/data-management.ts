@@ -139,7 +139,9 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     role: resource.role,
                     guid: resource.guid,
                     format: derivative.outputType,
-                    bubble: {},
+                    bubble: {
+                        fileUrn
+                    },
                     nonViewable: true
                 }
             });
