@@ -146,7 +146,7 @@ export async function showErrorMessage(title: string, err: any) {
                 statusText: err.response.statusText
             };
             const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(raw, null, 4), language: 'json' });
-		    await vscode.window.showTextDocument(doc, { preview: false });
+            await vscode.window.showTextDocument(doc, { preview: false });
         }
     } else {
         await vscode.window.showErrorMessage(msg);
