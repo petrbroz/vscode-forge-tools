@@ -435,6 +435,9 @@ function registerModelDerivativeCommands(context: IContext, simpleStorageDataPro
     vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
         await mdc.downloadDerivativeGLTF(object, context);
     });
+    vscode.commands.registerCommand('forge.downloadDerivativeCustom', async (object?: mdi.IDerivative) => {
+        await mdc.downloadDerivativesCustom(object, context);
+    })
     vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject | hi.IVersion) => {
         await mdc.copyObjectUrn(object, context);
     });

@@ -14,7 +14,7 @@ import {
 	ModelDerivativeClient
 } from 'forge-server-utils';
 import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'forge-convert-utils';
-import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
+import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
@@ -670,6 +670,31 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 		}
 	} catch (err) {
 		showErrorMessage(`Could not convert derivatives`, err);
+	}
+}
+
+export async function downloadDerivativesCustom(object: IDerivative | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			const bucketObject = await promptObject(context, bucket.bucketKey);
+			if (!bucketObject) {
+				return;
+			}
+
+			const formats = await getModelDerivativeFormats(context);
+
+			object = await promptCustomDerivative(context, bucketObject.objectId, formats);
+
+			if (!object) {
+				return;
+			}
+		}
+	} catch (err) {
+		showErrorMessage(`Could not download the derivative`, err);
 	}
 }
 
