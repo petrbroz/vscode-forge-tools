@@ -36,6 +36,11 @@ export class ModelDerivativeFormats {
     }
 }
 
+export const svf = "svf" as const;
+export const svf2 = "svf2" as const;
+
+export const isViewableFormat = (format: string) => format === svf || format === svf2;
+
 type DerivativeTranslation = {
     outputFormat: string;
     sourceFormats: string[];

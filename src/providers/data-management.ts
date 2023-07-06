@@ -7,7 +7,7 @@ import {
 } from 'forge-server-utils';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
-import { ModelDerivativeFormats } from './model-derivative';
+import { ModelDerivativeFormats, isViewableFormat } from './model-derivative';
 
 export interface IHint {
     hint: string;
@@ -117,7 +117,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
 
         const derivative = manifest.derivatives.find((deriv: any) => formats.hasOutput(deriv.outputType));
 
-        if (derivative.outputType === 'svf' || derivative.outputType === 'svf2') {
+        if (isViewableFormat(derivative.outputType)) {
             return derivative.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
                 return {
                     urn: urn,

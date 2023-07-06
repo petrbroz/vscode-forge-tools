@@ -5,6 +5,7 @@ import { VSCodeTextField, VSCodeDropdown, VSCodeOption, VSCodeCheckbox, VSCodeBu
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
+import { svf2 } from '../providers/model-derivative';
 
 export interface ICustomDerivativeProps {
     urn: string;
@@ -23,7 +24,7 @@ export interface ICustomDerivativeMessage {
 }
 
 const CustomDerivative = ({ urn }: ICustomDerivativeProps) => {
-    const [outputFormat, setOutputFormat] = useState('svf2');
+    const [outputFormat, setOutputFormat] = useState(svf2);
     const [rootFilename, setRootFilename] = useState('');
     const [switchLoader, setSwitchLoader] = useState(false);
     const [generateMasterViews, setGenerateMasterViews] = useState(false);

@@ -13,6 +13,7 @@ import {
 import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'forge-server-utils/dist/common';
 import { IEnvironment } from './environments';
+import { isViewableFormat } from './providers/model-derivative';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -58,7 +59,7 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
     const urn = urnify(objectId);
     const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
-    const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+    const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
     if (!svf) {
         vscode.window.showWarningMessage(`No derivatives yet for ${urn}`);
         return undefined;

@@ -19,6 +19,7 @@ import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
+import { svf2 } from '../providers/model-derivative';
 
 enum TranslationActions {
 	Translate = 'Translate',
@@ -103,7 +104,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
-		client.submitJob(urn, [{ type: 'svf2', views: ['2d', '3d'] }], undefined, true);
+		client.submitJob(urn, [{ type: svf2, views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
@@ -196,11 +197,11 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			: await context.authenticationClient.authenticate(['viewables:read']);
 		let env = context.previewSettings.env;
 		if (!env) {
-			env = derivative.format === 'svf2' ? 'AutodeskProduction2' : 'AutodeskProduction';
+			env = derivative.format === svf2 ? 'AutodeskProduction2' : 'AutodeskProduction';
 		}
 		let api = context.previewSettings.api;
 		if (!api) {
-			api = derivative.format === 'svf2' ? 'streamingV2' : 'derivativeV2';
+			api = derivative.format === svf2 ? 'streamingV2' : 'derivativeV2';
 			if (context.environment.region === 'EMEA') {
 				api += '_EU';
 			}
