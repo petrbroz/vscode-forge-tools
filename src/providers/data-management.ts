@@ -130,8 +130,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             });
         } else {
             return derivative.children.filter((child: any) => child.role === derivative.outputType).map((resource: any) => {
-                const urn: string = resource.urn;
-                const filePathParts = urn.split("/");
+                const fileUrn: string = resource.urn;
+                const filePathParts = fileUrn.split("/");
 
                 return {
                     urn,
