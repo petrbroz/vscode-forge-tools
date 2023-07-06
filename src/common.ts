@@ -13,7 +13,7 @@ import {
 import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'forge-server-utils/dist/common';
 import { IEnvironment } from './environments';
-import { isViewableFormat } from './providers/model-derivative';
+import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -73,6 +73,39 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
             bubble: geometry
         };
     });
+
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    if (!derivativeName) {
+        return undefined;
+    } else {
+        return derivatives.find(item => item.name === derivativeName);
+    }
+}
+
+export async function promptCustomDerivative(context: IContext, objectId: string, formats: ModelDerivativeFormats): Promise<IDerivative | undefined> {
+    const urn = urnify(objectId);
+    const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
+
+    const derivatives: IDerivative[] = manifest.derivatives
+        .find((deriv: any) => formats.hasOutput(deriv.outputType))
+        .filter((deriv: any) => !isViewableFormat(deriv.outputType))
+        .flatMap((deriv: any) => deriv.children.filter((child: any) => child.role === deriv.outputType))
+        .map((resource: any) => {
+            const fileUrn: string = resource.urn;
+            const filePathParts = fileUrn.split("/");
+
+
+            return {
+                urn,
+                name: filePathParts[filePathParts.length - 1],
+                role: resource.role,
+                guid: resource.guid,
+                format: resource.role,
+                bubble: {
+                    fileUrn
+                }
+            }
+        });
 
     const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
     if (!derivativeName) {
