@@ -60,7 +60,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             return node;
         } else if (isDerivative(element)) {
             const node = new vscode.TreeItem(element.name, vscode.TreeItemCollapsibleState.None);
-            node.contextValue = 'derivative';
+            node.contextValue = element.nonViewable ? 'non-viewable-derivative' : 'derivative';
             node.iconPath = new vscode.ThemeIcon('file-binary');
             return node;
         } else {
@@ -139,7 +139,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     role: resource.role,
                     guid: resource.guid,
                     format: derivative.outputType,
-                    bubble: {}
+                    bubble: {},
+                    nonViewable: true
                 }
             });
         }
