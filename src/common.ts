@@ -200,6 +200,7 @@ export function createViewerWebViewPanel<Props>(context: IContext, scriptName: s
     }
     const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
     const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    const encodedProps = Buffer.from(JSON.stringify(props)).toString('base64');
     panel.webview.html = /*html*/ `
         <!DOCTYPE html>
         <html lang="en">
@@ -218,7 +219,8 @@ export function createViewerWebViewPanel<Props>(context: IContext, scriptName: s
             <div id="root"></div>
             <script type="module" nonce="${nonce}">
                 import { render } from '${scriptUri}';
-                render(document.getElementById('root'), JSON.parse('${JSON.stringify(props)}'));
+                const decodedProps = JSON.parse(atob('${encodedProps}'));
+                render(document.getElementById('root'), decodedProps);
             </script>
         </body>
         </html>
