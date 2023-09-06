@@ -110,3 +110,9 @@ The Model Derivative service lets you store derivatives in a region of your choi
 - click on the APS icon in the sidebar and start browsing
 
 > When debugging a webview inside vscode, use the `Developer: Open Webview Developer Tools` and the `Developer: Reload Window` commands.
+
+## Troubleshooting
+
+### Cannot Preview Re-translated Designs
+
+VSCode seems to be caching different HTTP requests made by the viewer, and when you try and preview a design that's been re-translated, the viewer may get a cached manifest JSON that's outdated. Unfortunately the only solution I've found for this is to clear any VSCode cache: https://theblogreaders.com/visual-studio-code-tip-cleanup-cache-folder-better-performance.
