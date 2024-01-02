@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import {
     AuthenticationClient,
     DataManagementClient,
@@ -13,6 +14,7 @@ import {
 import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'forge-server-utils/dist/common';
 import { IEnvironment } from './environments';
+import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -58,7 +60,7 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
     const urn = urnify(objectId);
     const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
-    const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf');
+    const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
     if (!svf) {
         vscode.window.showWarningMessage(`No derivatives yet for ${urn}`);
         return undefined;
@@ -72,6 +74,37 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
             bubble: geometry
         };
     });
+
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    if (!derivativeName) {
+        return undefined;
+    } else {
+        return derivatives.find(item => item.name === derivativeName);
+    }
+}
+
+export async function promptCustomDerivative(context: IContext, objectId: string, formats: ModelDerivativeFormats): Promise<IDerivative | undefined> {
+    const urn = urnify(objectId);
+    const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
+
+    const derivatives: IDerivative[] = manifest.derivatives
+        .filter((deriv: any) => formats.hasOutput(deriv.outputType))
+        .filter((deriv: any) => !isViewableFormat(deriv.outputType))
+        .flatMap((deriv: any) => deriv.children.filter((child: any) => child.role === deriv.outputType))
+        .map((resource: any) => {
+            const fileUrn: string = resource.urn;
+
+            return {
+                urn,
+                name: path.basename(fileUrn),
+                role: resource.role,
+                guid: resource.guid,
+                format: resource.role,
+                bubble: {
+                    fileUrn
+                }
+            }
+        });
 
     const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
     if (!derivativeName) {
@@ -112,7 +145,7 @@ export async function showErrorMessage(title: string, err: any) {
                 statusText: err.response.statusText
             };
             const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(raw, null, 4), language: 'json' });
-		    await vscode.window.showTextDocument(doc, { preview: false });
+            await vscode.window.showTextDocument(doc, { preview: false });
         }
     } else {
         await vscode.window.showErrorMessage(msg);

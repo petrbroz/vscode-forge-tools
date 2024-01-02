@@ -5,4 +5,5 @@ export interface IDerivative {
     guid: string;
     format: string;
     bubble: any;
+    nonViewable?: boolean;
 }
