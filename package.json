@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.5.2",
+	"version": "2.6.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -301,6 +301,11 @@
 			{
 				"command": "forge.downloadDerivativeGltf",
 				"title": "Download Object Derivatives as glTF",
+				"category": "Model Derivative"
+			},
+			{
+				"command": "forge.downloadDerivativeCustom",
+				"title": "Download Non-SVF derivatives",
 				"category": "Model Derivative"
 			},
 			{
@@ -652,6 +657,11 @@
 					"group": "1_action_md@7"
 				},
 				{
+					"command": "forge.downloadDerivativeCustom",
+					"when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
+					"group": "1_action_md@8"
+				},
+				{
 					"command": "forge.deleteObject",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "3_remove@1"
@@ -879,9 +889,9 @@
 	},
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
+		"aps-sdk-node": "^10.0.1",
 		"axios": "^0.21.1",
-		"forge-convert-utils": "^4.0.2",
-		"forge-server-utils": "^8.3.4",
-		"fs-extra": "^9.0.0"
+		"fs-extra": "^9.0.0",
+		"svf-utils": "^5.0.3"
 	}
 }

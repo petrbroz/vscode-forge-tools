@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
-import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from 'forge-server-utils';
+import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from 'aps-sdk-node';
 import { withProgress, createWebViewPanel } from '../common';
 import { ICreateActivityProps } from '../webviews/create-activity';
 
@@ -17,6 +17,12 @@ function sleep(ms: number): Promise<void> {
     return new Promise(function(resolve, reject) {
         setTimeout(function() { resolve(); }, ms);
     });
+}
+
+async function findAvailableEngines(context: IContext, progressTitle: string) {
+	const availableEngines = await withProgress(progressTitle, context.designAutomationClient.listEngines());
+
+	return availableEngines.sort();
 }
 
 export async function uploadAppBundle(name: string | undefined, context: IContext) {
@@ -195,7 +201,7 @@ export async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefi
 
 export async function createActivity(successCallback: (activity: IActivityDetail) => void, context: IContext) {
 	try {
-		let availableEngines = await withProgress(`Collecting available engines for new activity`, context.designAutomationClient.listEngines());
+		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for a new activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for new activity`, context.designAutomationClient.listAppBundles());
 		availableAppBundles = availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'));
 
@@ -238,7 +244,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 			? await context.designAutomationClient.getActivity(id)
 			: await context.designAutomationClient.getActivityVersion(id.name, id.version);
 
-		let availableEngines = await withProgress(`Collecting available engines for activity`, context.designAutomationClient.listEngines());
+		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for activity`, context.designAutomationClient.listAppBundles());
 		availableAppBundles = availableAppBundles.filter((id: string) => !id.endsWith('$LATEST'));
 

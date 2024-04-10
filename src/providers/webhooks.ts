@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { WebhookSystem, WebhookEvent } from 'forge-server-utils';
+import { WebhookSystem, WebhookEvent } from 'aps-sdk-node';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 
 export interface IWebhookSystem {

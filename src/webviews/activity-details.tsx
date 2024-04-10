@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
-import { IActivityDetail, IActivityParam } from 'forge-server-utils';
+import { IActivityDetail, IActivityParam } from 'aps-sdk-node';
 import { Grid } from './components/Grid';
 
 export interface IActivityDetailsProps {

@@ -7,7 +7,7 @@ import {
 	IObject,
 	IResumableUploadRange,
 	DataRetentionPolicy
-} from 'forge-server-utils';
+} from 'aps-sdk-node';
 import { IContext, promptBucket, promptObject, showErrorMessage } from '../common';
 import { withProgress, createWebViewPanel } from '../common';
 

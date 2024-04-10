@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.6.0] - 2024-04-10
+
+- Added
+  - Sorting the list of Design Automatin engines (kudos to [CADBIMDeveloper](https://github.com/CADBIMDeveloper)!)
+  - Users can now convert designs into derivatives other than just SVF or SVF2, and download them (kudos to [CADBIMDeveloper](https://github.com/CADBIMDeveloper)!)
+- Fixed
+  - Broken previewing of Fusion 360 designs (because of their GUIDs containing JSON data)
+- Changed
+  - Moved to the latest (unofficial) APS SDK that has been updated for Auth v2 API
+
 ## [2.5.2] - 2023-04-04
 
 - Added

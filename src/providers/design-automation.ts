@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DesignAutomationID } from 'forge-server-utils';
+import { DesignAutomationID } from 'aps-sdk-node';
 import { IContext } from '../common';
 import * as dai from '../interfaces/design-automation';
 

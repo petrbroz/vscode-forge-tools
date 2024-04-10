@@ -4,10 +4,11 @@ import {
     IObject,
     IDerivativeManifest,
     urnify as _urnify
-} from 'forge-server-utils';
+} from 'aps-sdk-node';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, inHubs } from '../common';
 import * as hi from '../interfaces/hubs';
+import { isViewableFormat } from './model-derivative';
 
 function urnify(id: string): string {
     return _urnify(id).replace('/', '_');
@@ -255,7 +256,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             if (manifest.status !== 'success') {
                 throw new Error('Unexpected manifest status: ' + manifest.status);
             }
-            const svf = manifest.derivatives.find((deriv: any) => deriv.outputType === 'svf' || deriv.outputType === 'svf2');
+            const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
             if (!svf || !svf.children) {
                 return [];
             } else {
@@ -265,7 +266,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                         name: geometry.name,
                         role: geometry.role,
                         guid: geometry.guid,
-                        format: svf.outputType || 'svf',
+                        format: svf.outputType!,
                         bubble: geometry
                     };
                 });

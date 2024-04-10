@@ -40,10 +40,10 @@ function renderLoginPage(clientId: string, port: number, scopes: string[]): stri
             <script>
                 const baseUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
                 document.getElementById('login').addEventListener('click', () => {
-                    const url = new URL('https://developer.api.autodesk.com/authentication/v1/authorize');
+                    const url = new URL('https://developer.api.autodesk.com/authentication/v2/authorize');
                     url.searchParams.set('client_id', '${clientId}');
                     url.searchParams.set('redirect_uri', baseUrl + '/auth/callback');
-                    url.searchParams.set('response_type', 'token');
+                    url.searchParams.set('response_type', 'code');
                     url.searchParams.set('scope', '${scopes.join(' ')}');
                     window.location.replace(url.toString());
                 });

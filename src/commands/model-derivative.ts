@@ -12,13 +12,14 @@ import {
 	IDerivativeProps,
 	IDerivativeTree,
 	ModelDerivativeClient
-} from 'forge-server-utils';
-import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'forge-convert-utils';
-import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs } from '../common';
+} from 'aps-sdk-node';
+import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'svf-utils';
+import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
+import { ModelDerivativeFormats, svf2 } from '../providers/model-derivative';
 
 enum TranslationActions {
 	Translate = 'Translate',
@@ -50,6 +51,13 @@ function getId(object: IObject | hi.IVersion): string{
 
 function getURN(object: IObject | hi.IVersion): string{
 	return urnify(getId(object));
+}
+
+function getFileExtension(object: IObject | hi.IVersion): string {
+	if ("objectKey" in object) {
+		return path.extname(object.objectKey).substring(1).toLowerCase();
+	}
+	return "";
 }
 
 function getModelDerivativeClientForObject(object: IObject | hi.IVersion, context: IContext): ModelDerivativeClient{
@@ -101,9 +109,21 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 			}
 		}
 
+		const formats = await getModelDerivativeFormats(context);
+
+		const extension = getFileExtension(object);
+
+		const availableFormats = formats.findAvailableOutputFormats(extension);
+
+		if (!availableFormats.find(x => x === svf2)) {
+			showErrorMessage("The conversion to SVF2 is not supported for this file by Model derivative service", {});
+
+			return;
+		}
+
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
-		client.submitJob(urn, [{ type: 'svf2', views: ['2d', '3d'] }], undefined, true);
+		client.submitJob(urn, [{ type: svf2, views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
 		showErrorMessage('Could not translate object', err);
@@ -126,7 +146,19 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 		let urn = getURN(object);
 		let client = getModelDerivativeClientForObject(object, context);
 
-		let panel = createWebViewPanel<ICustomDerivativeProps>(context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn }, async (message: ICustomDerivativeMessage) => {
+		const formats = await getModelDerivativeFormats(context);
+
+		const extension = getFileExtension(object);
+
+		const availableFormats = formats.findAvailableOutputFormats(extension);
+
+		if (availableFormats.length === 0) {
+			showErrorMessage("Source file format is not supported by Model derivative service", {});
+
+			return;
+		}
+
+		let panel = createWebViewPanel<ICustomDerivativeProps>(context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats }, async (message: ICustomDerivativeMessage) => {
 			switch (message.type) {
 				case 'translate':
 					const {
@@ -196,11 +228,11 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			: await context.authenticationClient.authenticate(['viewables:read']);
 		let env = context.previewSettings.env;
 		if (!env) {
-			env = derivative.format === 'svf2' ? 'AutodeskProduction2' : 'AutodeskProduction';
+			env = derivative.format === svf2 ? 'AutodeskProduction2' : 'AutodeskProduction';
 		}
 		let api = context.previewSettings.api;
 		if (!api) {
-			api = derivative.format === 'svf2' ? 'streamingV2' : 'derivativeV2';
+			api = derivative.format === svf2 ? 'streamingV2' : 'derivativeV2';
 			if (context.environment.region === 'EMEA') {
 				api += '_EU';
 			}
@@ -651,6 +683,54 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 	}
 }
 
+export async function downloadDerivativesCustom(object: IDerivative | undefined, context: IContext) {
+	try {
+		if (!object) {
+			const bucket = await promptBucket(context);
+			if (!bucket) {
+				return;
+			}
+			const bucketObject = await promptObject(context, bucket.bucketKey);
+			if (!bucketObject) {
+				return;
+			}
+
+			const formats = await getModelDerivativeFormats(context);
+
+			object = await promptCustomDerivative(context, bucketObject.objectId, formats);
+
+			if (!object) {
+				return;
+			}
+		}
+
+		const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
+		if (!outputFolderUri) {
+			return;
+		}
+
+		const baseDir = outputFolderUri[0].fsPath;
+		const targetFileName = path.join(baseDir, object.name);
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Downloading the derivative: ${object.name}`,
+			cancellable: false
+		}, async () => {
+			fse.ensureDirSync(baseDir);
+			const content = await context.modelDerivativeClient2L.getDerivative(object!.urn, encodeURI(object!.bubble.fileUrn));			
+			await fse.writeFile(targetFileName, new Uint8Array(content));
+		});
+
+		const action = await vscode.window.showInformationMessage('Derivative downloaded successfully', 'Open Folder');
+		if (action === 'Open Folder') {
+			vscode.env.openExternal(vscode.Uri.file(baseDir));
+		}
+	} catch (err) {
+		showErrorMessage(`Could not download the derivative`, err);
+	}
+}
+
 export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
@@ -670,4 +750,13 @@ export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, c
 	} catch (err) {
 		showErrorMessage('Could not obtain object URN', err);
 	}
+}
+
+let modelDerivativeFormats: ModelDerivativeFormats | null = null;
+
+async function getModelDerivativeFormats(context: IContext) {
+	if (modelDerivativeFormats === null)
+		modelDerivativeFormats = await ModelDerivativeFormats.create(context);
+
+	return modelDerivativeFormats;
 }
