@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
-import { IWebhook } from 'forge-server-utils';
+import { IWebhook } from 'aps-sdk-node';
 import { Grid } from './components/Grid';
 
 export interface IWebhookDetailsProps {

@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Users can now convert designs into derivatives other than just SVF or SVF2, and download them (kudos to [CADBIMDeveloper](https://github.com/CADBIMDeveloper)!)
 - Fixed
   - Broken previewing of Fusion 360 designs (because of their GUIDs containing JSON data)
+- Changed
+  - Moved to the latest (unofficial) APS SDK that has been updated for Auth v2 API
 
 ## [2.5.2] - 2023-04-04
 

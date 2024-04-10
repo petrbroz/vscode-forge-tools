@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell } from '@vscode/webview-ui-toolkit/react';
-import { IBucketDetail } from 'forge-server-utils';
+import { IBucketDetail } from 'aps-sdk-node';
 import { Grid } from './components/Grid';
 
 export interface IBucketDetailsProps {

@@ -10,9 +10,9 @@ import {
     IBucket,
     IObject,
     urnify
-} from 'forge-server-utils';
+} from 'aps-sdk-node';
 import { IDerivative } from './interfaces/model-derivative';
-import { IAuthOptions } from 'forge-server-utils/dist/common';
+import { IAuthOptions } from 'aps-sdk-node/dist/common';
 import { IEnvironment } from './environments';
 import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
 

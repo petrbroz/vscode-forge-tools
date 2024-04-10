@@ -5,7 +5,7 @@ import {
     IObject,
     IDerivativeManifest,
     urnify
-} from 'forge-server-utils';
+} from 'aps-sdk-node';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 import { ModelDerivativeFormats, isViewableFormat } from './model-derivative';

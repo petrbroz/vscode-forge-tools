@@ -12,8 +12,8 @@ import {
 	IDerivativeProps,
 	IDerivativeTree,
 	ModelDerivativeClient
-} from 'forge-server-utils';
-import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'forge-convert-utils';
+} from 'aps-sdk-node';
+import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'svf-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';

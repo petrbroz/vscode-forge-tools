@@ -9,7 +9,7 @@ import {
 	WebhooksClient,
 	BIM360Client,
 	IActivityDetail
-} from 'forge-server-utils';
+} from 'aps-sdk-node';
 import * as dmp from './providers/data-management';
 import * as dap from './providers/design-automation';
 import * as dmc from './commands/data-management';
@@ -18,7 +18,7 @@ import * as dac from './commands/design-automation';
 import * as dai from './interfaces/design-automation';
 import * as mdi from './interfaces/model-derivative';
 import * as hi  from './interfaces/hubs';
-import { Region } from 'forge-server-utils/dist/common';
+import { Region } from 'aps-sdk-node/dist/common';
 import { IContext } from './common';
 import { WebhooksDataProvider, IWebhook, IWebhookEvent } from './providers/webhooks';
 import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from './commands/webhooks';
@@ -28,7 +28,7 @@ import { getEnvironments, setupNewEnvironment, IEnvironment } from './environmen
 
 const DefaultAuthPort = 8123;
 
-// TODO: reuse the enum from forge-server-utils
+// TODO: reuse the enum from aps-sdk-node
 enum DesignAutomationRegion {
     US_WEST = 'us-west',
     US_EAST = 'us-east'

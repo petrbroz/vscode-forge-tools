@@ -4,7 +4,7 @@ import {
     IObject,
     IDerivativeManifest,
     urnify as _urnify
-} from 'forge-server-utils';
+} from 'aps-sdk-node';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, inHubs } from '../common';
 import * as hi from '../interfaces/hubs';

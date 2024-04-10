@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
 import { IWebhook, IWebhookEvent } from '../providers/webhooks';
-import { WebhookSystem } from 'forge-server-utils';
+import { WebhookSystem } from 'aps-sdk-node';
 import { withProgress, createWebViewPanel } from '../common';
 
 function webhookScopes(system: WebhookSystem): string[] {

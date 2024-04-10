@@ -889,9 +889,9 @@
 	},
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
+		"aps-sdk-node": "^10.0.1",
 		"axios": "^0.21.1",
-		"forge-convert-utils": "^4.0.2",
-		"forge-server-utils": "^8.3.4",
-		"fs-extra": "^9.0.0"
+		"fs-extra": "^9.0.0",
+		"svf-utils": "^5.0.3"
 	}
 }
