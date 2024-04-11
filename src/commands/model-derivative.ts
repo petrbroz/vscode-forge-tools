@@ -13,7 +13,7 @@ import {
 	IDerivativeTree,
 	ModelDerivativeClient
 } from 'aps-sdk-node';
-import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader } from 'svf-utils';
+import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, TwoLeggedAuthenticationProvider } from 'svf-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import * as hi from '../interfaces/hubs';
@@ -558,7 +558,7 @@ export async function downloadDerivativesSVF(object: IObject | undefined, contex
 			cancellable: true
 		}, async (progress, token) => {
 			let cancelled = false;
-			const svfDownloader = new SvfDownloader(context.credentials);
+			const svfDownloader = new SvfDownloader(new TwoLeggedAuthenticationProvider(context.environment.clientId, context.environment.clientSecret));
 			const svfDownloadTask = svfDownloader.download(urn, {
 				outputDir: baseDir,
 				log: (message: string) => progress.report({ message })
@@ -605,7 +605,7 @@ export async function downloadDerivativesF2D(object: IObject | undefined, contex
 			cancellable: true
 		}, async (progress, token) => {
 			let cancelled = false;
-			const f2dDownloader = new F2dDownloader(context.credentials);
+			const f2dDownloader = new F2dDownloader(new TwoLeggedAuthenticationProvider(context.environment.clientId, context.environment.clientSecret));
 			const f2dDownloadTask = f2dDownloader.download(urn, {
 				outputDir: baseDir,
 				log: (message: string) => progress.report({ message })
@@ -669,7 +669,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 				const guidDir = path.join(urnDir, derivative.guid);
 				fse.ensureDirSync(guidDir);
 				const writer = new GltfWriter({ deduplicate: false, log: (msg: string) => progress.report({ message: msg }) });
-				const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, context.credentials);
+				const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, new TwoLeggedAuthenticationProvider(context.environment.clientId, context.environment.clientSecret));
 				const svf = await reader.read();
 				await writer.write(svf, guidDir);
 			}
