@@ -114,11 +114,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('forge.login', async () => {
 		try {
 			const port = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.authentication.port') || DefaultAuthPort;
-			const data = await login(env.clientId, port, context);
-			const token = data.get('access_token');
-			const expires = data.get('expires_in');
-			const tokenType = data.get('token_type');
-			if (!token || !expires || tokenType !== 'Bearer') {
+			const credentials = await login(env.clientId, port, context);
+			const token = credentials.access_token;
+			const expires = credentials.expires_in;
+			if (!token || !expires) {
 				throw new Error('Authentication data missing or incorrect.');
 			}
 			context.threeLeggedToken = token;
@@ -154,6 +153,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		}
 		env = environments.find(environment => environment.title === name) as IEnvironment;
 		delete context.threeLeggedToken;
+        context.environment = env;
 		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
 		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
 		context.modelDerivativeClient2L.reset(context.credentials, env.host, env.region as Region);
