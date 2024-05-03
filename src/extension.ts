@@ -154,6 +154,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		}
 		env = environments.find(environment => environment.title === name) as IEnvironment;
 		delete context.threeLeggedToken;
+        context.environment = env;
 		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
 		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
 		context.modelDerivativeClient2L.reset(context.credentials, env.host, env.region as Region);
