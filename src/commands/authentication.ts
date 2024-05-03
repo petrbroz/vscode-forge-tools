@@ -1,7 +1,7 @@
 import * as http from 'http';
-import * as url from 'url';
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
+import { IThreeLeggedToken } from 'aps-sdk-node';
 
 const DefaultScopes = [
     'viewables:read', 
@@ -56,46 +56,6 @@ function renderLoginPage(clientId: string, port: number, scopes: string[]): stri
     `;
 }
 
-function renderCallbackPage(): string {
-    return /*html*/ `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-            <title>Autodesk Platform Services: Login</title>
-        </head>
-        <body>
-            <div class="container">
-                <h1>Autodesk Platform Services</h1>
-                <h2>Login</h2>
-                <p>
-                    Retrieving the token...
-                </p>
-            </div>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
-            <script>
-                const baseUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
-                const { hash } = window.location;
-                const params = new Map();
-                hash.substr(1).split('&').forEach(pair => {
-                    const tokens = pair.split('=');
-                    if (tokens.length === 2) {
-                        params.set(tokens[0], tokens[1]);
-                    }
-                });
-                const url = new URL(baseUrl + '/auth/save');
-                url.searchParams.set('access_token', params.get('access_token'));
-                url.searchParams.set('expires_in', params.get('expires_in'));
-                url.searchParams.set('token_type', params.get('token_type'));
-                window.location.replace(url.toString());
-            </script>
-        </body>
-        </html>
-    `;
-}
-
 function renderMessagePage(message: string): string {
     return /*html*/ `
         <!DOCTYPE html>
@@ -119,25 +79,25 @@ function renderMessagePage(message: string): string {
     `;
 }
 
-export async function login(clientId: string, port: number, context: IContext): Promise<Map<string, string>> {
+export async function login(clientId: string, port: number, context: IContext): Promise<IThreeLeggedToken> {
     const timeout = 2 * 60 * 1000; // Wait for 2 minutes
     const scopes = DefaultScopes; 
     return new Promise(function (resolve, reject) {
-        const server = http.createServer(function (req, res) {
+        const server = http.createServer(async function (req, res) {
             if (req.url === '/') {
                 res.end(renderLoginPage(clientId, port, scopes));
-            } else if (req.url === '/auth/callback') {
-                res.end(renderCallbackPage());
             } else if (req.url === '/auth/cancel') {
                 res.end(renderMessagePage('Login process has been cancelled.'));
                 server.close();
                 reject('Cancelled by user.');
-            } else if (req.url?.startsWith('/auth/save')) {
+            } else if (req.url?.startsWith('/auth/callback')) {
                 const url = new URL(req.url, `http://localhost:${port}`);
-                const params = new Map<string, string>(url.searchParams.entries());
+                const code = url.searchParams.get('code') as string;
+                url.searchParams.delete('code');
+                const credentials = await context.authenticationClient.getToken(code, url.toString());
                 res.end(renderMessagePage('You are logged in!'));
                 server.close();
-                resolve(params);
+                resolve(credentials);
             } else {
                 res.statusCode = 404;
                 res.end();

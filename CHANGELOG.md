@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Fixed
   - Bug in SVF/glTF downloads after switching to another environment
+  - Issue with 3-legged OAuth callback
 
 ## [2.6.1] - 2024-04-11
 
