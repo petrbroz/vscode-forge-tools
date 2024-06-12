@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import crypto from 'crypto';
+import axios from 'axios';
 import {
 	IBucket,
 	IObject,
@@ -357,8 +358,9 @@ export async function createEmptyObject(bucket: IBucket | undefined, context: IC
 	}
 
     try {
-		const obj = await context.dataManagementClient.uploadObject(bucketKey, name, contentType, Buffer.from([]));
-		vscode.window.showInformationMessage(`Object created: ${obj.objectId}`);
+		const signedUrl = await context.dataManagementClient.createSignedUrl(bucketKey, name, "write");
+		const { data } = await axios.put(signedUrl.signedUrl, Buffer.from([]));
+		vscode.window.showInformationMessage(`Object created: ${data.objectId}`);
     } catch(err) {
 		showErrorMessage('Could not create file', err);
 	}

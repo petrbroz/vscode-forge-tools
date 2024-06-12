@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - Creation of empty OSS objects (https://github.com/petrbroz/vscode-forge-tools/issues/90)
+
 ## [2.6.2] - 2024-05-03
 
 - Fixed
