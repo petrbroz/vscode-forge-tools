@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Display versions next to DA bundle and activity aliases (https://github.com/petrbroz/vscode-forge-tools/issues/89)
 - Fixed
   - Creation of empty OSS objects (https://github.com/petrbroz/vscode-forge-tools/issues/90)
 

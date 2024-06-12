@@ -32,6 +32,7 @@ export interface IAppBundleAliasEntry extends IDesignAutomationEntry {
     client: string;
     appbundle: string;
     alias: string;
+    version: number;
 }
 
 export interface IAppBundleVersionsEntry extends IDesignAutomationEntry {
@@ -77,6 +78,7 @@ export interface IActivityAliasEntry extends IDesignAutomationEntry {
     client: string;
     activity: string;
     alias: string;
+    version: number;
 }
 
 export interface IActivityVersionsEntry extends IDesignAutomationEntry {

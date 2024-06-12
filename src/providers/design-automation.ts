@@ -61,13 +61,15 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
             case 'activity-versions':
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.Collapsed);
                 break;
-            case 'appbundle-alias':
             case 'appbundle-version':
             case 'shared-appbundle':
-            case 'activity-alias':
             case 'activity-version':
             case 'shared-activity':
                 node = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
+                break;
+            case 'appbundle-alias':
+            case 'activity-alias':
+                node = new vscode.TreeItem(`${element.label} [${element.version}]`, vscode.TreeItemCollapsibleState.None);
                 break;
             default:
                 throw new Error('Unexpected entry type'); // Should never be hit
@@ -139,7 +141,7 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         const aliases = await this._context.designAutomationClient.listAppBundleAliases(entry.appbundle);
         return aliases
             .filter(alias => alias.id !== '$LATEST')
-            .map(alias => ({ type: 'appbundle-alias', client: entry.client, appbundle: entry.appbundle, alias: alias.id, label: alias.id }));
+            .map(alias => ({ type: 'appbundle-alias', client: entry.client, appbundle: entry.appbundle, alias: alias.id, label: alias.id, version: alias.version }));
     }
 
     private async _getAppBundleVersions(entry: dai.IAppBundleVersionsEntry): Promise<dai.IAppBundleVersionEntry[]> {
@@ -173,7 +175,7 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
         const aliases = await this._context.designAutomationClient.listActivityAliases(entry.activity);
         return aliases
             .filter(alias => alias.id !== '$LATEST')
-            .map(alias => ({ type: 'activity-alias', client: entry.client, activity: entry.activity, alias: alias.id, label: alias.id }));
+            .map(alias => ({ type: 'activity-alias', client: entry.client, activity: entry.activity, alias: alias.id, label: alias.id, version: alias.version }));
     }
 
     private async _getActivityVersions(entry: dai.IActivityVersionsEntry): Promise<DesignAutomationEntry[]> {
