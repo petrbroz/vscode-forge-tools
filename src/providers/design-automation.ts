@@ -69,7 +69,7 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
                 break;
             case 'appbundle-alias':
             case 'activity-alias':
-                node = new vscode.TreeItem(`${element.label} [${element.version}]`, vscode.TreeItemCollapsibleState.None);
+                node = new vscode.TreeItem(`${element.label} [v${element.version}]`, vscode.TreeItemCollapsibleState.None);
                 break;
             default:
                 throw new Error('Unexpected entry type'); // Should never be hit
