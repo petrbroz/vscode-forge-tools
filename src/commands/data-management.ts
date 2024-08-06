@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import crypto from 'crypto';
+import axios from 'axios';
 import {
 	IBucket,
 	IObject,
@@ -162,7 +163,7 @@ export async function createBucket(context: IContext) {
 		const bucket = await withProgress(`Creating bucket: ${name}`, context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention));
         vscode.window.showInformationMessage(`Bucket created: ${bucket.bucketKey}`);
     } catch (err) {
-		showErrorMessage('Could not create bucket', err);
+		showErrorMessage('Could not create bucket', err, context);
     }
 }
 
@@ -181,7 +182,7 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 		// const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(bucketDetails, null, 4), language: 'json' });
 		// await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
-		showErrorMessage('Could not access bucket', err);
+		showErrorMessage('Could not access bucket', err, context);
 	}
 }
 
@@ -197,7 +198,7 @@ export async function copyBucketKey(bucket: IBucket | undefined, context: IConte
 		await vscode.env.clipboard.writeText(bucket.bucketKey);
 		vscode.window.showInformationMessage(`Bucket key copied to clipboard: ${bucket.bucketKey}`);
 	} catch (err) {
-		showErrorMessage('Could not obtain bucket key', err);
+		showErrorMessage('Could not obtain bucket key', err, context);
 	}
 }
 
@@ -285,7 +286,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 				}
 			}
 		} catch (err) {
-			showErrorMessage('Could not upload file', err);
+			showErrorMessage('Could not upload file', err, context);
 		} finally {
 			if (fd !== -1) {
 				fs.closeSync(fd);
@@ -357,10 +358,11 @@ export async function createEmptyObject(bucket: IBucket | undefined, context: IC
 	}
 
     try {
-		const obj = await context.dataManagementClient.uploadObject(bucketKey, name, contentType, Buffer.from([]));
-		vscode.window.showInformationMessage(`Object created: ${obj.objectId}`);
+		const signedUrl = await context.dataManagementClient.createSignedUrl(bucketKey, name, "write");
+		const { data } = await axios.put(signedUrl.signedUrl, Buffer.from([]));
+		vscode.window.showInformationMessage(`Object created: ${data.objectId}`);
     } catch(err) {
-		showErrorMessage('Could not create file', err);
+		showErrorMessage('Could not create file', err, context);
 	}
 }
 
@@ -390,7 +392,7 @@ export async function downloadObject(object: IObject | undefined, context: ICont
 			vscode.env.openExternal(uri);
 		}
     } catch(err) {
-		showErrorMessage('Could not download file', err);
+		showErrorMessage('Could not download file', err, context);
     }
 }
 
@@ -413,7 +415,7 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 		// const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
 		// await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
-		showErrorMessage('Could not access object', err);
+		showErrorMessage('Could not access object', err, context);
 	}
 }
 
@@ -433,7 +435,7 @@ export async function copyObjectKey(object: IObject | undefined, context: IConte
 		await vscode.env.clipboard.writeText(object.objectKey);
 		vscode.window.showInformationMessage(`Object key copied to clipboard: ${object.objectKey}`);
 	} catch (err) {
-		showErrorMessage('Could not obtain object key', err);
+		showErrorMessage('Could not obtain object key', err, context);
 	}
 }
 
@@ -458,7 +460,7 @@ export async function copyObject(object: IObject | undefined, context: IContext)
 		await withProgress(`Copying file: ${object.objectKey}`, context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
         vscode.window.showInformationMessage(`Object copy created: ${newObjectKey}`);
 	} catch(err) {
-		showErrorMessage('Could not copy object', err);
+		showErrorMessage('Could not copy object', err, context);
 	}
 }
 
@@ -489,7 +491,7 @@ export async function renameObject(object: IObject | undefined, context: IContex
             the object back to ${object.objectKey} to regain access to the derivatives.
         `);
 	} catch(err) {
-		showErrorMessage('Could not rename object', err);
+		showErrorMessage('Could not rename object', err, context);
 	}
 }
 
@@ -509,7 +511,7 @@ export async function deleteObject(object: IObject | undefined, context: IContex
 		await withProgress(`Deleting object: ${object.objectKey}`, context.dataManagementClient.deleteObject(bucketKey, objectKey));
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
     } catch(err) {
-		showErrorMessage('Could not delete object', err);
+		showErrorMessage('Could not delete object', err, context);
     }
 }
 
@@ -554,7 +556,7 @@ export async function deleteAllObjects(bucket: IBucket | undefined, context: ICo
 		});
         vscode.window.showInformationMessage(`Objects deleted`);
     } catch(err) {
-		showErrorMessage('Could not delete objects', err);
+		showErrorMessage('Could not delete objects', err, context);
     }
 }
 
@@ -583,7 +585,7 @@ export async function generateSignedUrl(object: IObject | undefined, context: IC
 			vscode.env.clipboard.writeText(signedUrl.signedUrl);
 		}
 	} catch(err) {
-		showErrorMessage('Could not generate signed URL', err);
+		showErrorMessage('Could not generate signed URL', err, context);
 	}
 }
 
@@ -599,6 +601,6 @@ export async function deleteBucket(bucket: IBucket | undefined, context: IContex
 		await withProgress(`Deleting bucket: ${bucketKey}`, context.dataManagementClient.deleteBucket(bucketKey));
         vscode.window.showInformationMessage(`Bucket deleted: ${bucketKey}`);
     } catch(err) {
-		showErrorMessage('Could not delete bucket', err);
+		showErrorMessage('Could not delete bucket', err, context);
     }
 }

@@ -58,7 +58,7 @@ export async function uploadAppBundle(name: string | undefined, context: IContex
 		withProgress(`Uploading app bundle: ${filepath}`, context.designAutomationClient.uploadAppBundleArchive(details, stream));
         vscode.window.showInformationMessage(`App bundle uploaded: ${filepath}`);
 	} catch(err) {
-		showErrorMessage('Could not upload app bundle', err);
+		showErrorMessage('Could not upload app bundle', err, context);
 	}
 }
 
@@ -77,7 +77,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 		);
 		createWebViewPanel(context, 'appbundle-details.js', 'appbundle-details', `App Bundle Details: ${appBundleDetail.id}`, { detail: appBundleDetail });
 	} catch (err) {
-		showErrorMessage('Could not access app bundle', err);
+		showErrorMessage('Could not access app bundle', err, context);
 	}
 }
 
@@ -97,7 +97,7 @@ export async function viewAppBundleDetailsJSON(id: FullyQualifiedID | INameAndVe
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(appBundleDetail, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
-		showErrorMessage('Could not access app bundle', err);
+		showErrorMessage('Could not access app bundle', err, context);
 	}
 }
 
@@ -116,7 +116,7 @@ export async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined
 		const alias = aliases.find(entry => entry.id === daid.alias);
 		createWebViewPanel(context, 'alias-details.js', 'alias-details', `Alias Details: ${id}`, { detail: alias });
 	} catch(err) {
-		showErrorMessage('Could not access app bundle alias', err);
+		showErrorMessage('Could not access app bundle alias', err, context);
 	}
 }
 
@@ -136,7 +136,7 @@ export async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undef
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(alias, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
-		showErrorMessage('Could not access app bundle alias', err);
+		showErrorMessage('Could not access app bundle alias', err, context);
 	}
 }
 
@@ -145,7 +145,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 		const activityDetail = await withProgress(`Getting activity details: ${id}`, typeof(id) === 'string' ? context.designAutomationClient.getActivity(id) : context.designAutomationClient.getActivityVersion(id.name, id.version));
 		createWebViewPanel(context, 'activity-details.js', 'activity-details', `Activity Details: ${activityDetail.id}`, { detail: activityDetail });
 	} catch(err) {
-		showErrorMessage('Could not access activity', err);
+		showErrorMessage('Could not access activity', err, context);
 	}
 }
 
@@ -156,7 +156,7 @@ export async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVer
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(activityDetail, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
-		showErrorMessage('Could not access activity', err);
+		showErrorMessage('Could not access activity', err, context);
 	}
 }
 
@@ -175,7 +175,7 @@ export async function viewActivityAliasDetails(id: FullyQualifiedID | undefined,
 		const alias = aliases.find(entry => entry.id === daid.alias);
 		createWebViewPanel(context, 'alias-details.js', 'alias-details', `Alias Details: ${id}`, { detail: alias });
 	} catch(err) {
-		showErrorMessage('Could not access activity alias', err);
+		showErrorMessage('Could not access activity alias', err, context);
 	}
 }
 
@@ -195,7 +195,7 @@ export async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefi
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(alias, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch(err) {
-		showErrorMessage('Could not access activity alias', err);
+		showErrorMessage('Could not access activity alias', err, context);
 	}
 }
 
@@ -228,13 +228,13 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 						vscode.window.showInformationMessage(`Activity created: ${activity.id} (version ${activity.version})`);
 						successCallback(activity);
 					} catch(err) {
-						showErrorMessage('Could not create activity', err);
+						showErrorMessage('Could not create activity', err, context);
 					}
 					break;
 			}
 		});
 	} catch(err) {
-		showErrorMessage('Could not create activity', err);
+		showErrorMessage('Could not create activity', err, context);
 	}
 }
 
@@ -264,13 +264,13 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 						vscode.window.showInformationMessage(`Activity updated: ${activity.id} (version ${activity.version})`);
 						successCallback(activity);
 					} catch(err) {
-						showErrorMessage('Could not update activity', err);
+						showErrorMessage('Could not update activity', err, context);
 					}
 					break;
 			}
 		});
 	} catch(err) {
-		showErrorMessage('Could not update activity', err);
+		showErrorMessage('Could not update activity', err, context);
 	}
 }
 
@@ -279,7 +279,7 @@ export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 		await withProgress(`Removing app bundle: ${id}`, context.designAutomationClient.deleteAppBundle(id));
 		vscode.window.showInformationMessage(`App bundle removed`);
 	} catch(err) {
-		showErrorMessage('Could not remove app bundle', err);
+		showErrorMessage('Could not remove app bundle', err, context);
 	}
 }
 
@@ -300,7 +300,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 		await withProgress(`Creating app bundle alias: ${id}/${alias}`, context.designAutomationClient.createAppBundleAlias(id, alias, parseInt(appBundleVersion), receiver));
 		vscode.window.showInformationMessage(`App bundle alias created`);
 	} catch(err) {
-		showErrorMessage('Could not create app bundle alias', err);
+		showErrorMessage('Could not create app bundle alias', err, context);
 	}
 }
 
@@ -317,7 +317,7 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 		await withProgress(`Updating app bundle alias: ${id}/${alias}`, context.designAutomationClient.updateAppBundleAlias(id, alias, parseInt(appBundleVersion), receiver));
 		vscode.window.showInformationMessage(`App bundle alias updated`);
 	} catch(err) {
-		showErrorMessage('Could not update app bundle alias', err);
+		showErrorMessage('Could not update app bundle alias', err, context);
 	}
 }
 
@@ -326,7 +326,7 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 		await withProgress(`Removing app bundle alias: ${id}/${alias}`, context.designAutomationClient.deleteAppBundleAlias(id, alias));
 		vscode.window.showInformationMessage(`App bundle alias removed`);
 	} catch(err) {
-		showErrorMessage('Could not remove app bundle alias', err);
+		showErrorMessage('Could not remove app bundle alias', err, context);
 	}
 }
 
@@ -335,7 +335,7 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 		await withProgress(`Removing app bundle version: ${id}/${version}`, context.designAutomationClient.deleteAppBundleVersion(id, version));
 		vscode.window.showInformationMessage(`App bundle version removed`);
 	} catch(err) {
-		showErrorMessage('Could not remove app bundle version', err);
+		showErrorMessage('Could not remove app bundle version', err, context);
 	}
 }
 
@@ -344,7 +344,7 @@ export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 		await withProgress(`Removing activity: ${id}`, context.designAutomationClient.deleteActivity(id));
 		vscode.window.showInformationMessage(`Activity removed`);
 	} catch(err) {
-		showErrorMessage('Could not remove activity', err);
+		showErrorMessage('Could not remove activity', err, context);
 	}
 }
 
@@ -353,7 +353,7 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 		await withProgress(`Removing activity alias: ${id}/${alias}`, context.designAutomationClient.deleteActivityAlias(id, alias));
 		vscode.window.showInformationMessage(`Activity alias removed`);
 	} catch(err) {
-		showErrorMessage('Could not remove activity alias', err);
+		showErrorMessage('Could not remove activity alias', err, context);
 	}
 }
 
@@ -362,7 +362,7 @@ export async function deleteActivityVersion(id: UnqualifiedID, version: number, 
 		await withProgress(`Removing activity version: ${id}/${version}`, context.designAutomationClient.deleteActivityVersion(id, version));
 		vscode.window.showInformationMessage(`Activity version removed`);
 	} catch(err) {
-		showErrorMessage(`Could not remove activity version`, err);
+		showErrorMessage(`Could not remove activity version`, err, context);
 	}
 }
 
@@ -383,7 +383,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 		await withProgress(`Creating activity alias: ${id}/${alias}`, context.designAutomationClient.createActivityAlias(id, alias, parseInt(activityVersion), receiver))
 		vscode.window.showInformationMessage(`Activity alias created`);
 	} catch(err) {
-		showErrorMessage('Could not create activity alias', err);
+		showErrorMessage('Could not create activity alias', err, context);
 	}
 }
 
@@ -400,7 +400,7 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 		await withProgress(`Updating activity alias: ${id}/${alias}`, context.designAutomationClient.updateActivityAlias(id, alias, parseInt(activityVersion), receiver));
 		vscode.window.showInformationMessage(`Activity alias updated`);
 	} catch(err) {
-		showErrorMessage('Could not update activity alias', err);
+		showErrorMessage('Could not update activity alias', err, context);
 	}
 }
 
@@ -438,7 +438,7 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 								vscode.window.showTextDocument(doc);
 							}
 						} catch(err) {
-							showErrorMessage('Could not start workitem', err);
+							showErrorMessage('Could not start workitem', err, context);
 						}
 						// panel.dispose();
 						break;
@@ -446,6 +446,6 @@ export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 			});
 		}
 	} catch(err) {
-		showErrorMessage('Could not create workitem', err);
+		showErrorMessage('Could not create workitem', err, context);
 	}
 }

@@ -92,7 +92,7 @@ export async function listViewables(object: IObject | hi.IVersion | undefined, c
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(metadata, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
-		showErrorMessage('Could not retrieve viewables', err);
+		showErrorMessage('Could not retrieve viewables', err, context);
 	}
 }
 
@@ -117,7 +117,6 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 
 		if (!availableFormats.find(x => x === svf2)) {
 			showErrorMessage("The conversion to SVF2 is not supported for this file by Model derivative service", {});
-
 			return;
 		}
 
@@ -126,7 +125,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 		client.submitJob(urn, [{ type: svf2, views: ['2d', '3d'] }], undefined, true);
 		vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 	} catch (err) {
-		showErrorMessage('Could not translate object', err);
+		showErrorMessage('Could not translate object', err, context);
 	}
 }
 
@@ -154,7 +153,6 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 
 		if (availableFormats.length === 0) {
 			showErrorMessage("Source file format is not supported by Model derivative service", {});
-
 			return;
 		}
 
@@ -192,7 +190,7 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 						if (err.response && err.response.statusCode === 406) {
 							showErrorMessage('Could not translate object, likely because its derivatives exist in a different region. Please, delete the derivatives manually before translating the object again.', null);
 						} else {
-							showErrorMessage('Could not translate object', err);
+							showErrorMessage('Could not translate object', err, context);
 						}
 					}
 					panel.dispose();
@@ -203,7 +201,7 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 			}
 		});
 	} catch (err) {
-		showErrorMessage('Could not translate object', err);
+		showErrorMessage('Could not translate object', err, context);
 	}
 }
 
@@ -248,12 +246,12 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 		}, message => {
 			switch (message.type) {
 				case 'error':
-					showErrorMessage(`Could not load viewable`, message.error);
+					showErrorMessage(`Could not load viewable`, message.error, context);
 					break;
 			}
 		});
 	} catch (err) {
-		showErrorMessage(`Could not access object`, err);
+		showErrorMessage(`Could not access object`, err, context);
 	}
 }
 
@@ -319,7 +317,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 			await vscode.window.showTextDocument(doc, { preview: false });
 		}
 	} catch (err) {
-		showErrorMessage('Could not access derivative tree', err);
+		showErrorMessage('Could not access derivative tree', err, context);
 	}
 }
 
@@ -385,7 +383,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 			await vscode.window.showTextDocument(doc, { preview: false });
 		}
 	} catch (err) {
-		showErrorMessage('Could not access derivative properties', err);
+		showErrorMessage('Could not access derivative properties', err, context);
 	}
 }
 
@@ -409,7 +407,7 @@ export async function viewObjectManifest(object: IObject | hi.IVersion | undefin
 		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 		await vscode.window.showTextDocument(doc, { preview: false });
 	} catch (err) {
-		showErrorMessage('Could not access object manifest', err);
+		showErrorMessage('Could not access object manifest', err, context);
 	}
 }
 
@@ -446,7 +444,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 		}
 		vscode.window.showInformationMessage(`Derivatives deleted: ${object.objectKey}`);
 	} catch (err) {
-		showErrorMessage('Could not delete derivatives', err);
+		showErrorMessage('Could not delete derivatives', err, context);
 	}
 }
 
@@ -527,7 +525,7 @@ export async function viewObjectThumbnail(object: IObject  | hi.IVersion | undef
 			}
 		}
 	} catch (err) {
-		showErrorMessage('Could not access derivative thumbnails', err);
+		showErrorMessage('Could not access derivative thumbnails', err, context);
 	}
 }
 
@@ -561,7 +559,10 @@ export async function downloadDerivativesSVF(object: IObject | undefined, contex
 			const svfDownloader = new SvfDownloader(new TwoLeggedAuthenticationProvider(context.environment.clientId, context.environment.clientSecret));
 			const svfDownloadTask = svfDownloader.download(urn, {
 				outputDir: baseDir,
-				log: (message: string) => progress.report({ message })
+				log: (message: string) => {
+					context.log.info(message);
+					progress.report({ message });
+				}
 			});
 			token.onCancellationRequested(() => {
 				svfDownloadTask.cancel();
@@ -574,7 +575,7 @@ export async function downloadDerivativesSVF(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		showErrorMessage(`Could not download SVF`, err);
+		showErrorMessage(`Could not download SVF`, err, context);
 	}
 }
 
@@ -621,7 +622,7 @@ export async function downloadDerivativesF2D(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		showErrorMessage(`Could not download F2D`, err);
+		showErrorMessage(`Could not download F2D`, err, context);
 	}
 }
 
@@ -679,7 +680,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		showErrorMessage(`Could not convert derivatives`, err);
+		showErrorMessage(`Could not convert derivatives`, err, context);
 	}
 }
 
@@ -727,7 +728,7 @@ export async function downloadDerivativesCustom(object: IDerivative | undefined,
 			vscode.env.openExternal(vscode.Uri.file(baseDir));
 		}
 	} catch (err) {
-		showErrorMessage(`Could not download the derivative`, err);
+		showErrorMessage(`Could not download the derivative`, err, context);
 	}
 }
 
@@ -748,7 +749,7 @@ export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, c
 		await vscode.env.clipboard.writeText(urn);
 		vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`);
 	} catch (err) {
-		showErrorMessage('Could not obtain object URN', err);
+		showErrorMessage('Could not obtain object URN', err, context);
 	}
 }
 

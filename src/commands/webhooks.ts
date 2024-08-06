@@ -41,7 +41,7 @@ export async function createWebhook({ system, event }: IWebhookEvent, context: I
 						successCallback();
 					}
 				} catch (err) {
-					showErrorMessage(`Could not create webhook`, err);
+					showErrorMessage(`Could not create webhook`, err, context);
 				}
 				break;
 		}
@@ -53,7 +53,7 @@ export async function viewWebhookDetails({ id, system, event }: IWebhook, contex
 		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, context.webhookClient.getHookDetails(system, event, id));
 		createWebViewPanel(context, 'webhook-details.js', 'webhook-details', `Webhook Details: ${id}`, { detail: webhookDetail });
 	} catch(err) {
-		showErrorMessage('Could not access webhook', err);
+		showErrorMessage('Could not access webhook', err, context);
 	}
 }
 
@@ -62,7 +62,7 @@ export async function deleteWebhook({ system, event, id }: IWebhook, context: IC
 		await withProgress(`Removing webhook: ${id}`, context.webhookClient.deleteHook(system, event, id));
 		vscode.window.showInformationMessage(`Webhook removed: ${id}`);
 	} catch(err) {
-		showErrorMessage('Could not remove webhook', err);
+		showErrorMessage('Could not remove webhook', err, context);
 	}
 }
 
@@ -85,12 +85,12 @@ export async function updateWebhook({ system, event, id }: IWebhook, context: IC
 						}
 						vscode.window.showInformationMessage(`Webhook updated: ${id}`);
 					} catch (err) {
-						showErrorMessage(`Could not update webhook`, err);
+						showErrorMessage(`Could not update webhook`, err, context);
 					}
 					break;
 			}
 		});
 	} catch (err) {
-		showErrorMessage('Could not retrieve webhook', err);
+		showErrorMessage('Could not retrieve webhook', err, context);
 	}
 }
