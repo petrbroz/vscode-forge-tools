@@ -123,6 +123,6 @@ export async function getAccessToken(context: IContext) {
             await vscode.env.clipboard.writeText(credentials.access_token);
         }
     } catch (err) {
-        showErrorMessage('Could not generate access token', err);
+        showErrorMessage('Could not generate access token', err, context);
     }
 }

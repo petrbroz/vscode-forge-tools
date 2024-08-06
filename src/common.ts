@@ -35,6 +35,7 @@ export interface IContext {
     bim360Client: BIM360Client;
     previewSettings: IPreviewSettings;
     threeLeggedToken?: string;
+    log: vscode.LogOutputChannel;
 }
 
 export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
@@ -124,7 +125,14 @@ export async function promptEngine(context: IContext): Promise<string | undefine
     return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
 }
 
-export async function showErrorMessage(title: string, err: any) {
+export async function showErrorMessage(title: string, err: any, context?: IContext) {
+    if (context) {
+        context.log.error(title);
+        if (err) {
+            context.log.error(err);
+        }
+    }
+
     let msg = title;
     if (typeof err === 'string') {
         msg += ': ' + err;

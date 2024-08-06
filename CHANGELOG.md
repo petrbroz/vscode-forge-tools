@@ -8,8 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Display versions next to DA bundle and activity aliases (https://github.com/petrbroz/vscode-forge-tools/issues/89)
+  - Debugging information logged into a custom output channel
 - Fixed
   - Creation of empty OSS objects (https://github.com/petrbroz/vscode-forge-tools/issues/90)
+- Updated
+  - Moved to vscode API version [1.92](https://code.visualstudio.com/updates/v1_92)
 
 ## [2.6.2] - 2024-05-03
 

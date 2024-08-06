@@ -43,8 +43,6 @@ export function activate(_context: vscode.ExtensionContext) {
 	}
 	let env = environments[0];
 
-	console.log('Extension "autodesk-platform-services" has been loaded.');
-
 	let context: IContext = {
 		extensionContext: _context,
 		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
@@ -60,8 +58,10 @@ export function activate(_context: vscode.ExtensionContext) {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || [],
 			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),
 			api: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.api')
-		}
+		},
+        log: vscode.window.createOutputChannel("Autodesk Platform Services", { log: true })
 	};
+    context.log.info('Extension has been loaded.');
 
 	// Setup buckets view
 	let simpleStorageDataProvider = new dmp.SimpleStorageDataProvider(context);
