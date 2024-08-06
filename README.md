@@ -14,7 +14,7 @@
 
 ## Requirements
 
-- [Visual Studio Code](https://code.visualstudio.com) version 1.31.0 or newer
+- [Visual Studio Code](https://code.visualstudio.com) version 1.92.0 or newer
 - APS app credentials ([tutorial](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
 
 ## Installation
