@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.7.0] - 2024-08-06
+
 - Added
   - Display versions next to DA bundle and activity aliases (https://github.com/petrbroz/vscode-forge-tools/issues/89)
   - Debugging information logged into a custom output channel
