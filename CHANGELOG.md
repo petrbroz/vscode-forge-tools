@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.7.1] - 2024-09-11
+
+- Added
+  - (experimental) support of `APAC` region (https://aps.autodesk.com/blog/australia-now-supported-region-primary-storage-project-data)
+- Fixed
+  - Moved to new version of svf-utils (with a fix for SVF downloads on Windows)
+
 ## [2.7.0] - 2024-08-06
 
 - Added

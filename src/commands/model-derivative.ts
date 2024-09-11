@@ -234,6 +234,7 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 			if (context.environment.region === 'EMEA') {
 				api += '_EU';
 			}
+			// TODO: what about 'APAC'?
 		}
 		createViewerWebViewPanel(context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
 			api, env,
