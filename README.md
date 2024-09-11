@@ -39,7 +39,7 @@ The extension exposes the following settings:
   - `title` (required) - unique name of the environment (will be shown in the status bar and listed when switching between other environments)
   - `clientId` (required) - APS client ID
   - `clientSecret` (required) - APS client secret
-  - `region` - data region for storing design data; can be `US` (default) or `EMEA`
+  - `region` - data region for storing design data; can be `US` (default), `EMEA`, or `APAC`
 - `autodesk.forge.authentication.port` - server port to use during 3-legged authentication workflows
 - `autodesk.forge.data.defaultContentType` - content type to use for all files uploaded to OSS
 - `autodesk.forge.data.uploadChunkSize` - size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality

@@ -42,7 +42,7 @@ export async function setupNewEnvironment() {
             if (!clientSecret) {
                 return;
             }
-            const region = await vscode.window.showQuickPick(['US', 'EMEA'], { placeHolder: 'Choose your APS region', ignoreFocusOut: true });
+            const region = await vscode.window.showQuickPick(['US', 'EMEA', 'APAC'], { placeHolder: 'Choose your APS region', ignoreFocusOut: true });
             if (!region) {
                 return;
             }

@@ -69,7 +69,8 @@
 								"description": "APS availability region",
 								"enum": [
 									"US",
-									"EMEA"
+									"EMEA",
+									"APAC"
 								],
 								"default": "US"
 							},
