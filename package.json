@@ -892,6 +892,6 @@
 		"aps-sdk-node": "^10.0.1",
 		"axios": "^0.28.0",
 		"fs-extra": "^9.0.0",
-		"svf-utils": "^5.0.3"
+		"svf-utils": "^5.0.5"
 	}
 }
