@@ -28,12 +28,6 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-		"onView:apsDataManagementView",
-		"onView:apsDesignAutomationView",
-		"onView:apsHubsView",
-		"onView:apsWebhooksView"
-	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
