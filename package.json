@@ -23,7 +23,7 @@
 		"extension"
 	],
 	"engines": {
-		"vscode": "^1.92.0"
+		"vscode": "^1.95.0"
 	},
 	"categories": [
 		"Other"
@@ -862,7 +862,56 @@
 					"group": "2_modify"
 				}
 			]
-		}
+		},
+		"chatParticipants": [
+			{
+				"id": "autodesk-platform-services.assistant",
+				"fullName": "APS Assistant",
+				"name": "aps",
+				"description": "Do you need any help with Autodesk Platform Services?",
+				"isSticky": true
+			}
+		],
+		"languageModelTools": [
+			{
+				"name": "autodesk-platform-services_findCodeSamples",
+				"tags": [
+					"search",
+					"code",
+					"sample"
+				],
+				"displayName": "Find Code Samples",
+				"modelDescription": "Search for code samples using specific Autodesk Platform Services APIs such as OSS, Data Management, Model Derivative, Webhooks, or Viewer.",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"api": {
+							"type": "string",
+							"description": "Autodesk Platform Services API to search for",
+							"enum": [
+								"autodesk-data-management",
+								"autodesk-designautomation",
+								"autodesk-model-derivative",
+								"autodesk-viewer",
+								"autodesk-webhooks"
+							]
+						},
+						"language": {
+							"type": "string",
+							"description": "Programming language to search for",
+							"enum": [
+								"nodejs",
+								"dotnet"
+							]
+						}
+					},
+					"required": [
+						"api",
+						"language"
+					]
+				}
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
@@ -873,16 +922,17 @@
 		"@types/node": "^12.0.0",
 		"@types/react": "^18.0.28",
 		"@types/react-dom": "^18.0.11",
-		"@types/vscode": "1.92",
+		"@types/vscode": "1.95",
 		"@vscode/webview-ui-toolkit": "^1.2.2",
 		"esbuild": "^0.17.11",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"tslint": "^5.12.1",
-		"typescript": "^3.7.2",
+		"typescript": "^5.7.2",
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
+		"@octokit/rest": "^21.0.2",
 		"@types/fs-extra": "^9.0.0",
 		"aps-sdk-node": "^10.0.1",
 		"axios": "^0.28.0",

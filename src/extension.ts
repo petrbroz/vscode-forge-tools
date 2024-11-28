@@ -25,6 +25,8 @@ import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from 
 import { login, getAccessToken } from './commands/authentication';
 import { HubsDataProvider } from './providers/hubs';
 import { getEnvironments, setupNewEnvironment, IEnvironment } from './environments';
+import { chatRequestHandler } from './chat/request-handler';
+import { FindCodeSamplesTool } from './chat/tools/find-code-samples';
 
 const DefaultAuthPort = 8123;
 
@@ -87,6 +89,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	registerModelDerivativeCommands(context, simpleStorageDataProvider, hubsDataProvider);
 	registerDesignAutomationCommands(designAutomationDataProvider, context);
 	registerWebhookCommands(webhooksDataProvider, context);
+    registerChatExtensions(context);
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + env.title;
@@ -497,6 +500,12 @@ function registerDataManagementCommands(simpleStorageDataProvider: dmp.SimpleSto
         await dmc.deleteBucket(bucket, context);
         simpleStorageDataProvider.refresh();
     });
+}
+
+function registerChatExtensions(context: IContext) {
+    context.extensionContext.subscriptions.push(vscode.chat.createChatParticipant('autodesk-platform-services.assistant', chatRequestHandler));
+    // chatParticipant.iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
+    context.extensionContext.subscriptions.push(vscode.lm.registerTool('autodesk-platform-services_findCodeSamples', new FindCodeSamplesTool()));
 }
 
 export function deactivate() { }
