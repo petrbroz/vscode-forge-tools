@@ -84,7 +84,7 @@ async function searchReposByTopics(org: string, topics: string[]): Promise<IRepo
  * @returns A promise that resolves to an array of file paths with the specified extension.
  */
 async function searchFilesByExtension(owner: string, repo: IRepository, extension: string): Promise<string[]> {
-    console.debug(`Searching for ${extension} files in ${owner}/${repo}`);
+    console.debug(`Searching for ${extension} files in ${owner}/${repo.name}`);
     const { data: ref } = await octokit.rest.git.getRef({ owner, repo: repo.name, ref: `heads/${repo.branch}` });
     const { data: { tree } } = await octokit.rest.git.getTree({ owner, repo: repo.name, tree_sha: ref.object.sha, recursive: 'true' });
     console.debug(`Found ${tree.length} files`);
