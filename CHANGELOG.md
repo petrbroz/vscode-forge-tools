@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.8.0] - 2025-01-21
+
 - Added
   - Commands for copying hub/project/folder/item/version IDs to clipboard
   - Support for additional webhooks
