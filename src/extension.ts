@@ -497,6 +497,49 @@ function registerDataManagementCommands(simpleStorageDataProvider: dmp.SimpleSto
         await dmc.deleteBucket(bucket, context);
         simpleStorageDataProvider.refresh();
     });
+
+    // Hubs-related commands
+
+    vscode.commands.registerCommand('forge.copyHubID', async (hub?: hi.IHub) => {
+        if (!hub) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(hub.id);
+        vscode.window.showInformationMessage(`Hub ID copied to clipboard: ${hub.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyProjectID', async (project?: hi.IProject) => {
+        if (!project) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(project.id);
+        vscode.window.showInformationMessage(`Project ID copied to clipboard: ${project.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyFolderID', async (folder?: hi.IFolder) => {
+        if (!folder) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(folder.id);
+        vscode.window.showInformationMessage(`Folder ID copied to clipboard: ${folder.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyItemID', async (item?: hi.IItem) => {
+        if (!item) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(item.id);
+        vscode.window.showInformationMessage(`Item ID copied to clipboard: ${item.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyVersionID', async (version?: hi.IVersion) => {
+        if (!version) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(version.id);
+        vscode.window.showInformationMessage(`Version ID copied to clipboard: ${version.id}`);
+    });
 }
 
 export function deactivate() { }

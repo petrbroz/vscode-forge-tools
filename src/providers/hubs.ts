@@ -61,26 +61,32 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
     getTreeItem(entry: HubsEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (isHub(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = entry.id;
             node.contextValue = 'hub';
             return node;
         } else if (isProject(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = entry.id;
             node.contextValue = 'project';
             return node;
         } else if (isFolder(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = entry.id;
             node.contextValue = 'folder';
             return node;
         } else if (isItem(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = entry.id;
             node.contextValue = 'item';
             return node;
         } else if (isVersion(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = entry.id;
             node.contextValue = 'version';
             return node;
         } else if (isDerivative(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.None);
+            node.id = entry.urn;
             node.contextValue = 'derivative';
             return node;
         } else {

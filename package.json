@@ -310,6 +310,31 @@
 				"category": "Model Derivative"
 			},
 			{
+				"command": "forge.copyHubID",
+				"title": "Copy Hub ID to Clipboard",
+				"category": "Data Management"
+			},
+			{
+				"command": "forge.copyProjectID",
+				"title": "Copy Project ID to Clipboard",
+				"category": "Data Management"
+			},
+			{
+				"command": "forge.copyFolderID",
+				"title": "Copy Folder ID to Clipboard",
+				"category": "Data Management"
+			},
+			{
+				"command": "forge.copyItemID",
+				"title": "Copy Item ID to Clipboard",
+				"category": "Data Management"
+			},
+			{
+				"command": "forge.copyVersionID",
+				"title": "Copy Version ID to Clipboard",
+				"category": "Data Management"
+			},
+			{
 				"command": "forge.refreshDesignAutomationTree",
 				"title": "Refresh Design Automation Tree",
 				"category": "Design Automation",
@@ -686,6 +711,31 @@
 					"command": "forge.viewDerivativeProps",
 					"when": "viewItem == derivative",
 					"group": "0_view@3"
+				},
+				{
+					"command": "forge.copyHubID",
+					"when": "view == apsHubsView && viewItem == hub",
+					"group": "0_view@1"
+				},
+				{
+					"command": "forge.copyProjectID",
+					"when": "view == apsHubsView && viewItem == project",
+					"group": "0_view@1"
+				},
+				{
+					"command": "forge.copyFolderID",
+					"when": "view == apsHubsView && viewItem == folder",
+					"group": "0_view@1"
+				},
+				{
+					"command": "forge.copyItemID",
+					"when": "view == apsHubsView && viewItem == item",
+					"group": "0_view@1"
+				},
+				{
+					"command": "forge.copyVersionID",
+					"when": "view == apsHubsView && viewItem == version",
+					"group": "0_view@1"
 				},
 				{
 					"command": "forge.createAppBundle",

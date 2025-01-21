@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Commands for copying hub/project/folder/item/version IDs to clipboard
 - Fixed
   - Object upload using the new "direct S3" API
 
