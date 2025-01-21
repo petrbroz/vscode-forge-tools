@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - Object upload using the new "direct S3" API
+
 ## [2.7.1] - 2024-09-11
 
 - Added

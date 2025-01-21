@@ -203,95 +203,33 @@ export async function copyBucketKey(bucket: IBucket | undefined, context: IConte
 }
 
 export async function uploadObject(bucket: IBucket | undefined, context: IContext) {
+	// TODO: re-introduce support for cancellable uploads
 	const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
 
 	async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
 		const filepath = uri.fsPath;
-		const hash = await computeFileHash(bucketKey, name, filepath);
-		const stateKey = `upload:${hash}`;
-		let fd = -1;
 		try {
-			fd = fs.openSync(filepath, 'r');
-			const totalBytes = fs.statSync(filepath).size;
-			const buff = Buffer.alloc(chunkBytes);
-			let lastByte = 0;
-			let cancelled = false;
+			const stream = fs.createReadStream(filepath);
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Uploading file: ${filepath}`,
-				cancellable: true
+				cancellable: false
 			}, async (progress, token) => {
-				token.onCancellationRequested(() => {
-					cancelled = true;
+				await context.dataManagementClient.uploadObjectStream(bucketKey, name, stream, {
+					contentType,
+					progress: (bytesUploaded, totalBytes) => progress.report({ increment: 100.0 * bytesUploaded / totalBytes! })
 				});
-				progress.report({ increment: 0 });
-
-				// Check if any parts of the file have already been uploaded
-				let uploadSessionID = context.extensionContext.globalState.get<string>(stateKey);
-				if (!uploadSessionID) {
-					uploadSessionID = crypto.randomBytes(8).toString('hex');
-					context.extensionContext.globalState.update(stateKey, uploadSessionID);
-				}
-				let ranges: IResumableUploadRange[];
-				try {
-					ranges = await context.dataManagementClient.getResumableUploadStatus(bucketKey, name, uploadSessionID);
-				} catch (err) {
-					ranges = [];
-				}
-
-				// Upload potential missing data before each successfully uploaded range
-				for (const range of ranges) {
-					if (cancelled) {
-						return;
-					}
-					while (lastByte < range.start) {
-						if (cancelled) {
-							return;
-						}
-						const chunkSize = Math.min(range.start - lastByte, chunkBytes);
-						fs.readSync(fd, buff, 0, chunkSize, lastByte);
-						await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
-						progress.report({ increment: 100 * chunkSize / totalBytes });
-						lastByte += chunkSize;
-					}
-					progress.report({ increment: 100 * (range.end + 1 - lastByte) / totalBytes });
-					lastByte = range.end + 1;
-				}
-	
-				// Upload potential missing data after the last successfully uploaded range
-				while (lastByte < totalBytes - 1) {
-					if (cancelled) {
-						return;
-					}
-					const chunkSize = Math.min(totalBytes - lastByte, chunkBytes);
-					fs.readSync(fd, buff, 0, chunkSize, lastByte);
-					await context.dataManagementClient.uploadObjectResumable(bucketKey, name, buff.slice(0, chunkSize), lastByte, totalBytes, uploadSessionID, contentType);
-					progress.report({ increment: 100 * chunkSize / totalBytes });
-					lastByte += chunkSize;
-				}
 			});
-
-			if (cancelled) {
-				vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
-			} else {
-				// Clear the resumable upload session info
-				context.extensionContext.globalState.update(stateKey, null);
-				const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
-				if (res === 'Translate') {
-					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
-					vscode.commands.executeCommand('forge.translateObject', obj);
-				} else if (res === 'Translate (Custom)') {
-					const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
-					vscode.commands.executeCommand('forge.translateObjectCustom', obj);
-				}
+			const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
+			if (res === 'Translate') {
+				const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
+				vscode.commands.executeCommand('forge.translateObject', obj);
+			} else if (res === 'Translate (Custom)') {
+				const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
+				vscode.commands.executeCommand('forge.translateObjectCustom', obj);
 			}
 		} catch (err) {
 			showErrorMessage('Could not upload file', err, context);
-		} finally {
-			if (fd !== -1) {
-				fs.closeSync(fd);
-				fd = -1;
-			}
 		}
 	}
 
@@ -323,11 +261,10 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 		let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
 		if (!contentType) {
 			contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+			if (!contentType) {
+				return;
+			}
 		}
-		if (!contentType) {
-			return;
-		}
-
 		await _upload(name, uris[0], context, bucketKey, contentType);
 	} else {
 		const uploads = uris.map(uri => _upload(path.basename(uri.fsPath), uri, context, bucketKey));
