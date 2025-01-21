@@ -1,25 +1,25 @@
 import * as vscode from 'vscode';
-import { WebhookSystem, WebhookEvent } from 'aps-sdk-node';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
+import { WebhookSystem, WEBHOOKS } from '../interfaces/webhooks';
 
 export interface IWebhookSystem {
     type: 'system';
     name: string;
-    system: WebhookSystem;
+    system: string;
 }
 
 export interface IWebhookEvent {
     type: 'event';
     name: string;
-    system: WebhookSystem;
-    event: WebhookEvent;
+    system: string;
+    event: string;
 }
 
 export interface IWebhook {
     type: 'hook';
-    system: WebhookSystem;
-    event: WebhookEvent;
     id: string;
+    system: string;
+    event: string;
 }
 
 type WebhookEntry = IWebhookSystem | IWebhookEvent | IWebhook;
@@ -71,70 +71,22 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
 
     async getChildren(entry?: WebhookEntry | undefined): Promise<WebhookEntry[]> {
         if (!entry) {
-            return this._getWebhookSystems();
+            return WEBHOOKS.map(webhook => ({ type: 'system', name: webhook.name, system: webhook.id }));
         } else if (isWebhookSystem(entry)) {
-            return this._getWebhookEvents(entry);
+            const system = WEBHOOKS.find(webhook => webhook.id === entry.system) as WebhookSystem;
+            return system.events.map(event => ({ type: 'event', name: event.id, system: system.id, event: event.id }));
         } else if (isWebhookEvent(entry)) {
             try {
-                const webhooks = await this._context.webhookClient.listHooks(entry.system, entry.event);
+                const { system, event } = entry;
+                // @ts-ignore
+                const webhooks = await this._context.webhookClient.listHooks(system, event);
                 return webhooks.map(webhook => {
-                    let result: IWebhook = {
-                        type: 'hook',
-                        system: entry.system,
-                        event: entry.event,
-                        id: webhook.hookId
-                    };
-                    return result;
+                    return { type: 'hook', id: webhook.hookId, system, event } as IWebhook;
                 }).sort(stringPropertySorter('id'));
             } catch(err) {
                 showErrorMessage(`Could not list webhooks`, err);
             }
         }
-
         return [];
-    }
-
-    private _getWebhookSystems(): IWebhookSystem[] {
-        return [
-            { type: 'system', name: 'Data Management', system: WebhookSystem.Data },
-            { type: 'system', name: 'Model Derivative', system: WebhookSystem.Derivative },
-            { type: 'system', name: 'Fusion Lifecycle', system: WebhookSystem.FusionLifecycle },
-            { type: 'system', name: 'Revit Cloud Worksharing', system: WebhookSystem.RevitCloudWorksharing }
-        ];
-    }
-
-    private _getWebhookEvents(entry: IWebhookSystem): IWebhookEvent[] {
-        switch (entry.system) {
-            case WebhookSystem.Data:
-                return Object.keys(WebhookEvent).filter(key => key.startsWith('Data')).map(key => ({
-                    type: 'event',
-                    name: key.replace('Data', '').replace(/([a-z])([A-Z])/g, '$1 $2'),
-                    system: WebhookSystem.Data,
-                    event: (WebhookEvent as any)[key]
-                }));
-            case WebhookSystem.Derivative:
-                return Object.keys(WebhookEvent).filter(key => key.startsWith('Derivative')).map(key => ({
-                    type: 'event',
-                    name: key.replace('Derivative', '').replace(/([a-z])([A-Z])/g, '$1 $2'),
-                    system: WebhookSystem.Derivative,
-                    event: (WebhookEvent as any)[key]
-                }));
-            case WebhookSystem.FusionLifecycle:
-                return Object.keys(WebhookEvent).filter(key => key.startsWith('Fusion')).map(key => ({
-                    type: 'event',
-                    name: key.replace('Fusion', '').replace(/([a-z])([A-Z])/g, '$1 $2'),
-                    system: WebhookSystem.FusionLifecycle,
-                    event: (WebhookEvent as any)[key]
-                }));
-            case WebhookSystem.RevitCloudWorksharing:
-                return Object.keys(WebhookEvent).filter(key => key.startsWith('Revit')).map(key => ({
-                    type: 'event',
-                    name: key.replace('Revit', '').replace(/([a-z])([A-Z])/g, '$1 $2'),
-                    system: WebhookSystem.RevitCloudWorksharing,
-                    event: (WebhookEvent as any)[key]
-                }));
-            default:
-                throw new Error(`Unsupported webhook system: ${entry.system}`);
-        }
     }
 }
