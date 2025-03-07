@@ -941,7 +941,7 @@
 	"dependencies": {
 		"@types/fs-extra": "^9.0.0",
 		"aps-sdk-node": "^10.0.1",
-		"axios": "^0.28.0",
+		"axios": "^1.8.2",
 		"fs-extra": "^9.0.0",
 		"svf-utils": "^5.0.5"
 	}
