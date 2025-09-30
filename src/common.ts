@@ -15,6 +15,7 @@ import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'aps-sdk-node/dist/common';
 import { IEnvironment } from './environments';
 import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
+import { createSecureServiceAccountsClient } from './clients';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -33,6 +34,7 @@ export interface IContext {
     designAutomationClient: DesignAutomationClient;
     webhookClient: WebhooksClient;
     bim360Client: BIM360Client;
+    secureServiceAccountsClient: ReturnType<typeof createSecureServiceAccountsClient>;
     previewSettings: IPreviewSettings;
     threeLeggedToken?: string;
     log: vscode.LogOutputChannel;

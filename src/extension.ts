@@ -25,6 +25,10 @@ import { viewWebhookDetails, createWebhook, deleteWebhook, updateWebhook } from 
 import { login, getAccessToken } from './commands/authentication';
 import { HubsDataProvider } from './providers/hubs';
 import { getEnvironments, setupNewEnvironment, IEnvironment } from './environments';
+import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
+import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
+import { ISecureServiceAccount, ISecureServiceAccountKey } from './interfaces/secure-service-accounts';
+import { createSecureServiceAccount, createSecureServiceAccountKey, deleteSecureServiceAccount, deleteSecureServiceAccountKey, viewSecureServiceAccountDetails } from './commands/secure-service-accounts';
 
 const DefaultAuthPort = 8123;
 
@@ -43,6 +47,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	}
 	let env = environments[0];
 
+    let defaultRequestAdapter = new DefaultRequestAdapter(new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret));
 	let context: IContext = {
 		extensionContext: _context,
 		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
@@ -54,6 +59,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
 		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
 		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
+        secureServiceAccountsClient: createSecureServiceAccountsClient(defaultRequestAdapter),
 		previewSettings: {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || [],
 			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),
@@ -83,10 +89,16 @@ export function activate(_context: vscode.ExtensionContext) {
 	let webhooksView = vscode.window.createTreeView('apsWebhooksView', { treeDataProvider: webhooksDataProvider });
 	context.extensionContext.subscriptions.push(webhooksView);
 
+    // Setup secure service accounts view
+    let secureServiceAccountsProvider = new SecureServiceAccountsDataProvider(context);
+    let secureServiceAccountsView = vscode.window.createTreeView('apsSecureServiceAccountsView', { treeDataProvider: secureServiceAccountsProvider });
+    context.extensionContext.subscriptions.push(secureServiceAccountsView);
+
 	registerDataManagementCommands(simpleStorageDataProvider, context);
 	registerModelDerivativeCommands(context, simpleStorageDataProvider, hubsDataProvider);
 	registerDesignAutomationCommands(designAutomationDataProvider, context);
 	registerWebhookCommands(webhooksDataProvider, context);
+    registerSecureServiceAccountsCommands(secureServiceAccountsProvider, context);
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + env.title;
@@ -153,6 +165,7 @@ export function activate(_context: vscode.ExtensionContext) {
 		}
 		env = environments.find(environment => environment.title === name) as IEnvironment;
 		delete context.threeLeggedToken;
+        const defaultRequestAdapter = new DefaultRequestAdapter(new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret))
         context.environment = env;
 		context.credentials = { client_id: env.clientId, client_secret: env.clientSecret };
 		context.dataManagementClient.reset(context.credentials, env.host, env.region as Region);
@@ -162,10 +175,12 @@ export function activate(_context: vscode.ExtensionContext) {
 		context.webhookClient.reset(context.credentials, env.host, env.region as Region);
 		context.bim360Client.reset(context.credentials, env.host, env.region as Region);
 		context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
+        context.secureServiceAccountsClient = createSecureServiceAccountsClient(defaultRequestAdapter);
 		simpleStorageDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		hubsDataProvider.refresh();
 		webhooksDataProvider.refresh();
+        secureServiceAccountsProvider.refresh();
 		updateEnvironmentStatus(envStatusBarItem);
 	});
 }
@@ -539,6 +554,31 @@ function registerDataManagementCommands(simpleStorageDataProvider: dmp.SimpleSto
         }
         await vscode.env.clipboard.writeText(version.id);
         vscode.window.showInformationMessage(`Version ID copied to clipboard: ${version.id}`);
+    });
+}
+
+function registerSecureServiceAccountsCommands(secureServiceAccountsDataProvider: SecureServiceAccountsDataProvider, context: IContext) {
+    vscode.commands.registerCommand('forge.refreshSecureServiceAccounts', () => {
+        secureServiceAccountsDataProvider.refresh();
+    });
+    vscode.commands.registerCommand('forge.createSecureServiceAccount', async () => {
+        await createSecureServiceAccount(context);
+        secureServiceAccountsDataProvider.refresh();
+    });
+    vscode.commands.registerCommand('forge.viewSecureServiceAccountDetails', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await viewSecureServiceAccountDetails(secureServiceAccount, context);
+    });
+    vscode.commands.registerCommand('forge.createSecureServiceAccountKey', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await createSecureServiceAccountKey(secureServiceAccount, context);
+        secureServiceAccountsDataProvider.refresh();
+    });
+    vscode.commands.registerCommand('forge.deleteSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await deleteSecureServiceAccount(secureServiceAccount, context);
+        secureServiceAccountsDataProvider.refresh();
+    });
+    vscode.commands.registerCommand('forge.deleteSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {
+        await deleteSecureServiceAccountKey(secureServiceAccountKey, context);
+        secureServiceAccountsDataProvider.refresh();
     });
 }
 

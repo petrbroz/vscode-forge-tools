@@ -33,7 +33,8 @@ const webviewsConfig = {
         './src/webviews/activity-details.tsx',
         './src/webviews/create-activity.tsx',
         './src/webviews/update-activity.tsx',
-        './src/webviews/create-workitem.tsx'
+        './src/webviews/create-workitem.tsx',
+        './src/webviews/secure-service-account-details.tsx'
     ],
     outdir: './out/webviews',
     splitting: true
