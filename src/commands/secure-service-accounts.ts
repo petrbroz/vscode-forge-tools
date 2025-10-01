@@ -42,6 +42,29 @@ export async function viewSecureServiceAccountDetails(secureServiceAccount: ISec
     }
 }
 
+export async function updateSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
+    if (!secureServiceAccount) {
+        // TODO: prompt to pick one
+        vscode.window.showErrorMessage('No secure service account selected');
+        return;
+    }
+
+    const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account: ${secureServiceAccount.id}` });
+    if (status !== 'ENABLED' && status !== 'DISABLED') {
+        return;
+    }
+
+    try {
+        await withProgress(
+            `Updating secure service account: ${secureServiceAccount.id}`,
+            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).patch({ status })
+        );
+        vscode.window.showInformationMessage(`Secure service account updated: ${secureServiceAccount.id}`);
+    } catch(err) {
+        showErrorMessage('Could not update secure service account', err, context);
+    }
+}
+
 export async function createSecureServiceAccountKey(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
         // TODO: prompt to pick one

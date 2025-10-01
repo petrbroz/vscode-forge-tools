@@ -28,7 +28,7 @@ import { getEnvironments, setupNewEnvironment, IEnvironment } from './environmen
 import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { ISecureServiceAccount, ISecureServiceAccountKey } from './interfaces/secure-service-accounts';
-import { createSecureServiceAccount, createSecureServiceAccountKey, deleteSecureServiceAccount, deleteSecureServiceAccountKey, viewSecureServiceAccountDetails } from './commands/secure-service-accounts';
+import { createSecureServiceAccount, createSecureServiceAccountKey, deleteSecureServiceAccount, deleteSecureServiceAccountKey, updateSecureServiceAccount, viewSecureServiceAccountDetails } from './commands/secure-service-accounts';
 
 const DefaultAuthPort = 8123;
 
@@ -567,6 +567,10 @@ function registerSecureServiceAccountsCommands(secureServiceAccountsDataProvider
     });
     vscode.commands.registerCommand('forge.viewSecureServiceAccountDetails', async (secureServiceAccount?: ISecureServiceAccount) => {
         await viewSecureServiceAccountDetails(secureServiceAccount, context);
+    });
+    vscode.commands.registerCommand('forge.updateSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await updateSecureServiceAccount(secureServiceAccount, context);
+        secureServiceAccountsDataProvider.refresh();
     });
     vscode.commands.registerCommand('forge.createSecureServiceAccountKey', async (secureServiceAccount?: ISecureServiceAccount) => {
         await createSecureServiceAccountKey(secureServiceAccount, context);

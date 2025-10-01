@@ -537,17 +537,22 @@
 				}
 			},
 			{
-				"command": "forge.viewSecureServiceAccountDetails",
-				"title": "View Secure Service Account Details",
-				"category": "Secure Service Accounts"
-			},
-			{
 				"command": "forge.createSecureServiceAccount",
 				"title": "Create Secure Service Account",
 				"icon": {
 					"light": "resources/icons/dark/add.svg",
 					"dark": "resources/icons/light/add.svg"
 				}
+			},
+			{
+				"command": "forge.viewSecureServiceAccountDetails",
+				"title": "View Secure Service Account Details",
+				"category": "Secure Service Accounts"
+			},
+			{
+				"command": "forge.updateSecureServiceAccount",
+				"title": "Update Secure Service Account",
+				"category": "Secure Service Accounts"
 			},
 			{
 				"command": "forge.deleteSecureServiceAccount",
@@ -978,6 +983,11 @@
 					"command": "forge.createSecureServiceAccountKey",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
 					"group": "1_action"
+				},
+				{
+					"command": "forge.updateSecureServiceAccount",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteSecureServiceAccount",
