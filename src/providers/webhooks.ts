@@ -53,16 +53,35 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
     getTreeItem(entry: WebhookEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (isWebhookSystem(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = entry.system;
+            node.tooltip = [
+                `Webhook System`,
+                `ID: ${entry.system}`,
+                `Name: ${entry.name}`
+            ].join('\n');
             node.iconPath = new vscode.ThemeIcon('group-by-ref-type');
             node.contextValue = 'system';
             return node;
         } else if (isWebhookEvent(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.Collapsed);
+            node.id = `${entry.system}-${entry.event}`;
+            node.tooltip = [
+                `Webhook Event`,
+                `Event: ${entry.event}`,
+                `Name: ${entry.name}`
+            ].join('\n');
             node.contextValue = 'event';
             node.iconPath = new vscode.ThemeIcon('symbol-event');
             return node;
         } else {
             const node = new vscode.TreeItem(entry.id, vscode.TreeItemCollapsibleState.None);
+            node.id = entry.id;
+            node.tooltip = [
+                `Webhook`,
+                `ID: ${entry.id}`,
+                `System: ${entry.system}`,
+                `Event: ${entry.event}`
+            ].join('\n');
             node.contextValue = 'hook';
             node.iconPath = new vscode.ThemeIcon('megaphone');
             return node;

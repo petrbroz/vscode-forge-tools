@@ -1,11 +1,16 @@
+export enum EntryType {
+    SecureServiceAccount = 'secure-service-account',
+    SecureServiceAccountKey = 'secure-service-account-key'
+}
+
 export interface ISecureServiceAccount {
-    type: 'secure-service-account';
+    type: EntryType.SecureServiceAccount;
     id: string;
     email: string;
 }
 
 export interface ISecureServiceAccountKey {
-    type: 'secure-service-account-key';
+    type: EntryType.SecureServiceAccountKey;
     id: string;
     status: string;
     secureServiceAccountId: string;

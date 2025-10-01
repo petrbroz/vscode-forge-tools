@@ -51,16 +51,33 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
     getTreeItem(element: SimpleStorageEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (isBucket(element)) {
             const node = new vscode.TreeItem(element.bucketKey, vscode.TreeItemCollapsibleState.Collapsed);
+            node.tooltip = [
+                `Bucket`,
+                `Key: ${element.bucketKey}`,
+                `Policy: ${element.policyKey}`
+            ].join('\n');
             node.contextValue = 'bucket';
             node.iconPath = new vscode.ThemeIcon('folder');
             return node;
         } else if (isObject(element)) {
             const node = new vscode.TreeItem(element.objectKey, vscode.TreeItemCollapsibleState.Collapsed);
+            node.tooltip = [
+                `Object`,
+                `Key: ${element.objectKey}`,
+                `ID: ${element.objectId}`,
+                `Size: ${element.size} bytes`
+            ].join('\n');
             node.contextValue = 'object';
             node.iconPath = new vscode.ThemeIcon('file');
             return node;
         } else if (isDerivative(element)) {
             const node = new vscode.TreeItem(element.name, vscode.TreeItemCollapsibleState.None);
+            node.tooltip = [
+                `Derivative`,
+                `Name: ${element.name}`,
+                `Format: ${element.format}`,
+                `Role: ${element.role}`
+            ].join('\n');
             node.contextValue = element.nonViewable ? 'non-viewable-derivative' : 'derivative';
             node.iconPath = new vscode.ThemeIcon('file-binary');
             return node;
