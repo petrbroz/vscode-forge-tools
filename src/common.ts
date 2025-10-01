@@ -141,6 +141,8 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     } else if (typeof err === 'object') {
         if (err.message) {
             msg += ': ' + err.message;
+        } else if (err.detail) {
+            msg += ': ' + err.detail;
         }
     }
 
