@@ -444,6 +444,12 @@ export async function deleteObject(object: IObject | undefined, context: IContex
 				return;
 			}
 		}
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete object: ${object.objectKey}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		const { bucketKey, objectKey } = object;
 		await withProgress(`Deleting object: ${object.objectKey}`, context.dataManagementClient.deleteObject(bucketKey, objectKey));
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
@@ -465,6 +471,11 @@ export async function deleteAllObjects(bucket: IBucket | undefined, context: ICo
 		const objects = await context.dataManagementClient.listObjects(bucketKey);
 		if (objects.length === 0) {
 			vscode.window.showInformationMessage('No objects to delete');
+			return;
+		}
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete all objects in bucket: ${bucket.bucketKey}? This action cannot be undone.`, { modal: true }, 'Delete All');
+		if (confirm !== 'Delete All') {
 			return;
 		}
 
@@ -534,6 +545,12 @@ export async function deleteBucket(bucket: IBucket | undefined, context: IContex
 				return;
 			}
 		}
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete bucket: ${bucket.bucketKey}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		const { bucketKey } = bucket;
 		await withProgress(`Deleting bucket: ${bucketKey}`, context.dataManagementClient.deleteBucket(bucketKey));
         vscode.window.showInformationMessage(`Bucket deleted: ${bucketKey}`);

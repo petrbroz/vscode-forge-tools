@@ -276,6 +276,11 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 
 export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete app bundle: ${id}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		await withProgress(`Removing app bundle: ${id}`, context.designAutomationClient.deleteAppBundle(id));
 		vscode.window.showInformationMessage(`App bundle removed`);
 	} catch(err) {
@@ -323,6 +328,11 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 
 export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete app bundle alias: ${id}/${alias}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		await withProgress(`Removing app bundle alias: ${id}/${alias}`, context.designAutomationClient.deleteAppBundleAlias(id, alias));
 		vscode.window.showInformationMessage(`App bundle alias removed`);
 	} catch(err) {
@@ -332,6 +342,11 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 
 export async function deleteAppBundleVersion(id: UnqualifiedID, version: number, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete app bundle version: ${id}/${version}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		await withProgress(`Removing app bundle version: ${id}/${version}`, context.designAutomationClient.deleteAppBundleVersion(id, version));
 		vscode.window.showInformationMessage(`App bundle version removed`);
 	} catch(err) {
@@ -341,6 +356,11 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 
 export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete activity: ${id}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		await withProgress(`Removing activity: ${id}`, context.designAutomationClient.deleteActivity(id));
 		vscode.window.showInformationMessage(`Activity removed`);
 	} catch(err) {
@@ -350,6 +370,11 @@ export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 
 export async function deleteActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete activity alias: ${id}/${alias}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		await withProgress(`Removing activity alias: ${id}/${alias}`, context.designAutomationClient.deleteActivityAlias(id, alias));
 		vscode.window.showInformationMessage(`Activity alias removed`);
 	} catch(err) {
@@ -359,6 +384,11 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 
 export async function deleteActivityVersion(id: UnqualifiedID, version: number, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete activity version: ${id}/${version}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		await withProgress(`Removing activity version: ${id}/${version}`, context.designAutomationClient.deleteActivityVersion(id, version));
 		vscode.window.showInformationMessage(`Activity version removed`);
 	} catch(err) {

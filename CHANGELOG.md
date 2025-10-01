@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Support for Secure Service Accounts API
+  - Confirmation modal before deleting any resources
 - Updated
   - Tooltips on all tree view elements
 

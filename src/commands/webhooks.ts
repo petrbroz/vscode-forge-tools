@@ -45,6 +45,11 @@ export async function viewWebhookDetails({ id, system, event }: IWebhook, contex
 
 export async function deleteWebhook({ system, event, id }: IWebhook, context: IContext) {
 	try {
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete webhook ${id}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		// @ts-ignore
 		await withProgress(`Removing webhook: ${id}`, context.webhookClient.deleteHook(system, event, id));
 		vscode.window.showInformationMessage(`Webhook removed: ${id}`);

@@ -426,6 +426,12 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 		}
 
 		const urn = urnify(object.objectId);
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete manifest for ${urn}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		const client = inHubs(urn) && context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		try {
 			await withProgress(`Deleting manifest for ${urn}`, client.deleteManifest(urn));
