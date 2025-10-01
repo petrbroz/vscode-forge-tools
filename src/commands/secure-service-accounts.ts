@@ -65,6 +65,24 @@ export async function updateSecureServiceAccount(secureServiceAccount: ISecureSe
     }
 }
 
+export async function deleteSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
+    if (!secureServiceAccount) {
+        // TODO: prompt to pick one
+        vscode.window.showErrorMessage('No secure service account selected');
+        return;
+    }
+
+    try {
+        await withProgress(
+            `Deleting secure service account: ${secureServiceAccount.id}`,
+            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).delete()
+        );
+        vscode.window.showInformationMessage(`Secure service account deleted: ${secureServiceAccount.id}`);
+    } catch(err) {
+        showErrorMessage('Could not delete secure service account', err, context);
+    }
+}
+
 export async function createSecureServiceAccountKey(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
         // TODO: prompt to pick one
@@ -84,21 +102,27 @@ export async function createSecureServiceAccountKey(secureServiceAccount: ISecur
     }
 }
 
-export async function deleteSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
-    if (!secureServiceAccount) {
+export async function updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
+    if (!secureServiceAccountKey) {
         // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account selected');
+        vscode.window.showErrorMessage('No secure service account key selected');
+        return;
+    }
+
+    const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account key: ${secureServiceAccountKey.id}` });
+    if (status !== 'ENABLED' && status !== 'DISABLED') {
         return;
     }
 
     try {
+        const { id, secureServiceAccountId } = secureServiceAccountKey;
         await withProgress(
-            `Deleting secure service account: ${secureServiceAccount.id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).delete()
+            `Updating secure service account key: ${id}`,
+            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountId).keys.byKeyId(id).patch({ status })
         );
-        vscode.window.showInformationMessage(`Secure service account deleted: ${secureServiceAccount.id}`);
+        vscode.window.showInformationMessage(`Secure service account key updated: ${id}`);
     } catch(err) {
-        showErrorMessage('Could not delete secure service account', err, context);
+        showErrorMessage('Could not update secure service account key', err, context);
     }
 }
 

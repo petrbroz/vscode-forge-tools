@@ -565,6 +565,11 @@
 				"category": "Secure Service Accounts"
 			},
 			{
+				"command": "forge.updateSecureServiceAccountKey",
+				"title": "Update Secure Service Account Key",
+				"category": "Secure Service Accounts"
+			},
+			{
 				"command": "forge.deleteSecureServiceAccountKey",
 				"title": "Delete Secure Service Account Key",
 				"category": "Secure Service Accounts"
@@ -993,6 +998,11 @@
 					"command": "forge.deleteSecureServiceAccount",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
 					"group": "3_remove"
+				},
+				{
+					"command": "forge.updateSecureServiceAccountKey",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+					"group": "2_modify"
 				},
 				{
 					"command": "forge.deleteSecureServiceAccountKey",

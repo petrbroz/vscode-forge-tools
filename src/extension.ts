@@ -28,7 +28,7 @@ import { getEnvironments, setupNewEnvironment, IEnvironment } from './environmen
 import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { ISecureServiceAccount, ISecureServiceAccountKey } from './interfaces/secure-service-accounts';
-import { createSecureServiceAccount, createSecureServiceAccountKey, deleteSecureServiceAccount, deleteSecureServiceAccountKey, updateSecureServiceAccount, viewSecureServiceAccountDetails } from './commands/secure-service-accounts';
+import { createSecureServiceAccount, createSecureServiceAccountKey, deleteSecureServiceAccount, deleteSecureServiceAccountKey, updateSecureServiceAccount, updateSecureServiceAccountKey, viewSecureServiceAccountDetails } from './commands/secure-service-accounts';
 
 const DefaultAuthPort = 8123;
 
@@ -561,6 +561,7 @@ function registerSecureServiceAccountsCommands(secureServiceAccountsDataProvider
     vscode.commands.registerCommand('forge.refreshSecureServiceAccounts', () => {
         secureServiceAccountsDataProvider.refresh();
     });
+
     vscode.commands.registerCommand('forge.createSecureServiceAccount', async () => {
         await createSecureServiceAccount(context);
         secureServiceAccountsDataProvider.refresh();
@@ -572,12 +573,17 @@ function registerSecureServiceAccountsCommands(secureServiceAccountsDataProvider
         await updateSecureServiceAccount(secureServiceAccount, context);
         secureServiceAccountsDataProvider.refresh();
     });
+    vscode.commands.registerCommand('forge.deleteSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await deleteSecureServiceAccount(secureServiceAccount, context);
+        secureServiceAccountsDataProvider.refresh();
+    });
+
     vscode.commands.registerCommand('forge.createSecureServiceAccountKey', async (secureServiceAccount?: ISecureServiceAccount) => {
         await createSecureServiceAccountKey(secureServiceAccount, context);
         secureServiceAccountsDataProvider.refresh();
     });
-    vscode.commands.registerCommand('forge.deleteSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
-        await deleteSecureServiceAccount(secureServiceAccount, context);
+    vscode.commands.registerCommand('forge.updateSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {  
+        await updateSecureServiceAccountKey(secureServiceAccountKey, context);
         secureServiceAccountsDataProvider.refresh();
     });
     vscode.commands.registerCommand('forge.deleteSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {
