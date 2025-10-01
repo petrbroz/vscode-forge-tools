@@ -1,6 +1,69 @@
 import * as vscode from 'vscode';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
-import { ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
+import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
+
+async function promptSecureServiceAccount(context: IContext): Promise<ISecureServiceAccount | undefined> {
+    // TODO: reuse SecureServiceAccountsDataProvider here
+    try {
+        const secureServiceAccounts = await withProgress(
+            'Loading secure service accounts...',
+            context.secureServiceAccountsClient.serviceAccounts.get()
+        );
+        if (!secureServiceAccounts || !secureServiceAccounts.serviceAccounts || secureServiceAccounts.serviceAccounts.length === 0) {
+            vscode.window.showInformationMessage('No secure service accounts found');
+            return;
+        }
+        const options = secureServiceAccounts.serviceAccounts.map(account => account.email!);
+        const selected = await vscode.window.showQuickPick(options, { placeHolder: 'Select secure service account' });
+        if (selected) {
+            const account = secureServiceAccounts.serviceAccounts.find(account => account.email === selected)!;
+            return {
+                type: EntryType.SecureServiceAccount,
+                id: account.serviceAccountId!,
+                email: account.email!
+            };
+        } else {
+            vscode.window.showInformationMessage('No secure service account selected');
+            return;
+        }
+    } catch (error) {
+        showErrorMessage('Could not load secure service accounts', error, context);
+    }
+}
+
+async function promptSecureServiceAccountKey(context: IContext): Promise<ISecureServiceAccountKey | undefined> {
+    // TODO: reuse SecureServiceAccountsDataProvider here
+    try {
+        const secureServiceAccount = await promptSecureServiceAccount(context);
+        if (!secureServiceAccount) {
+            return;
+        }
+        const secureServiceAccountKeys = await withProgress(
+            'Loading secure service account keys...',
+            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.get()
+        );
+        if (!secureServiceAccountKeys || !secureServiceAccountKeys.keys || secureServiceAccountKeys.keys.length === 0) {
+            vscode.window.showInformationMessage('No secure service account keys found');
+            return;
+        }
+        const options = secureServiceAccountKeys.keys.map(key => key.kid!);
+        const selected = await vscode.window.showQuickPick(options, { placeHolder: 'Select secure service account key' });
+        if (selected) {
+            const key = secureServiceAccountKeys.keys.find(key => key.kid === selected)!;
+            return {
+                type: EntryType.SecureServiceAccountKey,
+                id: selected,
+                status: key.status!,
+                secureServiceAccountId: secureServiceAccount.id,
+            };
+        } else {
+            vscode.window.showInformationMessage('No secure service account key selected');
+            return;
+        }
+    } catch (error) {
+        showErrorMessage('Could not load secure service account keys', error, context);
+    }
+}
 
 export async function createSecureServiceAccount(context: IContext) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter secure service account username' });
@@ -26,9 +89,10 @@ export async function createSecureServiceAccount(context: IContext) {
 
 export async function viewSecureServiceAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
-        // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account selected');
-        return;
+        secureServiceAccount = await promptSecureServiceAccount(context);
+        if (!secureServiceAccount) {
+            return;
+        }
     }
 
     try {
@@ -44,9 +108,10 @@ export async function viewSecureServiceAccountDetails(secureServiceAccount: ISec
 
 export async function updateSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
-        // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account selected');
-        return;
+        secureServiceAccount = await promptSecureServiceAccount(context);
+        if (!secureServiceAccount) {
+            return;
+        }
     }
 
     const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account: ${secureServiceAccount.id}` });
@@ -67,8 +132,14 @@ export async function updateSecureServiceAccount(secureServiceAccount: ISecureSe
 
 export async function deleteSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
-        // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account selected');
+        secureServiceAccount = await promptSecureServiceAccount(context);
+        if (!secureServiceAccount) {
+            return;
+        }
+    }
+
+    const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete secure service account: ${secureServiceAccount.id}? This action cannot be undone.`, { modal: true }, 'Delete');
+    if (confirm !== 'Delete') {
         return;
     }
 
@@ -85,9 +156,10 @@ export async function deleteSecureServiceAccount(secureServiceAccount: ISecureSe
 
 export async function createSecureServiceAccountKey(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
-        // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account selected');
-        return;
+        secureServiceAccount = await promptSecureServiceAccount(context);
+        if (!secureServiceAccount) {
+            return;
+        }
     }
 
     try {
@@ -105,9 +177,10 @@ export async function createSecureServiceAccountKey(secureServiceAccount: ISecur
 
 export async function updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
     if (!secureServiceAccountKey) {
-        // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account key selected');
-        return;
+        secureServiceAccountKey = await promptSecureServiceAccountKey(context);
+        if (!secureServiceAccountKey) {
+            return;
+        }
     }
 
     const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account key: ${secureServiceAccountKey.id}` });
@@ -129,8 +202,14 @@ export async function updateSecureServiceAccountKey(secureServiceAccountKey: ISe
 
 export async function deleteSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
     if (!secureServiceAccountKey) {
-        // TODO: prompt to pick one
-        vscode.window.showErrorMessage('No secure service account key selected');
+        secureServiceAccountKey = await promptSecureServiceAccountKey(context);
+        if (!secureServiceAccountKey) {
+            return;
+        }
+    }
+
+    const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete secure service account key: ${secureServiceAccountKey.id}? This action cannot be undone.`, { modal: true }, 'Delete');
+    if (confirm !== 'Delete') {
         return;
     }
 
