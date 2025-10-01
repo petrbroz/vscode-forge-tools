@@ -16,10 +16,59 @@ import {
 import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, TwoLeggedAuthenticationProvider } from 'svf-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
-import * as hi from '../interfaces/hubs';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
 import { ModelDerivativeFormats, svf2 } from '../providers/model-derivative';
+import { IVersion } from '../interfaces/hubs';
+
+export function registerModelDerivativeCommands(context: IContext, refresh: () => void) {
+    vscode.commands.registerCommand('forge.translateObject', async (object?: IObject | IVersion) => {
+        await translateObject(object, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.translateObjectCustom', async (object?: IObject | IVersion) => {
+        await translateObjectCustom(object, context, () => {
+			refresh();
+        });
+    });
+    vscode.commands.registerCommand('forge.listViewables', async (object?: IObject | IVersion) => {
+        await listViewables(object, context);
+    });
+    vscode.commands.registerCommand('forge.previewDerivative', async (derivative?: IDerivative) => {
+        await previewDerivative(derivative, context);
+    });
+    vscode.commands.registerCommand('forge.viewDerivativeTree', async (derivative?: IDerivative) => {
+        await viewDerivativeTree(derivative, context);
+    });
+    vscode.commands.registerCommand('forge.viewDerivativeProps', async (derivative?: IDerivative) => {
+        await viewDerivativeProps(derivative, context);
+    });
+    vscode.commands.registerCommand('forge.viewObjectManifest', async (object?: IObject | IVersion) => {
+        await viewObjectManifest(object, context);
+    });
+    vscode.commands.registerCommand('forge.deleteObjectManifest', async (object?: IObject) => {
+        await deleteObjectManifest(object, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewObjectThumbnail', async (object?: IObject | IVersion) => {
+        await viewObjectThumbnail(object, context);
+    });
+    vscode.commands.registerCommand('forge.downloadDerivativeSvf', async (object?: IObject) => {
+        await downloadDerivativesSVF(object, context);
+    });
+    vscode.commands.registerCommand('forge.downloadDerivativeF2d', async (object?: IObject) => {
+        await downloadDerivativesF2D(object, context);
+    });
+    vscode.commands.registerCommand('forge.downloadDerivativeGltf', async (object?: IObject) => {
+        await downloadDerivativeGLTF(object, context);
+    });
+    vscode.commands.registerCommand('forge.downloadDerivativeCustom', async (object?: IDerivative) => {
+        await downloadDerivativesCustom(object, context);
+    })
+    vscode.commands.registerCommand('forge.copyObjectUrn', async (object?: IObject | IVersion) => {
+        await copyObjectUrn(object, context);
+    });
+}
 
 enum TranslationActions {
 	Translate = 'Translate',
@@ -31,39 +80,39 @@ function urnify(id: string): string {
 }
 
 
-function getKey(object: IObject | hi.IVersion): string{
+function getKey(object: IObject | IVersion): string{
 	if('objectId' in object){ //IObject
 		return object.objectKey;
-	}else if('itemId' in object){ //hi.IVersion
+	}else if('itemId' in object){ //IVersion
 		return object.itemId; 
 	}
 	return '';
 }
 
-function getId(object: IObject | hi.IVersion): string{
+function getId(object: IObject | IVersion): string{
 	if('objectId' in object){ //IObject
 		return object.objectId;
-	}else if('itemId' in object){ //hi.IVersion
+	}else if('itemId' in object){ //IVersion
 		return object.id; 
 	}
 	return '';
 }
 
-function getURN(object: IObject | hi.IVersion): string{
+function getURN(object: IObject | IVersion): string{
 	return urnify(getId(object));
 }
 
-function getFileExtension(object: IObject | hi.IVersion): string {
+function getFileExtension(object: IObject | IVersion): string {
 	if ("objectKey" in object) {
 		return path.extname(object.objectKey).substring(1).toLowerCase();
 	}
 	return "";
 }
 
-function getModelDerivativeClientForObject(object: IObject | hi.IVersion, context: IContext): ModelDerivativeClient{
+function getModelDerivativeClientForObject(object: IObject | IVersion, context: IContext): ModelDerivativeClient{
 	if('objectId' in object){ //IObject
 		return context.modelDerivativeClient2L;
-	}else if('itemId' in object){ //hi.IVersion
+	}else if('itemId' in object){ //IVersion
 		const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
 		return client;
 	}
@@ -74,7 +123,7 @@ function findViewable(derivative: IDerivative): any {
 	return derivative.bubble.children.find((child: any) => child.role === 'graphics' || child.role === 'pdf-page');
 }
 
-export async function listViewables(object: IObject | hi.IVersion | undefined, context: IContext) {
+async function listViewables(object: IObject | IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -96,7 +145,7 @@ export async function listViewables(object: IObject | hi.IVersion | undefined, c
 	}
 }
 
-export async function translateObject(object: IObject | hi.IVersion | undefined, context: IContext) {
+async function translateObject(object: IObject | IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -129,7 +178,7 @@ export async function translateObject(object: IObject | hi.IVersion | undefined,
 	}
 }
 
-export async function translateObjectCustom(object: IObject | hi.IVersion | undefined, context: IContext, onSuccess?: () => void) {
+async function translateObjectCustom(object: IObject | IVersion | undefined, context: IContext, onSuccess?: () => void) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -205,7 +254,7 @@ export async function translateObjectCustom(object: IObject | hi.IVersion | unde
 	}
 }
 
-export async function previewDerivative(derivative: IDerivative | undefined, context: IContext) {
+async function previewDerivative(derivative: IDerivative | undefined, context: IContext) {
 	try {
 		if (!derivative) {
 			const bucket = await promptBucket(context);
@@ -256,7 +305,7 @@ export async function previewDerivative(derivative: IDerivative | undefined, con
 	}
 }
 
-export async function viewDerivativeTree(derivative: IDerivative | undefined, context: IContext) {
+async function viewDerivativeTree(derivative: IDerivative | undefined, context: IContext) {
 	try {
 		if (!derivative) {
 			const bucket = await promptBucket(context);
@@ -322,7 +371,7 @@ export async function viewDerivativeTree(derivative: IDerivative | undefined, co
 	}
 }
 
-export async function viewDerivativeProps(derivative: IDerivative | undefined, context: IContext) {
+async function viewDerivativeProps(derivative: IDerivative | undefined, context: IContext) {
 	try {
 		if (!derivative) {
 			const bucket = await promptBucket(context);
@@ -388,7 +437,7 @@ export async function viewDerivativeProps(derivative: IDerivative | undefined, c
 	}
 }
 
-export async function viewObjectManifest(object: IObject | hi.IVersion | undefined, context: IContext) {
+async function viewObjectManifest(object: IObject | IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -412,7 +461,7 @@ export async function viewObjectManifest(object: IObject | hi.IVersion | undefin
 	}
 }
 
-export async function deleteObjectManifest(object: IObject | undefined, context: IContext) {
+async function deleteObjectManifest(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -455,7 +504,7 @@ export async function deleteObjectManifest(object: IObject | undefined, context:
 	}
 }
 
-export async function viewObjectThumbnail(object: IObject  | hi.IVersion | undefined, context: IContext) {
+async function viewObjectThumbnail(object: IObject  | IVersion | undefined, context: IContext) {
 	async function downloadThumbnail(buff: ArrayBuffer, defaultUri: vscode.Uri) {
 		const uri = await vscode.window.showSaveDialog({ defaultUri });
 		if (!uri) {
@@ -536,7 +585,7 @@ export async function viewObjectThumbnail(object: IObject  | hi.IVersion | undef
 	}
 }
 
-export async function downloadDerivativesSVF(object: IObject | undefined, context: IContext) {
+async function downloadDerivativesSVF(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -586,7 +635,7 @@ export async function downloadDerivativesSVF(object: IObject | undefined, contex
 	}
 }
 
-export async function downloadDerivativesF2D(object: IObject | undefined, context: IContext) {
+async function downloadDerivativesF2D(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -633,7 +682,7 @@ export async function downloadDerivativesF2D(object: IObject | undefined, contex
 	}
 }
 
-export async function downloadDerivativeGLTF(object: IObject | undefined, context: IContext) {
+async function downloadDerivativeGLTF(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -691,7 +740,7 @@ export async function downloadDerivativeGLTF(object: IObject | undefined, contex
 	}
 }
 
-export async function downloadDerivativesCustom(object: IDerivative | undefined, context: IContext) {
+async function downloadDerivativesCustom(object: IDerivative | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -739,7 +788,7 @@ export async function downloadDerivativesCustom(object: IDerivative | undefined,
 	}
 }
 
-export async function copyObjectUrn(object: IObject | hi.IVersion | undefined, context: IContext) {
+async function copyObjectUrn(object: IObject | IVersion | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);

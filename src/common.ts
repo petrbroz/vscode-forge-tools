@@ -13,7 +13,7 @@ import {
 } from 'aps-sdk-node';
 import { IDerivative } from './interfaces/model-derivative';
 import { IAuthOptions } from 'aps-sdk-node/dist/common';
-import { IEnvironment } from './environments';
+import { IEnvironment } from './environment';
 import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
 import { createSecureServiceAccountsClient } from './clients';
 

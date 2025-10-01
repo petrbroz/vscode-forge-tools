@@ -2,15 +2,207 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
-import { IAppBundleUploadParams, IActivityDetail, IActivityParam, DesignAutomationID, IWorkItemParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from 'aps-sdk-node';
+import { IAppBundleUploadParams, IActivityDetail, DesignAutomationID } from 'aps-sdk-node';
 import { withProgress, createWebViewPanel } from '../common';
 import { ICreateActivityProps } from '../webviews/create-activity';
+import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../interfaces/design-automation';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
+}
+
+export function registerDesignAutomationCommands(context: IContext, refresh: () => void) {
+    vscode.commands.registerCommand('forge.refreshDesignAutomationTree', () => {
+        refresh();
+    });
+
+    vscode.commands.registerCommand('forge.createAppBundle', async () => {
+        await uploadAppBundle(undefined, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.updateAppBundle', async (entry?: IAppBundleEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await uploadAppBundle(entry.appbundle, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) => {
+        if (entry) {
+            await viewAppBundleDetails('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);
+        } else {
+            await viewAppBundleDetails(undefined, context);
+        }
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleDetailsJson', async (entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) => {
+        if (entry) {
+            await viewAppBundleDetailsJSON('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);
+        } else {
+            await viewAppBundleDetailsJSON(undefined, context);
+        }
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleAliasDetails', async (entry?: IAppBundleAliasEntry) => {
+        await viewAppBundleAliasDetails(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleAliasDetailsJson', async (entry?: IAppBundleAliasEntry) => {
+        await viewAppBundleAliasDetailsJSON(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: IAppBundleVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, context);
+    });
+    vscode.commands.registerCommand('forge.viewAppBundleVersionDetailsJson', async (entry?: IAppBundleVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await viewAppBundleDetailsJSON({ name: entry.appbundle, version: entry.version }, context);
+    });
+    vscode.commands.registerCommand('forge.deleteAppBundle', async (entry?: IAppBundleEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await deleteAppBundle(entry.appbundle, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.deleteAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await deleteAppBundleAlias(entry.appbundle, entry.alias, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.createAppBundleAlias', async (entry?: IAppBundleAliasesEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await createAppBundleAlias(entry.appbundle, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.updateAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await updateAppBundleAlias(entry.appbundle, entry.alias, context);
+    });
+    vscode.commands.registerCommand('forge.deleteAppBundleVersion', async (entry?: IAppBundleVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await deleteAppBundleVersion(entry.appbundle, entry.version, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewActivityDetails', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
+        await viewActivityDetails(id, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityDetailsJson', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
+        await viewActivityDetailsJSON(id, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityAliasDetails', async (entry?: IActivityAliasEntry) => {
+        await viewActivityAliasDetails(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityAliasDetailsJson', async (entry?: IActivityAliasEntry) => {
+        await viewActivityAliasDetailsJSON(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityVersionDetails', async (entry?: IActivityVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await viewActivityDetails({ name: entry.activity, version: entry.version }, context);
+    });
+    vscode.commands.registerCommand('forge.viewActivityVersionDetailsJson', async (entry?: IActivityVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await viewActivityDetailsJSON({ name: entry.activity, version: entry.version }, context);
+    });
+    vscode.commands.registerCommand('forge.deleteActivity', async (entry?: IActivityEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await deleteActivity(entry.activity, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.deleteActivityAlias', async (entry?: IActivityAliasEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await deleteActivityAlias(entry.activity, entry.alias, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.createActivity', async () => {
+        await createActivity(
+            (activity: IActivityDetail) => { refresh(); },
+            context
+        );
+    });
+    vscode.commands.registerCommand('forge.updateActivity', async (entry?: IActivityAliasEntry | IActivityVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await updateActivity(
+            'alias' in entry ? `${entry.client}.${entry.activity}+${entry.alias}` : { name: entry.activity, version: entry.version },
+            (activity: IActivityDetail) => { refresh(); },
+            context
+        );
+    });
+    vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: IActivityAliasesEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await createActivityAlias(entry.activity, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.updateActivityAlias', async (entry?: IActivityAliasEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await updateActivityAlias(entry.activity, entry.alias, context);
+    });
+    vscode.commands.registerCommand('forge.deleteActivityVersion', async (entry?: IActivityVersionEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await deleteActivityVersion(entry.activity, entry.version, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.createWorkitem', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
+        if (!entry) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await createWorkitem(('fullid' in entry) ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`, context);
+    });
 }
 
 function sleep(ms: number): Promise<void> {
@@ -25,7 +217,7 @@ async function findAvailableEngines(context: IContext, progressTitle: string) {
 	return availableEngines.sort();
 }
 
-export async function uploadAppBundle(name: string | undefined, context: IContext) {
+async function uploadAppBundle(name: string | undefined, context: IContext) {
 	try {
 		let exists = !!name;
 		if (!name) {
@@ -62,7 +254,7 @@ export async function uploadAppBundle(name: string | undefined, context: IContex
 	}
 }
 
-export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
+async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
 	try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -81,7 +273,7 @@ export async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersio
 	}
 }
 
-export async function viewAppBundleDetailsJSON(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
+async function viewAppBundleDetailsJSON(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
 	try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -101,7 +293,7 @@ export async function viewAppBundleDetailsJSON(id: FullyQualifiedID | INameAndVe
 	}
 }
 
-export async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
+async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
     try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -120,7 +312,7 @@ export async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined
 	}
 }
 
-export async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undefined, context: IContext) {
+async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undefined, context: IContext) {
     try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -140,7 +332,7 @@ export async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undef
 	}
 }
 
-export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
+async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		const activityDetail = await withProgress(`Getting activity details: ${id}`, typeof(id) === 'string' ? context.designAutomationClient.getActivity(id) : context.designAutomationClient.getActivityVersion(id.name, id.version));
 		createWebViewPanel(context, 'activity-details.js', 'activity-details', `Activity Details: ${activityDetail.id}`, { detail: activityDetail });
@@ -149,7 +341,7 @@ export async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion
 	}
 }
 
-export async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVersion, context: IContext) {
+async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		const activityDetail = await withProgress(`Getting activity details: ${id}`, typeof(id) === 'string' ? context.designAutomationClient.getActivity(id) : context.designAutomationClient.getActivityVersion(id.name, id.version));
 		createWebViewPanel(context, 'activity-details.js', 'activity-details', `Activity Details: ${activityDetail.id}`, { detail: activityDetail });
@@ -160,7 +352,7 @@ export async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVer
 	}
 }
 
-export async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
+async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
     try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -179,7 +371,7 @@ export async function viewActivityAliasDetails(id: FullyQualifiedID | undefined,
 	}
 }
 
-export async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefined, context: IContext) {
+async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefined, context: IContext) {
     try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -199,7 +391,7 @@ export async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefi
 	}
 }
 
-export async function createActivity(successCallback: (activity: IActivityDetail) => void, context: IContext) {
+async function createActivity(successCallback: (activity: IActivityDetail) => void, context: IContext) {
 	try {
 		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for a new activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for new activity`, context.designAutomationClient.listAppBundles());
@@ -238,7 +430,7 @@ export async function createActivity(successCallback: (activity: IActivityDetail
 	}
 }
 
-export async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCallback: (activity: IActivityDetail) => void, context: IContext) {
+async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCallback: (activity: IActivityDetail) => void, context: IContext) {
 	try {
 		let originalActivity: IActivityDetail = typeof(id) === 'string'
 			? await context.designAutomationClient.getActivity(id)
@@ -274,7 +466,7 @@ export async function updateActivity(id: FullyQualifiedID | INameAndVersion, suc
 	}
 }
 
-export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
+async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete app bundle: ${id}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -288,7 +480,7 @@ export async function deleteAppBundle(id: UnqualifiedID, context: IContext) {
 	}
 }
 
-export async function createAppBundleAlias(id: UnqualifiedID, context: IContext) {
+async function createAppBundleAlias(id: UnqualifiedID, context: IContext) {
 	try {
 		const alias = await vscode.window.showInputBox({ prompt: 'Enter alias name' });
 		if (!alias) {
@@ -309,7 +501,7 @@ export async function createAppBundleAlias(id: UnqualifiedID, context: IContext)
 	}
 }
 
-export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
+async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		const appBundleVersions = await context.designAutomationClient.listAppBundleVersions(id);
 		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map((v: number) => v.toString()), {
@@ -326,7 +518,7 @@ export async function updateAppBundleAlias(id: UnqualifiedID, alias: string, con
 	}
 }
 
-export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
+async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete app bundle alias: ${id}/${alias}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -340,7 +532,7 @@ export async function deleteAppBundleAlias(id: UnqualifiedID, alias: string, con
 	}
 }
 
-export async function deleteAppBundleVersion(id: UnqualifiedID, version: number, context: IContext) {
+async function deleteAppBundleVersion(id: UnqualifiedID, version: number, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete app bundle version: ${id}/${version}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -354,7 +546,7 @@ export async function deleteAppBundleVersion(id: UnqualifiedID, version: number,
 	}
 }
 
-export async function deleteActivity(id: UnqualifiedID, context: IContext) {
+async function deleteActivity(id: UnqualifiedID, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete activity: ${id}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -368,7 +560,7 @@ export async function deleteActivity(id: UnqualifiedID, context: IContext) {
 	}
 }
 
-export async function deleteActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
+async function deleteActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete activity alias: ${id}/${alias}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -382,7 +574,7 @@ export async function deleteActivityAlias(id: UnqualifiedID, alias: string, cont
 	}
 }
 
-export async function deleteActivityVersion(id: UnqualifiedID, version: number, context: IContext) {
+async function deleteActivityVersion(id: UnqualifiedID, version: number, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete activity version: ${id}/${version}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -396,7 +588,7 @@ export async function deleteActivityVersion(id: UnqualifiedID, version: number, 
 	}
 }
 
-export async function createActivityAlias(id: UnqualifiedID, context: IContext) {
+async function createActivityAlias(id: UnqualifiedID, context: IContext) {
 	try {
 		const alias = await vscode.window.showInputBox({ prompt: 'Enter alias name' });
 		if (!alias) {
@@ -417,7 +609,7 @@ export async function createActivityAlias(id: UnqualifiedID, context: IContext) 
 	}
 }
 
-export async function updateActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
+async function updateActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
 		const activityVersions = await context.designAutomationClient.listActivityVersions(id);
 		const activityVersion = await vscode.window.showQuickPick(activityVersions.map((v: number) => v.toString()), {
@@ -434,7 +626,7 @@ export async function updateActivityAlias(id: UnqualifiedID, alias: string, cont
 	}
 }
 
-export async function createWorkitem(id: FullyQualifiedID, context: IContext) {
+async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 	try {
 		const activity = await withProgress(`Getting activity details: ${id}`, context.designAutomationClient.getActivity(id));
 		if (activity) {

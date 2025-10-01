@@ -4,7 +4,26 @@ import { IWebhook, IWebhookEvent } from '../providers/webhooks';
 import { withProgress, createWebViewPanel } from '../common';
 import { WebhookEvent, WEBHOOKS, WebhookSystem } from '../interfaces/webhooks';
 
-export async function createWebhook({ system, event }: IWebhookEvent, context: IContext, successCallback?: () => void) {
+export function registerWebhookCommands(context: IContext, refresh: () => void) {
+    vscode.commands.registerCommand('forge.refreshWebhooks', () => {
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.createWebhook', async (event: IWebhookEvent) => {
+        await createWebhook(event, context, refresh);
+    });
+    vscode.commands.registerCommand('forge.updateWebhook', async (webhook: IWebhook) => {
+        await updateWebhook(webhook, context, refresh);
+    });
+    vscode.commands.registerCommand('forge.deleteWebhook', async (webhook: IWebhook) => {
+        await deleteWebhook(webhook, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
+        await viewWebhookDetails(webhook, context);
+    });
+}
+
+async function createWebhook({ system, event }: IWebhookEvent, context: IContext, successCallback?: () => void) {
 	const _system = WEBHOOKS.find(webhook => webhook.id === system) as WebhookSystem;
 	const _event = _system.events.find(ev => ev.id === event) as WebhookEvent;
 	const { scopes } = _event;
@@ -33,7 +52,7 @@ export async function createWebhook({ system, event }: IWebhookEvent, context: I
 	});
 }
 
-export async function viewWebhookDetails({ id, system, event }: IWebhook, context: IContext) {
+async function viewWebhookDetails({ id, system, event }: IWebhook, context: IContext) {
 	try {
 		// @ts-ignore
 		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, context.webhookClient.getHookDetails(system, event, id));
@@ -43,7 +62,7 @@ export async function viewWebhookDetails({ id, system, event }: IWebhook, contex
 	}
 }
 
-export async function deleteWebhook({ system, event, id }: IWebhook, context: IContext) {
+async function deleteWebhook({ system, event, id }: IWebhook, context: IContext) {
 	try {
 		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete webhook ${id}? This action cannot be undone.`, { modal: true }, 'Delete');
 		if (confirm !== 'Delete') {
@@ -58,7 +77,7 @@ export async function deleteWebhook({ system, event, id }: IWebhook, context: IC
 	}
 }
 
-export async function updateWebhook({ system, event, id }: IWebhook, context: IContext, successCallback?: () => void) {
+async function updateWebhook({ system, event, id }: IWebhook, context: IContext, successCallback?: () => void) {
 	try {
 		// @ts-ignore
 		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, context.webhookClient.getHookDetails(system, event, id));

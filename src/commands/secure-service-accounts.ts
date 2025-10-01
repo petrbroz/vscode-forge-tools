@@ -2,6 +2,41 @@ import * as vscode from 'vscode';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
 
+export function registerSecureServiceAccountsCommands(context: IContext, refresh: () => void) {
+    vscode.commands.registerCommand('forge.refreshSecureServiceAccounts', () => {
+        refresh();
+    });
+
+    vscode.commands.registerCommand('forge.createSecureServiceAccount', async () => {
+        await createSecureServiceAccount(context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewSecureServiceAccountDetails', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await viewSecureServiceAccountDetails(secureServiceAccount, context);
+    });
+    vscode.commands.registerCommand('forge.updateSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await updateSecureServiceAccount(secureServiceAccount, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.deleteSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await deleteSecureServiceAccount(secureServiceAccount, context);
+        refresh();
+    });
+
+    vscode.commands.registerCommand('forge.createSecureServiceAccountKey', async (secureServiceAccount?: ISecureServiceAccount) => {
+        await createSecureServiceAccountKey(secureServiceAccount, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.updateSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {  
+        await updateSecureServiceAccountKey(secureServiceAccountKey, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.deleteSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {
+        await deleteSecureServiceAccountKey(secureServiceAccountKey, context);
+        refresh();
+    });
+}
+
 async function promptSecureServiceAccount(context: IContext): Promise<ISecureServiceAccount | undefined> {
     // TODO: reuse SecureServiceAccountsDataProvider here
     try {
@@ -65,7 +100,7 @@ async function promptSecureServiceAccountKey(context: IContext): Promise<ISecure
     }
 }
 
-export async function createSecureServiceAccount(context: IContext) {
+async function createSecureServiceAccount(context: IContext) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter secure service account username' });
     if (!name) {
         return;
@@ -87,7 +122,7 @@ export async function createSecureServiceAccount(context: IContext) {
     }
 }
 
-export async function viewSecureServiceAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
+async function viewSecureServiceAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
         secureServiceAccount = await promptSecureServiceAccount(context);
         if (!secureServiceAccount) {
@@ -106,7 +141,7 @@ export async function viewSecureServiceAccountDetails(secureServiceAccount: ISec
     }
 }
 
-export async function updateSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
+async function updateSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
         secureServiceAccount = await promptSecureServiceAccount(context);
         if (!secureServiceAccount) {
@@ -130,7 +165,7 @@ export async function updateSecureServiceAccount(secureServiceAccount: ISecureSe
     }
 }
 
-export async function deleteSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
+async function deleteSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
         secureServiceAccount = await promptSecureServiceAccount(context);
         if (!secureServiceAccount) {
@@ -154,7 +189,7 @@ export async function deleteSecureServiceAccount(secureServiceAccount: ISecureSe
     }
 }
 
-export async function createSecureServiceAccountKey(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
+async function createSecureServiceAccountKey(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
     if (!secureServiceAccount) {
         secureServiceAccount = await promptSecureServiceAccount(context);
         if (!secureServiceAccount) {
@@ -175,7 +210,7 @@ export async function createSecureServiceAccountKey(secureServiceAccount: ISecur
     }
 }
 
-export async function updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
+async function updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
     if (!secureServiceAccountKey) {
         secureServiceAccountKey = await promptSecureServiceAccountKey(context);
         if (!secureServiceAccountKey) {
@@ -200,7 +235,7 @@ export async function updateSecureServiceAccountKey(secureServiceAccountKey: ISe
     }
 }
 
-export async function deleteSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
+async function deleteSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
     if (!secureServiceAccountKey) {
         secureServiceAccountKey = await promptSecureServiceAccountKey(context);
         if (!secureServiceAccountKey) {

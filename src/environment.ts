@@ -1,5 +1,11 @@
 import * as vscode from 'vscode';
 
+// TODO: reuse the enum from aps-sdk-node
+export enum DesignAutomationRegion {
+    US_WEST = 'us-west',
+    US_EAST = 'us-east'
+}
+
 export interface IEnvironment {
     title: string;
     clientId: string;
