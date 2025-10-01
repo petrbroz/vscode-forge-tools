@@ -97,6 +97,7 @@ export async function createSecureServiceAccountKey(secureServiceAccount: ISecur
         );
 		const doc = await vscode.workspace.openTextDocument({ content: secureServiceAccountKey?.privateKey! });
 		await vscode.window.showTextDocument(doc, { preview: false });
+        vscode.window.showWarningMessage(`Make sure to copy the private key as it will not be shown again!`);
     } catch(err) {
         showErrorMessage('Could not generate private key for secure service account', err, context);
     }
