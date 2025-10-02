@@ -96,8 +96,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	registerDesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
 	registerWebhookCommands(context, () => webhooksDataProvider.refresh());
 	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
-	secureServiceAccountsCommands.registerCommands();
-	context.extensionContext.subscriptions.push(secureServiceAccountsCommands);
+	context.extensionContext.subscriptions.push(...secureServiceAccountsCommands.registerCommands());
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + env.title;

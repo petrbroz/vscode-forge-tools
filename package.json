@@ -528,7 +528,7 @@
 				"category": "Authentication"
 			},
 			{
-				"command": "forge.refreshSecureServiceAccounts",
+				"command": "aps.ssa.refreshAccounts",
 				"title": "Refresh Secure Service Accounts",
 				"category": "Secure Service Accounts",
 				"icon": {
@@ -537,7 +537,7 @@
 				}
 			},
 			{
-				"command": "forge.createSecureServiceAccount",
+				"command": "aps.ssa.createAccount",
 				"title": "Create Secure Service Account",
 				"icon": {
 					"light": "resources/icons/dark/add.svg",
@@ -545,32 +545,32 @@
 				}
 			},
 			{
-				"command": "forge.viewSecureServiceAccountDetails",
+				"command": "aps.ssa.viewAccountDetails",
 				"title": "View Secure Service Account Details",
 				"category": "Secure Service Accounts"
 			},
 			{
-				"command": "forge.updateSecureServiceAccount",
+				"command": "aps.ssa.updateAccount",
 				"title": "Update Secure Service Account",
 				"category": "Secure Service Accounts"
 			},
 			{
-				"command": "forge.deleteSecureServiceAccount",
+				"command": "aps.ssa.deleteAccount",
 				"title": "Delete Secure Service Account",
 				"category": "Secure Service Accounts"
 			},
 			{
-				"command": "forge.createSecureServiceAccountKey",
+				"command": "aps.ssa.createAccountKey",
 				"title": "Create Secure Service Account Key",
 				"category": "Secure Service Accounts"
 			},
 			{
-				"command": "forge.updateSecureServiceAccountKey",
+				"command": "aps.ssa.updateAccountKey",
 				"title": "Update Secure Service Account Key",
 				"category": "Secure Service Accounts"
 			},
 			{
-				"command": "forge.deleteSecureServiceAccountKey",
+				"command": "aps.ssa.deleteAccountKey",
 				"title": "Delete Secure Service Account Key",
 				"category": "Secure Service Accounts"
 			}
@@ -598,12 +598,12 @@
 					"group": "navigation"
 				},
 				{
-					"command": "forge.refreshSecureServiceAccounts",
+					"command": "aps.ssa.refreshAccounts",
 					"when": "view == apsSecureServiceAccountsView",
 					"group": "navigation"
 				},
 				{
-					"command": "forge.createSecureServiceAccount",
+					"command": "aps.ssa.createAccount",
 					"when": "view == apsSecureServiceAccountsView",
 					"group": "navigation"
 				}
@@ -980,32 +980,32 @@
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.viewSecureServiceAccountDetails",
+					"command": "aps.ssa.viewAccountDetails",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.createSecureServiceAccountKey",
+					"command": "aps.ssa.createAccountKey",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
 					"group": "1_action"
 				},
 				{
-					"command": "forge.updateSecureServiceAccount",
+					"command": "aps.ssa.updateAccount",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteSecureServiceAccount",
+					"command": "aps.ssa.deleteAccount",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.updateSecureServiceAccountKey",
+					"command": "aps.ssa.updateAccountKey",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteSecureServiceAccountKey",
+					"command": "aps.ssa.deleteAccountKey",
 					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
 					"group": "3_remove"
 				}

@@ -1,19 +1,32 @@
 import * as vscode from 'vscode';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
-import { CommandRegistry, Command } from './shared';
+import { CommandCategory, Command, CommandRegistry } from './shared';
 
+@CommandCategory({ category: 'Secure Service Accounts', prefix: 'aps.ssa' })
 export class SecureServiceAccountsCommands extends CommandRegistry {
-    constructor(context: IContext, refresh: () => void) {
-        super('aps.ssa', 'Secure Service Accounts', context, refresh);
+    constructor(protected context: IContext, protected refresh: () => void) {
+        super();
     }
 
-    @Command('Refresh Secure Service Accounts', 'refresh')
+    @Command({
+        title: 'Refresh Secure Service Accounts',
+        icon: 'refresh',
+        menus: {
+            'view/title': [{ when: 'view == apsSecureServiceAccountsView', group: 'navigation' }]
+        }
+    })
     async refreshAccounts() {
         this.refresh();
     }
 
-    @Command('Create Secure Service Account', 'add')
+    @Command({
+        title: 'Create Secure Service Account',
+        icon: 'add',
+        menus: {
+            'view/title': [{ when: 'view == apsSecureServiceAccountsView', group: 'navigation' }]
+        }
+    })
     async createAccount() {
         const name = await vscode.window.showInputBox({ prompt: 'Enter secure service account username' });
         if (!name) {
@@ -36,10 +49,16 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command('View Secure Service Account Details')
+    @Command({
+        title: 'View Secure Service Account Details',
+        icon: 'open-preview',
+        menus: {
+            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '0_view@1' }]
+        }
+    })
     async viewAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
-            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            secureServiceAccount = await this.promptSecureServiceAccount();
             if (!secureServiceAccount) {
                 return;
             }
@@ -56,10 +75,16 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command('Update Secure Service Account')
+    @Command({
+        title: 'Update Secure Service Account',
+        icon: 'edit',
+        menus: {
+            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '2_modify' }]
+        }
+    })
     async updateAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
-            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            secureServiceAccount = await this.promptSecureServiceAccount();
             if (!secureServiceAccount) {
                 return;
             }
@@ -81,10 +106,16 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command('Delete Secure Service Account')
+    @Command({
+        title: 'Delete Secure Service Account',
+        icon: 'trash',
+        menus: {
+            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '3_remove' }]
+        }
+    })
     async deleteAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
-            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            secureServiceAccount = await this.promptSecureServiceAccount();
             if (!secureServiceAccount) {
                 return;
             }
@@ -106,10 +137,16 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command('Create Secure Service Account Key')
+    @Command({
+        title: 'Create Secure Service Account Key',
+        icon: 'add',
+        menus: {
+            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action' }]
+        }
+    })
     async createAccountKey(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
-            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            secureServiceAccount = await this.promptSecureServiceAccount();
             if (!secureServiceAccount) {
                 return;
             }
@@ -128,10 +165,16 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command('Update Secure Service Account Key')
-    async updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+    @Command({
+        title: 'Update Secure Service Account Key',
+        icon: 'edit',
+        menus: {
+            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '2_modify' }]
+        }
+    })
+    async updateAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
         if (!secureServiceAccountKey) {
-            secureServiceAccountKey = await promptSecureServiceAccountKey(this.context);
+            secureServiceAccountKey = await this.promptSecureServiceAccountKey();
             if (!secureServiceAccountKey) {
                 return;
             }
@@ -154,10 +197,16 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command('Delete Secure Service Account Key')
-    async deleteSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+    @Command({
+        title: 'Delete Secure Service Account Key',
+        icon: 'trash',
+        menus: {
+            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '3_remove' }]
+        }
+    })
+    async deleteAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
         if (!secureServiceAccountKey) {
-            secureServiceAccountKey = await promptSecureServiceAccountKey(this.context);
+            secureServiceAccountKey = await this.promptSecureServiceAccountKey();
             if (!secureServiceAccountKey) {
                 return;
             }
@@ -178,67 +227,67 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             showErrorMessage('Could not delete secure service account key', err, this.context);
         }
     }
-}
 
-async function promptSecureServiceAccount(context: IContext): Promise<ISecureServiceAccount | undefined> {
-    // TODO: reuse SecureServiceAccountsDataProvider here
-    try {
-        const secureServiceAccounts = await withProgress(
-            'Loading secure service accounts...',
-            context.secureServiceAccountsClient.serviceAccounts.get()
-        );
-        if (!secureServiceAccounts || !secureServiceAccounts.serviceAccounts || secureServiceAccounts.serviceAccounts.length === 0) {
-            vscode.window.showInformationMessage('No secure service accounts found');
-            return;
+    protected async promptSecureServiceAccount(): Promise<ISecureServiceAccount | undefined> {
+        // TODO: reuse SecureServiceAccountsDataProvider here
+        try {
+            const secureServiceAccounts = await withProgress(
+                'Loading secure service accounts...',
+                this.context.secureServiceAccountsClient.serviceAccounts.get()
+            );
+            if (!secureServiceAccounts || !secureServiceAccounts.serviceAccounts || secureServiceAccounts.serviceAccounts.length === 0) {
+                vscode.window.showInformationMessage('No secure service accounts found');
+                return;
+            }
+            const options = secureServiceAccounts.serviceAccounts.map(account => account.email!);
+            const selected = await vscode.window.showQuickPick(options, { placeHolder: 'Select secure service account' });
+            if (selected) {
+                const account = secureServiceAccounts.serviceAccounts.find(account => account.email === selected)!;
+                return {
+                    type: EntryType.SecureServiceAccount,
+                    id: account.serviceAccountId!,
+                    email: account.email!
+                };
+            } else {
+                vscode.window.showInformationMessage('No secure service account selected');
+                return;
+            }
+        } catch (error) {
+            showErrorMessage('Could not load secure service accounts', error, this.context);
         }
-        const options = secureServiceAccounts.serviceAccounts.map(account => account.email!);
-        const selected = await vscode.window.showQuickPick(options, { placeHolder: 'Select secure service account' });
-        if (selected) {
-            const account = secureServiceAccounts.serviceAccounts.find(account => account.email === selected)!;
-            return {
-                type: EntryType.SecureServiceAccount,
-                id: account.serviceAccountId!,
-                email: account.email!
-            };
-        } else {
-            vscode.window.showInformationMessage('No secure service account selected');
-            return;
-        }
-    } catch (error) {
-        showErrorMessage('Could not load secure service accounts', error, context);
     }
-}
 
-async function promptSecureServiceAccountKey(context: IContext): Promise<ISecureServiceAccountKey | undefined> {
-    // TODO: reuse SecureServiceAccountsDataProvider here
-    try {
-        const secureServiceAccount = await promptSecureServiceAccount(context);
-        if (!secureServiceAccount) {
-            return;
+    protected async promptSecureServiceAccountKey(): Promise<ISecureServiceAccountKey | undefined> {
+        // TODO: reuse SecureServiceAccountsDataProvider here
+        try {
+            const secureServiceAccount = await this.promptSecureServiceAccount();
+            if (!secureServiceAccount) {
+                return;
+            }
+            const secureServiceAccountKeys = await withProgress(
+                'Loading secure service account keys...',
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.get()
+            );
+            if (!secureServiceAccountKeys || !secureServiceAccountKeys.keys || secureServiceAccountKeys.keys.length === 0) {
+                vscode.window.showInformationMessage('No secure service account keys found');
+                return;
+            }
+            const options = secureServiceAccountKeys.keys.map(key => key.kid!);
+            const selected = await vscode.window.showQuickPick(options, { placeHolder: 'Select secure service account key' });
+            if (selected) {
+                const key = secureServiceAccountKeys.keys.find(key => key.kid === selected)!;
+                return {
+                    type: EntryType.SecureServiceAccountKey,
+                    id: selected,
+                    status: key.status!,
+                    secureServiceAccountId: secureServiceAccount.id,
+                };
+            } else {
+                vscode.window.showInformationMessage('No secure service account key selected');
+                return;
+            }
+        } catch (error) {
+            showErrorMessage('Could not load secure service account keys', error, this.context);
         }
-        const secureServiceAccountKeys = await withProgress(
-            'Loading secure service account keys...',
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.get()
-        );
-        if (!secureServiceAccountKeys || !secureServiceAccountKeys.keys || secureServiceAccountKeys.keys.length === 0) {
-            vscode.window.showInformationMessage('No secure service account keys found');
-            return;
-        }
-        const options = secureServiceAccountKeys.keys.map(key => key.kid!);
-        const selected = await vscode.window.showQuickPick(options, { placeHolder: 'Select secure service account key' });
-        if (selected) {
-            const key = secureServiceAccountKeys.keys.find(key => key.kid === selected)!;
-            return {
-                type: EntryType.SecureServiceAccountKey,
-                id: selected,
-                status: key.status!,
-                secureServiceAccountId: secureServiceAccount.id,
-            };
-        } else {
-            vscode.window.showInformationMessage('No secure service account key selected');
-            return;
-        }
-    } catch (error) {
-        showErrorMessage('Could not load secure service account keys', error, context);
     }
 }
