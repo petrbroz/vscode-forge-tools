@@ -1,40 +1,183 @@
 import * as vscode from 'vscode';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
+import { CommandRegistry, Command } from './shared';
 
-export function registerSecureServiceAccountsCommands(context: IContext, refresh: () => void) {
-    vscode.commands.registerCommand('forge.refreshSecureServiceAccounts', () => {
-        refresh();
-    });
+export class SecureServiceAccountsCommands extends CommandRegistry {
+    constructor(context: IContext, refresh: () => void) {
+        super('aps.ssa', 'Secure Service Accounts', context, refresh);
+    }
 
-    vscode.commands.registerCommand('forge.createSecureServiceAccount', async () => {
-        await createSecureServiceAccount(context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.viewSecureServiceAccountDetails', async (secureServiceAccount?: ISecureServiceAccount) => {
-        await viewSecureServiceAccountDetails(secureServiceAccount, context);
-    });
-    vscode.commands.registerCommand('forge.updateSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
-        await updateSecureServiceAccount(secureServiceAccount, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.deleteSecureServiceAccount', async (secureServiceAccount?: ISecureServiceAccount) => {
-        await deleteSecureServiceAccount(secureServiceAccount, context);
-        refresh();
-    });
+    @Command('Refresh Secure Service Accounts', 'refresh')
+    async refreshAccounts() {
+        this.refresh();
+    }
 
-    vscode.commands.registerCommand('forge.createSecureServiceAccountKey', async (secureServiceAccount?: ISecureServiceAccount) => {
-        await createSecureServiceAccountKey(secureServiceAccount, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.updateSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {  
-        await updateSecureServiceAccountKey(secureServiceAccountKey, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.deleteSecureServiceAccountKey', async (secureServiceAccountKey?: ISecureServiceAccountKey) => {
-        await deleteSecureServiceAccountKey(secureServiceAccountKey, context);
-        refresh();
-    });
+    @Command('Create Secure Service Account', 'add')
+    async createAccount() {
+        const name = await vscode.window.showInputBox({ prompt: 'Enter secure service account username' });
+        if (!name) {
+            return;
+        }
+        const firstName = await vscode.window.showInputBox({ prompt: 'Enter secure service account first name' });
+        if (!firstName) {
+            return;
+        }
+        const lastName = await vscode.window.showInputBox({ prompt: 'Enter secure service account last name' });
+        if (!lastName) {
+            return;
+        }
+
+        try {
+            const account = await this.context.secureServiceAccountsClient.serviceAccounts.post({ name, firstName, lastName });
+            vscode.window.showInformationMessage(`Secure service account created: ${account?.email}`);
+        } catch (error) {
+            showErrorMessage('Could not create secure service account', error, this.context);
+        }
+    }
+
+    @Command('View Secure Service Account Details')
+    async viewAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined) {
+        if (!secureServiceAccount) {
+            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            if (!secureServiceAccount) {
+                return;
+            }
+        }
+
+        try {
+            const secureServiceAccountDetails = await withProgress(
+                `Getting secure service account details: ${secureServiceAccount.id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).get()
+            );
+            createWebViewPanel(this.context, 'secure-service-account-details.js', 'secure-service-account-details', `Secure Service Account Details: ${secureServiceAccount.id}`, { detail: secureServiceAccountDetails });
+        } catch (err) {
+            showErrorMessage('Could not retrieve secure service account details', err, this.context);
+        }
+    }
+
+    @Command('Update Secure Service Account')
+    async updateAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
+        if (!secureServiceAccount) {
+            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            if (!secureServiceAccount) {
+                return;
+            }
+        }
+
+        const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account: ${secureServiceAccount.id}` });
+        if (status !== 'ENABLED' && status !== 'DISABLED') {
+            return;
+        }
+
+        try {
+            await withProgress(
+                `Updating secure service account: ${secureServiceAccount.id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).patch({ status })
+            );
+            vscode.window.showInformationMessage(`Secure service account updated: ${secureServiceAccount.id}`);
+        } catch (err) {
+            showErrorMessage('Could not update secure service account', err, this.context);
+        }
+    }
+
+    @Command('Delete Secure Service Account')
+    async deleteAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
+        if (!secureServiceAccount) {
+            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            if (!secureServiceAccount) {
+                return;
+            }
+        }
+
+        const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete secure service account: ${secureServiceAccount.id}? This action cannot be undone.`, { modal: true }, 'Delete');
+        if (confirm !== 'Delete') {
+            return;
+        }
+
+        try {
+            await withProgress(
+                `Deleting secure service account: ${secureServiceAccount.id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).delete()
+            );
+            vscode.window.showInformationMessage(`Secure service account deleted: ${secureServiceAccount.id}`);
+        } catch (err) {
+            showErrorMessage('Could not delete secure service account', err, this.context);
+        }
+    }
+
+    @Command('Create Secure Service Account Key')
+    async createAccountKey(secureServiceAccount: ISecureServiceAccount | undefined) {
+        if (!secureServiceAccount) {
+            secureServiceAccount = await promptSecureServiceAccount(this.context);
+            if (!secureServiceAccount) {
+                return;
+            }
+        }
+
+        try {
+            const secureServiceAccountKey = await withProgress(
+                `Generating private key for secure service account: ${secureServiceAccount.id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.post()
+            );
+            const doc = await vscode.workspace.openTextDocument({ content: secureServiceAccountKey?.privateKey! });
+            await vscode.window.showTextDocument(doc, { preview: false });
+            vscode.window.showWarningMessage(`Make sure to copy the private key as it will not be shown again!`);
+        } catch (err) {
+            showErrorMessage('Could not generate private key for secure service account', err, this.context);
+        }
+    }
+
+    @Command('Update Secure Service Account Key')
+    async updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+        if (!secureServiceAccountKey) {
+            secureServiceAccountKey = await promptSecureServiceAccountKey(this.context);
+            if (!secureServiceAccountKey) {
+                return;
+            }
+        }
+
+        const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account key: ${secureServiceAccountKey.id}` });
+        if (status !== 'ENABLED' && status !== 'DISABLED') {
+            return;
+        }
+
+        try {
+            const { id, secureServiceAccountId } = secureServiceAccountKey;
+            await withProgress(
+                `Updating secure service account key: ${id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountId).keys.byKeyId(id).patch({ status })
+            );
+            vscode.window.showInformationMessage(`Secure service account key updated: ${id}`);
+        } catch (err) {
+            showErrorMessage('Could not update secure service account key', err, this.context);
+        }
+    }
+
+    @Command('Delete Secure Service Account Key')
+    async deleteSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+        if (!secureServiceAccountKey) {
+            secureServiceAccountKey = await promptSecureServiceAccountKey(this.context);
+            if (!secureServiceAccountKey) {
+                return;
+            }
+        }
+
+        const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete secure service account key: ${secureServiceAccountKey.id}? This action cannot be undone.`, { modal: true }, 'Delete');
+        if (confirm !== 'Delete') {
+            return;
+        }
+
+        try {
+            await withProgress(
+                `Deleting secure service account key: ${secureServiceAccountKey.id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountKey.secureServiceAccountId).keys.byKeyId(secureServiceAccountKey.id).delete()
+            );
+            vscode.window.showInformationMessage(`Secure service account key deleted: ${secureServiceAccountKey.id}`);
+        } catch (err) {
+            showErrorMessage('Could not delete secure service account key', err, this.context);
+        }
+    }
 }
 
 async function promptSecureServiceAccount(context: IContext): Promise<ISecureServiceAccount | undefined> {
@@ -97,164 +240,5 @@ async function promptSecureServiceAccountKey(context: IContext): Promise<ISecure
         }
     } catch (error) {
         showErrorMessage('Could not load secure service account keys', error, context);
-    }
-}
-
-async function createSecureServiceAccount(context: IContext) {
-    const name = await vscode.window.showInputBox({ prompt: 'Enter secure service account username' });
-    if (!name) {
-        return;
-    }
-    const firstName = await vscode.window.showInputBox({ prompt: 'Enter secure service account first name' });
-    if (!firstName) {
-        return;
-    }
-    const lastName = await vscode.window.showInputBox({ prompt: 'Enter secure service account last name' });
-    if (!lastName) {
-        return;
-    }
-
-    try {
-        const account = await context.secureServiceAccountsClient.serviceAccounts.post({ name, firstName, lastName });
-        vscode.window.showInformationMessage(`Secure service account created: ${account?.email}`);
-    } catch (error) {
-        showErrorMessage('Could not create secure service account', error, context);
-    }
-}
-
-async function viewSecureServiceAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
-    if (!secureServiceAccount) {
-        secureServiceAccount = await promptSecureServiceAccount(context);
-        if (!secureServiceAccount) {
-            return;
-        }
-    }
-
-    try {
-        const secureServiceAccountDetails = await withProgress(
-            `Getting secure service account details: ${secureServiceAccount.id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).get()
-        );
-        createWebViewPanel(context, 'secure-service-account-details.js', 'secure-service-account-details', `Secure Service Account Details: ${secureServiceAccount.id}`, { detail: secureServiceAccountDetails });
-    } catch(err) {
-        showErrorMessage('Could not retrieve secure service account details', err, context);
-    }
-}
-
-async function updateSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
-    if (!secureServiceAccount) {
-        secureServiceAccount = await promptSecureServiceAccount(context);
-        if (!secureServiceAccount) {
-            return;
-        }
-    }
-
-    const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account: ${secureServiceAccount.id}` });
-    if (status !== 'ENABLED' && status !== 'DISABLED') {
-        return;
-    }
-
-    try {
-        await withProgress(
-            `Updating secure service account: ${secureServiceAccount.id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).patch({ status })
-        );
-        vscode.window.showInformationMessage(`Secure service account updated: ${secureServiceAccount.id}`);
-    } catch(err) {
-        showErrorMessage('Could not update secure service account', err, context);
-    }
-}
-
-async function deleteSecureServiceAccount(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
-    if (!secureServiceAccount) {
-        secureServiceAccount = await promptSecureServiceAccount(context);
-        if (!secureServiceAccount) {
-            return;
-        }
-    }
-
-    const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete secure service account: ${secureServiceAccount.id}? This action cannot be undone.`, { modal: true }, 'Delete');
-    if (confirm !== 'Delete') {
-        return;
-    }
-
-    try {
-        await withProgress(
-            `Deleting secure service account: ${secureServiceAccount.id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).delete()
-        );
-        vscode.window.showInformationMessage(`Secure service account deleted: ${secureServiceAccount.id}`);
-    } catch(err) {
-        showErrorMessage('Could not delete secure service account', err, context);
-    }
-}
-
-async function createSecureServiceAccountKey(secureServiceAccount: ISecureServiceAccount | undefined, context: IContext) {
-    if (!secureServiceAccount) {
-        secureServiceAccount = await promptSecureServiceAccount(context);
-        if (!secureServiceAccount) {
-            return;
-        }
-    }
-
-    try {
-        const secureServiceAccountKey = await withProgress(
-            `Generating private key for secure service account: ${secureServiceAccount.id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.post()
-        );
-		const doc = await vscode.workspace.openTextDocument({ content: secureServiceAccountKey?.privateKey! });
-		await vscode.window.showTextDocument(doc, { preview: false });
-        vscode.window.showWarningMessage(`Make sure to copy the private key as it will not be shown again!`);
-    } catch(err) {
-        showErrorMessage('Could not generate private key for secure service account', err, context);
-    }
-}
-
-async function updateSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
-    if (!secureServiceAccountKey) {
-        secureServiceAccountKey = await promptSecureServiceAccountKey(context);
-        if (!secureServiceAccountKey) {
-            return;
-        }
-    }
-
-    const status = await vscode.window.showQuickPick(['ENABLED', 'DISABLED'], { placeHolder: `Select new status for secure service account key: ${secureServiceAccountKey.id}` });
-    if (status !== 'ENABLED' && status !== 'DISABLED') {
-        return;
-    }
-
-    try {
-        const { id, secureServiceAccountId } = secureServiceAccountKey;
-        await withProgress(
-            `Updating secure service account key: ${id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountId).keys.byKeyId(id).patch({ status })
-        );
-        vscode.window.showInformationMessage(`Secure service account key updated: ${id}`);
-    } catch(err) {
-        showErrorMessage('Could not update secure service account key', err, context);
-    }
-}
-
-async function deleteSecureServiceAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined, context: IContext) {
-    if (!secureServiceAccountKey) {
-        secureServiceAccountKey = await promptSecureServiceAccountKey(context);
-        if (!secureServiceAccountKey) {
-            return;
-        }
-    }
-
-    const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete secure service account key: ${secureServiceAccountKey.id}? This action cannot be undone.`, { modal: true }, 'Delete');
-    if (confirm !== 'Delete') {
-        return;
-    }
-
-    try {
-        await withProgress(
-            `Deleting secure service account key: ${secureServiceAccountKey.id}`,
-            context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountKey.secureServiceAccountId).keys.byKeyId(secureServiceAccountKey.id).delete()
-        );
-        vscode.window.showInformationMessage(`Secure service account key deleted: ${secureServiceAccountKey.id}`);
-    } catch(err) {
-        showErrorMessage('Could not delete secure service account key', err, context);
     }
 }

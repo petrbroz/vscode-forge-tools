@@ -13,7 +13,7 @@ import { registerAuthenticationCommands } from './commands/authentication';
 import { registerDataManagementCommands } from './commands/data-management';
 import { registerDesignAutomationCommands } from './commands/design-automation';
 import { registerModelDerivativeCommands } from './commands/model-derivative';
-import { registerSecureServiceAccountsCommands } from './commands/secure-service-accounts';
+import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
 import { registerWebhookCommands } from './commands/webhooks';
 import { registerEnvironmentCommands } from './commands/environment';
 
@@ -95,7 +95,9 @@ export function activate(_context: vscode.ExtensionContext) {
     });
 	registerDesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
 	registerWebhookCommands(context, () => webhooksDataProvider.refresh());
-    registerSecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
+	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
+	secureServiceAccountsCommands.registerCommands();
+	context.extensionContext.subscriptions.push(secureServiceAccountsCommands);
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + env.title;
