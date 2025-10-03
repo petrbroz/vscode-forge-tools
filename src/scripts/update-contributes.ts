@@ -1,5 +1,7 @@
 import { readJson, writeJson } from 'fs-extra';
 import { SecureServiceAccountsCommands } from '../commands/secure-service-accounts';
+import { AuthenticationCommands } from '../commands/authentication';
+import { WebhooksCommands } from '../commands/webhooks';
 
 /**
  * Updates a VS Code extension's package.json with contributed commands and menus.
@@ -23,7 +25,9 @@ export async function update(inputPath: string, outputPath: string) {
 
     // Collect all commands from registered command sources
     const contributes = [
-        ...SecureServiceAccountsCommands.contributes()
+        ...AuthenticationCommands.contributes(),
+        ...SecureServiceAccountsCommands.contributes(),
+        ...WebhooksCommands.contributes(),
     ];
 
     // Process each command and add it to the appropriate sections
@@ -33,12 +37,12 @@ export async function update(inputPath: string, outputPath: string) {
 
         // Add to view title menu (e.g., toolbar buttons in view headers)
         if (menus && menus['view/title']) {
-            pkg.contributes.menus['view/title'].push(...menus['view/title'].map(({ when, group }) => ({ command, when, group })));
+            pkg.contributes.menus['view/title'].push(...menus['view/title'].map(({ when, group }) => ({ command: command.command, when, group })));
         }
 
         // Add to view item context menu (e.g., right-click menu items on tree view items)
         if (menus && menus['view/item/context']) {
-            pkg.contributes.menus['view/item/context'].push(...menus['view/item/context'].map(({ when, group }) => ({ command, when, group })));
+            pkg.contributes.menus['view/item/context'].push(...menus['view/item/context'].map(({ when, group }) => ({ command: command.command, when, group })));
         }
     }
 

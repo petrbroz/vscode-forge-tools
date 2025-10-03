@@ -536,31 +536,31 @@
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.refreshWebhooks",
+				"command": "aps.webhooks.refreshWebhooks",
 				"title": "Refresh Webhooks",
 				"category": "Webhooks",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "forge.viewWebhookDetails",
+				"command": "aps.webhooks.viewWebhookDetails",
 				"title": "View Webhook Details",
 				"category": "Webhooks",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.createWebhook",
+				"command": "aps.webhooks.createWebhook",
 				"title": "Create Webhook",
 				"category": "Webhooks",
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.updateWebhook",
+				"command": "aps.webhooks.updateWebhook",
 				"title": "Update Webhook",
 				"category": "Webhooks",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "forge.deleteWebhook",
+				"command": "aps.webhooks.deleteWebhook",
 				"title": "Delete Webhook",
 				"category": "Webhooks",
 				"icon": "$(trash)"
@@ -650,7 +650,7 @@
 					"group": "navigation"
 				},
 				{
-					"command": "forge.refreshWebhooks",
+					"command": "aps.webhooks.refreshWebhooks",
 					"when": "view == apsWebhooksView",
 					"group": "navigation"
 				},
@@ -1017,22 +1017,22 @@
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.viewWebhookDetails",
+					"command": "aps.webhooks.viewWebhookDetails",
 					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.updateWebhook",
+					"command": "aps.webhooks.updateWebhook",
 					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteWebhook",
+					"command": "aps.webhooks.deleteWebhook",
 					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.createWebhook",
+					"command": "aps.webhooks.createWebhook",
 					"when": "view == apsWebhooksView && viewItem == event",
 					"group": "2_modify"
 				},

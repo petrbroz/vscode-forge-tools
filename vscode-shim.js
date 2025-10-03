@@ -1,3 +1,4 @@
+export const env = {};
 export const commands = {};
 export const window = {};
 export const workspace = {};

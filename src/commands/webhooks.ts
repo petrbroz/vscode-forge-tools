@@ -3,24 +3,69 @@ import { IContext, showErrorMessage } from '../common';
 import { IWebhook, IWebhookEvent } from '../providers/webhooks';
 import { withProgress, createWebViewPanel } from '../common';
 import { WebhookEvent, WEBHOOKS, WebhookSystem } from '../interfaces/webhooks';
+import { CommandCategory, Command, CommandRegistry } from './shared';
 
-export function registerWebhookCommands(context: IContext, refresh: () => void) {
-    vscode.commands.registerCommand('forge.refreshWebhooks', () => {
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.createWebhook', async (event: IWebhookEvent) => {
-        await createWebhook(event, context, refresh);
-    });
-    vscode.commands.registerCommand('forge.updateWebhook', async (webhook: IWebhook) => {
-        await updateWebhook(webhook, context, refresh);
-    });
-    vscode.commands.registerCommand('forge.deleteWebhook', async (webhook: IWebhook) => {
-        await deleteWebhook(webhook, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.viewWebhookDetails', async (webhook: IWebhook) => {
-        await viewWebhookDetails(webhook, context);
-    });
+@CommandCategory({ category: 'Webhooks', prefix: 'aps.webhooks' })
+export class WebhooksCommands extends CommandRegistry {
+    constructor(protected context: IContext, protected refresh: () => void) {
+        super();
+    }
+
+    @Command({
+        title: 'Refresh Webhooks',
+        icon: 'refresh',
+        menus: {
+            'view/title': [{ when: 'view == apsWebhooksView', group: 'navigation' }]
+        }
+    })
+    async refreshWebhooks() {
+        this.refresh();
+    }
+
+    @Command({
+        title: 'Create Webhook',
+        icon: 'add',
+        menus: {
+            'view/item/context': [{ when: 'view == apsWebhooksView && viewItem == event', group: '2_modify' }]
+        }
+    })
+    async createWebhook(event: IWebhookEvent) {
+        await createWebhook(event, this.context, this.refresh);
+    }
+
+    @Command({
+        title: 'Update Webhook',
+        icon: 'edit',
+        menus: {
+            'view/item/context': [{ when: 'view == apsWebhooksView && viewItem == hook', group: '2_modify' }]
+        }
+    })
+    async updateWebhook(webhook: IWebhook) {
+        await updateWebhook(webhook, this.context, this.refresh);
+    }
+
+    @Command({
+        title: 'Delete Webhook',
+        icon: 'trash',
+        menus: {
+            'view/item/context': [{ when: 'view == apsWebhooksView && viewItem == hook', group: '3_remove' }]
+        }
+    })
+    async deleteWebhook(webhook: IWebhook) {
+        await deleteWebhook(webhook, this.context);
+        this.refresh();
+    }
+
+    @Command({
+        title: 'View Webhook Details',
+        icon: 'eye',
+        menus: {
+            'view/item/context': [{ when: 'view == apsWebhooksView && viewItem == hook', group: '0_view' }]
+        }
+    })
+    async viewWebhookDetails(webhook: IWebhook) {
+        await viewWebhookDetails(webhook, this.context);
+    }
 }
 
 async function createWebhook({ system, event }: IWebhookEvent, context: IContext, successCallback?: () => void) {
