@@ -12,7 +12,7 @@ import { SecureServiceAccountsDataProvider } from './providers/secure-service-ac
 import { AuthenticationCommands } from './commands/authentication';
 import { registerDataManagementCommands } from './commands/data-management';
 import { registerDesignAutomationCommands } from './commands/design-automation';
-import { registerModelDerivativeCommands } from './commands/model-derivative';
+import { ModelDerivativesCommands } from './commands/model-derivative';
 import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
 import { WebhooksCommands } from './commands/webhooks';
 import { registerEnvironmentCommands } from './commands/environment';
@@ -93,10 +93,11 @@ export function activate(_context: vscode.ExtensionContext) {
 		hubsDataProvider.refresh();
 	});
 
-	registerModelDerivativeCommands(context, () => {
+	const modelDerivativeCommands = new ModelDerivativesCommands(context, () => {
         simpleStorageDataProvider.refresh();
         hubsDataProvider.refresh();
     });
+	context.extensionContext.subscriptions.push(...modelDerivativeCommands.registerCommands());
 
 	registerDesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
 

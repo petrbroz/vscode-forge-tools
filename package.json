@@ -254,85 +254,85 @@
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.translateObject",
+				"command": "aps.md.translateObject",
 				"title": "Translate Object",
 				"category": "Model Derivative",
 				"icon": "$(run)"
 			},
 			{
-				"command": "forge.translateObjectCustom",
+				"command": "aps.md.translateObjectCustom",
 				"title": "Translate Object (Custom)",
 				"category": "Model Derivative",
 				"icon": "$(run-all)"
 			},
 			{
-				"command": "forge.listViewables",
+				"command": "aps.md.listViewables",
 				"title": "List Viewables (JSON)",
 				"category": "Model Derivative",
-				"icon": "$(list-tree)"
+				"icon": "$(json)"
 			},
 			{
-				"command": "forge.previewDerivative",
+				"command": "aps.md.previewDerivative",
 				"title": "Preview Derivative",
 				"category": "Model Derivative",
 				"icon": "$(preview)"
 			},
 			{
-				"command": "forge.viewDerivativeTree",
+				"command": "aps.md.viewDerivativeTree",
 				"title": "View Derivative Tree (JSON)",
 				"category": "Model Derivative",
-				"icon": "$(list-tree)"
+				"icon": "$(json)"
 			},
 			{
-				"command": "forge.viewDerivativeProps",
+				"command": "aps.md.viewDerivativeProps",
 				"title": "View Derivative Properties (JSON)",
 				"category": "Model Derivative",
-				"icon": "$(symbol-property)"
+				"icon": "$(json)"
 			},
 			{
-				"command": "forge.viewObjectManifest",
+				"command": "aps.md.viewObjectManifest",
 				"title": "View Object Manifest (JSON)",
 				"category": "Model Derivative",
-				"icon": "$(list-tree)"
+				"icon": "$(json)"
 			},
 			{
-				"command": "forge.copyObjectUrn",
+				"command": "aps.md.copyObjectUrn",
 				"title": "Copy Object URN to Clipboard",
 				"category": "Model Derivative",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.deleteObjectManifest",
+				"command": "aps.md.deleteObjectManifest",
 				"title": "Delete Derivatives",
 				"category": "Model Derivative",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.viewObjectThumbnail",
+				"command": "aps.md.viewObjectThumbnail",
 				"title": "View Object Thumbnails",
 				"category": "Model Derivative",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.downloadDerivativeSvf",
+				"command": "aps.md.downloadDerivativeSvf",
 				"title": "Download Object Derivatives as SVF",
 				"category": "Model Derivative",
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "forge.downloadDerivativeF2d",
+				"command": "aps.md.downloadDerivativeF2d",
 				"title": "Download Object Derivatives as F2D",
 				"category": "Model Derivative",
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "forge.downloadDerivativeGltf",
+				"command": "aps.md.downloadDerivativeGltf",
 				"title": "Download Object Derivatives as glTF",
 				"category": "Model Derivative",
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "forge.downloadDerivativeCustom",
+				"command": "aps.md.downloadDerivativeCustom",
 				"title": "Download Non-SVF derivatives",
 				"category": "Model Derivative",
 				"icon": "$(cloud-download)"
@@ -707,22 +707,22 @@
 					"group": "0_view@2"
 				},
 				{
-					"command": "forge.viewObjectManifest",
+					"command": "aps.md.viewObjectManifest",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@3"
 				},
 				{
-					"command": "forge.viewObjectManifest",
+					"command": "aps.md.viewObjectManifest",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "0_view@2"
 				},
 				{
-					"command": "forge.viewObjectThumbnail",
+					"command": "aps.md.viewObjectThumbnail",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@3"
 				},
 				{
-					"command": "forge.viewObjectThumbnail",
+					"command": "aps.md.viewObjectThumbnail",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "0_view@3"
 				},
@@ -747,62 +747,62 @@
 					"group": "1_action_dm@4"
 				},
 				{
-					"command": "forge.copyObjectUrn",
+					"command": "aps.md.copyObjectUrn",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@1"
 				},
 				{
-					"command": "forge.copyObjectUrn",
+					"command": "aps.md.copyObjectUrn",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@1"
 				},
 				{
-					"command": "forge.translateObject",
+					"command": "aps.md.translateObject",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@2"
 				},
 				{
-					"command": "forge.translateObject",
+					"command": "aps.md.translateObject",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@2"
 				},
 				{
-					"command": "forge.translateObjectCustom",
+					"command": "aps.md.translateObjectCustom",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@3"
 				},
 				{
-					"command": "forge.translateObjectCustom",
+					"command": "aps.md.translateObjectCustom",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@3"
 				},
 				{
-					"command": "forge.listViewables",
+					"command": "aps.md.listViewables",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@4"
 				},
 				{
-					"command": "forge.listViewables",
+					"command": "aps.md.listViewables",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "1_action_md@4"
 				},
 				{
-					"command": "forge.downloadDerivativeSvf",
+					"command": "aps.md.downloadDerivativeSvf",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@5"
 				},
 				{
-					"command": "forge.downloadDerivativeF2d",
+					"command": "aps.md.downloadDerivativeF2d",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@6"
 				},
 				{
-					"command": "forge.downloadDerivativeGltf",
+					"command": "aps.md.downloadDerivativeGltf",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_md@7"
 				},
 				{
-					"command": "forge.downloadDerivativeCustom",
+					"command": "aps.md.downloadDerivativeCustom",
 					"when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
 					"group": "1_action_md@8"
 				},
@@ -812,22 +812,22 @@
 					"group": "3_remove@1"
 				},
 				{
-					"command": "forge.deleteObjectManifest",
+					"command": "aps.md.deleteObjectManifest",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "3_remove@2"
 				},
 				{
-					"command": "forge.previewDerivative",
+					"command": "aps.md.previewDerivative",
 					"when": "viewItem == derivative",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.viewDerivativeTree",
+					"command": "aps.md.viewDerivativeTree",
 					"when": "viewItem == derivative",
 					"group": "0_view@2"
 				},
 				{
-					"command": "forge.viewDerivativeProps",
+					"command": "aps.md.viewDerivativeProps",
 					"when": "viewItem == derivative",
 					"group": "0_view@3"
 				},

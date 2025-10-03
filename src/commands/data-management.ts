@@ -302,10 +302,10 @@ async function uploadObject(bucket: IBucket | undefined, context: IContext) {
 			const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
 			if (res === 'Translate') {
 				const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
-				vscode.commands.executeCommand('forge.translateObject', obj);
+				vscode.commands.executeCommand('aps.md.translateObject', obj);
 			} else if (res === 'Translate (Custom)') {
 				const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
-				vscode.commands.executeCommand('forge.translateObjectCustom', obj);
+				vscode.commands.executeCommand('aps.md.translateObjectCustom', obj);
 			}
 		} catch (err) {
 			showErrorMessage('Could not upload file', err, context);
