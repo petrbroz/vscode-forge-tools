@@ -10,7 +10,8 @@ import { getEnvironments, setupNewEnvironment, DesignAutomationRegion } from './
 import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { AuthenticationCommands } from './commands/authentication';
-import { registerDataManagementCommands } from './commands/data-management';
+import { ObjectStorageServiceCommands } from './commands/object-storage';
+import { DataManagementCommands } from './commands/data-management';
 import { registerDesignAutomationCommands } from './commands/design-automation';
 import { ModelDerivativesCommands } from './commands/model-derivative';
 import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
@@ -88,10 +89,14 @@ export function activate(_context: vscode.ExtensionContext) {
 	});
 	context.extensionContext.subscriptions.push(...authenticationCommands.registerCommands());
 
-	registerDataManagementCommands(context, () => {
+	const objectStorageServiceCommands = new ObjectStorageServiceCommands(context, () => simpleStorageDataProvider.refresh());
+	context.extensionContext.subscriptions.push(...objectStorageServiceCommands.registerCommands());
+
+	const dataManagementCommands = new DataManagementCommands(context, () => {
 		simpleStorageDataProvider.refresh();
 		hubsDataProvider.refresh();
 	});
+	context.extensionContext.subscriptions.push(...dataManagementCommands.registerCommands());
 
 	const modelDerivativeCommands = new ModelDerivativesCommands(context, () => {
         simpleStorageDataProvider.refresh();

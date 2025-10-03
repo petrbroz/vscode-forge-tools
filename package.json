@@ -164,91 +164,91 @@
 				"title": "Switch Environment"
 			},
 			{
-				"command": "forge.refreshBuckets",
+				"command": "aps.oss.refreshBuckets",
 				"title": "Refresh Buckets",
 				"category": "Data Management",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "forge.createBucket",
+				"command": "aps.oss.createBucket",
 				"title": "Create Bucket",
 				"category": "Data Management",
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.viewBucketDetails",
+				"command": "aps.oss.viewBucketDetails",
 				"title": "View Bucket Details",
 				"category": "Data Management",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.copyBucketKey",
+				"command": "aps.oss.copyBucketKey",
 				"title": "Copy Bucket Key to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.viewObjectDetails",
+				"command": "aps.oss.viewObjectDetails",
 				"title": "View Object Details",
 				"category": "Data Management",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.copyObjectKey",
+				"command": "aps.oss.copyObjectKey",
 				"title": "Copy Object Key to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.uploadObject",
+				"command": "aps.oss.uploadObject",
 				"title": "Upload Object",
 				"category": "Data Management",
 				"icon": "$(cloud-upload)"
 			},
 			{
-				"command": "forge.createEmptyObject",
+				"command": "aps.oss.createEmptyObject",
 				"title": "Create Empty Object",
 				"category": "Data Management",
 				"icon": "$(new-file)"
 			},
 			{
-				"command": "forge.deleteBucketObjects",
+				"command": "aps.oss.deleteBucketObjects",
 				"title": "Delete All Objects",
 				"category": "Data Management",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.downloadObject",
+				"command": "aps.oss.downloadObject",
 				"title": "Download Object",
 				"category": "Data Management",
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "forge.renameObject",
+				"command": "aps.oss.renameObject",
 				"title": "Rename Object",
 				"category": "Data Management",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "forge.copyObject",
+				"command": "aps.oss.copyObject",
 				"title": "Copy Object",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.deleteObject",
+				"command": "aps.oss.deleteObject",
 				"title": "Delete Object",
 				"category": "Data Management",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.generateSignedUrl",
+				"command": "aps.oss.generateSignedUrl",
 				"title": "Generate Signed URL",
 				"category": "Data Management",
 				"icon": "$(link)"
 			},
 			{
-				"command": "forge.deleteBucket",
+				"command": "aps.oss.deleteBucket",
 				"title": "Delete Bucket",
 				"category": "Data Management",
 				"icon": "$(trash)"
@@ -338,31 +338,31 @@
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "forge.copyHubID",
+				"command": "aps.dm.copyHubID",
 				"title": "Copy Hub ID to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.copyProjectID",
+				"command": "aps.dm.copyProjectID",
 				"title": "Copy Project ID to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.copyFolderID",
+				"command": "aps.dm.copyFolderID",
 				"title": "Copy Folder ID to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.copyItemID",
+				"command": "aps.dm.copyItemID",
 				"title": "Copy Item ID to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.copyVersionID",
+				"command": "aps.dm.copyVersionID",
 				"title": "Copy Version ID to Clipboard",
 				"category": "Data Management",
 				"icon": "$(copy)"
@@ -635,12 +635,12 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "forge.refreshBuckets",
+					"command": "aps.oss.refreshBuckets",
 					"when": "view == apsDataManagementView",
 					"group": "navigation"
 				},
 				{
-					"command": "forge.createBucket",
+					"command": "aps.oss.createBucket",
 					"when": "view == apsDataManagementView",
 					"group": "navigation"
 				},
@@ -667,42 +667,42 @@
 			],
 			"view/item/context": [
 				{
-					"command": "forge.viewBucketDetails",
+					"command": "aps.oss.viewBucketDetails",
 					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.copyBucketKey",
+					"command": "aps.oss.copyBucketKey",
 					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "0_view@2"
 				},
 				{
-					"command": "forge.uploadObject",
+					"command": "aps.oss.uploadObject",
 					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "1_action@1"
 				},
 				{
-					"command": "forge.createEmptyObject",
+					"command": "aps.oss.createEmptyObject",
 					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "1_action@2"
 				},
 				{
-					"command": "forge.deleteBucketObjects",
+					"command": "aps.oss.deleteBucketObjects",
 					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "3_remove@1"
 				},
 				{
-					"command": "forge.deleteBucket",
+					"command": "aps.oss.deleteBucket",
 					"when": "view == apsDataManagementView && viewItem == bucket",
 					"group": "3_remove@2"
 				},
 				{
-					"command": "forge.viewObjectDetails",
+					"command": "aps.oss.viewObjectDetails",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.copyObjectKey",
+					"command": "aps.oss.copyObjectKey",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "0_view@2"
 				},
@@ -727,22 +727,22 @@
 					"group": "0_view@3"
 				},
 				{
-					"command": "forge.downloadObject",
+					"command": "aps.oss.downloadObject",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@1"
 				},
 				{
-					"command": "forge.renameObject",
+					"command": "aps.oss.renameObject",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@2"
 				},
 				{
-					"command": "forge.copyObject",
+					"command": "aps.oss.copyObject",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@3"
 				},
 				{
-					"command": "forge.generateSignedUrl",
+					"command": "aps.oss.generateSignedUrl",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "1_action_dm@4"
 				},
@@ -807,7 +807,7 @@
 					"group": "1_action_md@8"
 				},
 				{
-					"command": "forge.deleteObject",
+					"command": "aps.oss.deleteObject",
 					"when": "view == apsDataManagementView && viewItem == object",
 					"group": "3_remove@1"
 				},
@@ -832,27 +832,27 @@
 					"group": "0_view@3"
 				},
 				{
-					"command": "forge.copyHubID",
+					"command": "aps.dm.copyHubID",
 					"when": "view == apsHubsView && viewItem == hub",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.copyProjectID",
+					"command": "aps.dm.copyProjectID",
 					"when": "view == apsHubsView && viewItem == project",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.copyFolderID",
+					"command": "aps.dm.copyFolderID",
 					"when": "view == apsHubsView && viewItem == folder",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.copyItemID",
+					"command": "aps.dm.copyItemID",
 					"when": "view == apsHubsView && viewItem == item",
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.copyVersionID",
+					"command": "aps.dm.copyVersionID",
 					"when": "view == apsHubsView && viewItem == version",
 					"group": "0_view@1"
 				},

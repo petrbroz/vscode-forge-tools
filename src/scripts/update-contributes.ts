@@ -1,7 +1,10 @@
 import { readJson, writeJson } from 'fs-extra';
-import { SecureServiceAccountsCommands } from '../commands/secure-service-accounts';
 import { AuthenticationCommands } from '../commands/authentication';
+import { ObjectStorageServiceCommands } from '../commands/object-storage';
+import { DataManagementCommands } from '../commands/data-management';
+import { ModelDerivativesCommands } from '../commands/model-derivative';
 import { WebhooksCommands } from '../commands/webhooks';
+import { SecureServiceAccountsCommands } from '../commands/secure-service-accounts';
 
 /**
  * Updates a VS Code extension's package.json with contributed commands and menus.
@@ -26,8 +29,11 @@ export async function update(inputPath: string, outputPath: string) {
     // Collect all commands from registered command sources
     const contributes = [
         ...AuthenticationCommands.contributes(),
-        ...SecureServiceAccountsCommands.contributes(),
+        ...ObjectStorageServiceCommands.contributes(),
+        ...DataManagementCommands.contributes(),
+        ...ModelDerivativesCommands.contributes(),
         ...WebhooksCommands.contributes(),
+        ...SecureServiceAccountsCommands.contributes(),
     ];
 
     // Process each command and add it to the appropriate sections
