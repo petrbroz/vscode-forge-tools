@@ -48,7 +48,7 @@ interface ICommandMetadata {
     title: string;
     /** The command identifier (if not provided, will be generated from the category prefix and method name) */
     command?: string;
-    /** Optional icon name from https://microsoft.github.io/vscode-codicons/dist/codicon.html (e.g., 'refresh' which will be interpreted as 'resources/icons/dark/refresh.svg' and 'resources/icons/light/refresh.svg') */
+    /** Optional icon name (e.g., 'refresh'); will be wrapped in '$()' */
     icon?: string;
     /** Optional menus for the command to be added to */
     menus?: {
@@ -124,10 +124,7 @@ export abstract class CommandRegistry {
                 command: cmd.command || (categoryMeta?.prefix ? `${categoryMeta.prefix}.${cmd.methodName}` : cmd.methodName),
                 title: cmd.title,
                 category: categoryMeta?.category,
-                icon: cmd.icon ? {
-                    light: `resources/icons/dark/${cmd.icon}.svg`,
-                    dark: `resources/icons/light/${cmd.icon}.svg`
-                } : undefined
+                icon: '$(' + cmd.icon + ')' // VS Code expects icons in the format '$(iconName)'
             },
             menus: cmd.menus
         }));
