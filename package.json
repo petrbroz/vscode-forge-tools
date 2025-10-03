@@ -566,19 +566,19 @@
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.login",
+				"command": "aps.auth.login",
 				"title": "Login",
 				"category": "Authentication",
 				"icon": "$(sign-in)"
 			},
 			{
-				"command": "forge.logout",
+				"command": "aps.auth.logout",
 				"title": "Logout",
 				"category": "Authentication",
 				"icon": "$(sign-out)"
 			},
 			{
-				"command": "forge.getAccessToken",
+				"command": "aps.auth.getAccessToken",
 				"title": "Generate Access Token",
 				"category": "Authentication",
 				"icon": "$(key)"

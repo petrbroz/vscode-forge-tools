@@ -9,7 +9,7 @@ import { HubsDataProvider } from './providers/hubs';
 import { getEnvironments, setupNewEnvironment, DesignAutomationRegion } from './environment';
 import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
-import { registerAuthenticationCommands } from './commands/authentication';
+import { AuthenticationCommands } from './commands/authentication';
 import { registerDataManagementCommands } from './commands/data-management';
 import { registerDesignAutomationCommands } from './commands/design-automation';
 import { registerModelDerivativeCommands } from './commands/model-derivative';
@@ -81,20 +81,27 @@ export function activate(_context: vscode.ExtensionContext) {
         secureServiceAccountsProvider.refresh();
         updateEnvironmentStatus(envStatusBarItem);
 	});
-    registerAuthenticationCommands(context, () => {
+
+    const authenticationCommands = new AuthenticationCommands(context, () => {
 		hubsDataProvider.refresh();
 		updateAuthStatus(authStatusBarItem);
 	});
+	context.extensionContext.subscriptions.push(...authenticationCommands.registerCommands());
+
 	registerDataManagementCommands(context, () => {
 		simpleStorageDataProvider.refresh();
 		hubsDataProvider.refresh();
 	});
+
 	registerModelDerivativeCommands(context, () => {
         simpleStorageDataProvider.refresh();
         hubsDataProvider.refresh();
     });
+
 	registerDesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
+
 	registerWebhookCommands(context, () => webhooksDataProvider.refresh());
+
 	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
 	context.extensionContext.subscriptions.push(...secureServiceAccountsCommands.registerCommands());
 
@@ -110,10 +117,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
 		if (context.threeLeggedToken) {
 			statusBarItem.text = 'APS Auth: 3-legged';
-			statusBarItem.command = 'forge.logout';
+			statusBarItem.command = 'aps.auth.logout';
 		} else {
 			statusBarItem.text = 'APS Auth: 2-legged';
-			statusBarItem.command = 'forge.login';
+			statusBarItem.command = 'aps.auth.login';
 		}
 		statusBarItem.show();
 	}

@@ -85,7 +85,7 @@ Here's some actions you can try:
 
 ### Hubs & Derivatives View (Experimental)
 
-Similar to the _Buckets & Derivatives_ view, but using a 3-legged authentication instead, allowing the user to browse their existing design data hosted in BIM360, ACC, and other products built with the Autodesk Platform Services. In order for this view to be available, the user must first log into the currently active APS application with their Autodesk account. This can be done either by clicking the "APS Login" button in the bottom status bar, or by using the `forge.login` command. The extension will spin up a temporary web server on a preconfigured port (8123 by default), providing additional information about the login process, and waiting for a callback from the Autodesk servers.
+Similar to the _Buckets & Derivatives_ view, but using a 3-legged authentication instead, allowing the user to browse their existing design data hosted in BIM360, ACC, and other products built with the Autodesk Platform Services. In order for this view to be available, the user must first log into the currently active APS application with their Autodesk account. This can be done either by clicking the "APS Login" button in the bottom status bar, or by using the `aps.auth.login` command. The extension will spin up a temporary web server on a preconfigured port (8123 by default), providing additional information about the login process, and waiting for a callback from the Autodesk servers.
 
 ### Webhooks View
 
