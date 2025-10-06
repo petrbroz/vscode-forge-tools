@@ -6,6 +6,7 @@ import { ModelDerivativesCommands } from '../commands/model-derivative';
 import { WebhooksCommands } from '../commands/webhooks';
 import { SecureServiceAccountsCommands } from '../commands/secure-service-accounts';
 import { EnvironmentCommands } from '../commands/environment';
+import { DesignAutomationCommands } from '../commands/design-automation';
 
 /**
  * Updates a VS Code extension's package.json with contributed commands and menus.
@@ -35,6 +36,7 @@ export async function update(inputPath: string, outputPath: string) {
         ...DataManagementCommands.contributes(),
         ...ModelDerivativesCommands.contributes(),
         ...WebhooksCommands.contributes(),
+        ...DesignAutomationCommands.contributes(),
         ...SecureServiceAccountsCommands.contributes(),
     ];
 

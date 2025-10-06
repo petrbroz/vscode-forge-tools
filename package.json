@@ -370,170 +370,170 @@
 				"icon": "$(copy)"
 			},
 			{
-				"command": "forge.refreshDesignAutomationTree",
+				"command": "aps.da.refreshDesignAutomationTree",
 				"title": "Refresh Design Automation Tree",
 				"category": "Design Automation",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "forge.createAppBundle",
+				"command": "aps.da.createAppBundle",
 				"title": "Create App Bundle",
 				"category": "Design Automation",
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.updateAppBundle",
+				"command": "aps.da.updateAppBundle",
 				"title": "Update App Bundle",
 				"category": "Design Automation",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "forge.viewAppBundleDetails",
+				"command": "aps.da.viewAppBundleDetails",
 				"title": "View App Bundle Details",
 				"category": "Design Automation",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.viewAppBundleDetailsJson",
+				"command": "aps.da.viewAppBundleDetailsJSON",
 				"title": "View App Bundle Details (JSON)",
 				"category": "Design Automation",
 				"icon": "$(json)"
 			},
 			{
-				"command": "forge.viewAppBundleVersionDetails",
+				"command": "aps.da.viewAppBundleVersionDetails",
 				"title": "View App Bundle Details",
 				"category": "Design Automation",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.viewAppBundleVersionDetailsJson",
+				"command": "aps.da.viewAppBundleVersionDetailsJSON",
 				"title": "View App Bundle Details (JSON)",
 				"category": "Design Automation",
 				"icon": "$(json)"
 			},
 			{
-				"command": "forge.viewAppBundleAliasDetails",
+				"command": "aps.da.viewAppBundleAliasDetails",
 				"title": "View Alias Details",
 				"category": "Design Automation",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.viewAppBundleAliasDetailsJson",
+				"command": "aps.da.viewAppBundleAliasDetailsJSON",
 				"title": "View Alias Details (JSON)",
 				"category": "Design Automation",
 				"icon": "$(json)"
 			},
 			{
-				"command": "forge.deleteAppBundle",
+				"command": "aps.da.deleteAppBundle",
 				"title": "Delete App Bundle",
 				"category": "Design Automation",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.deleteAppBundleAlias",
+				"command": "aps.da.deleteAppBundleAlias",
 				"title": "Delete App Bundle Alias",
 				"category": "Design Automation",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.createAppBundleAlias",
+				"command": "aps.da.createAppBundleAlias",
 				"title": "Create App Bundle Alias",
 				"category": "Design Automation",
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.updateAppBundleAlias",
+				"command": "aps.da.updateAppBundleAlias",
 				"title": "Update App Bundle Alias",
 				"category": "Design Automation",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "forge.deleteAppBundleVersion",
+				"command": "aps.da.deleteAppBundleVersion",
 				"title": "Delete App Bundle Version",
 				"category": "Design Automation",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.viewActivityDetails",
+				"command": "aps.da.viewActivityDetails",
 				"title": "View Activity Details",
 				"category": "Design Automation",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.viewActivityDetailsJson",
+				"command": "aps.da.viewActivityDetailsJSON",
 				"title": "View Activity Details (JSON)",
 				"category": "Design Automation",
 				"icon": "$(json)"
 			},
 			{
-				"command": "forge.viewActivityVersionDetails",
+				"command": "aps.da.viewActivityVersionDetails",
 				"title": "View Activity Details",
 				"category": "Design Automation",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.viewActivityVersionDetailsJson",
+				"command": "aps.da.viewActivityVersionDetailsJSON",
 				"title": "View Activity Details (JSON)",
 				"category": "Design Automation",
 				"icon": "$(json)"
 			},
 			{
-				"command": "forge.viewActivityAliasDetails",
+				"command": "aps.da.viewActivityAliasDetails",
 				"title": "View Alias Details",
 				"category": "Design Automation",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "forge.viewActivityAliasDetailsJson",
+				"command": "aps.da.viewActivityAliasDetailsJSON",
 				"title": "View Alias Details (JSON)",
 				"category": "Design Automation",
 				"icon": "$(json)"
 			},
 			{
-				"command": "forge.createActivity",
+				"command": "aps.da.createActivity",
 				"title": "Create Activity",
 				"category": "Design Automation",
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.updateActivity",
+				"command": "aps.da.updateActivity",
 				"title": "Update Activity",
 				"category": "Design Automation",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "forge.deleteActivity",
+				"command": "aps.da.deleteActivity",
 				"title": "Delete Activity",
 				"category": "Design Automation",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.deleteActivityAlias",
+				"command": "aps.da.deleteActivityAlias",
 				"title": "Delete Activity Alias",
 				"category": "Design Automation",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.createActivityAlias",
+				"command": "aps.da.createActivityAlias",
 				"title": "Create Activity Alias",
 				"category": "Design Automation",
 				"icon": "$(add)"
 			},
 			{
-				"command": "forge.updateActivityAlias",
+				"command": "aps.da.updateActivityAlias",
 				"title": "Update Activity Alias",
 				"category": "Design Automation",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "forge.deleteActivityVersion",
+				"command": "aps.da.deleteActivityVersion",
 				"title": "Delete Activity Version",
 				"category": "Design Automation",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "forge.createWorkitem",
-				"title": "Create Workitem",
+				"command": "aps.da.createWorkItem",
+				"title": "Create Work Item",
 				"category": "Design Automation",
 				"icon": "$(add)"
 			},
@@ -647,7 +647,7 @@
 					"group": "navigation"
 				},
 				{
-					"command": "forge.refreshDesignAutomationTree",
+					"command": "aps.da.refreshDesignAutomationTree",
 					"when": "view == apsDesignAutomationView",
 					"group": "navigation"
 				},
@@ -859,162 +859,162 @@
 					"group": "0_view@1"
 				},
 				{
-					"command": "forge.createAppBundle",
+					"command": "aps.da.createAppBundle",
 					"when": "view == apsDesignAutomationView && viewItem == owned-appbundles",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.updateAppBundle",
+					"command": "aps.da.updateAppBundle",
 					"when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteAppBundle",
+					"command": "aps.da.deleteAppBundle",
 					"when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.viewAppBundleDetails",
+					"command": "aps.da.viewAppBundleDetails",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewAppBundleDetailsJson",
+					"command": "aps.da.viewAppBundleDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewAppBundleAliasDetails",
+					"command": "aps.da.viewAppBundleAliasDetails",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewAppBundleAliasDetailsJson",
+					"command": "aps.da.viewAppBundleAliasDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewAppBundleDetails",
+					"command": "aps.da.viewAppBundleDetails",
 					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewAppBundleDetailsJson",
+					"command": "aps.da.viewAppBundleDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.deleteAppBundleAlias",
+					"command": "aps.da.deleteAppBundleAlias",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.createAppBundleAlias",
+					"command": "aps.da.createAppBundleAlias",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-aliases",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.updateAppBundleAlias",
+					"command": "aps.da.updateAppBundleAlias",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.viewAppBundleVersionDetails",
+					"command": "aps.da.viewAppBundleVersionDetails",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewAppBundleVersionDetailsJson",
+					"command": "aps.da.viewAppBundleVersionDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.deleteAppBundleVersion",
+					"command": "aps.da.deleteAppBundleVersion",
 					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.createActivity",
+					"command": "aps.da.createActivity",
 					"when": "view == apsDesignAutomationView && viewItem == owned-activities",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteActivity",
+					"command": "aps.da.deleteActivity",
 					"when": "view == apsDesignAutomationView && viewItem == owned-activity",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.viewActivityDetails",
+					"command": "aps.da.viewActivityDetails",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewActivityDetailsJson",
+					"command": "aps.da.viewActivityDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewActivityAliasDetails",
+					"command": "aps.da.viewActivityAliasDetails",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewActivityAliasDetailsJson",
+					"command": "aps.da.viewActivityAliasDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.updateActivity",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.createWorkitem",
+					"command": "aps.da.updateActivity",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.viewActivityDetails",
+					"command": "aps.da.createWorkItem",
+					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
+					"group": "2_modify"
+				},
+				{
+					"command": "aps.da.viewActivityDetails",
 					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.viewActivityDetailsJson",
+					"command": "aps.da.viewActivityDetailsJSON",
 					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.createWorkitem",
+					"command": "aps.da.createWorkItem",
 					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteActivityAlias",
+					"command": "aps.da.deleteActivityAlias",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "3_remove"
 				},
 				{
-					"command": "forge.createActivityAlias",
+					"command": "aps.da.createActivityAlias",
 					"when": "view == apsDesignAutomationView && viewItem == activity-aliases",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.updateActivityAlias",
+					"command": "aps.da.updateActivityAlias",
 					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.viewActivityVersionDetails",
+					"command": "aps.da.viewActivityVersionDetails",
 					"when": "view == apsDesignAutomationView && viewItem == activity-version",
 					"group": "0_view"
 				},
 				{
-					"command": "forge.updateActivity",
+					"command": "aps.da.updateActivity",
 					"when": "view == apsDesignAutomationView && viewItem == activity-version",
 					"group": "2_modify"
 				},
 				{
-					"command": "forge.deleteActivityVersion",
+					"command": "aps.da.deleteActivityVersion",
 					"when": "view == apsDesignAutomationView && viewItem == activity-version",
 					"group": "3_remove"
 				},
