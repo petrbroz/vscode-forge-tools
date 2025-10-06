@@ -17,16 +17,13 @@ const DefaultScopes = [
     'user-profile:read'
 ]; // TODO: make the list configurable?
 
-@CommandCategory({ category: 'Authentication', prefix: 'aps.auth' })
+@CommandCategory({ category: 'Autodesk Platform Services > Authentication', prefix: 'aps.auth' })
 export class AuthenticationCommands extends CommandRegistry {
     constructor(protected context: IContext, protected refresh: () => void) {
         super();
     }
 
-    @Command({
-        title: 'Login',
-        icon: 'sign-in'
-    })
+    @Command({ title: 'Login', icon: 'sign-in' })
     async login() {
         const env = this.context.environment;
         try {
@@ -49,10 +46,7 @@ export class AuthenticationCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Logout',
-        icon: 'sign-out'
-    })
+    @Command({ title: 'Logout', icon: 'sign-out' })
     async logout() {
 		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to log out?' });
         const env = this.context.environment;
@@ -66,10 +60,7 @@ export class AuthenticationCommands extends CommandRegistry {
 		}
     }
 
-    @Command({
-        title: 'Generate Access Token',
-        icon: 'key'
-    })
+    @Command({ title: 'Generate Access Token', icon: 'key' })
     async getAccessToken() {
         await getAccessToken(this.context);
     }

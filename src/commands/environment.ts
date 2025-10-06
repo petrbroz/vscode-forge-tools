@@ -6,16 +6,13 @@ import { Region } from 'aps-sdk-node/dist/common';
 import { AuthenticationClient } from 'aps-sdk-node';
 import { CommandCategory, Command, CommandRegistry } from './shared';
 
-@CommandCategory({ category: 'Environment', prefix: 'aps' })
+@CommandCategory({ category: 'Autodesk Platform Services', prefix: 'aps' })
 export class EnvironmentCommands extends CommandRegistry {
 	constructor(protected context: IContext, protected refresh: () => void) {
 		super();
 	}
 
-    @Command({
-        title: 'Switch Environment',
-        icon: 'sync'
-    })
+    @Command({ title: 'Switch Environment', icon: 'sync' })
     async switchEnvironment() {
         const environments = getEnvironments();
         const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select APS environment' });

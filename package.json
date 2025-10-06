@@ -538,31 +538,31 @@
 				"icon": "$(add)"
 			},
 			{
-				"command": "aps.webhooks.refreshWebhooks",
+				"command": "aps.wh.refreshWebhooks",
 				"title": "Refresh Webhooks",
 				"category": "Webhooks",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "aps.webhooks.viewWebhookDetails",
+				"command": "aps.wh.viewWebhookDetails",
 				"title": "View Webhook Details",
 				"category": "Webhooks",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "aps.webhooks.createWebhook",
+				"command": "aps.wh.createWebhook",
 				"title": "Create Webhook",
 				"category": "Webhooks",
 				"icon": "$(add)"
 			},
 			{
-				"command": "aps.webhooks.updateWebhook",
+				"command": "aps.wh.updateWebhook",
 				"title": "Update Webhook",
 				"category": "Webhooks",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "aps.webhooks.deleteWebhook",
+				"command": "aps.wh.deleteWebhook",
 				"title": "Delete Webhook",
 				"category": "Webhooks",
 				"icon": "$(trash)"
@@ -652,7 +652,7 @@
 					"group": "navigation"
 				},
 				{
-					"command": "aps.webhooks.refreshWebhooks",
+					"command": "aps.wh.refreshWebhooks",
 					"when": "view == apsWebhooksView",
 					"group": "navigation"
 				},
@@ -1019,22 +1019,22 @@
 					"group": "3_remove"
 				},
 				{
-					"command": "aps.webhooks.viewWebhookDetails",
+					"command": "aps.wh.viewWebhookDetails",
 					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "0_view"
 				},
 				{
-					"command": "aps.webhooks.updateWebhook",
+					"command": "aps.wh.updateWebhook",
 					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "2_modify"
 				},
 				{
-					"command": "aps.webhooks.deleteWebhook",
+					"command": "aps.wh.deleteWebhook",
 					"when": "view == apsWebhooksView && viewItem == hook",
 					"group": "3_remove"
 				},
 				{
-					"command": "aps.webhooks.createWebhook",
+					"command": "aps.wh.createWebhook",
 					"when": "view == apsWebhooksView && viewItem == event",
 					"group": "2_modify"
 				},

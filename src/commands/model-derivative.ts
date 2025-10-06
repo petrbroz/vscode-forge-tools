@@ -22,7 +22,7 @@ import { ModelDerivativeFormats, svf2 } from '../providers/model-derivative';
 import { IVersion } from '../interfaces/hubs';
 import { CommandCategory, Command, CommandRegistry } from './shared';
 
-@CommandCategory({ category: 'Model Derivatives', prefix: 'aps.md' })
+@CommandCategory({ category: 'Autodesk Platform Services > Model Derivatives', prefix: 'aps.md' })
 export class ModelDerivativesCommands extends CommandRegistry {
 	constructor(protected context: IContext, protected refresh: () => void) {
 		super();

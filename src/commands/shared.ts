@@ -63,7 +63,6 @@ interface ICommandMetadata {
  */
 const commandsMap: Map<Function, (ICommandMetadata & { methodName: string })[]> = new Map();
 
-
 /**
  * Decorator to mark a method as a VS Code command.
  * The decorated method will be automatically registered when `registerCommands()` is called.

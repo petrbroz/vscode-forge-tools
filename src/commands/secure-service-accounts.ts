@@ -3,7 +3,7 @@ import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '..
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
 import { CommandCategory, Command, CommandRegistry } from './shared';
 
-@CommandCategory({ category: 'Secure Service Accounts', prefix: 'aps.ssa' })
+@CommandCategory({ category: 'Autodesk Platform Services > Secure Service Accounts', prefix: 'aps.ssa' })
 export class SecureServiceAccountsCommands extends CommandRegistry {
     constructor(protected context: IContext, protected refresh: () => void) {
         super();

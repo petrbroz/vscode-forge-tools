@@ -3,7 +3,7 @@ import { IContext } from '../common';
 import { IHub, IProject, IFolder, IItem, IVersion } from '../interfaces/hubs';
 import { CommandCategory, Command, CommandRegistry } from './shared';
 
-@CommandCategory({ category: 'Data Management', prefix: 'aps.dm' })
+@CommandCategory({ category: 'Autodesk Platform Services > Data Management', prefix: 'aps.dm' })
 export class DataManagementCommands extends CommandRegistry {
     constructor(protected context: IContext, protected refresh: () => void) {
         super();

@@ -125,7 +125,7 @@ const AllowedMimeTypes = {
 	'zip': 'application/zip'
 };
 
-@CommandCategory({ category: 'Object Storage Service', prefix: 'aps.oss' })
+@CommandCategory({ category: 'Autodesk Platform Services > Object Storage Service', prefix: 'aps.oss' })
 export class ObjectStorageServiceCommands extends CommandRegistry {
     constructor(protected context: IContext, protected refresh: () => void) {
         super();

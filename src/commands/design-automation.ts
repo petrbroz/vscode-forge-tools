@@ -15,7 +15,7 @@ interface INameAndVersion {
 	version: number;
 }
 
-@CommandCategory({ category: 'Design Automation', prefix: 'aps.da' })
+@CommandCategory({ category: 'Autodesk Platform Services > Design Automation', prefix: 'aps.da' })
 export class DesignAutomationCommands extends CommandRegistry {
 	constructor(protected context: IContext, protected refresh: () => void) {
 		super();

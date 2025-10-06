@@ -5,7 +5,7 @@ import { withProgress, createWebViewPanel } from '../common';
 import { WebhookEvent, WEBHOOKS, WebhookSystem } from '../interfaces/webhooks';
 import { CommandCategory, Command, CommandRegistry } from './shared';
 
-@CommandCategory({ category: 'Webhooks', prefix: 'aps.webhooks' })
+@CommandCategory({ category: 'Autodesk Platform Services > Webhooks', prefix: 'aps.wh' })
 export class WebhooksCommands extends CommandRegistry {
     constructor(protected context: IContext, protected refresh: () => void) {
         super();
