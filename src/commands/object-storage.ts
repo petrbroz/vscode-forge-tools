@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { IBucket, IObject, DataRetentionPolicy } from 'aps-sdk-node';
 import { createWebViewPanel, IContext, promptBucket, promptObject, showErrorMessage, withProgress } from '../common';
-import { CommandCategory, Command, CommandRegistry } from './shared';
+import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const DeleteBatchSize = 8;
@@ -131,24 +131,14 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         super();
     }
 
-    @Command({
-        title: 'Refresh Buckets',
-        icon: 'refresh',
-        menus: {
-            'view/title': [{ when: 'view == apsDataManagementView', group: 'navigation' }]
-        }
-    })
+    @Command({ title: 'Refresh Buckets', icon: 'refresh' })
+    @ViewTitleMenu({ when: 'view == apsDataManagementView', group: 'navigation' })
     async refreshBuckets() {
         this.refresh();
     }
 
-    @Command({
-        title: 'Create Bucket',
-        icon: 'add',
-        menus: {
-            'view/title': [{ when: 'view == apsDataManagementView', group: 'navigation' }]
-        }
-    })
+    @Command({ title: 'Create Bucket', icon: 'add' })
+    @ViewTitleMenu({ when: 'view == apsDataManagementView', group: 'navigation' })
     async createBucket() {
         const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
         if (!name) {
@@ -168,13 +158,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'View Bucket Details',
-        icon: 'eye',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'View Bucket Details', icon: 'eye' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@1' })
     async viewBucketDetails(bucket?: IBucket) {
         try {
             if (!bucket) {
@@ -194,13 +179,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Copy Bucket Key to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@2' }]
-        }
-    })
+    @Command({ title: 'Copy Bucket Key to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@2' })
     async copyBucketKey(bucket?: IBucket) {
         try {
             if (!bucket) {
@@ -217,13 +197,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Delete All Objects',
-        icon: 'trash',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@1' }]
-        }
-    })
+    @Command({ title: 'Delete All Objects', icon: 'trash' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@1' })
     async deleteBucketObjects(bucket?: IBucket) {
         try {
             if (!bucket) {
@@ -275,13 +250,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'View Object Details',
-        icon: 'eye',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'View Object Details', icon: 'eye' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@1' })
     async viewObjectDetails(object?: IObject) {
         try {
             if (!object) {
@@ -305,13 +275,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Copy Object Key to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@2' }]
-        }
-    })
+    @Command({ title: 'Copy Object Key to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@2' })
     async copyObjectKey(object?: IObject) {
         try {
             if (!object) {
@@ -332,13 +297,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Upload Object',
-        icon: 'cloud-upload',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@1' }]
-        }
-    })
+    @Command({ title: 'Upload Object', icon: 'cloud-upload' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@1' })
     async uploadObject(bucket?: IBucket) {
         // TODO: re-introduce support for cancellable uploads
         const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
@@ -410,13 +370,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'Create Empty Object',
-        icon: 'new-file',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@2' }]
-        }
-    })
+    @Command({ title: 'Create Empty Object', icon: 'new-file' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@2' })
     async createEmptyObject(bucket?: IBucket) {
         if (!bucket) {
             bucket = await promptBucket(this.context);
@@ -449,13 +404,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'Copy Object',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@3' }]
-        }
-    })
+    @Command({ title: 'Copy Object', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@3' })
     async copyObject(object?: IObject) {
         try {
             if (!object) {
@@ -482,13 +432,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'Rename Object',
-        icon: 'edit',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@2' }]
-        }
-    })
+    @Command({ title: 'Rename Object', icon: 'edit' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@2' })
     async renameObject(object?: IObject) {
         try {
             if (!object) {
@@ -521,13 +466,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'Download Object',
-        icon: 'cloud-download',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@1' }]
-        }
-    })
+    @Command({ title: 'Download Object', icon: 'cloud-download' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@1' })
     async downloadObject(object?: IObject) {
         if (!object) {
             const bucket = await promptBucket(this.context);
@@ -558,13 +498,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Delete Object',
-        icon: 'trash',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '3_remove@1' }]
-        }
-    })
+    @Command({ title: 'Delete Object', icon: 'trash' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '3_remove@1' })
     async deleteObject(object?: IObject) {
         try {
             if (!object) {
@@ -592,13 +527,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({
-        title: 'Generate Signed URL',
-        icon: 'link',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@4' }]
-        }
-    })
+    @Command({ title: 'Generate Signed URL', icon: 'link' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@4' })
     async generateSignedUrl(object?: IObject) {
         try {
             if (!object) {
@@ -628,13 +558,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Delete Bucket',
-        icon: 'trash',
-        menus: {
-            'view/item/context': [{ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@2' }]
-        }
-    })
+    @Command({ title: 'Delete Bucket', icon: 'trash' })
+    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@2' })
     async deleteBucket(bucket?: IBucket) {
         try {
             if (!bucket) {

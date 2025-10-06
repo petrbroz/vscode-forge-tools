@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
-import { CommandCategory, Command, CommandRegistry } from './shared';
+import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
 
 @CommandCategory({ category: 'Autodesk Platform Services > Secure Service Accounts', prefix: 'aps.ssa' })
 export class SecureServiceAccountsCommands extends CommandRegistry {
@@ -9,24 +9,14 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         super();
     }
 
-    @Command({
-        title: 'Refresh Secure Service Accounts',
-        icon: 'refresh',
-        menus: {
-            'view/title': [{ when: 'view == apsSecureServiceAccountsView', group: 'navigation' }]
-        }
-    })
+    @Command({ title: 'Refresh Secure Service Accounts', icon: 'refresh' })
+    @ViewTitleMenu({ when: 'view == apsSecureServiceAccountsView', group: 'navigation' })
     async refreshAccounts() {
         this.refresh();
     }
 
-    @Command({
-        title: 'Create Secure Service Account',
-        icon: 'add',
-        menus: {
-            'view/title': [{ when: 'view == apsSecureServiceAccountsView', group: 'navigation' }]
-        }
-    })
+    @Command({ title: 'Create Secure Service Account', icon: 'add' })
+    @ViewTitleMenu({ when: 'view == apsSecureServiceAccountsView', group: 'navigation' })
     async createAccount() {
         const name = await vscode.window.showInputBox({ prompt: 'Enter secure service account username' });
         if (!name) {
@@ -49,13 +39,8 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'View Secure Service Account Details',
-        icon: 'open-preview',
-        menus: {
-            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'View Secure Service Account Details', icon: 'open-preview' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '0_view@1' })
     async viewAccountDetails(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
             secureServiceAccount = await this.promptSecureServiceAccount();
@@ -75,13 +60,8 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Update Secure Service Account',
-        icon: 'edit',
-        menus: {
-            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '2_modify' }]
-        }
-    })
+    @Command({ title: 'Update Secure Service Account', icon: 'edit' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '2_modify' })
     async updateAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
             secureServiceAccount = await this.promptSecureServiceAccount();
@@ -106,13 +86,8 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Delete Secure Service Account',
-        icon: 'trash',
-        menus: {
-            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '3_remove' }]
-        }
-    })
+    @Command({ title: 'Delete Secure Service Account', icon: 'trash' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '3_remove' })
     async deleteAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
             secureServiceAccount = await this.promptSecureServiceAccount();
@@ -137,13 +112,8 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Create Secure Service Account Key',
-        icon: 'add',
-        menus: {
-            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action' }]
-        }
-    })
+    @Command({ title: 'Create Secure Service Account Key', icon: 'add' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action' })
     async createAccountKey(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
             secureServiceAccount = await this.promptSecureServiceAccount();
@@ -165,13 +135,8 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Update Secure Service Account Key',
-        icon: 'edit',
-        menus: {
-            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '2_modify' }]
-        }
-    })
+    @Command({ title: 'Update Secure Service Account Key', icon: 'edit' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '2_modify' })
     async updateAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
         if (!secureServiceAccountKey) {
             secureServiceAccountKey = await this.promptSecureServiceAccountKey();
@@ -197,13 +162,8 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
-    @Command({
-        title: 'Delete Secure Service Account Key',
-        icon: 'trash',
-        menus: {
-            'view/item/context': [{ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '3_remove' }]
-        }
-    })
+    @Command({ title: 'Delete Secure Service Account Key', icon: 'trash' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '3_remove' })
     async deleteAccountKey(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
         if (!secureServiceAccountKey) {
             secureServiceAccountKey = await this.promptSecureServiceAccountKey();

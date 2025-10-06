@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext } from '../common';
 import { IHub, IProject, IFolder, IItem, IVersion } from '../interfaces/hubs';
-import { CommandCategory, Command, CommandRegistry } from './shared';
+import { CommandCategory, Command, CommandRegistry, ViewItemContextMenu } from './shared';
 
 @CommandCategory({ category: 'Autodesk Platform Services > Data Management', prefix: 'aps.dm' })
 export class DataManagementCommands extends CommandRegistry {
@@ -9,13 +9,8 @@ export class DataManagementCommands extends CommandRegistry {
         super();
     }
 
-    @Command({
-        title: 'Copy Hub ID to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsHubsView && viewItem == hub', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'Copy Hub ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsHubsView && viewItem == hub', group: '0_view@1' })
 	async copyHubID(hub?: IHub) {
         if (!hub) {
             vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -25,13 +20,8 @@ export class DataManagementCommands extends CommandRegistry {
         vscode.window.showInformationMessage(`Hub ID copied to clipboard: ${hub.id}`);
 	}
 
-    @Command({
-        title: 'Copy Project ID to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsHubsView && viewItem == project', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'Copy Project ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsHubsView && viewItem == project', group: '0_view@1' })
 	async copyProjectID(project?: IProject) {
 		if (!project) {
 			vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -41,13 +31,8 @@ export class DataManagementCommands extends CommandRegistry {
 		vscode.window.showInformationMessage(`Project ID copied to clipboard: ${project.id}`);
 	}
 
-    @Command({
-        title: 'Copy Folder ID to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsHubsView && viewItem == folder', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'Copy Folder ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsHubsView && viewItem == folder', group: '0_view@1' })
 	async copyFolderID(folder?: IFolder) {
         if (!folder) {
             vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -57,13 +42,8 @@ export class DataManagementCommands extends CommandRegistry {
         vscode.window.showInformationMessage(`Folder ID copied to clipboard: ${folder.id}`);
 	}
 
-    @Command({
-        title: 'Copy Item ID to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsHubsView && viewItem == item', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'Copy Item ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsHubsView && viewItem == item', group: '0_view@1' })
 	async copyItemID(item?: IItem) {
         if (!item) {
             vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
@@ -73,13 +53,8 @@ export class DataManagementCommands extends CommandRegistry {
         vscode.window.showInformationMessage(`Item ID copied to clipboard: ${item.id}`);
 	}
 
-    @Command({
-        title: 'Copy Version ID to Clipboard',
-        icon: 'copy',
-        menus: {
-            'view/item/context': [{ when: 'view == apsHubsView && viewItem == version', group: '0_view@1' }]
-        }
-    })
+    @Command({ title: 'Copy Version ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: 'view == apsHubsView && viewItem == version', group: '0_view@1' })
 	async copyVersionID(version?: IVersion) {
         if (!version) {
             vscode.window.showInformationMessage('This command can only be triggered from the tree view.');

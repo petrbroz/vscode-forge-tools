@@ -10,11 +10,13 @@ interface ICommandCategoryMetadata {
     prefix?: string;
 }
 
+type CategoryMetadataPerClass = Map<Function, ICommandCategoryMetadata>;
+
 /**
  * Map to store command category metadata for each class (keyed by class constructor)
  * @internal
  */
-const categoryMap: Map<Function, ICommandCategoryMetadata> = new Map();
+const categoryMetadataPerClass: CategoryMetadataPerClass = new Map();
 
 /**
  * Class decorator to assign a category and prefix to all commands in a class.
@@ -35,7 +37,7 @@ const categoryMap: Map<Function, ICommandCategoryMetadata> = new Map();
 export function CommandCategory(metadata: { category?: string; prefix?: string; }) {
     return function <T extends { new(...args: any[]): {} }>(constructor: T) {
         // Store the category metadata for this class
-        categoryMap.set(constructor, metadata);
+        categoryMetadataPerClass.set(constructor, metadata);
         return constructor;
     };
 }
@@ -50,18 +52,15 @@ interface ICommandMetadata {
     command?: string;
     /** Optional icon name (e.g., 'refresh'); will be wrapped in '$()' */
     icon?: string;
-    /** Optional menus for the command to be added to */
-    menus?: {
-        "view/title"?: { when?: string; group?: string; }[];
-        "view/item/context"?: { when?: string; group?: string; }[];
-    };
 }
+
+type CommandMetadataPerClass = Map<Function, (ICommandMetadata & { methodName: string })[]>;
 
 /**
  * Map to store commands for each class (keyed by class constructor)
  * @internal
  */
-const commandsMap: Map<Function, (ICommandMetadata & { methodName: string })[]> = new Map();
+const commandMetadataPerClass: CommandMetadataPerClass = new Map();
 
 /**
  * Decorator to mark a method as a VS Code command.
@@ -83,10 +82,47 @@ const commandsMap: Map<Function, (ICommandMetadata & { methodName: string })[]> 
 export function Command(metadata: ICommandMetadata) {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         // Store the command metadata for the target class
-        if (!commandsMap.has(target.constructor)) {
-            commandsMap.set(target.constructor, []);
+        if (!commandMetadataPerClass.has(target.constructor)) {
+            commandMetadataPerClass.set(target.constructor, []);
         }
-        commandsMap.get(target.constructor)!.push({ methodName: propertyKey, ...metadata });
+        commandMetadataPerClass.get(target.constructor)!.push({ methodName: propertyKey, ...metadata });
+        return descriptor; // Return the original descriptor (no modification needed)
+    };
+}
+
+interface IMenuMetadata {
+    when?: string;
+    group?: string;
+}
+
+const viewTitleMenuMetadata: Map<Function, Map<string, IMenuMetadata[]>> = new Map();
+
+export function ViewTitleMenu(metadata: IMenuMetadata) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!viewTitleMenuMetadata.has(target.constructor)) {
+            viewTitleMenuMetadata.set(target.constructor, new Map());
+        }
+        const tmp = viewTitleMenuMetadata.get(target.constructor)!;
+        if (!tmp.has(propertyKey)) {
+            tmp.set(propertyKey, []);
+        }
+        tmp.get(propertyKey)!.push(metadata);
+        return descriptor; // Return the original descriptor (no modification needed)
+    };
+}
+
+const viewItemContextMenuMetadata: Map<Function, Map<string, IMenuMetadata[]>> = new Map();
+
+export function ViewItemContextMenu(metadata: IMenuMetadata) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        if (!viewItemContextMenuMetadata.has(target.constructor)) {
+            viewItemContextMenuMetadata.set(target.constructor, new Map());
+        }
+        const tmp = viewItemContextMenuMetadata.get(target.constructor)!;
+        if (!tmp.has(propertyKey)) {
+            tmp.set(propertyKey, []);
+        }
+        tmp.get(propertyKey)!.push(metadata);
         return descriptor; // Return the original descriptor (no modification needed)
     };
 }
@@ -116,16 +152,21 @@ export abstract class CommandRegistry {
      * This method can be used to generate the `contributes.commands` section of package.json.
      */
     static contributes() {
-        const categoryMeta = categoryMap.get(this);
-        const commands = commandsMap.get(this) || [];
-        return commands.map(cmd => ({
+        const categoryMeta = categoryMetadataPerClass.get(this);
+        const commandMetas = commandMetadataPerClass.get(this) || [];
+        const _viewTitleMenuMetadata = viewTitleMenuMetadata.get(this);
+        const _viewItemContextMenuMetadata = viewItemContextMenuMetadata.get(this);
+        return commandMetas.map(commandMeta => ({
             command: {
-                command: cmd.command || (categoryMeta?.prefix ? `${categoryMeta.prefix}.${cmd.methodName}` : cmd.methodName),
-                title: cmd.title,
+                command: commandMeta.command || (categoryMeta?.prefix ? `${categoryMeta.prefix}.${commandMeta.methodName}` : commandMeta.methodName),
+                title: commandMeta.title,
                 category: categoryMeta?.category,
-                icon: '$(' + cmd.icon + ')' // VS Code expects icons in the format '$(iconName)'
+                icon: '$(' + commandMeta.icon + ')' // VS Code expects icons in the format '$(iconName)'
             },
-            menus: cmd.menus
+            menus: {
+                'view/title': _viewTitleMenuMetadata?.get(commandMeta.methodName),
+                'view/item/context': _viewItemContextMenuMetadata?.get(commandMeta.methodName),
+            }
         }));
     }
 
@@ -135,7 +176,7 @@ export abstract class CommandRegistry {
      * All registered commands are automatically added to the extension context's subscriptions.
      */
     public registerCommands(): vscode.Disposable[] {
-        const commands = commandsMap.get(this.constructor) || [];
+        const commands = commandMetadataPerClass.get(this.constructor) || [];
         return commands.map(cmd => {
             const method = (this as any)[cmd.methodName];
 
@@ -145,7 +186,7 @@ export abstract class CommandRegistry {
 
             // Register the command, binding the method to this instance
             const commandId = cmd.command || (() => {
-                const categoryMeta = categoryMap.get(this.constructor);
+                const categoryMeta = categoryMetadataPerClass.get(this.constructor);
                 return categoryMeta?.prefix ? `${categoryMeta.prefix}.${cmd.methodName}` : cmd.methodName;
             })();
             return vscode.commands.registerCommand(commandId, (...args: any[]) => {
