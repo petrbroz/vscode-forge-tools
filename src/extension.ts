@@ -16,7 +16,7 @@ import { registerDesignAutomationCommands } from './commands/design-automation';
 import { ModelDerivativesCommands } from './commands/model-derivative';
 import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
 import { WebhooksCommands } from './commands/webhooks';
-import { registerEnvironmentCommands } from './commands/environment';
+import { EnvironmentCommands } from './commands/environment';
 
 export function activate(_context: vscode.ExtensionContext) {
 	const environments = getEnvironments();
@@ -74,14 +74,15 @@ export function activate(_context: vscode.ExtensionContext) {
     let secureServiceAccountsView = vscode.window.createTreeView('apsSecureServiceAccountsView', { treeDataProvider: secureServiceAccountsProvider });
     context.extensionContext.subscriptions.push(secureServiceAccountsView);
 
-	registerEnvironmentCommands(context, () => {
-        simpleStorageDataProvider.refresh();
+	const environmentCommands = new EnvironmentCommands(context, () => {
+		simpleStorageDataProvider.refresh();
         designAutomationDataProvider.refresh();
         hubsDataProvider.refresh();
         webhooksDataProvider.refresh();
         secureServiceAccountsProvider.refresh();
         updateEnvironmentStatus(envStatusBarItem);
 	});
+	context.extensionContext.subscriptions.push(...environmentCommands.registerCommands());
 
     const authenticationCommands = new AuthenticationCommands(context, () => {
 		hubsDataProvider.refresh();
@@ -114,7 +115,7 @@ export function activate(_context: vscode.ExtensionContext) {
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + env.title;
-		statusBarItem.command = 'forge.switchEnvironment';
+		statusBarItem.command = 'aps.switchEnvironment';
 		statusBarItem.show();
 	}
 	const envStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);

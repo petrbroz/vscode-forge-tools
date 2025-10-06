@@ -55,7 +55,7 @@ Here's an example of how the extension settings might look like in the JSON form
 
 ### Multiple Environments
 
-If you have configured multiple APS environments, you can switch between them via the status bar at the bottom, or using the `forge.switchEnvironment` command from the [Command Palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette). The extension will always initialize itself based on the _first_ environment in the list.
+If you have configured multiple APS environments, you can switch between them via the status bar at the bottom, or using the `aps.switchEnvironment` command from the [Command Palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette). The extension will always initialize itself based on the _first_ environment in the list.
 
 > Note: if you have configured the extension both in the _User_ scope and in the _Workspace_ scope, the extension will present the list of environments from the _Workspace_ scope as it has higher precedence.
 

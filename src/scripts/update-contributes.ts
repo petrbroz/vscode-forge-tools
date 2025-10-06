@@ -5,6 +5,7 @@ import { DataManagementCommands } from '../commands/data-management';
 import { ModelDerivativesCommands } from '../commands/model-derivative';
 import { WebhooksCommands } from '../commands/webhooks';
 import { SecureServiceAccountsCommands } from '../commands/secure-service-accounts';
+import { EnvironmentCommands } from '../commands/environment';
 
 /**
  * Updates a VS Code extension's package.json with contributed commands and menus.
@@ -28,6 +29,7 @@ export async function update(inputPath: string, outputPath: string) {
 
     // Collect all commands from registered command sources
     const contributes = [
+        ...EnvironmentCommands.contributes(),
         ...AuthenticationCommands.contributes(),
         ...ObjectStorageServiceCommands.contributes(),
         ...DataManagementCommands.contributes(),

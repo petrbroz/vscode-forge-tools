@@ -160,8 +160,10 @@
 		},
 		"commands": [
 			{
-				"command": "forge.switchEnvironment",
-				"title": "Switch Environment"
+				"command": "aps.switchEnvironment",
+				"title": "Switch Environment",
+				"category": "Environment",
+				"icon": "$(sync)"
 			},
 			{
 				"command": "aps.oss.refreshBuckets",
