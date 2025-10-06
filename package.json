@@ -32,7 +32,8 @@
 		"onView:apsDataManagementView",
 		"onView:apsDesignAutomationView",
 		"onView:apsHubsView",
-		"onView:apsWebhooksView"
+		"onView:apsWebhooksView",
+		"onView:apsSecureServiceAccountsView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -150,6 +151,10 @@
 				{
 					"id": "apsDesignAutomationView",
 					"name": "Design Automation"
+				},
+				{
+					"id": "apsSecureServiceAccountsView",
+					"name": "Secure Service Accounts"
 				}
 			]
 		},
@@ -521,6 +526,53 @@
 				"command": "forge.getAccessToken",
 				"title": "Generate Access Token",
 				"category": "Authentication"
+			},
+			{
+				"command": "forge.refreshSecureServiceAccounts",
+				"title": "Refresh Secure Service Accounts",
+				"category": "Secure Service Accounts",
+				"icon": {
+					"light": "resources/icons/dark/refresh.svg",
+					"dark": "resources/icons/light/refresh.svg"
+				}
+			},
+			{
+				"command": "forge.createSecureServiceAccount",
+				"title": "Create Secure Service Account",
+				"icon": {
+					"light": "resources/icons/dark/add.svg",
+					"dark": "resources/icons/light/add.svg"
+				}
+			},
+			{
+				"command": "forge.viewSecureServiceAccountDetails",
+				"title": "View Secure Service Account Details",
+				"category": "Secure Service Accounts"
+			},
+			{
+				"command": "forge.updateSecureServiceAccount",
+				"title": "Update Secure Service Account",
+				"category": "Secure Service Accounts"
+			},
+			{
+				"command": "forge.deleteSecureServiceAccount",
+				"title": "Delete Secure Service Account",
+				"category": "Secure Service Accounts"
+			},
+			{
+				"command": "forge.createSecureServiceAccountKey",
+				"title": "Create Secure Service Account Key",
+				"category": "Secure Service Accounts"
+			},
+			{
+				"command": "forge.updateSecureServiceAccountKey",
+				"title": "Update Secure Service Account Key",
+				"category": "Secure Service Accounts"
+			},
+			{
+				"command": "forge.deleteSecureServiceAccountKey",
+				"title": "Delete Secure Service Account Key",
+				"category": "Secure Service Accounts"
 			}
 		],
 		"menus": {
@@ -543,6 +595,16 @@
 				{
 					"command": "forge.refreshWebhooks",
 					"when": "view == apsWebhooksView",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.refreshSecureServiceAccounts",
+					"when": "view == apsSecureServiceAccountsView",
+					"group": "navigation"
+				},
+				{
+					"command": "forge.createSecureServiceAccount",
+					"when": "view == apsSecureServiceAccountsView",
 					"group": "navigation"
 				}
 			],
@@ -916,6 +978,36 @@
 					"command": "forge.createWebhook",
 					"when": "view == apsWebhooksView && viewItem == event",
 					"group": "2_modify"
+				},
+				{
+					"command": "forge.viewSecureServiceAccountDetails",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+					"group": "0_view@1"
+				},
+				{
+					"command": "forge.createSecureServiceAccountKey",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+					"group": "1_action"
+				},
+				{
+					"command": "forge.updateSecureServiceAccount",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+					"group": "2_modify"
+				},
+				{
+					"command": "forge.deleteSecureServiceAccount",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+					"group": "3_remove"
+				},
+				{
+					"command": "forge.updateSecureServiceAccountKey",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+					"group": "2_modify"
+				},
+				{
+					"command": "forge.deleteSecureServiceAccountKey",
+					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+					"group": "3_remove"
 				}
 			]
 		}
@@ -931,7 +1023,7 @@
 		"@types/react-dom": "^18.0.11",
 		"@types/vscode": "1.92",
 		"@vscode/webview-ui-toolkit": "^1.2.2",
-		"esbuild": "^0.17.11",
+		"esbuild": "^0.25.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"tslint": "^5.12.1",
@@ -939,9 +1031,15 @@
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
+		"@microsoft/kiota-abstractions": "^1.0.0-preview.98",
+		"@microsoft/kiota-http-fetchlibrary": "^1.0.0-preview.98",
+		"@microsoft/kiota-serialization-form": "^1.0.0-preview.98",
+		"@microsoft/kiota-serialization-json": "^1.0.0-preview.98",
+		"@microsoft/kiota-serialization-multipart": "^1.0.0-preview.98",
+		"@microsoft/kiota-serialization-text": "^1.0.0-preview.98",
 		"@types/fs-extra": "^9.0.0",
 		"aps-sdk-node": "^10.0.1",
-		"axios": "^0.28.0",
+		"axios": "^1.8.2",
 		"fs-extra": "^9.0.0",
 		"svf-utils": "^5.0.5"
 	}

@@ -95,6 +95,10 @@ The _Webhooks_ view can be used to browse and manage your webhooks in the [Webho
 
 The _Design Automation_ view can be used for browsing [Design Automation](https://aps.autodesk.com/en/docs/design-automation/v3/developers_guide/overview) entities such as app bundles or activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
 
+### Secure Service Accounts
+
+Manage your [Secure Service Accounts](https://aps.autodesk.com/en/docs/ssa/v1/developers_guide/overview/) through the _SECURE SERVICE ACCOUNTS_ view and the context menu of individual tree items, or use any commands starting with `Secure Service Accounts:`.
+
 ## Known Limitations & Issues
 
 ### Derivatives in Custom Regions, and Status Code 406

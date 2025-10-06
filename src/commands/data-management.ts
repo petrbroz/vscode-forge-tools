@@ -1,16 +1,11 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import crypto from 'crypto';
 import axios from 'axios';
-import {
-	IBucket,
-	IObject,
-	IResumableUploadRange,
-	DataRetentionPolicy
-} from 'aps-sdk-node';
+import { IBucket, IObject, DataRetentionPolicy } from 'aps-sdk-node';
 import { IContext, promptBucket, promptObject, showErrorMessage } from '../common';
 import { withProgress, createWebViewPanel } from '../common';
+import { IHub, IProject, IFolder, IItem, IVersion } from '../interfaces/hubs';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
 const AllowedMimeTypes = {
@@ -131,25 +126,109 @@ const AllowedMimeTypes = {
 };
 const DeleteBatchSize = 8;
 
-function computeFileHash(bucketKey: string, objectKey: string, filename: string): Promise<string> {
-    return new Promise(function(resolve, reject) {
-        const stream = fs.createReadStream(filename);
-		let hash = crypto.createHash('md5');
-		hash.update(bucketKey);
-		hash.update(objectKey);
-        stream.on('data', function(chunk) {
-            hash.update(chunk);
-        });
-        stream.on('end', function() {
-            resolve(hash.digest('hex'));
-        });
-        stream.on('error', function(err) {
-            reject(err);
-        });
+export function registerDataManagementCommands(context: IContext, refresh: () => void) {
+    vscode.commands.registerCommand('forge.refreshBuckets', () => {
+        refresh();
+    });
+
+	// OSS
+
+    vscode.commands.registerCommand('forge.createBucket', async () => {
+        await createBucket(context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewBucketDetails', async (bucket?: IBucket) => {
+        await viewBucketDetails(bucket, context);
+    });
+    vscode.commands.registerCommand('forge.copyBucketKey', async (bucket?: IBucket) => {
+        await copyBucketKey(bucket, context);
+    });
+    vscode.commands.registerCommand('forge.deleteBucketObjects', async (bucket?: IBucket) => {
+        await deleteAllObjects(bucket, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.viewObjectDetails', async (object?: IObject) => {
+        await viewObjectDetails(object, context);
+    });
+    vscode.commands.registerCommand('forge.copyObjectKey', async (object?: IObject) => {
+        await copyObjectKey(object, context);
+    });
+    vscode.commands.registerCommand('forge.uploadObject', async (bucket?: IBucket) => {
+        await uploadObject(bucket, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.createEmptyObject', async (bucket?: IBucket) => {
+        await createEmptyObject(bucket, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.copyObject', async (object?: IObject) => {
+        await copyObject(object, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.renameObject', async (object?: IObject) => {
+        await renameObject(object, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.downloadObject', async (object?: IObject) => {
+        await downloadObject(object, context);
+    });
+    vscode.commands.registerCommand('forge.deleteObject', async (object?: IObject) => {
+        await deleteObject(object, context);
+        refresh();
+    });
+    vscode.commands.registerCommand('forge.generateSignedUrl', async (object?: IObject) => {
+        await generateSignedUrl(object, context);
+    });
+    vscode.commands.registerCommand('forge.deleteBucket', async (bucket?: IBucket) => {
+        await deleteBucket(bucket, context);
+        refresh();
+    });
+
+    // Hubs
+
+    vscode.commands.registerCommand('forge.copyHubID', async (hub?: IHub) => {
+        if (!hub) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(hub.id);
+        vscode.window.showInformationMessage(`Hub ID copied to clipboard: ${hub.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyProjectID', async (project?: IProject) => {
+        if (!project) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(project.id);
+        vscode.window.showInformationMessage(`Project ID copied to clipboard: ${project.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyFolderID', async (folder?: IFolder) => {
+        if (!folder) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(folder.id);
+        vscode.window.showInformationMessage(`Folder ID copied to clipboard: ${folder.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyItemID', async (item?: IItem) => {
+        if (!item) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(item.id);
+        vscode.window.showInformationMessage(`Item ID copied to clipboard: ${item.id}`);
+    });
+    vscode.commands.registerCommand('forge.copyVersionID', async (version?: IVersion) => {
+        if (!version) {
+            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
+            return;
+        }
+        await vscode.env.clipboard.writeText(version.id);
+        vscode.window.showInformationMessage(`Version ID copied to clipboard: ${version.id}`);
     });
 }
 
-export async function createBucket(context: IContext) {
+async function createBucket(context: IContext) {
     const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
     if (!name) {
 		return;
@@ -167,7 +246,7 @@ export async function createBucket(context: IContext) {
     }
 }
 
-export async function viewBucketDetails(bucket: IBucket | undefined, context: IContext) {
+async function viewBucketDetails(bucket: IBucket | undefined, context: IContext) {
 	try {
 		if (!bucket) {
 			bucket = await promptBucket(context);
@@ -186,7 +265,7 @@ export async function viewBucketDetails(bucket: IBucket | undefined, context: IC
 	}
 }
 
-export async function copyBucketKey(bucket: IBucket | undefined, context: IContext) {
+async function copyBucketKey(bucket: IBucket | undefined, context: IContext) {
 	try {
 		if (!bucket) {
 			bucket = await promptBucket(context);
@@ -202,7 +281,7 @@ export async function copyBucketKey(bucket: IBucket | undefined, context: IConte
 	}
 }
 
-export async function uploadObject(bucket: IBucket | undefined, context: IContext) {
+async function uploadObject(bucket: IBucket | undefined, context: IContext) {
 	// TODO: re-introduce support for cancellable uploads
 	const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
 
@@ -272,7 +351,7 @@ export async function uploadObject(bucket: IBucket | undefined, context: IContex
 	}
 }
 
-export async function createEmptyObject(bucket: IBucket | undefined, context: IContext) {
+async function createEmptyObject(bucket: IBucket | undefined, context: IContext) {
 	if (!bucket) {
 		bucket = await promptBucket(context);
 		if (!bucket) {
@@ -303,7 +382,7 @@ export async function createEmptyObject(bucket: IBucket | undefined, context: IC
 	}
 }
 
-export async function downloadObject(object: IObject | undefined, context: IContext) {
+async function downloadObject(object: IObject | undefined, context: IContext) {
 	if (!object) {
 		const bucket = await promptBucket(context);
 		if (!bucket) {
@@ -333,7 +412,7 @@ export async function downloadObject(object: IObject | undefined, context: ICont
     }
 }
 
-export async function viewObjectDetails(object: IObject | undefined, context: IContext) {
+async function viewObjectDetails(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -356,7 +435,7 @@ export async function viewObjectDetails(object: IObject | undefined, context: IC
 	}
 }
 
-export async function copyObjectKey(object: IObject | undefined, context: IContext) {
+async function copyObjectKey(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -376,7 +455,7 @@ export async function copyObjectKey(object: IObject | undefined, context: IConte
 	}
 }
 
-export async function copyObject(object: IObject | undefined, context: IContext) {
+async function copyObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -401,7 +480,7 @@ export async function copyObject(object: IObject | undefined, context: IContext)
 	}
 }
 
-export async function renameObject(object: IObject | undefined, context: IContext) {
+async function renameObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -432,7 +511,7 @@ export async function renameObject(object: IObject | undefined, context: IContex
 	}
 }
 
-export async function deleteObject(object: IObject | undefined, context: IContext) {
+async function deleteObject(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -444,6 +523,12 @@ export async function deleteObject(object: IObject | undefined, context: IContex
 				return;
 			}
 		}
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete object: ${object.objectKey}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		const { bucketKey, objectKey } = object;
 		await withProgress(`Deleting object: ${object.objectKey}`, context.dataManagementClient.deleteObject(bucketKey, objectKey));
         vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
@@ -452,7 +537,7 @@ export async function deleteObject(object: IObject | undefined, context: IContex
     }
 }
 
-export async function deleteAllObjects(bucket: IBucket | undefined, context: IContext) {
+async function deleteAllObjects(bucket: IBucket | undefined, context: IContext) {
 	try {
 		if (!bucket) {
 			bucket = await promptBucket(context);
@@ -465,6 +550,11 @@ export async function deleteAllObjects(bucket: IBucket | undefined, context: ICo
 		const objects = await context.dataManagementClient.listObjects(bucketKey);
 		if (objects.length === 0) {
 			vscode.window.showInformationMessage('No objects to delete');
+			return;
+		}
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete all objects in bucket: ${bucket.bucketKey}? This action cannot be undone.`, { modal: true }, 'Delete All');
+		if (confirm !== 'Delete All') {
 			return;
 		}
 
@@ -497,7 +587,7 @@ export async function deleteAllObjects(bucket: IBucket | undefined, context: ICo
     }
 }
 
-export async function generateSignedUrl(object: IObject | undefined, context: IContext) {
+async function generateSignedUrl(object: IObject | undefined, context: IContext) {
 	try {
 		if (!object) {
 			const bucket = await promptBucket(context);
@@ -526,7 +616,7 @@ export async function generateSignedUrl(object: IObject | undefined, context: IC
 	}
 }
 
-export async function deleteBucket(bucket: IBucket | undefined, context: IContext) {
+async function deleteBucket(bucket: IBucket | undefined, context: IContext) {
 	try {
 		if (!bucket) {
 			bucket = await promptBucket(context);
@@ -534,6 +624,12 @@ export async function deleteBucket(bucket: IBucket | undefined, context: IContex
 				return;
 			}
 		}
+
+		const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete bucket: ${bucket.bucketKey}? This action cannot be undone.`, { modal: true }, 'Delete');
+		if (confirm !== 'Delete') {
+			return;
+		}
+
 		const { bucketKey } = bucket;
 		await withProgress(`Deleting bucket: ${bucketKey}`, context.dataManagementClient.deleteBucket(bucketKey));
         vscode.window.showInformationMessage(`Bucket deleted: ${bucketKey}`);
