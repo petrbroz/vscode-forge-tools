@@ -8,9 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Additional commands for SSAs (copying account/key IDs to clipboard, and viewing key details)
-  - Automated management (registration, contributes, etc) of commands
+  - Automated management (registration, contributes, etc) of commands using decorators
 - Updated
   - IDs, categories, and titles of commands
+  - Simplified command input checks
 
 ## [2.10.0] - 2025-10-07
 
