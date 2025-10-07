@@ -27,10 +27,22 @@ const webviewsConfig = {
     splitting: true
 };
 
+const scriptsConfig = {
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    entryPoints: ['./src/scripts/update-contributes.ts'],
+    outfile: './scripts/update-contributes.js',
+    alias: {
+        'vscode': './vscode-shim.js'
+    }
+};
+
 (async () => {
     try {
         await build(extensionConfig);
         await build(webviewsConfig);
+        await build(scriptsConfig);
     } catch (err) {
         process.stderr.write(err.stderr);
         process.exit(1);

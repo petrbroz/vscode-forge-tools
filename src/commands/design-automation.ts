@@ -6,6 +6,7 @@ import { IAppBundleUploadParams, IActivityDetail, DesignAutomationID } from 'aps
 import { withProgress, createWebViewPanel } from '../common';
 import { ICreateActivityProps } from '../webviews/create-activity';
 import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../interfaces/design-automation';
+import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
 
 type FullyQualifiedID = string;
 type UnqualifiedID = string;
@@ -14,195 +15,232 @@ interface INameAndVersion {
 	version: number;
 }
 
-export function registerDesignAutomationCommands(context: IContext, refresh: () => void) {
-    vscode.commands.registerCommand('forge.refreshDesignAutomationTree', () => {
-        refresh();
-    });
+@CommandCategory({ category: 'Autodesk Platform Services > Automation API', prefix: 'aps.da' })
+export class DesignAutomationCommands extends CommandRegistry {
+	constructor(protected context: IContext, protected refresh: () => void) {
+		super();
+	}
 
-    vscode.commands.registerCommand('forge.createAppBundle', async () => {
-        await uploadAppBundle(undefined, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.updateAppBundle', async (entry?: IAppBundleEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
+    protected ensureInput<T>(input: T | undefined): T {
+        if (!input) {
+            throw new Error('This command can only be triggered from the tree view.');
         }
-        await uploadAppBundle(entry.appbundle, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.viewAppBundleDetails', async (entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) => {
+        return input;
+    }
+
+    @Command({ title: 'Refresh Design Automation Tree', icon: 'refresh' })
+	@ViewTitleMenu({ when: 'view == apsDesignAutomationView', group: 'navigation' })
+    async refreshDesignAutomationTree() {
+        this.refresh();
+    }
+
+	@Command({ title: 'Create App Bundle', icon: 'add' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == owned-appbundles', group: '2_modify' })
+	async createAppBundle() {
+        await uploadAppBundle(undefined, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Update App Bundle', icon: 'edit' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == owned-appbundle', group: '2_modify' })
+	async updateAppBundle(entry?: IAppBundleEntry) {
+		entry = this.ensureInput(entry);
+        await uploadAppBundle(entry.appbundle, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'View App Bundle Details', icon: 'eye' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && (viewItem == appbundle-alias || viewItem == shared-appbundle)', group: '0_view' })
+	async viewAppBundleDetails(entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) {
         if (entry) {
-            await viewAppBundleDetails('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);
+            await viewAppBundleDetails('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, this.context);
         } else {
-            await viewAppBundleDetails(undefined, context);
+            await viewAppBundleDetails(undefined, this.context);
         }
-    });
-    vscode.commands.registerCommand('forge.viewAppBundleDetailsJson', async (entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) => {
+	}
+
+	@Command({ title: 'View App Bundle Details (JSON)', icon: 'json' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && (viewItem == appbundle-alias || viewItem == shared-appbundle)', group: '0_view' })
+	async viewAppBundleDetailsJSON(entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) {
         if (entry) {
-            await viewAppBundleDetailsJSON('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, context);
+            await viewAppBundleDetailsJSON('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, this.context);
         } else {
-            await viewAppBundleDetailsJSON(undefined, context);
+            await viewAppBundleDetailsJSON(undefined, this.context);
         }
-    });
-    vscode.commands.registerCommand('forge.viewAppBundleAliasDetails', async (entry?: IAppBundleAliasEntry) => {
-        await viewAppBundleAliasDetails(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
-    });
-    vscode.commands.registerCommand('forge.viewAppBundleAliasDetailsJson', async (entry?: IAppBundleAliasEntry) => {
-        await viewAppBundleAliasDetailsJSON(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, context);
-    });
-    vscode.commands.registerCommand('forge.viewAppBundleVersionDetails', async (entry?: IAppBundleVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, context);
-    });
-    vscode.commands.registerCommand('forge.viewAppBundleVersionDetailsJson', async (entry?: IAppBundleVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await viewAppBundleDetailsJSON({ name: entry.appbundle, version: entry.version }, context);
-    });
-    vscode.commands.registerCommand('forge.deleteAppBundle', async (entry?: IAppBundleEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await deleteAppBundle(entry.appbundle, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.deleteAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await deleteAppBundleAlias(entry.appbundle, entry.alias, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.createAppBundleAlias', async (entry?: IAppBundleAliasesEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await createAppBundleAlias(entry.appbundle, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.updateAppBundleAlias', async (entry?: IAppBundleAliasEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await updateAppBundleAlias(entry.appbundle, entry.alias, context);
-    });
-    vscode.commands.registerCommand('forge.deleteAppBundleVersion', async (entry?: IAppBundleVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await deleteAppBundleVersion(entry.appbundle, entry.version, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.viewActivityDetails', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
+	}
+
+	@Command({ title: 'View App Bundle Alias Details', icon: 'eye' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-alias', group: '0_view' })
+	async viewAppBundleAliasDetails(entry?: IAppBundleAliasEntry) {
+		await viewAppBundleAliasDetails(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, this.context);
+	}
+
+	@Command({ title: 'View App Bundle Alias Details (JSON)', icon: 'json' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-alias', group: '0_view' })
+	async viewAppBundleAliasDetailsJSON(entry?: IAppBundleAliasEntry) {
+		await viewAppBundleAliasDetailsJSON(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, this.context);
+	}
+
+	@Command({ title: 'View App Bundle Version Details', icon: 'eye' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-version', group: '0_view' })
+	async viewAppBundleVersionDetails(entry?: IAppBundleVersionEntry) {
+        entry = this.ensureInput(entry);
+        await viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, this.context);
+	}
+
+	@Command({ title: 'View App Bundle Version Details (JSON)', icon: 'json' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-version', group: '0_view' })
+	async viewAppBundleVersionDetailsJSON(entry?: IAppBundleVersionEntry) {
+        entry = this.ensureInput(entry);
+        await viewAppBundleDetailsJSON({ name: entry.appbundle, version: entry.version }, this.context);
+	}
+
+	@Command({ title: 'Delete App Bundle', icon: 'trash' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == owned-appbundle', group: '3_remove' })
+	async deleteAppBundle(entry?: IAppBundleEntry) {
+        entry = this.ensureInput(entry);
+        await deleteAppBundle(entry.appbundle, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Delete App Bundle Alias', icon: 'trash' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-alias', group: '3_remove' })
+	async deleteAppBundleAlias(entry?: IAppBundleAliasEntry) {
+        entry = this.ensureInput(entry);
+        await deleteAppBundleAlias(entry.appbundle, entry.alias, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Create App Bundle Alias', icon: 'add' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-aliases', group: '2_modify' })
+	async createAppBundleAlias(entry?: IAppBundleAliasesEntry) {
+        entry = this.ensureInput(entry);
+        await createAppBundleAlias(entry.appbundle, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Update App Bundle Alias', icon: 'edit' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-alias', group: '2_modify' })
+	async updateAppBundleAlias(entry?: IAppBundleAliasEntry) {
+        entry = this.ensureInput(entry);
+        await updateAppBundleAlias(entry.appbundle, entry.alias, this.context);
+	}
+
+	@Command({ title: 'Delete App Bundle Version', icon: 'trash' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == appbundle-version', group: '3_remove' })
+	async deleteAppBundleVersion(entry?: IAppBundleVersionEntry) {
+        entry = this.ensureInput(entry);
+        await deleteAppBundleVersion(entry.appbundle, entry.version, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'View Activity Details', icon: 'eye' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)', group: '0_view' })
+	async viewActivityDetails(entry?: IActivityAliasEntry | ISharedActivityEntry) {
+        entry = this.ensureInput(entry);
         const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
-        await viewActivityDetails(id, context);
-    });
-    vscode.commands.registerCommand('forge.viewActivityDetailsJson', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
+        await viewActivityDetails(id, this.context);
+	}
+
+	@Command({ title: 'View Activity Details (JSON)', icon: 'json' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)', group: '0_view' })
+	async viewActivityDetailsJSON(entry?: IActivityAliasEntry | ISharedActivityEntry) {
+        entry = this.ensureInput(entry);
         const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
-        await viewActivityDetailsJSON(id, context);
-    });
-    vscode.commands.registerCommand('forge.viewActivityAliasDetails', async (entry?: IActivityAliasEntry) => {
-        await viewActivityAliasDetails(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
-    });
-    vscode.commands.registerCommand('forge.viewActivityAliasDetailsJson', async (entry?: IActivityAliasEntry) => {
-        await viewActivityAliasDetailsJSON(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, context);
-    });
-    vscode.commands.registerCommand('forge.viewActivityVersionDetails', async (entry?: IActivityVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await viewActivityDetails({ name: entry.activity, version: entry.version }, context);
-    });
-    vscode.commands.registerCommand('forge.viewActivityVersionDetailsJson', async (entry?: IActivityVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await viewActivityDetailsJSON({ name: entry.activity, version: entry.version }, context);
-    });
-    vscode.commands.registerCommand('forge.deleteActivity', async (entry?: IActivityEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await deleteActivity(entry.activity, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.deleteActivityAlias', async (entry?: IActivityAliasEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await deleteActivityAlias(entry.activity, entry.alias, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.createActivity', async () => {
+        await viewActivityDetailsJSON(id, this.context);
+	}
+
+	@Command({ title: 'View Activity Alias Details', icon: 'eye' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-alias', group: '0_view' })
+	async viewActivityAliasDetails(entry?: IActivityAliasEntry) {
+		await viewActivityAliasDetails(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, this.context);
+	}
+
+	@Command({ title: 'View Activity Alias Details (JSON)', icon: 'json' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-alias', group: '0_view' })
+	async viewActivityAliasDetailsJSON(entry?: IActivityAliasEntry) {
+		await viewActivityAliasDetailsJSON(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, this.context);
+	}
+
+	@Command({ title: 'View Activity Version Details', icon: 'eye' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-version', group: '0_view' })
+	async viewActivityVersionDetails(entry?: IActivityVersionEntry) {
+        entry = this.ensureInput(entry);
+        await viewActivityDetails({ name: entry.activity, version: entry.version }, this.context);
+	}
+
+	@Command({ title: 'View Activity Version Details (JSON)', icon: 'json' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-version', group: '0_view' })
+	async viewActivityVersionDetailsJSON(entry?: IActivityVersionEntry) {
+        entry = this.ensureInput(entry);
+        await viewActivityDetailsJSON({ name: entry.activity, version: entry.version }, this.context);
+	}
+
+	@Command({ title: 'Delete Activity', icon: 'trash' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == owned-activity', group: '3_remove' })
+	async deleteActivity(entry?: IActivityEntry) {
+        entry = this.ensureInput(entry);
+        await deleteActivity(entry.activity, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Delete Activity Alias', icon: 'trash' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-alias', group: '3_remove' })
+	async deleteActivityAlias(entry?: IActivityAliasEntry) {
+        entry = this.ensureInput(entry);
+        await deleteActivityAlias(entry.activity, entry.alias, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Create Activity', icon: 'add' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == owned-activities', group: '2_modify' })
+	async createActivity() {
         await createActivity(
-            (activity: IActivityDetail) => { refresh(); },
-            context
+            (activity: IActivityDetail) => { this.refresh(); },
+            this.context
         );
-    });
-    vscode.commands.registerCommand('forge.updateActivity', async (entry?: IActivityAliasEntry | IActivityVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
+	}
+
+	@Command({ title: 'Update Activity', icon: 'edit' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == activity-version)', group: '2_modify' })
+	async updateActivity(entry?: IActivityAliasEntry | IActivityVersionEntry) {
+        entry = this.ensureInput(entry);
         await updateActivity(
             'alias' in entry ? `${entry.client}.${entry.activity}+${entry.alias}` : { name: entry.activity, version: entry.version },
-            (activity: IActivityDetail) => { refresh(); },
-            context
+            (activity: IActivityDetail) => { this.refresh(); },
+            this.context
         );
-    });
-    vscode.commands.registerCommand('forge.createActivityAlias', async (entry?: IActivityAliasesEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await createActivityAlias(entry.activity, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.updateActivityAlias', async (entry?: IActivityAliasEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await updateActivityAlias(entry.activity, entry.alias, context);
-    });
-    vscode.commands.registerCommand('forge.deleteActivityVersion', async (entry?: IActivityVersionEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await deleteActivityVersion(entry.activity, entry.version, context);
-        refresh();
-    });
-    vscode.commands.registerCommand('forge.createWorkitem', async (entry?: IActivityAliasEntry | ISharedActivityEntry) => {
-        if (!entry) {
-            vscode.window.showInformationMessage('This command can only be triggered from the tree view.');
-            return;
-        }
-        await createWorkitem(('fullid' in entry) ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`, context);
-    });
+	}
+
+	@Command({ title: 'Create Activity Alias', icon: 'add' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-aliases', group: '2_modify' })
+	async createActivityAlias(entry?: IActivityAliasesEntry) {
+        entry = this.ensureInput(entry);
+        await createActivityAlias(entry.activity, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Update Activity Alias', icon: 'edit' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-alias', group: '2_modify' })
+	async updateActivityAlias(entry?: IActivityAliasEntry) {
+        entry = this.ensureInput(entry);
+        await updateActivityAlias(entry.activity, entry.alias, this.context);
+	}
+
+	@Command({ title: 'Delete Activity Version', icon: 'trash' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && viewItem == activity-version', group: '3_remove' })
+	async deleteActivityVersion(entry?: IActivityVersionEntry) {
+        entry = this.ensureInput(entry);
+        await deleteActivityVersion(entry.activity, entry.version, this.context);
+        this.refresh();
+	}
+
+	@Command({ title: 'Create Work Item', icon: 'play' })
+	@ViewItemContextMenu({ when: 'view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)', group: '2_modify' })
+	async createWorkItem(entry: IActivityAliasEntry | ISharedActivityEntry) {
+        entry = this.ensureInput(entry);
+        await createWorkitem(('fullid' in entry) ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`, this.context);
+	}
 }
 
 function sleep(ms: number): Promise<void> {

@@ -4,14 +4,22 @@ import { DesignAutomationRegion, getEnvironments, IEnvironment } from '../enviro
 import { ClientCredentialsAuthenticationProvider, DefaultRequestAdapter, createSecureServiceAccountsClient } from '../clients';
 import { Region } from 'aps-sdk-node/dist/common';
 import { AuthenticationClient } from 'aps-sdk-node';
+import { CommandCategory, Command, CommandRegistry } from './shared';
 
-export function registerEnvironmentCommands(context: IContext, refresh: () => void) {
-    vscode.commands.registerCommand('forge.switchEnvironment', async () => {
+@CommandCategory({ category: 'Autodesk Platform Services', prefix: 'aps' })
+export class EnvironmentCommands extends CommandRegistry {
+	constructor(protected context: IContext, protected refresh: () => void) {
+		super();
+	}
+
+    @Command({ title: 'Switch Environment', icon: 'sync' })
+    async switchEnvironment() {
         const environments = getEnvironments();
         const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select APS environment' });
         if (!name) {
             return;
         }
+        const context = this.context;
         const env = environments.find(environment => environment.title === name) as IEnvironment;
         delete context.threeLeggedToken;
         const defaultRequestAdapter = new DefaultRequestAdapter(new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret))
@@ -25,12 +33,12 @@ export function registerEnvironmentCommands(context: IContext, refresh: () => vo
         context.bim360Client.reset(context.credentials, env.host, env.region as Region);
         context.authenticationClient = new AuthenticationClient(env.clientId, env.clientSecret, env.host);
         context.secureServiceAccountsClient = createSecureServiceAccountsClient(defaultRequestAdapter);
-        refresh();
+        this.refresh();
         // simpleStorageDataProvider.refresh();
         // designAutomationDataProvider.refresh();
         // hubsDataProvider.refresh();
         // webhooksDataProvider.refresh();
         // secureServiceAccountsProvider.refresh();
         // updateEnvironmentStatus(envStatusBarItem);
-    });
+    }
 }

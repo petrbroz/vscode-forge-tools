@@ -6,7 +6,7 @@
 	"description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
 	"author": "Petr Broz <petr.broz@autodesk.com>",
 	"license": "MIT",
-	"version": "2.10.0",
+	"version": "2.11.0",
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
 	"repository": {
 		"type": "git",
@@ -28,13 +28,7 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-		"onView:apsDataManagementView",
-		"onView:apsDesignAutomationView",
-		"onView:apsHubsView",
-		"onView:apsWebhooksView",
-		"onView:apsSecureServiceAccountsView"
-	],
+	"activationEvents": [],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
@@ -138,879 +132,921 @@
 			"apsViewContainer": [
 				{
 					"id": "apsDataManagementView",
-					"name": "Buckets & Derivatives"
+					"name": "Buckets & Derivatives",
+					"icon": "$(database)"
 				},
 				{
 					"id": "apsHubsView",
-					"name": "Hubs & Derivatives"
+					"name": "Hubs & Derivatives",
+					"icon": "$(list-tree)"
 				},
 				{
 					"id": "apsWebhooksView",
-					"name": "Webhooks"
+					"name": "Webhooks",
+					"icon": "$(bell)"
 				},
 				{
 					"id": "apsDesignAutomationView",
-					"name": "Design Automation"
+					"name": "Automation",
+					"icon": "$(code)"
 				},
 				{
 					"id": "apsSecureServiceAccountsView",
-					"name": "Secure Service Accounts"
+					"name": "Secure Service Accounts",
+					"icon": "$(robot)"
 				}
 			]
 		},
-		"commands": [
-			{
-				"command": "forge.switchEnvironment",
-				"title": "Switch Environment"
-			},
-			{
-				"command": "forge.refreshBuckets",
-				"title": "Refresh Buckets",
-				"icon": {
-					"light": "resources/icons/dark/refresh.svg",
-					"dark": "resources/icons/light/refresh.svg"
-				}
-			},
-			{
-				"command": "forge.createBucket",
-				"title": "Create Bucket",
-				"icon": {
-					"light": "resources/icons/dark/add.svg",
-					"dark": "resources/icons/light/add.svg"
-				}
-			},
-			{
-				"command": "forge.viewBucketDetails",
-				"title": "View Bucket Details",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyBucketKey",
-				"title": "Copy Bucket Key to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.viewObjectDetails",
-				"title": "View Object Details",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyObjectKey",
-				"title": "Copy Object Key to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.uploadObject",
-				"title": "Upload Object",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.createEmptyObject",
-				"title": "Create Empty Object",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.deleteBucketObjects",
-				"title": "Delete All Objects",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.downloadObject",
-				"title": "Download Object",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.renameObject",
-				"title": "Rename Object",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyObject",
-				"title": "Copy Object",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.deleteObject",
-				"title": "Delete Object",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.generateSignedUrl",
-				"title": "Generate Signed URL",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.deleteBucket",
-				"title": "Delete Bucket",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.translateObject",
-				"title": "Translate Object",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.translateObjectCustom",
-				"title": "Translate Object (Custom)",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.listViewables",
-				"title": "List Viewables (JSON)",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.previewDerivative",
-				"title": "Preview Derivative",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.viewDerivativeTree",
-				"title": "View Derivative Tree (JSON)",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.viewDerivativeProps",
-				"title": "View Derivative Properties (JSON)",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.viewObjectManifest",
-				"title": "View Object Manifest (JSON)",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.copyObjectUrn",
-				"title": "Copy Object URN to Clipboard",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.deleteObjectManifest",
-				"title": "Delete Derivatives",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.viewObjectThumbnail",
-				"title": "View Object Thumbnails",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.downloadDerivativeSvf",
-				"title": "Download Object Derivatives as SVF",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.downloadDerivativeF2d",
-				"title": "Download Object Derivatives as F2D",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.downloadDerivativeGltf",
-				"title": "Download Object Derivatives as glTF",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.downloadDerivativeCustom",
-				"title": "Download Non-SVF derivatives",
-				"category": "Model Derivative"
-			},
-			{
-				"command": "forge.copyHubID",
-				"title": "Copy Hub ID to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyProjectID",
-				"title": "Copy Project ID to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyFolderID",
-				"title": "Copy Folder ID to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyItemID",
-				"title": "Copy Item ID to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.copyVersionID",
-				"title": "Copy Version ID to Clipboard",
-				"category": "Data Management"
-			},
-			{
-				"command": "forge.refreshDesignAutomationTree",
-				"title": "Refresh Design Automation Tree",
-				"category": "Design Automation",
-				"icon": {
-					"light": "resources/icons/dark/refresh.svg",
-					"dark": "resources/icons/light/refresh.svg"
-				}
-			},
-			{
-				"command": "forge.createAppBundle",
-				"title": "Create App Bundle",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.updateAppBundle",
-				"title": "Update App Bundle",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewAppBundleDetails",
-				"title": "View App Bundle Details",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewAppBundleDetailsJson",
-				"title": "View App Bundle Details (JSON)",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewAppBundleVersionDetails",
-				"title": "View App Bundle Details",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewAppBundleVersionDetailsJson",
-				"title": "View App Bundle Details (JSON)",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewAppBundleAliasDetails",
-				"title": "View Alias Details",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewAppBundleAliasDetailsJson",
-				"title": "View Alias Details (JSON)",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.deleteAppBundle",
-				"title": "Delete App Bundle",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.deleteAppBundleAlias",
-				"title": "Delete App Bundle Alias",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.createAppBundleAlias",
-				"title": "Create App Bundle Alias",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.updateAppBundleAlias",
-				"title": "Update App Bundle Alias",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.deleteAppBundleVersion",
-				"title": "Delete App Bundle Version",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewActivityDetails",
-				"title": "View Activity Details",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewActivityDetailsJson",
-				"title": "View Activity Details (JSON)",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewActivityVersionDetails",
-				"title": "View Activity Details",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewActivityVersionDetailsJson",
-				"title": "View Activity Details (JSON)",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewActivityAliasDetails",
-				"title": "View Alias Details",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.viewActivityAliasDetailsJson",
-				"title": "View Alias Details (JSON)",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.createActivity",
-				"title": "Create Activity",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.updateActivity",
-				"title": "Update Activity",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.deleteActivity",
-				"title": "Delete Activity",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.deleteActivityAlias",
-				"title": "Delete Activity Alias",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.createActivityAlias",
-				"title": "Create Activity Alias",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.updateActivityAlias",
-				"title": "Update Activity Alias",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.deleteActivityVersion",
-				"title": "Delete Activity Version",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.createWorkitem",
-				"title": "Create Workitem",
-				"category": "Design Automation"
-			},
-			{
-				"command": "forge.refreshWebhooks",
-				"title": "Refresh Webhooks",
-				"category": "Webhooks",
-				"icon": {
-					"light": "resources/icons/dark/refresh.svg",
-					"dark": "resources/icons/light/refresh.svg"
-				}
-			},
-			{
-				"command": "forge.viewWebhookDetails",
-				"title": "View Webhook Details",
-				"category": "Webhooks"
-			},
-			{
-				"command": "forge.createWebhook",
-				"title": "Create Webhook",
-				"category": "Webhooks"
-			},
-			{
-				"command": "forge.updateWebhook",
-				"title": "Update Webhook",
-				"category": "Webhooks"
-			},
-			{
-				"command": "forge.deleteWebhook",
-				"title": "Delete Webhook",
-				"category": "Webhooks"
-			},
-			{
-				"command": "forge.login",
-				"title": "Login",
-				"category": "Authentication"
-			},
-			{
-				"command": "forge.logout",
-				"title": "Logout",
-				"category": "Authentication"
-			},
-			{
-				"command": "forge.getAccessToken",
-				"title": "Generate Access Token",
-				"category": "Authentication"
-			},
-			{
-				"command": "forge.refreshSecureServiceAccounts",
-				"title": "Refresh Secure Service Accounts",
-				"category": "Secure Service Accounts",
-				"icon": {
-					"light": "resources/icons/dark/refresh.svg",
-					"dark": "resources/icons/light/refresh.svg"
-				}
-			},
-			{
-				"command": "forge.createSecureServiceAccount",
-				"title": "Create Secure Service Account",
-				"icon": {
-					"light": "resources/icons/dark/add.svg",
-					"dark": "resources/icons/light/add.svg"
-				}
-			},
-			{
-				"command": "forge.viewSecureServiceAccountDetails",
-				"title": "View Secure Service Account Details",
-				"category": "Secure Service Accounts"
-			},
-			{
-				"command": "forge.updateSecureServiceAccount",
-				"title": "Update Secure Service Account",
-				"category": "Secure Service Accounts"
-			},
-			{
-				"command": "forge.deleteSecureServiceAccount",
-				"title": "Delete Secure Service Account",
-				"category": "Secure Service Accounts"
-			},
-			{
-				"command": "forge.createSecureServiceAccountKey",
-				"title": "Create Secure Service Account Key",
-				"category": "Secure Service Accounts"
-			},
-			{
-				"command": "forge.updateSecureServiceAccountKey",
-				"title": "Update Secure Service Account Key",
-				"category": "Secure Service Accounts"
-			},
-			{
-				"command": "forge.deleteSecureServiceAccountKey",
-				"title": "Delete Secure Service Account Key",
-				"category": "Secure Service Accounts"
-			}
-		],
-		"menus": {
-			"view/title": [
-				{
-					"command": "forge.refreshBuckets",
-					"when": "view == apsDataManagementView",
-					"group": "navigation"
-				},
-				{
-					"command": "forge.createBucket",
-					"when": "view == apsDataManagementView",
-					"group": "navigation"
-				},
-				{
-					"command": "forge.refreshDesignAutomationTree",
-					"when": "view == apsDesignAutomationView",
-					"group": "navigation"
-				},
-				{
-					"command": "forge.refreshWebhooks",
-					"when": "view == apsWebhooksView",
-					"group": "navigation"
-				},
-				{
-					"command": "forge.refreshSecureServiceAccounts",
-					"when": "view == apsSecureServiceAccountsView",
-					"group": "navigation"
-				},
-				{
-					"command": "forge.createSecureServiceAccount",
-					"when": "view == apsSecureServiceAccountsView",
-					"group": "navigation"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "forge.viewBucketDetails",
-					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.copyBucketKey",
-					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "0_view@2"
-				},
-				{
-					"command": "forge.uploadObject",
-					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "1_action@1"
-				},
-				{
-					"command": "forge.createEmptyObject",
-					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "1_action@2"
-				},
-				{
-					"command": "forge.deleteBucketObjects",
-					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "3_remove@1"
-				},
-				{
-					"command": "forge.deleteBucket",
-					"when": "view == apsDataManagementView && viewItem == bucket",
-					"group": "3_remove@2"
-				},
-				{
-					"command": "forge.viewObjectDetails",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.copyObjectKey",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "0_view@2"
-				},
-				{
-					"command": "forge.viewObjectManifest",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "0_view@3"
-				},
-				{
-					"command": "forge.viewObjectManifest",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "0_view@2"
-				},
-				{
-					"command": "forge.viewObjectThumbnail",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "0_view@3"
-				},
-				{
-					"command": "forge.viewObjectThumbnail",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "0_view@3"
-				},
-				{
-					"command": "forge.downloadObject",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_dm@1"
-				},
-				{
-					"command": "forge.renameObject",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_dm@2"
-				},
-				{
-					"command": "forge.copyObject",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_dm@3"
-				},
-				{
-					"command": "forge.generateSignedUrl",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_dm@4"
-				},
-				{
-					"command": "forge.copyObjectUrn",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@1"
-				},
-				{
-					"command": "forge.copyObjectUrn",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "1_action_md@1"
-				},
-				{
-					"command": "forge.translateObject",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@2"
-				},
-				{
-					"command": "forge.translateObject",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "1_action_md@2"
-				},
-				{
-					"command": "forge.translateObjectCustom",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@3"
-				},
-				{
-					"command": "forge.translateObjectCustom",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "1_action_md@3"
-				},
-				{
-					"command": "forge.listViewables",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@4"
-				},
-				{
-					"command": "forge.listViewables",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "1_action_md@4"
-				},
-				{
-					"command": "forge.downloadDerivativeSvf",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@5"
-				},
-				{
-					"command": "forge.downloadDerivativeF2d",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@6"
-				},
-				{
-					"command": "forge.downloadDerivativeGltf",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "1_action_md@7"
-				},
-				{
-					"command": "forge.downloadDerivativeCustom",
-					"when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
-					"group": "1_action_md@8"
-				},
-				{
-					"command": "forge.deleteObject",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "3_remove@1"
-				},
-				{
-					"command": "forge.deleteObjectManifest",
-					"when": "view == apsDataManagementView && viewItem == object",
-					"group": "3_remove@2"
-				},
-				{
-					"command": "forge.previewDerivative",
-					"when": "viewItem == derivative",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.viewDerivativeTree",
-					"when": "viewItem == derivative",
-					"group": "0_view@2"
-				},
-				{
-					"command": "forge.viewDerivativeProps",
-					"when": "viewItem == derivative",
-					"group": "0_view@3"
-				},
-				{
-					"command": "forge.copyHubID",
-					"when": "view == apsHubsView && viewItem == hub",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.copyProjectID",
-					"when": "view == apsHubsView && viewItem == project",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.copyFolderID",
-					"when": "view == apsHubsView && viewItem == folder",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.copyItemID",
-					"when": "view == apsHubsView && viewItem == item",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.copyVersionID",
-					"when": "view == apsHubsView && viewItem == version",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.createAppBundle",
-					"when": "view == apsDesignAutomationView && viewItem == owned-appbundles",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.updateAppBundle",
-					"when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteAppBundle",
-					"when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.viewAppBundleDetails",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewAppBundleDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewAppBundleAliasDetails",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewAppBundleAliasDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewAppBundleDetails",
-					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewAppBundleDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.deleteAppBundleAlias",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.createAppBundleAlias",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-aliases",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.updateAppBundleAlias",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.viewAppBundleVersionDetails",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewAppBundleVersionDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.deleteAppBundleVersion",
-					"when": "view == apsDesignAutomationView && viewItem == appbundle-version",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.createActivity",
-					"when": "view == apsDesignAutomationView && viewItem == owned-activities",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteActivity",
-					"when": "view == apsDesignAutomationView && viewItem == owned-activity",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.viewActivityDetails",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewActivityDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewActivityAliasDetails",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewActivityAliasDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.updateActivity",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.createWorkitem",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.viewActivityDetails",
-					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.viewActivityDetailsJson",
-					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.createWorkitem",
-					"when": "view == apsDesignAutomationView && viewItem == shared-activity",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteActivityAlias",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.createActivityAlias",
-					"when": "view == apsDesignAutomationView && viewItem == activity-aliases",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.updateActivityAlias",
-					"when": "view == apsDesignAutomationView && viewItem == activity-alias",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.viewActivityVersionDetails",
-					"when": "view == apsDesignAutomationView && viewItem == activity-version",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.updateActivity",
-					"when": "view == apsDesignAutomationView && viewItem == activity-version",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteActivityVersion",
-					"when": "view == apsDesignAutomationView && viewItem == activity-version",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.viewWebhookDetails",
-					"when": "view == apsWebhooksView && viewItem == hook",
-					"group": "0_view"
-				},
-				{
-					"command": "forge.updateWebhook",
-					"when": "view == apsWebhooksView && viewItem == hook",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteWebhook",
-					"when": "view == apsWebhooksView && viewItem == hook",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.createWebhook",
-					"when": "view == apsWebhooksView && viewItem == event",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.viewSecureServiceAccountDetails",
-					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
-					"group": "0_view@1"
-				},
-				{
-					"command": "forge.createSecureServiceAccountKey",
-					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
-					"group": "1_action"
-				},
-				{
-					"command": "forge.updateSecureServiceAccount",
-					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteSecureServiceAccount",
-					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
-					"group": "3_remove"
-				},
-				{
-					"command": "forge.updateSecureServiceAccountKey",
-					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
-					"group": "2_modify"
-				},
-				{
-					"command": "forge.deleteSecureServiceAccountKey",
-					"when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
-					"group": "3_remove"
-				}
-			]
-		}
+        "commands": [
+            {
+                "command": "aps.switchEnvironment",
+                "title": "Switch Environment",
+                "category": "Autodesk Platform Services",
+                "icon": "$(sync)"
+            },
+            {
+                "command": "aps.auth.login",
+                "title": "Login",
+                "category": "Autodesk Platform Services > Authentication",
+                "icon": "$(sign-in)"
+            },
+            {
+                "command": "aps.auth.logout",
+                "title": "Logout",
+                "category": "Autodesk Platform Services > Authentication",
+                "icon": "$(sign-out)"
+            },
+            {
+                "command": "aps.auth.getAccessToken",
+                "title": "Generate Access Token",
+                "category": "Autodesk Platform Services > Authentication",
+                "icon": "$(key)"
+            },
+            {
+                "command": "aps.oss.refreshBuckets",
+                "title": "Refresh Buckets",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "aps.oss.createBucket",
+                "title": "Create Bucket",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.oss.viewBucketDetails",
+                "title": "View Bucket Details",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.oss.copyBucketKey",
+                "title": "Copy Bucket Key to Clipboard",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.oss.deleteBucketObjects",
+                "title": "Delete All Objects",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.oss.viewObjectDetails",
+                "title": "View Object Details",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.oss.copyObjectKey",
+                "title": "Copy Object Key to Clipboard",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.oss.uploadObject",
+                "title": "Upload Object",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(cloud-upload)"
+            },
+            {
+                "command": "aps.oss.createEmptyObject",
+                "title": "Create Empty Object",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(new-file)"
+            },
+            {
+                "command": "aps.oss.copyObject",
+                "title": "Copy Object",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.oss.renameObject",
+                "title": "Rename Object",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.oss.downloadObject",
+                "title": "Download Object",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "aps.oss.deleteObject",
+                "title": "Delete Object",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.oss.generateSignedUrl",
+                "title": "Generate Signed URL",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(link)"
+            },
+            {
+                "command": "aps.oss.deleteBucket",
+                "title": "Delete Bucket",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.dm.copyHubID",
+                "title": "Copy Hub ID to Clipboard",
+                "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.dm.copyProjectID",
+                "title": "Copy Project ID to Clipboard",
+                "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.dm.copyFolderID",
+                "title": "Copy Folder ID to Clipboard",
+                "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.dm.copyItemID",
+                "title": "Copy Item ID to Clipboard",
+                "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.dm.copyVersionID",
+                "title": "Copy Version ID to Clipboard",
+                "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.md.translateObject",
+                "title": "Translate Object",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(run)"
+            },
+            {
+                "command": "aps.md.translateObjectCustom",
+                "title": "Translate Object (Custom)",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(run)"
+            },
+            {
+                "command": "aps.md.listViewables",
+                "title": "List Viewables (JSON)",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.md.previewDerivative",
+                "title": "Preview Derivative",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(preview)"
+            },
+            {
+                "command": "aps.md.viewDerivativeTree",
+                "title": "View Derivative Tree (JSON)",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.md.viewDerivativeProps",
+                "title": "View Derivative Properties (JSON)",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.md.viewObjectManifest",
+                "title": "View Object Manifest (JSON)",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.md.viewObjectThumbnail",
+                "title": "View Object Thumbnails",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.md.deleteObjectManifest",
+                "title": "Delete Object Manifest",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.md.downloadDerivativeSvf",
+                "title": "Download Derivatives as SVF",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "aps.md.downloadDerivativesF2D",
+                "title": "Download Derivatives as F2D",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "aps.md.downloadDerivativeGltf",
+                "title": "Download Derivatives as glTF",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "aps.md.downloadDerivativeCustom",
+                "title": "Download Non-SVF derivatives",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "aps.md.copyObjectUrn",
+                "title": "Copy Object URN to Clipboard",
+                "category": "Autodesk Platform Services > Model Derivatives",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.wh.refreshWebhooks",
+                "title": "Refresh Webhooks",
+                "category": "Autodesk Platform Services > Webhooks",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "aps.wh.createWebhook",
+                "title": "Create Webhook",
+                "category": "Autodesk Platform Services > Webhooks",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.wh.updateWebhook",
+                "title": "Update Webhook",
+                "category": "Autodesk Platform Services > Webhooks",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.wh.deleteWebhook",
+                "title": "Delete Webhook",
+                "category": "Autodesk Platform Services > Webhooks",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.wh.viewWebhookDetails",
+                "title": "View Webhook Details",
+                "category": "Autodesk Platform Services > Webhooks",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.refreshDesignAutomationTree",
+                "title": "Refresh Design Automation Tree",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "aps.da.createAppBundle",
+                "title": "Create App Bundle",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.da.updateAppBundle",
+                "title": "Update App Bundle",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.da.viewAppBundleDetails",
+                "title": "View App Bundle Details",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.viewAppBundleDetailsJSON",
+                "title": "View App Bundle Details (JSON)",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.da.viewAppBundleAliasDetails",
+                "title": "View App Bundle Alias Details",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.viewAppBundleAliasDetailsJSON",
+                "title": "View App Bundle Alias Details (JSON)",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.da.viewAppBundleVersionDetails",
+                "title": "View App Bundle Version Details",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.viewAppBundleVersionDetailsJSON",
+                "title": "View App Bundle Version Details (JSON)",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.da.deleteAppBundle",
+                "title": "Delete App Bundle",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.da.deleteAppBundleAlias",
+                "title": "Delete App Bundle Alias",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.da.createAppBundleAlias",
+                "title": "Create App Bundle Alias",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.da.updateAppBundleAlias",
+                "title": "Update App Bundle Alias",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.da.deleteAppBundleVersion",
+                "title": "Delete App Bundle Version",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.da.viewActivityDetails",
+                "title": "View Activity Details",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.viewActivityDetailsJSON",
+                "title": "View Activity Details (JSON)",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.da.viewActivityAliasDetails",
+                "title": "View Activity Alias Details",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.viewActivityAliasDetailsJSON",
+                "title": "View Activity Alias Details (JSON)",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.da.viewActivityVersionDetails",
+                "title": "View Activity Version Details",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.da.viewActivityVersionDetailsJSON",
+                "title": "View Activity Version Details (JSON)",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.da.deleteActivity",
+                "title": "Delete Activity",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.da.deleteActivityAlias",
+                "title": "Delete Activity Alias",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.da.createActivity",
+                "title": "Create Activity",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.da.updateActivity",
+                "title": "Update Activity",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.da.createActivityAlias",
+                "title": "Create Activity Alias",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.da.updateActivityAlias",
+                "title": "Update Activity Alias",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.da.deleteActivityVersion",
+                "title": "Delete Activity Version",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.da.createWorkItem",
+                "title": "Create Work Item",
+                "category": "Autodesk Platform Services > Automation API",
+                "icon": "$(play)"
+            },
+            {
+                "command": "aps.ssa.refreshAccounts",
+                "title": "Refresh Secure Service Accounts",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "aps.ssa.createAccount",
+                "title": "Create Secure Service Account",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.ssa.viewAccountDetails",
+                "title": "View Secure Service Account Details",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(open-preview)"
+            },
+            {
+                "command": "aps.ssa.copyAccountID",
+                "title": "Copy Secure Service Account ID to Clipboard",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.ssa.updateAccount",
+                "title": "Update Secure Service Account",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.ssa.deleteAccount",
+                "title": "Delete Secure Service Account",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "aps.ssa.createAccountKey",
+                "title": "Create Secure Service Account Key",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.ssa.viewAccountKeyDetails",
+                "title": "View Secure Service Account Key Details",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(open-preview)"
+            },
+            {
+                "command": "aps.ssa.copyAccountKeyID",
+                "title": "Copy Secure Service Account Key ID to Clipboard",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.ssa.updateAccountKey",
+                "title": "Update Secure Service Account Key",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "aps.ssa.deleteAccountKey",
+                "title": "Delete Secure Service Account Key",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(trash)"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "aps.oss.refreshBuckets",
+                    "when": "view == apsDataManagementView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.oss.createBucket",
+                    "when": "view == apsDataManagementView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.wh.refreshWebhooks",
+                    "when": "view == apsWebhooksView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.da.refreshDesignAutomationTree",
+                    "when": "view == apsDesignAutomationView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.ssa.refreshAccounts",
+                    "when": "view == apsSecureServiceAccountsView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.ssa.createAccount",
+                    "when": "view == apsSecureServiceAccountsView",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "aps.oss.viewBucketDetails",
+                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.oss.copyBucketKey",
+                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.oss.deleteBucketObjects",
+                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "group": "3_remove@1"
+                },
+                {
+                    "command": "aps.oss.viewObjectDetails",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.oss.copyObjectKey",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.oss.uploadObject",
+                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "group": "1_action@1"
+                },
+                {
+                    "command": "aps.oss.createEmptyObject",
+                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "group": "1_action@2"
+                },
+                {
+                    "command": "aps.oss.copyObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@3"
+                },
+                {
+                    "command": "aps.oss.renameObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@2"
+                },
+                {
+                    "command": "aps.oss.downloadObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@1"
+                },
+                {
+                    "command": "aps.oss.deleteObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "3_remove@1"
+                },
+                {
+                    "command": "aps.oss.generateSignedUrl",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@4"
+                },
+                {
+                    "command": "aps.oss.deleteBucket",
+                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "group": "3_remove@2"
+                },
+                {
+                    "command": "aps.dm.copyHubID",
+                    "when": "view == apsHubsView && viewItem == hub",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.dm.copyProjectID",
+                    "when": "view == apsHubsView && viewItem == project",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.dm.copyFolderID",
+                    "when": "view == apsHubsView && viewItem == folder",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.dm.copyItemID",
+                    "when": "view == apsHubsView && viewItem == item",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.dm.copyVersionID",
+                    "when": "view == apsHubsView && viewItem == version",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.md.translateObject",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@2"
+                },
+                {
+                    "command": "aps.md.translateObjectCustom",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@3"
+                },
+                {
+                    "command": "aps.md.listViewables",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@4"
+                },
+                {
+                    "command": "aps.md.previewDerivative",
+                    "when": "viewItem == derivative",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.md.viewDerivativeTree",
+                    "when": "viewItem == derivative",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.md.viewDerivativeProps",
+                    "when": "viewItem == derivative",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.md.viewObjectManifest",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "0_view@4"
+                },
+                {
+                    "command": "aps.md.viewObjectThumbnail",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.md.deleteObjectManifest",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "3_remove@2"
+                },
+                {
+                    "command": "aps.md.downloadDerivativeSvf",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action_md@5"
+                },
+                {
+                    "command": "aps.md.downloadDerivativesF2D",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action_md@6"
+                },
+                {
+                    "command": "aps.md.downloadDerivativeGltf",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action_md@7"
+                },
+                {
+                    "command": "aps.md.downloadDerivativeCustom",
+                    "when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
+                    "group": "1_action_md@8"
+                },
+                {
+                    "command": "aps.md.copyObjectUrn",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@1"
+                },
+                {
+                    "command": "aps.wh.createWebhook",
+                    "when": "view == apsWebhooksView && viewItem == event",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.wh.updateWebhook",
+                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.wh.deleteWebhook",
+                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.wh.viewWebhookDetails",
+                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.createAppBundle",
+                    "when": "view == apsDesignAutomationView && viewItem == owned-appbundles",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.updateAppBundle",
+                    "when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.viewAppBundleDetails",
+                    "when": "view == apsDesignAutomationView && (viewItem == appbundle-alias || viewItem == shared-appbundle)",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewAppBundleDetailsJSON",
+                    "when": "view == apsDesignAutomationView && (viewItem == appbundle-alias || viewItem == shared-appbundle)",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewAppBundleAliasDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewAppBundleAliasDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewAppBundleVersionDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-version",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewAppBundleVersionDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-version",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.deleteAppBundle",
+                    "when": "view == apsDesignAutomationView && viewItem == owned-appbundle",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.da.deleteAppBundleAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.da.createAppBundleAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-aliases",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.updateAppBundleAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.deleteAppBundleVersion",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-version",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.da.viewActivityDetails",
+                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewActivityDetailsJSON",
+                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewActivityAliasDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewActivityAliasDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewActivityVersionDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-version",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.viewActivityVersionDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-version",
+                    "group": "0_view"
+                },
+                {
+                    "command": "aps.da.deleteActivity",
+                    "when": "view == apsDesignAutomationView && viewItem == owned-activity",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.da.deleteActivityAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.da.createActivity",
+                    "when": "view == apsDesignAutomationView && viewItem == owned-activities",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.updateActivity",
+                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == activity-version)",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.createActivityAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-aliases",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.updateActivityAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.da.deleteActivityVersion",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-version",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.da.createWorkItem",
+                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.ssa.viewAccountDetails",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.ssa.copyAccountID",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+                    "group": "1_action"
+                },
+                {
+                    "command": "aps.ssa.updateAccount",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.ssa.deleteAccount",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+                    "group": "3_remove"
+                },
+                {
+                    "command": "aps.ssa.createAccountKey",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'",
+                    "group": "1_action"
+                },
+                {
+                    "command": "aps.ssa.viewAccountKeyDetails",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.ssa.copyAccountKeyID",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "1_action"
+                },
+                {
+                    "command": "aps.ssa.updateAccountKey",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "2_modify"
+                },
+                {
+                    "command": "aps.ssa.deleteAccountKey",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "3_remove"
+                }
+            ]
+        }
 	},
 	"scripts": {
 		"vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
@@ -1027,7 +1063,7 @@
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"tslint": "^5.12.1",
-		"typescript": "^3.7.2",
+		"typescript": "^5.9.3",
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {

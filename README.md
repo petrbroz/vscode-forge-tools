@@ -55,7 +55,7 @@ Here's an example of how the extension settings might look like in the JSON form
 
 ### Multiple Environments
 
-If you have configured multiple APS environments, you can switch between them via the status bar at the bottom, or using the `forge.switchEnvironment` command from the [Command Palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette). The extension will always initialize itself based on the _first_ environment in the list.
+If you have configured multiple APS environments, you can switch between them via the status bar at the bottom, or using the `aps.switchEnvironment` command from the [Command Palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette). The extension will always initialize itself based on the _first_ environment in the list.
 
 > Note: if you have configured the extension both in the _User_ scope and in the _Workspace_ scope, the extension will present the list of environments from the _Workspace_ scope as it has higher precedence.
 
@@ -85,7 +85,7 @@ Here's some actions you can try:
 
 ### Hubs & Derivatives View (Experimental)
 
-Similar to the _Buckets & Derivatives_ view, but using a 3-legged authentication instead, allowing the user to browse their existing design data hosted in BIM360, ACC, and other products built with the Autodesk Platform Services. In order for this view to be available, the user must first log into the currently active APS application with their Autodesk account. This can be done either by clicking the "APS Login" button in the bottom status bar, or by using the `forge.login` command. The extension will spin up a temporary web server on a preconfigured port (8123 by default), providing additional information about the login process, and waiting for a callback from the Autodesk servers.
+Similar to the _Buckets & Derivatives_ view, but using a 3-legged authentication instead, allowing the user to browse their existing design data hosted in BIM360, ACC, and other products built with the Autodesk Platform Services. In order for this view to be available, the user must first log into the currently active APS application with their Autodesk account. This can be done either by clicking the "APS Login" button in the bottom status bar, or by using the `aps.auth.login` command. The extension will spin up a temporary web server on a preconfigured port (8123 by default), providing additional information about the login process, and waiting for a callback from the Autodesk servers.
 
 ### Webhooks View
 
