@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
 import { IThreeLeggedToken } from 'aps-sdk-node';
 import { Region } from 'aps-sdk-node/dist/common';
+import { CommandCategory, Command, CommandRegistry } from './shared';
 
 const DefaultAuthPort = 8123;
 
@@ -15,6 +16,55 @@ const DefaultScopes = [
     'user:read', 'user:write',
     'user-profile:read'
 ]; // TODO: make the list configurable?
+
+@CommandCategory({ category: 'Autodesk Platform Services > Authentication', prefix: 'aps.auth' })
+export class AuthenticationCommands extends CommandRegistry {
+    constructor(protected context: IContext, protected refresh: () => void) {
+        super();
+    }
+
+    @Command({ title: 'Login', icon: 'sign-in' })
+    async login() {
+        const env = this.context.environment;
+        try {
+            const port = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.authentication.port') || DefaultAuthPort;
+            const clientId = this.context.environment.clientId;
+            const credentials = await login(clientId, port, this.context);
+            const token = credentials.access_token;
+            const expires = credentials.expires_in;
+            if (!token || !expires) {
+                throw new Error('Authentication data missing or incorrect.');
+            }
+            this.context.threeLeggedToken = token;
+            this.context.bim360Client.reset({ token: this.context.threeLeggedToken }, env.host, env.region as Region);
+            delete (this.context.bim360Client as any).auth; // TODO: remove 'auth' in the reset method
+            this.context.modelDerivativeClient3L.reset({ token: this.context.threeLeggedToken }, env.host, env.region as Region);
+            this.refresh();
+            vscode.window.showInformationMessage(`You are now logged in. Autodesk Platform Services requiring 3-legged authentication will be available for as long as the generated token is valid (${expires} seconds), or until you manually log out.`);
+        } catch (err) {
+            vscode.window.showWarningMessage(`Could not log in: ${err}`);
+        }
+    }
+
+    @Command({ title: 'Logout', icon: 'sign-out' })
+    async logout() {
+		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to log out?' });
+        const env = this.context.environment;
+		if (answer === 'Yes') {
+			delete this.context.threeLeggedToken;
+			this.context.bim360Client.reset(this.context.credentials, env.host, env.region as Region);
+			delete (this.context.bim360Client as any).token; // TODO: remove 'token' in the reset method
+			this.context.modelDerivativeClient3L.reset({ token: '' }, env.host, env.region as Region);
+            this.refresh();
+			vscode.window.showInformationMessage(`You are now logged out. Autodesk Platform Services requiring 3-legged authentication will no longer be available.`);
+		}
+    }
+
+    @Command({ title: 'Generate Access Token', icon: 'key' })
+    async getAccessToken() {
+        await getAccessToken(this.context);
+    }
+}
 
 function renderLoginPage(clientId: string, port: number, scopes: string[]): string {
     return /*html*/ `
@@ -128,49 +178,4 @@ export async function getAccessToken(context: IContext) {
     } catch (err) {
         showErrorMessage('Could not generate access token', err, context);
     }
-}
-
-export function registerAuthenticationCommands(context: IContext, refresh: () => void) {
-	vscode.commands.registerCommand('forge.login', async () => {
-        const env = context.environment;
-		try {
-			const port = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.authentication.port') || DefaultAuthPort;
-			const clientId = context.environment.clientId;
-			const credentials = await login(clientId, port, context);
-			const token = credentials.access_token;
-			const expires = credentials.expires_in;
-			if (!token || !expires) {
-				throw new Error('Authentication data missing or incorrect.');
-			}
-			context.threeLeggedToken = token;
-			context.bim360Client.reset({ token: context.threeLeggedToken }, env.host, env.region as Region);
-			delete (context.bim360Client as any).auth; // TODO: remove 'auth' in the reset method
-			context.modelDerivativeClient3L.reset({ token: context.threeLeggedToken }, env.host, env.region as Region);
-            refresh();
-			// hubsDataProvider.refresh();
-			// updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged in. Autodesk Platform Services requiring 3-legged authentication will be available for as long as the generated token is valid (${expires} seconds), or until you manually log out.`);
-		} catch (err) {
-			vscode.window.showWarningMessage(`Could not log in: ${err}`);
-		}
-	});
-
-	vscode.commands.registerCommand('forge.logout', async () => {
-		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to log out?' });
-        const env = context.environment;
-		if (answer === 'Yes') {
-			delete context.threeLeggedToken;
-			context.bim360Client.reset(context.credentials, env.host, env.region as Region);
-			delete (context.bim360Client as any).token; // TODO: remove 'token' in the reset method
-			context.modelDerivativeClient3L.reset({ token: '' }, env.host, env.region as Region);
-            refresh();
-			// hubsDataProvider.refresh();
-			// updateAuthStatus(authStatusBarItem);
-			vscode.window.showInformationMessage(`You are now logged out. Autodesk Platform Services requiring 3-legged authentication will no longer be available.`);
-		}
-	});
-
-    vscode.commands.registerCommand('forge.getAccessToken', async () => {
-        await getAccessToken(context);
-    });
 }

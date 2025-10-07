@@ -9,13 +9,14 @@ import { HubsDataProvider } from './providers/hubs';
 import { getEnvironments, setupNewEnvironment, DesignAutomationRegion } from './environment';
 import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
-import { registerAuthenticationCommands } from './commands/authentication';
-import { registerDataManagementCommands } from './commands/data-management';
-import { registerDesignAutomationCommands } from './commands/design-automation';
-import { registerModelDerivativeCommands } from './commands/model-derivative';
-import { registerSecureServiceAccountsCommands } from './commands/secure-service-accounts';
-import { registerWebhookCommands } from './commands/webhooks';
-import { registerEnvironmentCommands } from './commands/environment';
+import { AuthenticationCommands } from './commands/authentication';
+import { ObjectStorageServiceCommands } from './commands/object-storage';
+import { DataManagementCommands } from './commands/data-management';
+import { DesignAutomationCommands } from './commands/design-automation';
+import { ModelDerivativesCommands } from './commands/model-derivative';
+import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
+import { WebhooksCommands } from './commands/webhooks';
+import { EnvironmentCommands } from './commands/environment';
 
 export function activate(_context: vscode.ExtensionContext) {
 	const environments = getEnvironments();
@@ -73,33 +74,49 @@ export function activate(_context: vscode.ExtensionContext) {
     let secureServiceAccountsView = vscode.window.createTreeView('apsSecureServiceAccountsView', { treeDataProvider: secureServiceAccountsProvider });
     context.extensionContext.subscriptions.push(secureServiceAccountsView);
 
-	registerEnvironmentCommands(context, () => {
-        simpleStorageDataProvider.refresh();
+	const environmentCommands = new EnvironmentCommands(context, () => {
+		simpleStorageDataProvider.refresh();
         designAutomationDataProvider.refresh();
         hubsDataProvider.refresh();
         webhooksDataProvider.refresh();
         secureServiceAccountsProvider.refresh();
         updateEnvironmentStatus(envStatusBarItem);
 	});
-    registerAuthenticationCommands(context, () => {
+	context.extensionContext.subscriptions.push(...environmentCommands.registerCommands());
+
+    const authenticationCommands = new AuthenticationCommands(context, () => {
 		hubsDataProvider.refresh();
 		updateAuthStatus(authStatusBarItem);
 	});
-	registerDataManagementCommands(context, () => {
+	context.extensionContext.subscriptions.push(...authenticationCommands.registerCommands());
+
+	const objectStorageServiceCommands = new ObjectStorageServiceCommands(context, () => simpleStorageDataProvider.refresh());
+	context.extensionContext.subscriptions.push(...objectStorageServiceCommands.registerCommands());
+
+	const dataManagementCommands = new DataManagementCommands(context, () => {
 		simpleStorageDataProvider.refresh();
 		hubsDataProvider.refresh();
 	});
-	registerModelDerivativeCommands(context, () => {
+	context.extensionContext.subscriptions.push(...dataManagementCommands.registerCommands());
+
+	const modelDerivativeCommands = new ModelDerivativesCommands(context, () => {
         simpleStorageDataProvider.refresh();
         hubsDataProvider.refresh();
     });
-	registerDesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
-	registerWebhookCommands(context, () => webhooksDataProvider.refresh());
-    registerSecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
+	context.extensionContext.subscriptions.push(...modelDerivativeCommands.registerCommands());
+
+	const designAutomationCommands = new DesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
+	context.extensionContext.subscriptions.push(...designAutomationCommands.registerCommands());
+
+	const webhooksCommands = new WebhooksCommands(context, () => webhooksDataProvider.refresh());
+	context.extensionContext.subscriptions.push(...webhooksCommands.registerCommands());
+
+	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
+	context.extensionContext.subscriptions.push(...secureServiceAccountsCommands.registerCommands());
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + env.title;
-		statusBarItem.command = 'forge.switchEnvironment';
+		statusBarItem.command = 'aps.switchEnvironment';
 		statusBarItem.show();
 	}
 	const envStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -109,10 +126,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
 		if (context.threeLeggedToken) {
 			statusBarItem.text = 'APS Auth: 3-legged';
-			statusBarItem.command = 'forge.logout';
+			statusBarItem.command = 'aps.auth.logout';
 		} else {
 			statusBarItem.text = 'APS Auth: 2-legged';
-			statusBarItem.command = 'forge.login';
+			statusBarItem.command = 'aps.auth.login';
 		}
 		statusBarItem.show();
 	}
