@@ -192,7 +192,7 @@ export const WEBHOOKS: WebhookSystem[] = [
     },
     {
         id: 'autodesk.construction.cost',
-        name: 'Cost Management',
+        name: 'ACC Cost Management',
         events: [
             {
                 id: 'budget.created-1.0',
@@ -444,6 +444,37 @@ export const WEBHOOKS: WebhookSystem[] = [
                 id: 'opportunity.status.updated-1.0',
                 description: 'When an opportunity status is updated.',
                 scopes: ['companyId']
+            }
+        ]
+    },
+    {
+        id: 'autodesk.construction.issues',
+        name: 'ACC Issues',
+        events: [
+            {
+                id: 'issue.created-1.0',
+                description: 'When an issue is created.',
+                scopes: ['project']
+            },
+            {
+                id: 'issue.updated-1.0',
+                description: 'When an issue is updated.',
+                scopes: ['project']
+            },
+            {
+                id: 'issue.deleted-1.0',
+                description: 'When an issue is deleted.',
+                scopes: ['project']
+            },
+            {
+                id: 'issue.restored-1.0',
+                description: 'When an issue is restored.',
+                scopes: ['project']
+            },
+            {
+                id: 'issue.unlinked-1.0',
+                description: 'When an issue is unlinked from a placement.',
+                scopes: ['project']
             }
         ]
     }
