@@ -12,6 +12,7 @@ const SecureServiceAccountDetails = ({ detail }: ISecureServiceAccountDetailsPro
     <div>
         <h1>Secure Service Account: {detail.serviceAccountId}</h1>
         <Grid>
+            <VSCodeTextField readOnly value={detail.serviceAccountId!}>ID</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.email!}>E-mail</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.status!}>Status</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.createdBy!}>Created By</VSCodeTextField>

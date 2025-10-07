@@ -60,6 +60,19 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
+    @Command({ title: 'Copy Secure Service Account ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action' })
+    async copyAccountID(secureServiceAccount: ISecureServiceAccount | undefined) {
+        if (!secureServiceAccount) {
+            secureServiceAccount = await this.promptSecureServiceAccount();
+            if (!secureServiceAccount) {
+                return;
+            }
+        }
+        await vscode.env.clipboard.writeText(secureServiceAccount.id);
+        vscode.window.showInformationMessage(`Secure service account ID copied to clipboard: ${secureServiceAccount.id}`);
+    }
+
     @Command({ title: 'Update Secure Service Account', icon: 'edit' })
     @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '2_modify' })
     async updateAccount(secureServiceAccount: ISecureServiceAccount | undefined) {
@@ -133,6 +146,45 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         } catch (err) {
             showErrorMessage('Could not generate private key for secure service account', err, this.context);
         }
+    }
+
+    @Command({ title: 'View Secure Service Account Key Details', icon: 'open-preview' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '0_view@1' })
+    async viewAccountKeyDetails(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+        if (!secureServiceAccountKey) {
+            secureServiceAccountKey = await this.promptSecureServiceAccountKey();
+            if (!secureServiceAccountKey) {
+                return;
+            }
+        }
+
+        try {
+            const allSecureServiceAccountKeys = await withProgress(
+                `Getting secure service account key details: ${secureServiceAccountKey.id}`,
+                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountKey.secureServiceAccountId).keys.get()
+            );
+            const secureServiceAccountDetails = allSecureServiceAccountKeys?.keys?.find(key => key.kid === secureServiceAccountKey!.id);
+            if (!secureServiceAccountDetails) {
+                vscode.window.showErrorMessage(`Could not find secure service account key details: ${secureServiceAccountKey.id}`);
+                return;
+            }
+            createWebViewPanel(this.context, 'secure-service-account-key-details.js', 'secure-service-account-key-details', `Secure Service Account Key Details: ${secureServiceAccountDetails.kid}`, { detail: secureServiceAccountDetails });
+        } catch (err) {
+            showErrorMessage('Could not retrieve secure service account key details', err, this.context);
+        }
+    }
+
+    @Command({ title: 'Copy Secure Service Account Key ID to Clipboard', icon: 'copy' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '1_action' })
+    async copyAccountKeyID(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+        if (!secureServiceAccountKey) {
+            secureServiceAccountKey = await this.promptSecureServiceAccountKey();
+            if (!secureServiceAccountKey) {
+                return;
+            }
+        }
+        await vscode.env.clipboard.writeText(secureServiceAccountKey.id);
+        vscode.window.showInformationMessage(`Secure service account key ID copied to clipboard: ${secureServiceAccountKey.id}`);
     }
 
     @Command({ title: 'Update Secure Service Account Key', icon: 'edit' })
