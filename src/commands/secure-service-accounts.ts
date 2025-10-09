@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import jwt from 'jsonwebtoken';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
 import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
@@ -61,7 +62,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
     }
 
     @Command({ title: 'Copy Secure Service Account ID to Clipboard', icon: 'copy' })
-    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action@1' })
     async copyAccountID(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
             secureServiceAccount = await this.promptSecureServiceAccount();
@@ -126,7 +127,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
     }
 
     @Command({ title: 'Create Secure Service Account Key', icon: 'add' })
-    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account'", group: '1_action@2' })
     async createAccountKey(secureServiceAccount: ISecureServiceAccount | undefined) {
         if (!secureServiceAccount) {
             secureServiceAccount = await this.promptSecureServiceAccount();
@@ -175,7 +176,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
     }
 
     @Command({ title: 'Copy Secure Service Account Key ID to Clipboard', icon: 'copy' })
-    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '1_action' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '1_action@1' })
     async copyAccountKeyID(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
         if (!secureServiceAccountKey) {
             secureServiceAccountKey = await this.promptSecureServiceAccountKey();
@@ -240,6 +241,107 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
     }
 
+    @Command({ title: 'Generate Assertion', icon: 'gist-secret' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '1_action@3' })
+    async generateAssertion(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+        if (!secureServiceAccountKey) {
+            secureServiceAccountKey = await this.promptSecureServiceAccountKey();
+            if (!secureServiceAccountKey) {
+                return;
+            }
+        }
+
+        const scopesInput = await vscode.window.showInputBox({ prompt: 'Enter scopes (space separated)' });
+        if (!scopesInput) {
+            return;
+        }
+        const scopes = scopesInput.split(' ').map(s => s.trim()).filter(s => s.length > 0);
+        if (scopes.length === 0) {
+            vscode.window.showErrorMessage('No scopes provided');
+            return;
+        }
+
+        const privateKeyFile = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: `Select Private Key File For Key ID ${secureServiceAccountKey.id}`, filters: { 'PEM Files': ['pem'], 'All Files': ['*'] } });
+        if (!privateKeyFile || privateKeyFile.length !== 1) {
+            return;
+        }
+        const privateKeyBuffer = await vscode.workspace.fs.readFile(privateKeyFile[0]);
+        const privateKey = Buffer.from(privateKeyBuffer).toString('utf8');
+
+        const assertion = this.createAssertion(
+            this.context.environment.clientId,
+            secureServiceAccountKey.secureServiceAccountId,
+            secureServiceAccountKey.id,
+            privateKey,
+            scopes
+        );
+        const action = await vscode.window.showInformationMessage('Assertion generated', 'Open in New Tab', 'Copy to Clipboard');
+        switch (action) {
+            case 'Open in New Tab':
+                const doc = await vscode.workspace.openTextDocument({ content: assertion });
+                await vscode.window.showTextDocument(doc, { preview: false });
+                break;
+            case 'Copy to Clipboard':
+                await vscode.env.clipboard.writeText(assertion);
+                break;
+        }
+    }
+
+    @Command({ title: 'Generate Access Token', icon: 'key' })
+    @ViewItemContextMenu({ when: "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'", group: '1_action@2' })
+    async generateAccessToken(secureServiceAccountKey: ISecureServiceAccountKey | undefined) {
+        if (!secureServiceAccountKey) {
+            secureServiceAccountKey = await this.promptSecureServiceAccountKey();
+            if (!secureServiceAccountKey) {
+                return;
+            }
+        }
+
+        const scopesInput = await vscode.window.showInputBox({ prompt: 'Enter scopes (space separated)' });
+        if (!scopesInput) {
+            return;
+        }
+        const scopes = scopesInput.split(' ').map(s => s.trim()).filter(s => s.length > 0);
+        if (scopes.length === 0) {
+            vscode.window.showErrorMessage('No scopes provided');
+            return;
+        }
+
+        const privateKeyFile = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: `Select Private Key File For Key ID ${secureServiceAccountKey.id}`, filters: { 'PEM Files': ['pem'], 'All Files': ['*'] } });
+        if (!privateKeyFile || privateKeyFile.length !== 1) {
+            return;
+        }
+        const privateKeyBuffer = await vscode.workspace.fs.readFile(privateKeyFile[0]);
+        const privateKey = Buffer.from(privateKeyBuffer).toString('utf8');
+
+        const assertion = this.createAssertion(
+            this.context.environment.clientId,
+            secureServiceAccountKey.secureServiceAccountId,
+            secureServiceAccountKey.id,
+            privateKey,
+            scopes
+        );
+        const accessToken = await withProgress(
+            'Generating access token...',
+            this.exchangeAssertionForAccessToken(
+                this.context.environment.clientId,
+                this.context.environment.clientSecret,
+                assertion,
+                scopes
+            )
+        );
+        const action = await vscode.window.showInformationMessage('Access token generated', 'Open in New Tab', 'Copy to Clipboard');
+        switch (action) {
+            case 'Open in New Tab':
+                const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(accessToken, null, 2), language: 'json' });
+                await vscode.window.showTextDocument(doc, { preview: false });
+                break;
+            case 'Copy to Clipboard':
+                await vscode.env.clipboard.writeText(JSON.stringify(accessToken, null, 2));
+                break;
+        }
+    }
+
     protected async promptSecureServiceAccount(): Promise<ISecureServiceAccount | undefined> {
         // TODO: reuse SecureServiceAccountsDataProvider here
         try {
@@ -301,5 +403,41 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         } catch (error) {
             showErrorMessage('Could not load secure service account keys', error, this.context);
         }
+    }
+
+    protected createAssertion(clientId: string, serviceAccountId: string, serviceAccountKeyId: string, serviceAccountPrivateKey: string, scopes: string[], host: string = 'https://developer.api.autodesk.com'): string {
+        const payload = {
+            iss: clientId,
+            sub: serviceAccountId,
+            aud: `${host}/authentication/v2/token`,
+            exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes
+            scope: scopes
+        };
+        return jwt.sign(payload, serviceAccountPrivateKey, {
+            algorithm: 'RS256',
+            header: {
+                alg: 'RS256',
+                kid: serviceAccountKeyId
+            },
+            noTimestamp: true
+        });
+    }
+
+    protected async exchangeAssertionForAccessToken(clientId: string, clientSecret: string, assertion: string, scopes: string[], host: string = 'https://developer.api.autodesk.com'): Promise<{ access_token: string; token_type: string; expires_in: number; }> {
+        const headers = {
+            'Accept': 'application/json',
+            'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        };
+        const body = new URLSearchParams({
+            'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'scope': scopes.join(' '),
+            'assertion': assertion
+        });
+        const response = await fetch(`${host}/authentication/v2/token`, { method: 'POST', headers, body });
+        if (!response.ok) {
+            throw new Error(`Could not generate access token: ${await response.text()}`);
+        }
+        return response.json();
     }
 }

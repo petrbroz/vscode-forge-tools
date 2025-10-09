@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Commands for generating SSA assertions and access tokens
+
 ## [2.11.0] - 2025-10-07
 
 - Added
