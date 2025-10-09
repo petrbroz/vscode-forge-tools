@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - Commands for generating SSA assertions and access tokens
+- Updated
+  - Users can now select OAuth scopes by checking checkboxes
 
 ## [2.11.0] - 2025-10-07
 

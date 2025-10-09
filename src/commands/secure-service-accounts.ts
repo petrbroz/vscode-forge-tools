@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
 import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
+import { DefaultScopes } from './authentication';
 
 @CommandCategory({ category: 'Autodesk Platform Services > Secure Service Accounts', prefix: 'aps.ssa' })
 export class SecureServiceAccountsCommands extends CommandRegistry {
@@ -251,22 +252,18 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             }
         }
 
-        const scopesInput = await vscode.window.showInputBox({ prompt: 'Enter scopes (space separated)' });
-        if (!scopesInput) {
-            return;
-        }
-        const scopes = scopesInput.split(' ').map(s => s.trim()).filter(s => s.length > 0);
-        if (scopes.length === 0) {
-            vscode.window.showErrorMessage('No scopes provided');
-            return;
-        }
-
         const privateKeyFile = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: `Select Private Key File For Key ID ${secureServiceAccountKey.id}`, filters: { 'PEM Files': ['pem'], 'All Files': ['*'] } });
         if (!privateKeyFile || privateKeyFile.length !== 1) {
             return;
         }
         const privateKeyBuffer = await vscode.workspace.fs.readFile(privateKeyFile[0]);
         const privateKey = Buffer.from(privateKeyBuffer).toString('utf8');
+
+        const scopes = await vscode.window.showQuickPick(DefaultScopes, { canPickMany: true, placeHolder: 'Select scopes', ignoreFocusOut: true, });
+        if (!scopes || scopes.length === 0) {
+            vscode.window.showErrorMessage('No scopes provided');
+            return;
+        }
 
         const assertion = this.createAssertion(
             this.context.environment.clientId,
@@ -297,22 +294,18 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             }
         }
 
-        const scopesInput = await vscode.window.showInputBox({ prompt: 'Enter scopes (space separated)' });
-        if (!scopesInput) {
-            return;
-        }
-        const scopes = scopesInput.split(' ').map(s => s.trim()).filter(s => s.length > 0);
-        if (scopes.length === 0) {
-            vscode.window.showErrorMessage('No scopes provided');
-            return;
-        }
-
         const privateKeyFile = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: `Select Private Key File For Key ID ${secureServiceAccountKey.id}`, filters: { 'PEM Files': ['pem'], 'All Files': ['*'] } });
         if (!privateKeyFile || privateKeyFile.length !== 1) {
             return;
         }
         const privateKeyBuffer = await vscode.workspace.fs.readFile(privateKeyFile[0]);
         const privateKey = Buffer.from(privateKeyBuffer).toString('utf8');
+
+        const scopes = await vscode.window.showQuickPick(DefaultScopes, { canPickMany: true, placeHolder: 'Select scopes', ignoreFocusOut: true, });
+        if (!scopes || scopes.length === 0) {
+            vscode.window.showErrorMessage('No scopes provided');
+            return;
+        }
 
         const assertion = this.createAssertion(
             this.context.environment.clientId,
