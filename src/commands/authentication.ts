@@ -7,7 +7,7 @@ import { CommandCategory, Command, CommandRegistry } from './shared';
 
 const DefaultAuthPort = 8123;
 
-const DefaultScopes = [
+export const DefaultScopes = [
     'viewables:read', 
     'code:all', 
     'bucket:create','bucket:read','bucket:update', 'bucket:delete', 
@@ -165,12 +165,12 @@ export async function login(clientId: string, port: number, context: IContext): 
 }
 
 export async function getAccessToken(context: IContext) {
-    const scopes = await vscode.window.showInputBox({ prompt: 'Enter the scopes for your token', value: DefaultScopes.join(' ') });
+    const scopes = await vscode.window.showQuickPick(DefaultScopes, { canPickMany: true, placeHolder: 'Select scopes for the access token', ignoreFocusOut: true });
     if (!scopes) {
         return;
     }
     try {
-        const credentials = await context.authenticationClient.authenticate(scopes?.split(' ') || []);
+        const credentials = await context.authenticationClient.authenticate(scopes);
         const action = await vscode.window.showInformationMessage(`Access token generated (expires in: ${credentials.expires_in} seconds)`, 'Copy Token to Clipboard');
         if (action === 'Copy Token to Clipboard') {
             await vscode.env.clipboard.writeText(credentials.access_token);

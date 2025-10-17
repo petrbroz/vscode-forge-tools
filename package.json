@@ -1,162 +1,162 @@
 {
-	"name": "vscode-forge-tools",
-	"displayName": "Autodesk Platform Services",
-	"publisher": "petrbroz",
-	"icon": "resources/marketplace-logo.png",
-	"description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
-	"author": "Petr Broz <petr.broz@autodesk.com>",
-	"license": "MIT",
-	"version": "2.11.0",
-	"homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/petrbroz/vscode-forge-tools"
-	},
-	"bugs": {
-		"url": "https://github.com/petrbroz/vscode-forge-tools/issues",
-		"email": "petr.broz@autodesk.com"
-	},
-	"keywords": [
-		"autodesk",
-		"autodesk-platform-services",
-		"vscode",
-		"extension"
-	],
-	"engines": {
-		"vscode": "^1.92.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [],
-	"main": "./out/extension.js",
-	"contributes": {
-		"configuration": {
-			"title": "Autodesk Platform Services",
-			"properties": {
-				"autodesk.forge.environments": {
-					"scope": "resource",
-					"type": "array",
-					"description": "List of APS environments to switch between",
-					"items": {
-						"type": "object",
-						"title": "APS environments",
-						"properties": {
-							"title": {
-								"type": "string",
-								"description": "Environment title"
-							},
-							"clientId": {
-								"type": "string",
-								"description": "APS client ID"
-							},
-							"clientSecret": {
-								"type": "string",
-								"description": "APS client secret"
-							},
-							"host": {
-								"type": "string",
-								"description": "APS host URL",
-								"default": "https://developer.api.autodesk.com"
-							},
-							"region": {
-								"type": "string",
-								"description": "APS availability region",
-								"enum": [
-									"US",
-									"EMEA",
-									"APAC"
-								],
-								"default": "US"
-							},
-							"designAutomationRegion": {
-								"type": "string",
-								"description": "APS Design Automation availability region",
-								"enum": [
-									"us-west",
-									"us-east"
-								],
-								"default": "us-east"
-							}
-						}
-					}
-				},
-				"autodesk.forge.viewer.extensions": {
-					"scope": "resource",
-					"type": "array",
-					"description": "Viewer extensions to be used when previewing derivatives.",
-					"items": {
-						"type": "string"
-					}
-				},
-				"autodesk.forge.viewer.env": {
-					"scope": "resource",
-					"type": "string",
-					"description": "Custom Model Derivative environment used by the APS Viewer. By default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)."
-				},
-				"autodesk.forge.viewer.api": {
-					"scope": "resource",
-					"type": "string",
-					"description": "Custom Model Derivative API used by the APS Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
-				},
-				"autodesk.forge.authentication.port": {
-					"scope": "resource",
-					"type": "number",
-					"default": 8123,
-					"description": "Server port to use during 3-legged authentication workflows"
-				},
-				"autodesk.forge.data.defaultContentType": {
-					"scope": "resource",
-					"type": "string",
-					"default": "application/octet-stream",
-					"description": "When defined, all uploaded files and empty objects created in OSS will use this content type."
-				},
-				"autodesk.forge.data.uploadChunkSize": {
-					"scope": "resource",
-					"type": "number",
-					"default": 2097152,
-					"description": "Size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality."
-				}
-			}
-		},
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "apsViewContainer",
-					"title": "Autodesk Platform Services",
-					"icon": "resources/sidebar-logo.svg"
-				}
-			]
-		},
-		"views": {
-			"apsViewContainer": [
-				{
-					"id": "apsDataManagementView",
-					"name": "Buckets & Derivatives",
-					"icon": "$(database)"
-				},
-				{
-					"id": "apsHubsView",
-					"name": "Hubs & Derivatives",
-					"icon": "$(list-tree)"
-				},
-				{
-					"id": "apsWebhooksView",
-					"name": "Webhooks",
-					"icon": "$(bell)"
-				},
-				{
-					"id": "apsDesignAutomationView",
-					"name": "Automation",
-					"icon": "$(code)"
-				},
-				{
-					"id": "apsSecureServiceAccountsView",
-					"name": "Secure Service Accounts",
-					"icon": "$(robot)"
-				}
-			]
-		},
+    "name": "vscode-forge-tools",
+    "displayName": "Autodesk Platform Services",
+    "publisher": "petrbroz",
+    "icon": "resources/marketplace-logo.png",
+    "description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
+    "author": "Petr Broz <petr.broz@autodesk.com>",
+    "license": "MIT",
+    "version": "2.11.1",
+    "homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/petrbroz/vscode-forge-tools"
+    },
+    "bugs": {
+        "url": "https://github.com/petrbroz/vscode-forge-tools/issues",
+        "email": "petr.broz@autodesk.com"
+    },
+    "keywords": [
+        "autodesk",
+        "autodesk-platform-services",
+        "vscode",
+        "extension"
+    ],
+    "engines": {
+        "vscode": "^1.92.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "title": "Autodesk Platform Services",
+            "properties": {
+                "autodesk.forge.environments": {
+                    "scope": "resource",
+                    "type": "array",
+                    "description": "List of APS environments to switch between",
+                    "items": {
+                        "type": "object",
+                        "title": "APS environments",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Environment title"
+                            },
+                            "clientId": {
+                                "type": "string",
+                                "description": "APS client ID"
+                            },
+                            "clientSecret": {
+                                "type": "string",
+                                "description": "APS client secret"
+                            },
+                            "host": {
+                                "type": "string",
+                                "description": "APS host URL",
+                                "default": "https://developer.api.autodesk.com"
+                            },
+                            "region": {
+                                "type": "string",
+                                "description": "APS availability region",
+                                "enum": [
+                                    "US",
+                                    "EMEA",
+                                    "APAC"
+                                ],
+                                "default": "US"
+                            },
+                            "designAutomationRegion": {
+                                "type": "string",
+                                "description": "APS Design Automation availability region",
+                                "enum": [
+                                    "us-west",
+                                    "us-east"
+                                ],
+                                "default": "us-east"
+                            }
+                        }
+                    }
+                },
+                "autodesk.forge.viewer.extensions": {
+                    "scope": "resource",
+                    "type": "array",
+                    "description": "Viewer extensions to be used when previewing derivatives.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "autodesk.forge.viewer.env": {
+                    "scope": "resource",
+                    "type": "string",
+                    "description": "Custom Model Derivative environment used by the APS Viewer. By default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)."
+                },
+                "autodesk.forge.viewer.api": {
+                    "scope": "resource",
+                    "type": "string",
+                    "description": "Custom Model Derivative API used by the APS Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
+                },
+                "autodesk.forge.authentication.port": {
+                    "scope": "resource",
+                    "type": "number",
+                    "default": 8123,
+                    "description": "Server port to use during 3-legged authentication workflows"
+                },
+                "autodesk.forge.data.defaultContentType": {
+                    "scope": "resource",
+                    "type": "string",
+                    "default": "application/octet-stream",
+                    "description": "When defined, all uploaded files and empty objects created in OSS will use this content type."
+                },
+                "autodesk.forge.data.uploadChunkSize": {
+                    "scope": "resource",
+                    "type": "number",
+                    "default": 2097152,
+                    "description": "Size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality."
+                }
+            }
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "apsViewContainer",
+                    "title": "Autodesk Platform Services",
+                    "icon": "resources/sidebar-logo.svg"
+                }
+            ]
+        },
+        "views": {
+            "apsViewContainer": [
+                {
+                    "id": "apsDataManagementView",
+                    "name": "Buckets & Derivatives",
+                    "icon": "$(database)"
+                },
+                {
+                    "id": "apsHubsView",
+                    "name": "Hubs & Derivatives",
+                    "icon": "$(list-tree)"
+                },
+                {
+                    "id": "apsWebhooksView",
+                    "name": "Webhooks",
+                    "icon": "$(bell)"
+                },
+                {
+                    "id": "apsDesignAutomationView",
+                    "name": "Automation",
+                    "icon": "$(code)"
+                },
+                {
+                    "id": "apsSecureServiceAccountsView",
+                    "name": "Secure Service Accounts",
+                    "icon": "$(robot)"
+                }
+            ]
+        },
         "commands": [
             {
                 "command": "aps.switchEnvironment",
@@ -649,6 +649,18 @@
                 "title": "Delete Secure Service Account Key",
                 "category": "Autodesk Platform Services > Secure Service Accounts",
                 "icon": "$(trash)"
+            },
+            {
+                "command": "aps.ssa.generateAssertion",
+                "title": "Generate Assertion",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(gist-secret)"
+            },
+            {
+                "command": "aps.ssa.generateAccessToken",
+                "title": "Generate Access Token",
+                "category": "Autodesk Platform Services > Secure Service Accounts",
+                "icon": "$(key)"
             }
         ],
         "menus": {
@@ -1044,39 +1056,51 @@
                     "command": "aps.ssa.deleteAccountKey",
                     "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
                     "group": "3_remove"
+                },
+                {
+                    "command": "aps.ssa.generateAssertion",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "1_action"
+                },
+                {
+                    "command": "aps.ssa.generateAccessToken",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "1_action"
                 }
             ]
         }
-	},
-	"scripts": {
-		"vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
-		"build": "node ./esbuild.js"
-	},
-	"devDependencies": {
-		"@types/mocha": "^2.2.42",
-		"@types/node": "^12.0.0",
-		"@types/react": "^18.0.28",
-		"@types/react-dom": "^18.0.11",
-		"@types/vscode": "1.92",
-		"@vscode/webview-ui-toolkit": "^1.2.2",
-		"esbuild": "^0.25.0",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
-		"tslint": "^5.12.1",
-		"typescript": "^5.9.3",
-		"vscode-test": "^1.3.0"
-	},
-	"dependencies": {
-		"@microsoft/kiota-abstractions": "^1.0.0-preview.98",
-		"@microsoft/kiota-http-fetchlibrary": "^1.0.0-preview.98",
-		"@microsoft/kiota-serialization-form": "^1.0.0-preview.98",
-		"@microsoft/kiota-serialization-json": "^1.0.0-preview.98",
-		"@microsoft/kiota-serialization-multipart": "^1.0.0-preview.98",
-		"@microsoft/kiota-serialization-text": "^1.0.0-preview.98",
-		"@types/fs-extra": "^9.0.0",
-		"aps-sdk-node": "^10.0.1",
-		"axios": "^1.8.2",
-		"fs-extra": "^9.0.0",
-		"svf-utils": "^5.0.5"
-	}
+    },
+    "scripts": {
+        "vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
+        "build": "node ./esbuild.js"
+    },
+    "devDependencies": {
+        "@types/jsonwebtoken": "^9.0.10",
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^12.0.0",
+        "@types/react": "^18.0.28",
+        "@types/react-dom": "^18.0.11",
+        "@types/vscode": "1.92",
+        "@vscode/webview-ui-toolkit": "^1.2.2",
+        "esbuild": "^0.25.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "tslint": "^5.12.1",
+        "typescript": "^5.9.3",
+        "vscode-test": "^1.3.0"
+    },
+    "dependencies": {
+        "@microsoft/kiota-abstractions": "^1.0.0-preview.98",
+        "@microsoft/kiota-http-fetchlibrary": "^1.0.0-preview.98",
+        "@microsoft/kiota-serialization-form": "^1.0.0-preview.98",
+        "@microsoft/kiota-serialization-json": "^1.0.0-preview.98",
+        "@microsoft/kiota-serialization-multipart": "^1.0.0-preview.98",
+        "@microsoft/kiota-serialization-text": "^1.0.0-preview.98",
+        "@types/fs-extra": "^9.0.0",
+        "aps-sdk-node": "^10.0.1",
+        "axios": "^1.8.2",
+        "fs-extra": "^9.0.0",
+        "jsonwebtoken": "^9.0.2",
+        "svf-utils": "^5.0.5"
+    }
 }
