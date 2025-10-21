@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.11.2] - 2025-10-21
+
+- Fixed
+  - Issue preventing the extension from being published to Visual Studio Marketplace
+
 ## [2.11.1] - 2025-10-17
 
 - Added
