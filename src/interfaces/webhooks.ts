@@ -477,5 +477,21 @@ export const WEBHOOKS: WebhookSystem[] = [
                 scopes: ['project']
             }
         ]
+    },
+    {
+        id: 'autodesk.construction.reviews',
+        name: 'ACC Reviews',
+        events: [
+            {
+                id: 'review.created-1.0',
+                description: 'When a review is created.',
+                scopes: ['project']
+            },
+            {
+                id: 'review.closed-1.0',
+                description: 'When a review is closed.',
+                scopes: ['project']
+            }
+        ]
     }
 ];
