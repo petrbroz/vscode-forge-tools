@@ -1098,7 +1098,7 @@
         "@microsoft/kiota-serialization-text": "^1.0.0-preview.98",
         "@types/fs-extra": "^9.0.0",
         "aps-sdk-node": "^10.0.1",
-        "axios": "^1.8.2",
+        "axios": "^1.13.5",
         "fs-extra": "^9.0.0",
         "jsonwebtoken": "^9.0.2",
         "svf-utils": "^5.0.5"
