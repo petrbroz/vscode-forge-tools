@@ -7,3 +7,4 @@ node_modules
 .wip
 specs/
 scripts/*.js
+.claude/
