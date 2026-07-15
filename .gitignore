@@ -6,5 +6,5 @@ node_modules
 .DS_Store
 .wip
 specs/
-scripts/*.js
-.claude/
+*.local.json
+*.local.md
