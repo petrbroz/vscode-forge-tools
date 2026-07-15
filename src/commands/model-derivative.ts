@@ -21,16 +21,30 @@ import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../c
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
 import { ModelDerivativeFormats, svf2 } from '../providers/model-derivative';
 import { IVersion } from '../interfaces/hubs';
-import { CommandCategory, Command, CommandRegistry, ViewItemContextMenu } from './shared';
 
-@CommandCategory({ category: 'Autodesk Platform Services > Model Derivatives', prefix: 'aps.md' })
-export class ModelDerivativesCommands extends CommandRegistry {
+export class ModelDerivativesCommands {
 	constructor(protected context: IContext, protected refresh: () => void) {
-		super();
 	}
 
-	@Command({ title: 'Translate Object', icon: 'run' })
-	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@2' })
+	registerCommands(): vscode.Disposable[] {
+		return [
+			vscode.commands.registerCommand('aps.md.translateObject', this.translateObject.bind(this)),
+			vscode.commands.registerCommand('aps.md.translateObjectCustom', this.translateObjectCustom.bind(this)),
+			vscode.commands.registerCommand('aps.md.listViewables', this.listViewables.bind(this)),
+			vscode.commands.registerCommand('aps.md.previewDerivative', this.previewDerivative.bind(this)),
+			vscode.commands.registerCommand('aps.md.viewDerivativeTree', this.viewDerivativeTree.bind(this)),
+			vscode.commands.registerCommand('aps.md.viewDerivativeProps', this.viewDerivativeProps.bind(this)),
+			vscode.commands.registerCommand('aps.md.viewObjectManifest', this.viewObjectManifest.bind(this)),
+			vscode.commands.registerCommand('aps.md.viewObjectThumbnail', this.viewObjectThumbnail.bind(this)),
+			vscode.commands.registerCommand('aps.md.deleteObjectManifest', this.deleteObjectManifest.bind(this)),
+			vscode.commands.registerCommand('aps.md.downloadDerivativeSvf', this.downloadDerivativeSvf.bind(this)),
+			vscode.commands.registerCommand('aps.md.downloadDerivativesF2D', this.downloadDerivativesF2D.bind(this)),
+			vscode.commands.registerCommand('aps.md.downloadDerivativeGltf', this.downloadDerivativeGltf.bind(this)),
+			vscode.commands.registerCommand('aps.md.downloadDerivativeCustom', this.downloadDerivativeCustom.bind(this)),
+			vscode.commands.registerCommand('aps.md.copyObjectUrn', this.copyObjectUrn.bind(this)),
+		];
+	}
+
 	async translateObject(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
@@ -65,8 +79,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		this.refresh();
 	}
 
-	@Command({ title: 'Translate Object (Custom)', icon: 'run' })
-	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@3' })
 	async translateObjectCustom(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
@@ -139,8 +151,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'List Viewables (JSON)', icon: 'json' })
-	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@4' })
 	async listViewables(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
@@ -163,8 +173,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'Preview Derivative', icon: 'preview' })
-	@ViewItemContextMenu({ when: 'viewItem == derivative', group: '0_view@1' })
 	async previewDerivative(derivative?: IDerivative) {
 		try {
 			if (!derivative) {
@@ -216,8 +224,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'View Derivative Tree (JSON)', icon: 'json' })
-	@ViewItemContextMenu({ when: 'viewItem == derivative', group: '0_view@2' })
 	async viewDerivativeTree(derivative?: IDerivative) {
 		try {
 			if (!derivative) {
@@ -284,8 +290,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'View Derivative Properties (JSON)', icon: 'json' })
-	@ViewItemContextMenu({ when: 'viewItem == derivative', group: '0_view@3' })
 	async viewDerivativeProps(derivative?: IDerivative) {
 		try {
 			if (!derivative) {
@@ -352,8 +356,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'View Object Manifest (JSON)', icon: 'json' })
-	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '0_view@4' })
 	async viewObjectManifest(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
@@ -378,8 +380,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'View Object Thumbnails', icon: 'eye' })
-	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '0_view@3' })
 	async viewObjectThumbnail(object?: ObjectDetails | IVersion) {
 		async function downloadThumbnail(png: string, defaultUri: vscode.Uri) {
 			const uri = await vscode.window.showSaveDialog({ defaultUri });
@@ -461,8 +461,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'Delete Object Manifest', icon: 'trash' })
-	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '3_remove@2' })
 	async deleteObjectManifest(object?: ObjectDetails) {
 		try {
 			if (!object) {
@@ -507,8 +505,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		this.refresh();
 	}
 
-	@Command({ title: 'Download Derivatives as SVF', icon: 'cloud-download' })
-	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action_md@5' })
 	async downloadDerivativeSvf(object?: ObjectDetails) {
 		try {
 			if (!object) {
@@ -560,8 +556,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'Download Derivatives as F2D', icon: 'cloud-download' })
-	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action_md@6' })
 	async downloadDerivativesF2D(object?: ObjectDetails) {
 		try {
 			if (!object) {
@@ -610,8 +604,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'Download Derivatives as glTF', icon: 'cloud-download' })
-	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action_md@7' })
 	async downloadDerivativeGltf(object?: ObjectDetails) {
 		try {
 			if (!object) {
@@ -669,8 +661,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'Download Non-SVF derivatives', icon: 'cloud-download' })
-	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == non-viewable-derivative', group: '1_action_md@8' })
 	async downloadDerivativeCustom(object?: IDerivative) {
 		try {
 			if (!object) {
@@ -720,8 +710,6 @@ export class ModelDerivativesCommands extends CommandRegistry {
 		}
 	}
 
-	@Command({ title: 'Copy Object URN to Clipboard', icon: 'copy' })
-	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@1' })
 	async copyObjectUrn(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {

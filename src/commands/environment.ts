@@ -2,15 +2,17 @@ import * as vscode from 'vscode';
 import { IContext } from '../common';
 import { getEnvironments, IEnvironment } from '../environment';
 import { createClients } from '../clients';
-import { CommandCategory, Command, CommandRegistry } from './shared';
 
-@CommandCategory({ category: 'Autodesk Platform Services', prefix: 'aps' })
-export class EnvironmentCommands extends CommandRegistry {
+export class EnvironmentCommands {
 	constructor(protected context: IContext, protected refresh: () => void) {
-		super();
 	}
 
-    @Command({ title: 'Switch Environment', icon: 'sync' })
+    registerCommands(): vscode.Disposable[] {
+        return [
+            vscode.commands.registerCommand('aps.switchEnvironment', this.switchEnvironment.bind(this)),
+        ];
+    }
+
     async switchEnvironment() {
         const environments = getEnvironments();
         const name = await vscode.window.showQuickPick(environments.map(env => env.title), { placeHolder: 'Select APS environment' });

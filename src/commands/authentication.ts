@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
 import { Scopes, ThreeLeggedToken } from '@aps_sdk/authentication';
 import { createClients } from '../clients';
-import { CommandCategory, Command, CommandRegistry } from './shared';
 
 const DefaultAuthPort = 8123;
 
@@ -17,13 +16,18 @@ export const DefaultScopes: Scopes[] = [
     Scopes.UserProfileRead
 ]; // TODO: make the list configurable?
 
-@CommandCategory({ category: 'Autodesk Platform Services > Authentication', prefix: 'aps.auth' })
-export class AuthenticationCommands extends CommandRegistry {
+export class AuthenticationCommands {
     constructor(protected context: IContext, protected refresh: () => void) {
-        super();
     }
 
-    @Command({ title: 'Login', icon: 'sign-in' })
+    registerCommands(): vscode.Disposable[] {
+        return [
+            vscode.commands.registerCommand('aps.auth.login', this.login.bind(this)),
+            vscode.commands.registerCommand('aps.auth.logout', this.logout.bind(this)),
+            vscode.commands.registerCommand('aps.auth.getAccessToken', this.getAccessToken.bind(this)),
+        ];
+    }
+
     async login() {
         const env = this.context.environment;
         try {
@@ -44,7 +48,6 @@ export class AuthenticationCommands extends CommandRegistry {
         }
     }
 
-    @Command({ title: 'Logout', icon: 'sign-out' })
     async logout() {
 		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to log out?' });
         const env = this.context.environment;
@@ -56,7 +59,6 @@ export class AuthenticationCommands extends CommandRegistry {
 		}
     }
 
-    @Command({ title: 'Generate Access Token', icon: 'key' })
     async getAccessToken() {
         await getAccessToken(this.context);
     }

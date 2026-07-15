@@ -3,41 +3,38 @@ import { IContext, showErrorMessage } from '../common';
 import { IWebhook, IWebhookEvent } from '../providers/webhooks';
 import { withProgress, createWebViewPanel } from '../common';
 import { WebhookEvent, WEBHOOKS, WebhookSystem } from '../interfaces/webhooks';
-import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
 
-@CommandCategory({ category: 'Autodesk Platform Services > Webhooks', prefix: 'aps.wh' })
-export class WebhooksCommands extends CommandRegistry {
+export class WebhooksCommands {
     constructor(protected context: IContext, protected refresh: () => void) {
-        super();
     }
 
-    @Command({ title: 'Refresh Webhooks', icon: 'refresh' })
-	@ViewTitleMenu({ when: 'view == apsWebhooksView', group: 'navigation' })
+    registerCommands(): vscode.Disposable[] {
+        return [
+            vscode.commands.registerCommand('aps.wh.refreshWebhooks', this.refreshWebhooks.bind(this)),
+            vscode.commands.registerCommand('aps.wh.createWebhook', this.createWebhook.bind(this)),
+            vscode.commands.registerCommand('aps.wh.updateWebhook', this.updateWebhook.bind(this)),
+            vscode.commands.registerCommand('aps.wh.deleteWebhook', this.deleteWebhook.bind(this)),
+            vscode.commands.registerCommand('aps.wh.viewWebhookDetails', this.viewWebhookDetails.bind(this)),
+        ];
+    }
+
     async refreshWebhooks() {
         this.refresh();
     }
 
-    @Command({ title: 'Create Webhook', icon: 'add' })
-	@ViewItemContextMenu({ when: 'view == apsWebhooksView && viewItem == event', group: '2_modify' })
     async createWebhook(event: IWebhookEvent) {
         await createWebhook(event, this.context, this.refresh);
     }
 
-    @Command({ title: 'Update Webhook', icon: 'edit' })
-	@ViewItemContextMenu({ when: 'view == apsWebhooksView && viewItem == hook', group: '2_modify' })
     async updateWebhook(webhook: IWebhook) {
         await updateWebhook(webhook, this.context, this.refresh);
     }
 
-    @Command({ title: 'Delete Webhook', icon: 'trash' })
-	@ViewItemContextMenu({ when: 'view == apsWebhooksView && viewItem == hook', group: '3_remove' })
     async deleteWebhook(webhook: IWebhook) {
         await deleteWebhook(webhook, this.context);
         this.refresh();
     }
 
-    @Command({ title: 'View Webhook Details', icon: 'eye' })
-	@ViewItemContextMenu({ when: 'view == apsWebhooksView && viewItem == hook', group: '0_view' })
     async viewWebhookDetails(webhook: IWebhook) {
         await viewWebhookDetails(webhook, this.context);
     }
