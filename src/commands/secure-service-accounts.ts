@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import jwt from 'jsonwebtoken';
+import { Scopes, Utils } from '@aps_sdk/secure-service-account';
 import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
 import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
@@ -34,7 +34,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         }
 
         try {
-            const account = await this.context.secureServiceAccountsClient.serviceAccounts.post({ name, firstName, lastName });
+            const account = await this.context.secureServiceAccountsClient.createServiceAccount({ name, firstName, lastName });
             vscode.window.showInformationMessage(`Secure service account created: ${account?.email}`);
         } catch (error) {
             showErrorMessage('Could not create secure service account', error, this.context);
@@ -54,7 +54,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             const secureServiceAccountDetails = await withProgress(
                 `Getting secure service account details: ${secureServiceAccount.id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).get()
+                this.context.secureServiceAccountsClient.getServiceAccount(secureServiceAccount.id)
             );
             createWebViewPanel(this.context, 'secure-service-account-details.js', 'secure-service-account-details', `Secure Service Account Details: ${secureServiceAccount.id}`, { detail: secureServiceAccountDetails });
         } catch (err) {
@@ -93,7 +93,9 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             await withProgress(
                 `Updating secure service account: ${secureServiceAccount.id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).patch({ status })
+                status === 'ENABLED'
+                    ? this.context.secureServiceAccountsClient.enableServiceAccount(secureServiceAccount.id)
+                    : this.context.secureServiceAccountsClient.disableServiceAccount(secureServiceAccount.id)
             );
             vscode.window.showInformationMessage(`Secure service account updated: ${secureServiceAccount.id}`);
         } catch (err) {
@@ -119,7 +121,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             await withProgress(
                 `Deleting secure service account: ${secureServiceAccount.id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).delete()
+                this.context.secureServiceAccountsClient.deleteServiceAccount(secureServiceAccount.id)
             );
             vscode.window.showInformationMessage(`Secure service account deleted: ${secureServiceAccount.id}`);
         } catch (err) {
@@ -140,7 +142,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             const secureServiceAccountKey = await withProgress(
                 `Generating private key for secure service account: ${secureServiceAccount.id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.post()
+                this.context.secureServiceAccountsClient.createServiceAccountKey(secureServiceAccount.id)
             );
             const doc = await vscode.workspace.openTextDocument({ content: secureServiceAccountKey?.privateKey! });
             await vscode.window.showTextDocument(doc, { preview: false });
@@ -163,7 +165,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             const allSecureServiceAccountKeys = await withProgress(
                 `Getting secure service account key details: ${secureServiceAccountKey.id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountKey.secureServiceAccountId).keys.get()
+                this.context.secureServiceAccountsClient.getAllServiceAccountKeys(secureServiceAccountKey.secureServiceAccountId)
             );
             const secureServiceAccountDetails = allSecureServiceAccountKeys?.keys?.find(key => key.kid === secureServiceAccountKey!.id);
             if (!secureServiceAccountDetails) {
@@ -208,7 +210,9 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             const { id, secureServiceAccountId } = secureServiceAccountKey;
             await withProgress(
                 `Updating secure service account key: ${id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountId).keys.byKeyId(id).patch({ status })
+                status === 'ENABLED'
+                    ? this.context.secureServiceAccountsClient.enableServiceAccountKey(secureServiceAccountId, id)
+                    : this.context.secureServiceAccountsClient.disableServiceAccountKey(secureServiceAccountId, id)
             );
             vscode.window.showInformationMessage(`Secure service account key updated: ${id}`);
         } catch (err) {
@@ -234,7 +238,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             await withProgress(
                 `Deleting secure service account key: ${secureServiceAccountKey.id}`,
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccountKey.secureServiceAccountId).keys.byKeyId(secureServiceAccountKey.id).delete()
+                this.context.secureServiceAccountsClient.deleteServiceAccountKey(secureServiceAccountKey.secureServiceAccountId, secureServiceAccountKey.id)
             );
             vscode.window.showInformationMessage(`Secure service account key deleted: ${secureServiceAccountKey.id}`);
         } catch (err) {
@@ -265,12 +269,12 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             return;
         }
 
-        const assertion = this.createAssertion(
+        const assertion = Utils.generateJwtAssertion(
             this.context.environment.clientId,
             secureServiceAccountKey.secureServiceAccountId,
-            secureServiceAccountKey.id,
             privateKey,
-            scopes
+            secureServiceAccountKey.id,
+            scopes as Scopes[]
         );
         const action = await vscode.window.showInformationMessage('Assertion generated', 'Open in New Tab', 'Copy to Clipboard');
         switch (action) {
@@ -307,20 +311,20 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             return;
         }
 
-        const assertion = this.createAssertion(
+        const assertion = Utils.generateJwtAssertion(
             this.context.environment.clientId,
             secureServiceAccountKey.secureServiceAccountId,
-            secureServiceAccountKey.id,
             privateKey,
-            scopes
+            secureServiceAccountKey.id,
+            scopes as Scopes[]
         );
         const accessToken = await withProgress(
             'Generating access token...',
-            this.exchangeAssertionForAccessToken(
+            this.context.secureServiceAccountsClient.exchangeJwtAssertion(
+                assertion,
                 this.context.environment.clientId,
                 this.context.environment.clientSecret,
-                assertion,
-                scopes
+                { scope: scopes as Scopes[] }
             )
         );
         const action = await vscode.window.showInformationMessage('Access token generated', 'Open in New Tab', 'Copy to Clipboard');
@@ -340,7 +344,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         try {
             const secureServiceAccounts = await withProgress(
                 'Loading secure service accounts...',
-                this.context.secureServiceAccountsClient.serviceAccounts.get()
+                this.context.secureServiceAccountsClient.getServiceAccounts()
             );
             if (!secureServiceAccounts || !secureServiceAccounts.serviceAccounts || secureServiceAccounts.serviceAccounts.length === 0) {
                 vscode.window.showInformationMessage('No secure service accounts found');
@@ -373,7 +377,7 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
             }
             const secureServiceAccountKeys = await withProgress(
                 'Loading secure service account keys...',
-                this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(secureServiceAccount.id).keys.get()
+                this.context.secureServiceAccountsClient.getAllServiceAccountKeys(secureServiceAccount.id)
             );
             if (!secureServiceAccountKeys || !secureServiceAccountKeys.keys || secureServiceAccountKeys.keys.length === 0) {
                 vscode.window.showInformationMessage('No secure service account keys found');
@@ -396,41 +400,5 @@ export class SecureServiceAccountsCommands extends CommandRegistry {
         } catch (error) {
             showErrorMessage('Could not load secure service account keys', error, this.context);
         }
-    }
-
-    protected createAssertion(clientId: string, serviceAccountId: string, serviceAccountKeyId: string, serviceAccountPrivateKey: string, scopes: string[], host: string = 'https://developer.api.autodesk.com'): string {
-        const payload = {
-            iss: clientId,
-            sub: serviceAccountId,
-            aud: `${host}/authentication/v2/token`,
-            exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes
-            scope: scopes
-        };
-        return jwt.sign(payload, serviceAccountPrivateKey, {
-            algorithm: 'RS256',
-            header: {
-                alg: 'RS256',
-                kid: serviceAccountKeyId
-            },
-            noTimestamp: true
-        });
-    }
-
-    protected async exchangeAssertionForAccessToken(clientId: string, clientSecret: string, assertion: string, scopes: string[], host: string = 'https://developer.api.autodesk.com'): Promise<{ access_token: string; token_type: string; expires_in: number; }> {
-        const headers = {
-            'Accept': 'application/json',
-            'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        };
-        const body = new URLSearchParams({
-            'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-            'scope': scopes.join(' '),
-            'assertion': assertion
-        });
-        const response = await fetch(`${host}/authentication/v2/token`, { method: 'POST', headers, body });
-        if (!response.ok) {
-            throw new Error(`Could not generate access token: ${await response.text()}`);
-        }
-        return response.json();
     }
 }

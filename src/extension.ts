@@ -1,13 +1,11 @@
 import * as vscode from 'vscode';
-import { AuthenticationClient, DataManagementClient, ModelDerivativeClient, DesignAutomationClient, WebhooksClient, BIM360Client } from 'aps-sdk-node';
 import { SimpleStorageDataProvider } from './providers/data-management';
 import { DesignAutomationDataProvider }from './providers/design-automation';
-import { Region } from 'aps-sdk-node/dist/common';
 import { IContext } from './common';
 import { WebhooksDataProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
-import { getEnvironments, setupNewEnvironment, DesignAutomationRegion } from './environment';
-import { ClientCredentialsAuthenticationProvider, createSecureServiceAccountsClient, DefaultRequestAdapter } from './clients';
+import { getEnvironments, setupNewEnvironment } from './environment';
+import { createClients } from './clients';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { AuthenticationCommands } from './commands/authentication';
 import { ObjectStorageServiceCommands } from './commands/object-storage';
@@ -27,19 +25,10 @@ export function activate(_context: vscode.ExtensionContext) {
 	}
 	let env = environments[0];
 
-    let defaultRequestAdapter = new DefaultRequestAdapter(new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret));
 	let context: IContext = {
 		extensionContext: _context,
-		credentials: { client_id: env.clientId, client_secret: env.clientSecret },
         environment: env,
-		authenticationClient: new AuthenticationClient(env.clientId, env.clientSecret, env.host),
-		dataManagementClient: new DataManagementClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		modelDerivativeClient2L: new ModelDerivativeClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		modelDerivativeClient3L: new ModelDerivativeClient({ token: '' }, env.host, env.region as Region),
-		designAutomationClient: new DesignAutomationClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region, env.designAutomationRegion as DesignAutomationRegion),
-		webhookClient: new WebhooksClient({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-		bim360Client: new BIM360Client({ client_id: env.clientId, client_secret: env.clientSecret }, env.host, env.region as Region),
-        secureServiceAccountsClient: createSecureServiceAccountsClient(defaultRequestAdapter),
+        ...createClients(env),
 		previewSettings: {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || [],
 			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),
@@ -115,7 +104,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(...secureServiceAccountsCommands.registerCommands());
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
-		statusBarItem.text = 'APS Env: ' + env.title;
+		statusBarItem.text = 'APS Env: ' + context.environment.title;
 		statusBarItem.command = 'aps.switchEnvironment';
 		statusBarItem.show();
 	}

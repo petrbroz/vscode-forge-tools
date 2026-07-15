@@ -1,21 +1,14 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import {
-    AuthenticationClient,
-    DataManagementClient,
-    ModelDerivativeClient,
-    DesignAutomationClient,
-    WebhooksClient,
-    BIM360Client,
     IBucket,
     IObject,
     urnify
 } from 'aps-sdk-node';
 import { IDerivative } from './interfaces/model-derivative';
-import { IAuthOptions } from 'aps-sdk-node/dist/common';
 import { IEnvironment } from './environment';
 import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
-import { createSecureServiceAccountsClient } from './clients';
+import { IClients } from './clients';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -23,18 +16,9 @@ export interface IPreviewSettings {
     api?: string;
 }
 
-export interface IContext {
-    credentials: IAuthOptions;
+export interface IContext extends IClients {
     environment: IEnvironment;
     extensionContext: vscode.ExtensionContext;
-    authenticationClient: AuthenticationClient;
-    dataManagementClient: DataManagementClient;
-    modelDerivativeClient2L: ModelDerivativeClient; // client for 2-legged workflows
-    modelDerivativeClient3L: ModelDerivativeClient; // client for 3-legged workflows
-    designAutomationClient: DesignAutomationClient;
-    webhookClient: WebhooksClient;
-    bim360Client: BIM360Client;
-    secureServiceAccountsClient: ReturnType<typeof createSecureServiceAccountsClient>;
     previewSettings: IPreviewSettings;
     threeLeggedToken?: string;
     log: vscode.LogOutputChannel;
