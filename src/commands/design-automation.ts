@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import axios from 'axios';
 import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IAppBundleUploadParams, IActivityDetail, DesignAutomationID } from '../clients/design-automation';
 import { withProgress, createWebViewPanel } from '../common';
@@ -667,8 +666,8 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 								action = await vscode.window.showErrorMessage(`Workitem failed`, 'View Report');
 							}
 							if (action === 'View Report') {
-								const resp = await axios.get(workitem.reportUrl);
-								const doc = await vscode.workspace.openTextDocument({ content: resp.data });
+								const resp = await fetch(workitem.reportUrl);
+								const doc = await vscode.workspace.openTextDocument({ content: await resp.text() });
 								vscode.window.showTextDocument(doc);
 							}
 						} catch(err) {

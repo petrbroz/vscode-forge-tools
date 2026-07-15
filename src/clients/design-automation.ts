@@ -1,6 +1,5 @@
 import * as fs from 'fs';
-import axios, { AxiosRequestConfig } from 'axios';
-import FormData from 'form-data';
+import * as path from 'path';
 import { IAuthenticationProvider } from '@aps_sdk/autodesk-sdkmanager';
 import { IEnvironment, DesignAutomationRegion } from '../environment';
 import { ClientCredentialsAuthenticationProvider } from './client-credentials-authentication-provider';
@@ -37,10 +36,17 @@ const SCOPES = ['code:all'];
 
 type ActivitySettings = { [key: string]: ICodeOnEngineStringSetting | ICodeOnEngineUrlSetting };
 
+interface IRequestConfig {
+    method: string;
+    url: string;
+    data?: any;
+    headers?: Record<string, string>;
+}
+
 /**
  * Minimal REST wrapper for the APS Design Automation v3 API. There is no official `@aps_sdk/*` SDK
  * for Design Automation, so this reproduces just the method surface the extension uses, on top of
- * `axios`. Two-legged tokens (`code:all`) are obtained via the shared
+ * the built-in `fetch`. Two-legged tokens (`code:all`) are obtained via the shared
  * `ClientCredentialsAuthenticationProvider`; list endpoints are auto-paginated to plain arrays to
  * match how the legacy client behaved.
  */
@@ -55,14 +61,31 @@ export class DesignAutomationClient {
         this.baseUrl = `${host || DEFAULT_HOST}/da/${region || DesignAutomationRegion.US_EAST}/v3`;
     }
 
-    private async request<T>(config: AxiosRequestConfig): Promise<T> {
+    private async request<T>(config: IRequestConfig): Promise<T> {
         const token = await this.authenticationProvider.getAccessToken(SCOPES);
-        const response = await axios.request<T>({
-            ...config,
-            baseURL: this.baseUrl,
-            headers: { ...config.headers, Authorization: `Bearer ${token}` }
-        });
-        return response.data;
+        const headers: Record<string, string> = { ...config.headers, Authorization: `Bearer ${token}` };
+        let body: string | undefined;
+        if (config.data !== undefined) {
+            body = JSON.stringify(config.data);
+            headers['Content-Type'] = 'application/json';
+        }
+        const response = await fetch(`${this.baseUrl}${config.url}`, { method: config.method, headers, body });
+        const text = await response.text();
+        // Most endpoints return JSON, but `/forgeapps/me` responds with a plain-text nickname.
+        let data: any;
+        try {
+            data = text ? JSON.parse(text) : undefined;
+        } catch {
+            data = text;
+        }
+        if (!response.ok) {
+            const err: any = new Error(`Request failed with status code ${response.status}`);
+            const headers: Record<string, string> = {};
+            response.headers.forEach((value, key) => { headers[key] = value; });
+            err.response = { config, data, headers, status: response.status, statusText: response.statusText };
+            throw err;
+        }
+        return data as T;
     }
 
     /** Fetches every page of a paginated list endpoint and returns the flattened `data` array. */
@@ -126,13 +149,16 @@ export class DesignAutomationClient {
         for (const [key, value] of Object.entries(formData)) {
             form.append(key, value);
         }
-        form.append('file', stream); // The archive must be the last field
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk as Buffer);
+        }
+        form.append('file', new Blob([Buffer.concat(chunks)]), path.basename(String(stream.path))); // The archive must be the last field
         // The endpoint URL is a pre-signed S3 upload, not on the APS host - no baseURL, no bearer token.
-        await axios.post(endpointURL, form, {
-            headers: form.getHeaders(),
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity
-        });
+        const response = await fetch(endpointURL, { method: 'POST', body: form });
+        if (!response.ok) {
+            throw new Error(`Request failed with status code ${response.status}`);
+        }
     }
 
     async deleteAppBundle(id: string): Promise<void> {

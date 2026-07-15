@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as fse from 'fs-extra';
 import * as path from 'path';
-import axios from 'axios';
 import { Scopes } from '@aps_sdk/authentication';
 import { ObjectDetails } from '@aps_sdk/oss';
 import {
@@ -267,8 +265,8 @@ export class ModelDerivativesCommands {
 				const defaultPath = vscode.workspace.asRelativePath('tree.json');
 				const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(defaultPath) });
 				if (uri) {
-					fse.ensureFileSync(uri.fsPath);
-					fse.writeJsonSync(uri.fsPath, tree, { spaces: 4 });
+					fs.mkdirSync(path.dirname(uri.fsPath), { recursive: true });
+					fs.writeFileSync(uri.fsPath, JSON.stringify(tree, null, 4));
 					const action = await vscode.window.showInformationMessage(`Tree downloaded to ${uri.fsPath}.`, 'Open Folder');
 					if (action === 'Open Folder') {
 						vscode.env.openExternal(vscode.Uri.file(path.dirname(uri.fsPath)));
@@ -333,8 +331,8 @@ export class ModelDerivativesCommands {
 				const defaultPath = vscode.workspace.asRelativePath('properties.json');
 				const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(defaultPath) });
 				if (uri) {
-					fse.ensureFileSync(uri.fsPath);
-					fse.writeJsonSync(uri.fsPath, props, { spaces: 4 });
+					fs.mkdirSync(path.dirname(uri.fsPath), { recursive: true });
+					fs.writeFileSync(uri.fsPath, JSON.stringify(props, null, 4));
 					const action = await vscode.window.showInformationMessage(`Properties downloaded to ${uri.fsPath}.`, 'Open Folder');
 					if (action === 'Open Folder') {
 						vscode.env.openExternal(vscode.Uri.file(path.dirname(uri.fsPath)));
@@ -533,10 +531,13 @@ export class ModelDerivativesCommands {
 				title: `Downloading the derivative: ${object.name}`,
 				cancellable: false
 			}, async () => {
-				fse.ensureDirSync(baseDir);
+				fs.mkdirSync(baseDir, { recursive: true });
 				const derivativeDownload = await this.context.modelDerivativeClient2L.getDerivativeUrl(encodeURI(object!.bubble.fileUrn), object!.urn);
-				const response = await axios.get(derivativeDownload.url!, { responseType: 'arraybuffer' });
-				await fse.writeFile(targetFileName, new Uint8Array(response.data));
+				const response = await fetch(derivativeDownload.url!);
+				if (!response.ok) {
+					throw new Error(`Request failed with status code ${response.status}`);
+				}
+				await fs.promises.writeFile(targetFileName, new Uint8Array(await response.arrayBuffer()));
 			});
 
 			const action = await vscode.window.showInformationMessage('Derivative downloaded successfully', 'Open Folder');

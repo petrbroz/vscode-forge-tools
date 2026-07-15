@@ -1,4 +1,3 @@
-import axios from 'axios';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { BucketsItems, ObjectDetails, Access, PolicyKey, Region } from '@aps_sdk/oss';
@@ -395,7 +394,11 @@ export class ObjectStorageServiceCommands {
 
         try {
             const signedUrl = await this.context.dataManagementClient.createSignedResource(bucketKey, name, { access: Access.Write });
-            const { data } = await axios.put(signedUrl.signedUrl, Buffer.from([]));
+            const response = await fetch(signedUrl.signedUrl, { method: 'PUT', body: new Uint8Array(0) });
+            if (!response.ok) {
+                throw new Error(`Request failed with status code ${response.status}`);
+            }
+            const data = await response.json();
             vscode.window.showInformationMessage(`Object created: ${data.objectId}`);
         } catch(err) {
             showErrorMessage('Could not create file', err, this.context);
