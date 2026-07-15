@@ -1039,7 +1039,8 @@
     },
     "scripts": {
         "vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
-        "build": "node ./esbuild.js"
+        "build": "node ./esbuild.js",
+        "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
@@ -1051,7 +1052,7 @@
         "esbuild": "^0.28.1",
         "react": "^19.2.7",
         "react-dom": "^19.2.7",
-        "typescript": "^5.9.3",
+        "typescript": "^7.0.2",
         "vscode-test": "^1.6.1"
     },
     "dependencies": {

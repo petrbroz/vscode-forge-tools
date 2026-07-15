@@ -18,8 +18,8 @@ import {
 
 // Re-export the Design Automation types + ID helper so consumers (commands/providers) have a single
 // import site, mirroring how the legacy SDK client exposed both the client and its types.
-export {
-    DesignAutomationID,
+export { DesignAutomationID };
+export type {
     IActivityDetail,
     IActivityParam,
     IAlias,
