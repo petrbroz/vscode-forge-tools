@@ -1,20 +1,20 @@
 import * as http from 'http';
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
-import { IThreeLeggedToken } from 'aps-sdk-node';
+import { Scopes, ThreeLeggedToken } from '@aps_sdk/authentication';
 import { createClients } from '../clients';
 import { CommandCategory, Command, CommandRegistry } from './shared';
 
 const DefaultAuthPort = 8123;
 
-export const DefaultScopes = [
-    'viewables:read', 
-    'code:all', 
-    'bucket:create','bucket:read','bucket:update', 'bucket:delete', 
-    'data:read', 'data:write', 'data:create', 'data:search',
-    'account:read', 'account:write', 
-    'user:read', 'user:write',
-    'user-profile:read'
+export const DefaultScopes: Scopes[] = [
+    Scopes.ViewablesRead,
+    Scopes.CodeAll,
+    Scopes.BucketCreate, Scopes.BucketRead, Scopes.BucketUpdate, Scopes.BucketDelete,
+    Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate, Scopes.DataSearch,
+    Scopes.AccountRead, Scopes.AccountWrite,
+    Scopes.UserRead, Scopes.UserWrite,
+    Scopes.UserProfileRead
 ]; // TODO: make the list configurable?
 
 @CommandCategory({ category: 'Autodesk Platform Services > Authentication', prefix: 'aps.auth' })
@@ -128,7 +128,7 @@ function renderMessagePage(message: string): string {
     `;
 }
 
-export async function login(clientId: string, port: number, context: IContext): Promise<IThreeLeggedToken> {
+export async function login(clientId: string, port: number, context: IContext): Promise<ThreeLeggedToken> {
     const timeout = 2 * 60 * 1000; // Wait for 2 minutes
     const scopes = DefaultScopes; 
     return new Promise(function (resolve, reject) {
@@ -143,7 +143,7 @@ export async function login(clientId: string, port: number, context: IContext): 
                 const url = new URL(req.url, `http://localhost:${port}`);
                 const code = url.searchParams.get('code') as string;
                 url.searchParams.delete('code');
-                const credentials = await context.authenticationClient.getToken(code, url.toString());
+                const credentials = await context.authenticationClient.getThreeLeggedToken(clientId, code, url.toString(), { clientSecret: context.clientSecret });
                 res.end(renderMessagePage('You are logged in!'));
                 server.close();
                 resolve(credentials);
@@ -166,7 +166,7 @@ export async function getAccessToken(context: IContext) {
         return;
     }
     try {
-        const credentials = await context.authenticationClient.authenticate(scopes);
+        const credentials = await context.authenticationClient.getTwoLeggedToken(context.clientId, context.clientSecret, scopes as Scopes[]);
         const action = await vscode.window.showInformationMessage(`Access token generated (expires in: ${credentials.expires_in} seconds)`, 'Copy Token to Clipboard');
         if (action === 'Copy Token to Clipboard') {
             await vscode.env.clipboard.writeText(credentials.access_token);

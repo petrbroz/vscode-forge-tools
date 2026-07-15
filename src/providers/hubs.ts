@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
-import {
-	IBucket,
-    IObject,
-    IDerivativeManifest,
-    urnify as _urnify
-} from 'aps-sdk-node';
+import { Manifest } from '@aps_sdk/model-derivative';
+import { urnify as _urnify } from '../urn';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, inHubs } from '../common';
 import * as hi from '../interfaces/hubs';
@@ -171,12 +167,12 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getHubs(): Promise<HubsEntry[]> {
         try {
-            const hubs = await this._context.bim360Client.listHubs();
-            return hubs.map(hub => {
+            const hubs = await this._context.bim360Client.getHubs();
+            return (hubs.data ?? []).map(hub => {
                 let entry: hi.IHub = {
                     kind: 'hub',
-                    id: hub.id,
-                    name: hub.name || '<no name>'
+                    id: hub.id!,
+                    name: hub.attributes?.name || '<no name>'
                 };
                 return entry;
             });
@@ -190,13 +186,13 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getProjects(hubId: string): Promise<HubsEntry[]> {
         try {
-            const projects = await this._context.bim360Client.listProjects(hubId);
-            return projects.map(project => {
+            const projects = await this._context.bim360Client.getHubProjects(hubId);
+            return (projects.data ?? []).map(project => {
                 let entry: hi.IProject = {
                     kind: 'project',
                     hubId,
                     id: project.id,
-                    name: project.name || '<no name>'
+                    name: project.attributes.name || '<no name>'
                 };
                 return entry;
             });
@@ -210,15 +206,15 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getTopFolders(hubId: string, projectId: string): Promise<HubsEntry[]> {
         try {
-            const folders = await this._context.bim360Client.listTopFolders(hubId, projectId);
-            return folders.map(folder => {
+            const folders = await this._context.bim360Client.getProjectTopFolders(hubId, projectId);
+            return (folders.data ?? []).map(folder => {
                 let entry: hi.IFolder = {
                     kind: 'folder',
                     projectId,
                     id: folder.id,
-                    name: folder.displayName || '<no name>'
+                    name: folder.attributes.name || '<no name>'
                 };
-                if (folder.hidden) {
+                if (folder.attributes.hidden) {
                     entry.name = '(hidden) ' + entry.name;
                 }
                 return entry;
@@ -233,15 +229,15 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getFolderContents(projectId: string, folderId: string): Promise<HubsEntry[]> {
         try {
-            const items = await this._context.bim360Client.listContents(projectId, folderId);
-            return items.map(item => {
+            const contents = await this._context.bim360Client.getFolderContents(projectId, folderId);
+            return (contents.data ?? []).map(item => {
                 switch (item.type) {
                     case 'folders':
                         let folder: hi.IFolder = {
                             kind: 'folder',
                             projectId,
                             id: item.id,
-                            name: (item as any).displayName || '<no name>'
+                            name: item.attributes.name || '<no name>'
                         };
                         return folder;
                     case 'items':
@@ -249,7 +245,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
                             kind: 'item',
                             projectId,
                             id: item.id,
-                            name: (item as any).displayName || '<no name>'
+                            name: item.attributes.displayName || '<no name>'
                         };
                         return file;
                     default:
@@ -266,13 +262,13 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getItemVersions(projectId: string, itemId: string): Promise<HubsEntry[]> {
         try {
-            const versions = await this._context.bim360Client.listVersions(projectId, itemId);
-            return versions.map(version => {
+            const versions = await this._context.bim360Client.getItemVersions(projectId, itemId);
+            return (versions.data ?? []).map(version => {
                 let entry: hi.IVersion = {
                     kind: 'version',
                     itemId,
                     id: version.id,
-                    name: version.lastModifiedTime || version.createTime || '<no name>'
+                    name: version.attributes.lastModifiedTime || version.attributes.createTime || '<no name>'
                 };
                 return entry;
             });
@@ -332,7 +328,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         }
     }
 
-    private _getManifestProgressHint(manifest: IDerivativeManifest, urn: string): hi.IHint {
+    private _getManifestProgressHint(manifest: Manifest, urn: string): hi.IHint {
         return { hint: `Translation in progress (${manifest.progress})` };
     }
 }

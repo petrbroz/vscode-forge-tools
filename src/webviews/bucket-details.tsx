@@ -1,11 +1,11 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell } from '@vscode/webview-ui-toolkit/react';
-import { IBucketDetail } from 'aps-sdk-node';
+import { Bucket } from '@aps_sdk/oss';
 import { Grid } from './components/Grid';
 
 export interface IBucketDetailsProps {
-    detail: IBucketDetail;
+    detail: Bucket;
 }
 
 const BucketDetails = ({ detail }: IBucketDetailsProps) => (
@@ -14,7 +14,7 @@ const BucketDetails = ({ detail }: IBucketDetailsProps) => (
         <Grid>
             <VSCodeTextField readOnly value={detail.bucketKey}>Bucket Key</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.bucketOwner}>Owner</VSCodeTextField>
-            <VSCodeTextField readOnly value={new Date(detail.createdDate).toLocaleDateString()}>Created</VSCodeTextField>
+            <VSCodeTextField readOnly value={new Date(Number(detail.createdDate)).toLocaleDateString()}>Created</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.policyKey}>Data Retention Policy</VSCodeTextField>
         </Grid>
 
@@ -28,7 +28,7 @@ const BucketDetails = ({ detail }: IBucketDetailsProps) => (
                     Access Level
                 </VSCodeDataGridCell>
             </VSCodeDataGridRow>
-            {detail.permissions.map(permission => (
+            {(detail.permissions ?? []).map(permission => (
                 <VSCodeDataGridRow>
                     <VSCodeDataGridCell grid-column="1">{permission.authId}</VSCodeDataGridCell>
                     <VSCodeDataGridCell grid-column="2">{permission.access}</VSCodeDataGridCell>

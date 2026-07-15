@@ -2,17 +2,18 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
+import axios from 'axios';
+import { Scopes } from '@aps_sdk/authentication';
+import { ObjectDetails } from '@aps_sdk/oss';
 import {
-	IObject,
-	urnify as _urnify, // TODO: add '/' to '_' mapping
-	ThumbnailSize,
-	ManifestHelper,
-	IDerivativeResourceChild,
-	IDerivativeOutputType,
-	IDerivativeProps,
-	IDerivativeTree,
-	ModelDerivativeClient
-} from 'aps-sdk-node';
+	ModelDerivativeClient,
+	Manifest,
+	ManifestResources,
+	ObjectTree,
+	Properties,
+	JobPayload
+} from '@aps_sdk/model-derivative';
+import { urnify as _urnify } from '../urn';
 import { SVFReader, GLTFWriter, SVFDownloader, F2DDownloader, TwoLeggedAuthenticationProvider, CancellationToken } from 'svf-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
@@ -30,7 +31,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Translate Object', icon: 'run' })
 	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@2' })
-	async translateObject(object?: IObject | IVersion) {
+	async translateObject(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -56,7 +57,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 			let urn = getURN(object);
 			let client = getModelDerivativeClientForObject(object, this.context);
-			client.submitJob(urn, [{ type: svf2, views: ['2d', '3d'] }], undefined, true);
+			client.startJob({ input: { urn }, output: { formats: [{ type: svf2, views: ['2d', '3d'] }] as any } }, { xAdsForce: true });
 			vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 		} catch (err) {
 			showErrorMessage('Could not translate object', err, this.context);
@@ -66,7 +67,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Translate Object (Custom)', icon: 'run' })
 	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@3' })
-	async translateObjectCustom(object?: IObject | IVersion) {
+	async translateObjectCustom(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -104,7 +105,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 							workflowId,
 							workflowAttributes
 						} = message.data;
-						// TODO: support additional flags in IDerivativeOutputType
+						// TODO: support additional flags in the output format payload
 						const outputOptions = {
 							type: outputFormat,
 							views: ['2d', '3d'],
@@ -112,16 +113,14 @@ export class ModelDerivativesCommands extends CommandRegistry {
 								switchLoader,
 								generateMasterViews
 							}
-						} as IDerivativeOutputType;
+						} as any;
 						try {
-							await client.submitJob(
-								urn,
-								[outputOptions],
-								rootFilename,
-								true,
-								workflowId,
-								workflowAttributes ? JSON.parse(workflowAttributes) : {}
-							);
+							const jobPayload: JobPayload = {
+								input: { urn, compressedUrn: !!rootFilename, rootFilename },
+								output: { formats: [outputOptions] },
+								misc: workflowId ? { workflow: workflowId, workflowAttribute: workflowAttributes ? JSON.parse(workflowAttributes) : undefined } : undefined
+							};
+							await client.startJob(jobPayload, { xAdsForce: true });
 							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						} catch (err: any) {
 							if (err.response && err.response.statusCode === 406) {
@@ -142,7 +141,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'List Viewables (JSON)', icon: 'json' })
 	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@4' })
-	async listViewables(object?: IObject | IVersion) {
+	async listViewables(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -156,7 +155,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 			}
 			const urn = getURN(object);
 			const client = getModelDerivativeClientForObject(object, this.context);
-			const metadata = await withProgress(`Retrieving list of viewables`, client.getMetadata(urn));
+			const metadata = await withProgress(`Retrieving list of viewables`, client.getModelViews(urn));
 			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(metadata, null, 4), language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		} catch (err) {
@@ -177,14 +176,14 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				if (!object) {
 					return;
 				}
-				derivative = await promptDerivative(this.context, object.objectId);
+				derivative = await promptDerivative(this.context, object.objectId!);
 				if (!derivative) {
 					return;
 				}
 			}
 			const token = inHubs(derivative.urn) && this.context.threeLeggedToken
 				? { access_token: this.context.threeLeggedToken }
-				: await this.context.authenticationClient.authenticate(['viewables:read']);
+				: await this.context.authenticationClient.getTwoLeggedToken(this.context.clientId, this.context.clientSecret, [Scopes.ViewablesRead]);
 			let env = this.context.previewSettings.env;
 			if (!env) {
 				env = derivative.format === svf2 ? 'AutodeskProduction2' : 'AutodeskProduction';
@@ -230,7 +229,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				if (!object) {
 					return;
 				}
-				derivative = await promptDerivative(this.context, object.objectId);
+				derivative = await promptDerivative(this.context, object.objectId!);
 				if (!derivative) {
 					return;
 				}
@@ -240,9 +239,9 @@ export class ModelDerivativesCommands extends CommandRegistry {
 			const { guid } = viewable;
 			const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
 			let forceDownload = false;
-			let tree: IDerivativeTree | undefined = undefined;
+			let tree: ObjectTree | undefined = undefined;
 			try {
-				tree = await withProgress(`Retrieving viewable tree`, client.getViewableTree(urn, guid));
+				tree = await withProgress(`Retrieving viewable tree`, client.getObjectTree(urn, guid));
 			} catch (err: any) {
 				// APS may respond with code 413 to indicate that the requested JSON data is too large.
 				// In that case, offer an option of downloading the content to a local file.
@@ -254,7 +253,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 					switch (action) {
 						case 'Force Download':
 							// TODO: redirect the downloaded data directly into a file stream
-							tree = await withProgress(`Downloading viewable tree`, client.getViewableTree(urn, guid, true));
+							tree = await withProgress(`Downloading viewable tree`, client.getObjectTree(urn, guid, { forceget: 'true' }));
 							forceDownload = true;
 							break;
 						case 'Cancel':
@@ -298,7 +297,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				if (!object) {
 					return;
 				}
-				derivative = await promptDerivative(this.context, object.objectId);
+				derivative = await promptDerivative(this.context, object.objectId!);
 				if (!derivative) {
 					return;
 				}
@@ -308,9 +307,9 @@ export class ModelDerivativesCommands extends CommandRegistry {
 			const { guid } = viewable;
 			const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
 			let forceDownload = false;
-			let props: IDerivativeProps | undefined = undefined;
+			let props: Properties | undefined = undefined;
 			try {
-				props = await withProgress(`Retrieving viewable properties`, client.getViewableProperties(urn, guid));
+				props = await withProgress(`Retrieving viewable properties`, client.getAllProperties(urn, guid));
 			} catch (err: any) {
 				// APS may respond with code 413 to indicate that the requested JSON data is too large.
 				// In that case, offer an option of downloading the content to a local file.
@@ -322,7 +321,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 					switch (action) {
 						case 'Force Download':
 							// TODO: redirect the downloaded data directly into a file stream
-							props = await withProgress(`Downloading viewable properties`, client.getViewableProperties(urn, guid, true));
+							props = await withProgress(`Downloading viewable properties`, client.getAllProperties(urn, guid, { forceget: 'true' }));
 							forceDownload = true;
 							break;
 						case 'Cancel':
@@ -355,7 +354,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'View Object Manifest (JSON)', icon: 'json' })
 	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '0_view@4' })
-	async viewObjectManifest(object?: IObject | IVersion) {
+	async viewObjectManifest(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -381,13 +380,13 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'View Object Thumbnails', icon: 'eye' })
 	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '0_view@3' })
-	async viewObjectThumbnail(object?: IObject | IVersion) {
-		async function downloadThumbnail(buff: ArrayBuffer, defaultUri: vscode.Uri) {
+	async viewObjectThumbnail(object?: ObjectDetails | IVersion) {
+		async function downloadThumbnail(png: string, defaultUri: vscode.Uri) {
 			const uri = await vscode.window.showSaveDialog({ defaultUri });
 			if (!uri) {
 				return;
 			}
-			fs.writeFileSync(uri.fsPath, Buffer.from(buff), { encoding: 'binary' });
+			fs.writeFileSync(uri.fsPath, Buffer.from(png, 'binary'), { encoding: 'binary' });
 			vscode.window.showInformationMessage(`Thumbnail downloaded: ${uri.fsPath}`);
 		}
 
@@ -416,12 +415,12 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				}, async (progress, token) => {
 					await client.getManifest(urn); // Check if the manifest exists
 					return await Promise.all([
-						client.getThumbnail(urn, ThumbnailSize.Small),
-						client.getThumbnail(urn, ThumbnailSize.Medium),
-						client.getThumbnail(urn, ThumbnailSize.Large)
+						client.getThumbnail(urn, { width: 100, height: 100 }),
+						client.getThumbnail(urn, { width: 200, height: 200 }),
+						client.getThumbnail(urn, { width: 400, height: 400 })
 					]);
 				});
-				const pngToDataURI = (img: ArrayBuffer) => 'data:image/png;base64,' + Buffer.from(img).toString('base64');
+				const pngToDataURI = (img: string) => 'data:image/png;base64,' + Buffer.from(img, 'binary').toString('base64');
 				createWebViewPanel(this.context, 'thumbnails.js', 'thumbnails', `Thumbnails: ${key}`, {
 					objectKey: key,
 					smallDataURI: pngToDataURI(thumbnails[0]),
@@ -464,7 +463,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Delete Object Manifest', icon: 'trash' })
 	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '3_remove@2' })
-	async deleteObjectManifest(object?: IObject) {
+	async deleteObjectManifest(object?: ObjectDetails) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -477,7 +476,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				}
 			}
 
-			const urn = urnify(object.objectId);
+			const urn = urnify(object.objectId!);
 
 			const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete manifest for ${urn}? This action cannot be undone.`, { modal: true }, 'Delete');
 			if (confirm !== 'Delete') {
@@ -510,7 +509,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Download Derivatives as SVF', icon: 'cloud-download' })
 	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action_md@5' })
-	async downloadDerivativeSvf(object?: IObject) {
+	async downloadDerivativeSvf(object?: ObjectDetails) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -529,7 +528,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 			}
 
 			const baseDir = outputFolderUri[0].fsPath;
-			const urn = urnify(object.objectId);
+			const urn = urnify(object.objectId!);
 			let cancelled = false;
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -563,7 +562,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Download Derivatives as F2D', icon: 'cloud-download' })
 	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action_md@6' })
-	async downloadDerivativesF2D(object?: IObject) {
+	async downloadDerivativesF2D(object?: ObjectDetails) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -582,7 +581,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 			}
 
 			const baseDir = outputFolderUri[0].fsPath;
-			const urn = urnify(object.objectId);
+			const urn = urnify(object.objectId!);
 			let cancelled = false;
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -613,7 +612,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Download Derivatives as glTF', icon: 'cloud-download' })
 	@ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action_md@7' })
-	async downloadDerivativeGltf(object?: IObject) {
+	async downloadDerivativeGltf(object?: ObjectDetails) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -631,9 +630,9 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				return;
 			}
 
-			const { objectKey } = object;
+			const objectKey = object.objectKey!;
 			const baseDir = outputFolderUri[0].fsPath;
-			const urn = urnify(object.objectId);
+			const urn = urnify(object.objectId!);
 			let cancelled = false;
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -649,8 +648,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				progress.report({ message: 'Retrieving manifest' });
 				const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
 				const manifest = await client.getManifest(urn);
-				const helper = new ManifestHelper(manifest);
-				const derivatives = helper.search({ type: 'resource', role: 'graphics' }) as IDerivativeResourceChild[];
+				const derivatives = findManifestResources(manifest, r => r.type === 'resource' && r.role === 'graphics');
 				for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
 					if (cancelled) { return; }
 					progress.report({ message: `Converting derivative ${derivative.guid}` });
@@ -687,7 +685,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 				const formats = await getModelDerivativeFormats(this.context);
 
-				object = await promptCustomDerivative(this.context, bucketObject.objectId, formats);
+				object = await promptCustomDerivative(this.context, bucketObject.objectId!, formats);
 
 				if (!object) {
 					return;
@@ -708,8 +706,9 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				cancellable: false
 			}, async () => {
 				fse.ensureDirSync(baseDir);
-				const content = await this.context.modelDerivativeClient2L.getDerivative(object!.urn, encodeURI(object!.bubble.fileUrn));
-				await fse.writeFile(targetFileName, new Uint8Array(content));
+				const derivativeDownload = await this.context.modelDerivativeClient2L.getDerivativeUrl(encodeURI(object!.bubble.fileUrn), object!.urn);
+				const response = await axios.get(derivativeDownload.url!, { responseType: 'arraybuffer' });
+				await fse.writeFile(targetFileName, new Uint8Array(response.data));
 			});
 
 			const action = await vscode.window.showInformationMessage('Derivative downloaded successfully', 'Open Folder');
@@ -723,7 +722,7 @@ export class ModelDerivativesCommands extends CommandRegistry {
 
 	@Command({ title: 'Copy Object URN to Clipboard', icon: 'copy' })
 	@ViewItemContextMenu({ when: '(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)', group: '1_action_md@1' })
-	async copyObjectUrn(object?: IObject | IVersion) {
+	async copyObjectUrn(object?: ObjectDetails | IVersion) {
 		try {
 			if (!object) {
 				const bucket = await promptBucket(this.context);
@@ -754,36 +753,36 @@ function urnify(id: string): string {
 	return _urnify(id).replace('/', '_');
 }
 
-function getKey(object: IObject | IVersion): string {
+function getKey(object: ObjectDetails | IVersion): string {
 	if ('objectId' in object) { //IObject
-		return object.objectKey;
+		return object.objectKey!;
 	} else if ('itemId' in object) { //IVersion
 		return object.itemId;
 	}
 	return '';
 }
 
-function getId(object: IObject | IVersion): string {
+function getId(object: ObjectDetails | IVersion): string {
 	if ('objectId' in object) { //IObject
-		return object.objectId;
+		return object.objectId!;
 	} else if ('itemId' in object) { //IVersion
 		return object.id;
 	}
 	return '';
 }
 
-function getURN(object: IObject | IVersion): string {
+function getURN(object: ObjectDetails | IVersion): string {
 	return urnify(getId(object));
 }
 
-function getFileExtension(object: IObject | IVersion): string {
+function getFileExtension(object: ObjectDetails | IVersion): string {
 	if ("objectKey" in object) {
-		return path.extname(object.objectKey).substring(1).toLowerCase();
+		return path.extname(object.objectKey!).substring(1).toLowerCase();
 	}
 	return "";
 }
 
-function getModelDerivativeClientForObject(object: IObject | IVersion, context: IContext): ModelDerivativeClient {
+function getModelDerivativeClientForObject(object: ObjectDetails | IVersion, context: IContext): ModelDerivativeClient {
 	if ('objectId' in object) { //IObject
 		return context.modelDerivativeClient2L;
 	} else if ('itemId' in object) { //IVersion
@@ -795,6 +794,22 @@ function getModelDerivativeClientForObject(object: IObject | IVersion, context: 
 
 function findViewable(derivative: IDerivative): any {
 	return derivative.bubble.children.find((child: any) => child.role === 'graphics' || child.role === 'pdf-page');
+}
+
+function findManifestResources(manifest: Manifest, predicate: (resource: ManifestResources) => boolean): ManifestResources[] {
+	const results: ManifestResources[] = [];
+	function visit(nodes?: ManifestResources[]) {
+		for (const node of nodes ?? []) {
+			if (predicate(node)) {
+				results.push(node);
+			}
+			visit(node.children);
+		}
+	}
+	for (const derivative of manifest.derivatives) {
+		visit(derivative.children);
+	}
+	return results;
 }
 
 let modelDerivativeFormats: ModelDerivativeFormats | null = null;

@@ -1,10 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {
-    IBucket,
-    IObject,
-    urnify
-} from 'aps-sdk-node';
+import { BucketsItems, ObjectDetails } from '@aps_sdk/oss';
+import { getAllBuckets, getAllObjects } from './clients/oss-pagination';
+import { urnify } from './urn';
 import { IDerivative } from './interfaces/model-derivative';
 import { IEnvironment } from './environment';
 import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
@@ -24,8 +22,8 @@ export interface IContext extends IClients {
     log: vscode.LogOutputChannel;
 }
 
-export async function promptBucket(context: IContext): Promise<IBucket | undefined> {
-    const buckets = await context.dataManagementClient.listBuckets();
+export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
+    const buckets = await getAllBuckets(context.dataManagementClient);
     const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
     if (!bucketKey) {
         return undefined;
@@ -34,9 +32,9 @@ export async function promptBucket(context: IContext): Promise<IBucket | undefin
     }
 }
 
-export async function promptObject(context: IContext, bucketKey: string): Promise<IObject | undefined> {
-    const objects = await context.dataManagementClient.listObjects(bucketKey);
-    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey), { canPickMany: false, placeHolder: 'Select object' });
+export async function promptObject(context: IContext, bucketKey: string): Promise<ObjectDetails | undefined> {
+    const objects = await getAllObjects(context.dataManagementClient, bucketKey);
+    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: 'Select object' });
     if (!objectKey) {
         return undefined;
     } else {
