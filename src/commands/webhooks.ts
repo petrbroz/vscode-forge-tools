@@ -51,16 +51,14 @@ async function createWebhook({ system, event }: IWebhookEvent, context: IContext
 		switch (message.command) {
 			case 'create':
 				try {
-					// @ts-ignore
-					const id = await withProgress(`Creating webhook`, context.webhookClient.createHook(system, event, {
+					await withProgress(`Creating webhook`, context.webhookClient.createSystemEventHook(system, event, {
 						callbackUrl: message.webhook.callbackUrl,
-						// @ts-ignore
 						scope: { [message.webhook.scopeKey]: message.webhook.scopeValue },
-						filter: message.webhook.filter || null,
-						hookAttribute: message.webhook.attributes ? JSON.parse(message.webhook.attributes) : null
+						filter: message.webhook.filter || undefined,
+						hookAttribute: message.webhook.attributes ? JSON.parse(message.webhook.attributes) : undefined
 					}));
 					panel.dispose();
-					vscode.window.showInformationMessage(`Webhook created: ${id as string}`);
+					vscode.window.showInformationMessage(`Webhook created`);
 					if (successCallback) {
 						successCallback();
 					}
@@ -74,7 +72,6 @@ async function createWebhook({ system, event }: IWebhookEvent, context: IContext
 
 async function viewWebhookDetails({ id, system, event }: IWebhook, context: IContext) {
 	try {
-		// @ts-ignore
 		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, context.webhookClient.getHookDetails(system, event, id));
 		createWebViewPanel(context, 'webhook-details.js', 'webhook-details', `Webhook Details: ${id}`, { detail: webhookDetail });
 	} catch(err) {
@@ -89,8 +86,7 @@ async function deleteWebhook({ system, event, id }: IWebhook, context: IContext)
 			return;
 		}
 
-		// @ts-ignore
-		await withProgress(`Removing webhook: ${id}`, context.webhookClient.deleteHook(system, event, id));
+		await withProgress(`Removing webhook: ${id}`, context.webhookClient.deleteSystemEventHook(system, event, id));
 		vscode.window.showInformationMessage(`Webhook removed: ${id}`);
 	} catch(err) {
 		showErrorMessage('Could not remove webhook', err, context);
@@ -99,7 +95,6 @@ async function deleteWebhook({ system, event, id }: IWebhook, context: IContext)
 
 async function updateWebhook({ system, event, id }: IWebhook, context: IContext, successCallback?: () => void) {
 	try {
-		// @ts-ignore
 		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, context.webhookClient.getHookDetails(system, event, id));
 		const _system = WEBHOOKS.find(webhook => webhook.id === system) as WebhookSystem;
 		const _event = _system.events.find(ev => ev.id === event) as WebhookEvent;
@@ -108,11 +103,10 @@ async function updateWebhook({ system, event, id }: IWebhook, context: IContext,
 			switch (message.command) {
 				case 'update':
 					try {
-						// @ts-ignore
-						await withProgress(`Updating webhook ${id}`, context.webhookClient.updateHook(system, event, id, {
+						await withProgress(`Updating webhook ${id}`, context.webhookClient.patchSystemEventHook(system, event, id, {
 							// status: message.webhook.status,
-							filter: message.webhook.filter || null,
-							hookAttribute: message.webhook.attributes ? JSON.parse(message.webhook.attributes) : null
+							filter: message.webhook.filter || undefined,
+							hookAttribute: message.webhook.attributes ? JSON.parse(message.webhook.attributes) : undefined
 						}));
 						panel.dispose();
 						if (successCallback) {

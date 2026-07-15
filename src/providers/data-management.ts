@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {
-	IBucket,
-    IObject,
-    IDerivativeManifest,
-    urnify
-} from 'aps-sdk-node';
+import { BucketsItems, ObjectDetails } from '@aps_sdk/oss';
+import { Manifest } from '@aps_sdk/model-derivative';
+import { getAllBuckets, getAllObjects } from '../clients/oss-pagination';
+import { urnify } from '../urn';
 import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 import { ModelDerivativeFormats, isViewableFormat } from './model-derivative';
@@ -15,14 +13,14 @@ export interface IHint {
     tooltip?: string;
 }
 
-type SimpleStorageEntry = IBucket | IObject | IDerivative | IHint;
+type SimpleStorageEntry = BucketsItems | ObjectDetails | IDerivative | IHint;
 
-function isBucket(entry: SimpleStorageEntry): entry is IBucket {
-    return (<IBucket>entry).policyKey !== undefined;
+function isBucket(entry: SimpleStorageEntry): entry is BucketsItems {
+    return (<BucketsItems>entry).policyKey !== undefined;
 }
 
-function isObject(entry: SimpleStorageEntry): entry is IObject {
-    return (<IObject>entry).objectId !== undefined;
+function isObject(entry: SimpleStorageEntry): entry is ObjectDetails {
+    return (<ObjectDetails>entry).objectId !== undefined;
 }
 
 function isDerivative(entry: SimpleStorageEntry): entry is IDerivative {
@@ -60,7 +58,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             node.iconPath = new vscode.ThemeIcon('folder');
             return node;
         } else if (isObject(element)) {
-            const node = new vscode.TreeItem(element.objectKey, vscode.TreeItemCollapsibleState.Collapsed);
+            const node = new vscode.TreeItem(element.objectKey!, vscode.TreeItemCollapsibleState.Collapsed);
             node.tooltip = [
                 `Object`,
                 `Key: ${element.objectKey}`,
@@ -94,10 +92,10 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         try {
             if (element) {
                 if (isBucket(element)) {
-                    const objects = await this._context.dataManagementClient.listObjects(element.bucketKey);
+                    const objects = await getAllObjects(this._context.dataManagementClient, element.bucketKey);
                     return objects.sort(stringPropertySorter('objectKey'));
                 } else if (isObject(element)) {
-                    const urn = urnify(element.objectId);
+                    const urn = urnify(element.objectId!);
                     try {
                         const manifest = await this._context.modelDerivativeClient2L.getManifest(urn);
                         switch (manifest.status) {
@@ -121,7 +119,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     return [];
                 }
             } else {
-                const buckets = await this._context.dataManagementClient.listBuckets();
+                const buckets = await getAllBuckets(this._context.dataManagementClient);
                 return buckets.sort(stringPropertySorter('bucketKey'));
             }
         } catch(err) {
@@ -180,7 +178,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         }
     }
 
-    private _getManifestProgressHint(manifest: IDerivativeManifest, urn: string): IHint {
+    private _getManifestProgressHint(manifest: Manifest, urn: string): IHint {
         return { hint: `Translation in progress (${manifest.progress})` };
     }
 

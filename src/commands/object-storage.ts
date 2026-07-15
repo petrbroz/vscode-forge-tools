@@ -1,12 +1,13 @@
 import axios from 'axios';
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { IBucket, IObject, DataRetentionPolicy } from 'aps-sdk-node';
+import { BucketsItems, ObjectDetails, Access, PolicyKey, Region } from '@aps_sdk/oss';
+import { getAllObjects } from '../clients/oss-pagination';
 import { createWebViewPanel, IContext, promptBucket, promptObject, showErrorMessage, withProgress } from '../common';
 import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
 
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
+const SignedUrlAccessMap: { [key: string]: Access } = { read: Access.Read, write: Access.Write, readwrite: Access.ReadWrite };
 const DeleteBatchSize = 8;
 const AllowedMimeTypes = {
 	'a': 'application/octet-stream',
@@ -150,7 +151,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
 
         try {
-            const bucket = await withProgress(`Creating bucket: ${name}`, this.context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention));
+            const bucket = await withProgress(`Creating bucket: ${name}`, this.context.dataManagementClient.createBucket(this.context.environment.region as Region, { bucketKey: name, policyKey: retention as PolicyKey }));
             vscode.window.showInformationMessage(`Bucket created: ${bucket.bucketKey}`);
         } catch (err) {
             showErrorMessage('Could not create bucket', err, this.context);
@@ -160,7 +161,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'View Bucket Details', icon: 'eye' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@1' })
-    async viewBucketDetails(bucket?: IBucket) {
+    async viewBucketDetails(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -181,7 +182,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Copy Bucket Key to Clipboard', icon: 'copy' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@2' })
-    async copyBucketKey(bucket?: IBucket) {
+    async copyBucketKey(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -199,7 +200,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Delete All Objects', icon: 'trash' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@1' })
-    async deleteBucketObjects(bucket?: IBucket) {
+    async deleteBucketObjects(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -209,7 +210,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
             }
 
             const { bucketKey } = bucket;
-            const objects = await this.context.dataManagementClient.listObjects(bucketKey);
+            const objects = await getAllObjects(this.context.dataManagementClient, bucketKey);
             if (objects.length === 0) {
                 vscode.window.showInformationMessage('No objects to delete');
                 return;
@@ -235,7 +236,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                     if (cancelled) {
                         break;
                     }
-                    batch.push(this.context.dataManagementClient.deleteObject(bucketKey, objects[i].objectKey));
+                    batch.push(this.context.dataManagementClient.deleteObject(bucketKey, objects[i].objectKey!));
                     if (batch.length === DeleteBatchSize || i === len - 1) {
                         await Promise.all(batch);
                         progress.report({ increment: 100.0 * batch.length / len });
@@ -252,7 +253,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'View Object Details', icon: 'eye' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@1' })
-    async viewObjectDetails(object?: IObject) {
+    async viewObjectDetails(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -265,7 +266,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 }
             }
 
-            const { objectKey, bucketKey } = object;
+            const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
             const objectDetails = await withProgress(`Getting object details: ${objectKey}`, this.context.dataManagementClient.getObjectDetails(bucketKey, objectKey));
             createWebViewPanel(this.context, 'object-details.js', 'object-details', `Object Details: ${objectKey}`, { detail: objectDetails });
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
@@ -277,7 +278,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Copy Object Key to Clipboard', icon: 'copy' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@2' })
-    async copyObjectKey(object?: IObject) {
+    async copyObjectKey(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -290,7 +291,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 }
             }
 
-            await vscode.env.clipboard.writeText(object.objectKey);
+            await vscode.env.clipboard.writeText(object.objectKey!);
             vscode.window.showInformationMessage(`Object key copied to clipboard: ${object.objectKey}`);
         } catch (err) {
             showErrorMessage('Could not obtain object key', err, this.context);
@@ -299,22 +300,21 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Upload Object', icon: 'cloud-upload' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@1' })
-    async uploadObject(bucket?: IBucket) {
+    async uploadObject(bucket?: BucketsItems) {
         // TODO: re-introduce support for cancellable uploads
         const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
 
         async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
             const filepath = uri.fsPath;
             try {
-                const stream = fs.createReadStream(filepath);
                 await vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: `Uploading file: ${filepath}`,
                     cancellable: false
                 }, async (progress, token) => {
-                    await context.dataManagementClient.uploadObjectStream(bucketKey, name, stream, {
-                        contentType,
-                        progress: (bytesUploaded, totalBytes) => progress.report({ increment: 100.0 * bytesUploaded / totalBytes! })
+                    await context.dataManagementClient.uploadObject(bucketKey, name, filepath, {
+                        xAdsMetaContentType: contentType,
+                        onProgress: (percentCompleted) => progress.report({ increment: percentCompleted })
                     });
                 });
                 const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
@@ -372,7 +372,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Create Empty Object', icon: 'new-file' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@2' })
-    async createEmptyObject(bucket?: IBucket) {
+    async createEmptyObject(bucket?: BucketsItems) {
         if (!bucket) {
             bucket = await promptBucket(this.context);
             if (!bucket) {
@@ -395,7 +395,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
 
         try {
-            const signedUrl = await this.context.dataManagementClient.createSignedUrl(bucketKey, name, "write");
+            const signedUrl = await this.context.dataManagementClient.createSignedResource(bucketKey, name, { access: Access.Write });
             const { data } = await axios.put(signedUrl.signedUrl, Buffer.from([]));
             vscode.window.showInformationMessage(`Object created: ${data.objectId}`);
         } catch(err) {
@@ -406,7 +406,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Copy Object', icon: 'copy' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@3' })
-    async copyObject(object?: IObject) {
+    async copyObject(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -423,8 +423,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
 
-            const { bucketKey, objectKey } = object;
-            await withProgress(`Copying file: ${object.objectKey}`, this.context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
+            const bucketKey = object.bucketKey!, objectKey = object.objectKey!;
+            await withProgress(`Copying file: ${object.objectKey}`, this.context.dataManagementClient.copyTo(bucketKey, objectKey, newObjectKey));
             vscode.window.showInformationMessage(`Object copy created: ${newObjectKey}`);
         } catch(err) {
             showErrorMessage('Could not copy object', err, this.context);
@@ -434,7 +434,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Rename Object', icon: 'edit' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@2' })
-    async renameObject(object?: IObject) {
+    async renameObject(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -451,8 +451,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
 
-            const { bucketKey, objectKey } = object;
-            await withProgress(`Renaming file: ${object.objectKey}`, this.context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
+            const bucketKey = object.bucketKey!, objectKey = object.objectKey!;
+            await withProgress(`Renaming file: ${object.objectKey}`, this.context.dataManagementClient.copyTo(bucketKey, objectKey, newObjectKey));
             await withProgress(`Renaming file: ${object.objectKey}`, this.context.dataManagementClient.deleteObject(bucketKey, objectKey));
             vscode.window.showInformationMessage(`
                 Object successfully renamed to ${newObjectKey}. Note that any derivatives created for
@@ -468,7 +468,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Download Object', icon: 'cloud-download' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@1' })
-    async downloadObject(object?: IObject) {
+    async downloadObject(object?: ObjectDetails) {
         if (!object) {
             const bucket = await promptBucket(this.context);
             if (!bucket) {
@@ -479,7 +479,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
         }
-        const { objectKey, bucketKey } = object;
+        const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
 
         const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
         if (!uri) {
@@ -487,8 +487,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
 
         try {
-            const arrayBuffer = await withProgress(`Downloading file: ${uri.fsPath}`, this.context.dataManagementClient.downloadObject(bucketKey, objectKey));
-            fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
+            await withProgress(`Downloading file: ${uri.fsPath}`, this.context.dataManagementClient.downloadObject(bucketKey, objectKey, uri.fsPath));
             const action = await vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`, 'Open File');
             if (action === 'Open File') {
                 vscode.env.openExternal(uri);
@@ -500,7 +499,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Delete Object', icon: 'trash' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '3_remove@1' })
-    async deleteObject(object?: IObject) {
+    async deleteObject(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -518,7 +517,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
 
-            const { bucketKey, objectKey } = object;
+            const bucketKey = object.bucketKey!, objectKey = object.objectKey!;
             await withProgress(`Deleting object: ${object.objectKey}`, this.context.dataManagementClient.deleteObject(bucketKey, objectKey));
             vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
         } catch(err) {
@@ -529,7 +528,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Generate Signed URL', icon: 'link' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@4' })
-    async generateSignedUrl(object?: IObject) {
+    async generateSignedUrl(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -541,14 +540,14 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                     return;
                 }
             }
-            const { objectKey, bucketKey } = object;
+            const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
             const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
                 canPickMany: false, placeHolder: 'Select access permissions for the new URL'
             });
             if (!permissions) {
                 return;
             }
-            const signedUrl = await this.context.dataManagementClient.createSignedUrl(bucketKey, objectKey, permissions);
+            const signedUrl = await this.context.dataManagementClient.createSignedResource(bucketKey, objectKey, { access: SignedUrlAccessMap[permissions] });
             const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
             if (action === 'Copy URL to Clipboard') {
                 vscode.env.clipboard.writeText(signedUrl.signedUrl);
@@ -560,7 +559,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
 
     @Command({ title: 'Delete Bucket', icon: 'trash' })
     @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@2' })
-    async deleteBucket(bucket?: IBucket) {
+    async deleteBucket(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);

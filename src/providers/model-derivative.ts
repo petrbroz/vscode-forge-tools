@@ -49,7 +49,7 @@ type DerivativeTranslation = {
 const getAvailableTranslations = async (context: IContext): Promise<DerivativeTranslation[]> => {
     const availableTranslations: DerivativeTranslation[] = [];
 
-    const formats = await context.modelDerivativeClient2L.formats();
+    const { formats = {} } = await context.modelDerivativeClient2L.getFormats();
 
     for (const outputFormat in formats) {
         if (Object.prototype.hasOwnProperty.call(formats, outputFormat)) {

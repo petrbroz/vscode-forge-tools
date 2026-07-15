@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
-import { IAppBundleUploadParams, IActivityDetail, DesignAutomationID } from 'aps-sdk-node';
+import { IAppBundleUploadParams, IActivityDetail, DesignAutomationID } from '../clients/design-automation';
 import { withProgress, createWebViewPanel } from '../common';
 import { ICreateActivityProps } from '../webviews/create-activity';
 import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../interfaces/design-automation';

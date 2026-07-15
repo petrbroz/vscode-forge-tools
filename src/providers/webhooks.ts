@@ -1,6 +1,18 @@
 import * as vscode from 'vscode';
+import { HookDetails } from '@aps_sdk/webhooks';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 import { WebhookSystem, WEBHOOKS } from '../interfaces/webhooks';
+
+async function getAllSystemEventHooks(context: IContext, system: string, event: string): Promise<HookDetails[]> {
+    const results: HookDetails[] = [];
+    let pageState: string | undefined;
+    do {
+        const page = await context.webhookClient.getSystemEventHooks(system, event, { pageState });
+        results.push(...(page.data ?? []));
+        pageState = page.links?.next;
+    } while (pageState);
+    return results;
+}
 
 export interface IWebhookSystem {
     type: 'system';
@@ -97,10 +109,9 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
         } else if (isWebhookEvent(entry)) {
             try {
                 const { system, event } = entry;
-                // @ts-ignore
-                const webhooks = await this._context.webhookClient.listHooks(system, event);
+                const webhooks = await getAllSystemEventHooks(this._context, system, event);
                 return webhooks.map(webhook => {
-                    return { type: 'hook', id: webhook.hookId, system, event } as IWebhook;
+                    return { type: 'hook', id: webhook.hookId!, system, event } as IWebhook;
                 }).sort(stringPropertySorter('id'));
             } catch(err) {
                 showErrorMessage(`Could not list webhooks`, err);

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DesignAutomationID } from 'aps-sdk-node';
+import { DesignAutomationID } from '../clients/design-automation';
 import { IContext } from '../common';
 import * as dai from '../interfaces/design-automation';
 
