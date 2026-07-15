@@ -7,14 +7,11 @@ import { Scopes } from '@aps_sdk/authentication';
 import { ObjectDetails } from '@aps_sdk/oss';
 import {
 	ModelDerivativeClient,
-	Manifest,
-	ManifestResources,
 	ObjectTree,
 	Properties,
 	JobPayload
 } from '@aps_sdk/model-derivative';
 import { urnify as _urnify } from '../urn';
-import { SVFReader, GLTFWriter, SVFDownloader, F2DDownloader, TwoLeggedAuthenticationProvider, CancellationToken } from 'svf-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
@@ -37,9 +34,6 @@ export class ModelDerivativesCommands {
 			vscode.commands.registerCommand('aps.md.viewObjectManifest', this.viewObjectManifest.bind(this)),
 			vscode.commands.registerCommand('aps.md.viewObjectThumbnail', this.viewObjectThumbnail.bind(this)),
 			vscode.commands.registerCommand('aps.md.deleteObjectManifest', this.deleteObjectManifest.bind(this)),
-			vscode.commands.registerCommand('aps.md.downloadDerivativeSvf', this.downloadDerivativeSvf.bind(this)),
-			vscode.commands.registerCommand('aps.md.downloadDerivativesF2D', this.downloadDerivativesF2D.bind(this)),
-			vscode.commands.registerCommand('aps.md.downloadDerivativeGltf', this.downloadDerivativeGltf.bind(this)),
 			vscode.commands.registerCommand('aps.md.downloadDerivativeCustom', this.downloadDerivativeCustom.bind(this)),
 			vscode.commands.registerCommand('aps.md.copyObjectUrn', this.copyObjectUrn.bind(this)),
 		];
@@ -505,162 +499,6 @@ export class ModelDerivativesCommands {
 		this.refresh();
 	}
 
-	async downloadDerivativeSvf(object?: ObjectDetails) {
-		try {
-			if (!object) {
-				const bucket = await promptBucket(this.context);
-				if (!bucket) {
-					return;
-				}
-				object = await promptObject(this.context, bucket.bucketKey);
-				if (!object) {
-					return;
-				}
-			}
-
-			const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
-			if (!outputFolderUri) {
-				return;
-			}
-
-			const baseDir = outputFolderUri[0].fsPath;
-			const urn = urnify(object.objectId!);
-			let cancelled = false;
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Downloading SVF: ${object.objectKey}`,
-				cancellable: true
-			}, async (progress, token) => {
-				let cancelled = false;
-				const svfDownloader = new SVFDownloader(new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
-				const cancellationToken = new CancellationToken();
-				token.onCancellationRequested(() => {
-					cancellationToken.cancel();
-					cancelled = true;
-				});
-				await svfDownloader.download(urn, {
-					outputDir: baseDir,
-					cancellationToken,
-					log: (message: string) => {
-						this.context.log.info(message);
-						progress.report({ message });
-					}
-				});
-			});
-			const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
-			if (action === 'Open Folder') {
-				vscode.env.openExternal(vscode.Uri.file(baseDir));
-			}
-		} catch (err) {
-			showErrorMessage(`Could not download SVF`, err, this.context);
-		}
-	}
-
-	async downloadDerivativesF2D(object?: ObjectDetails) {
-		try {
-			if (!object) {
-				const bucket = await promptBucket(this.context);
-				if (!bucket) {
-					return;
-				}
-				object = await promptObject(this.context, bucket.bucketKey);
-				if (!object) {
-					return;
-				}
-			}
-
-			const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
-			if (!outputFolderUri) {
-				return;
-			}
-
-			const baseDir = outputFolderUri[0].fsPath;
-			const urn = urnify(object.objectId!);
-			let cancelled = false;
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Downloading F2D: ${object.objectKey}`,
-				cancellable: true
-			}, async (progress, token) => {
-				let cancelled = false;
-				const f2dDownloader = new F2DDownloader(new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
-				const cancellationToken = new CancellationToken();
-				token.onCancellationRequested(() => {
-					cancellationToken.cancel();
-					cancelled = true;
-				});
-				await f2dDownloader.download(urn, {
-					outputDir: baseDir,
-					cancellationToken,
-					log: (message: string) => progress.report({ message })
-				});
-			});
-			const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
-			if (action === 'Open Folder') {
-				vscode.env.openExternal(vscode.Uri.file(baseDir));
-			}
-		} catch (err) {
-			showErrorMessage(`Could not download F2D`, err, this.context);
-		}
-	}
-
-	async downloadDerivativeGltf(object?: ObjectDetails) {
-		try {
-			if (!object) {
-				const bucket = await promptBucket(this.context);
-				if (!bucket) {
-					return;
-				}
-				object = await promptObject(this.context, bucket.bucketKey);
-				if (!object) {
-					return;
-				}
-			}
-
-			const outputFolderUri = await vscode.window.showOpenDialog({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false });
-			if (!outputFolderUri) {
-				return;
-			}
-
-			const objectKey = object.objectKey!;
-			const baseDir = outputFolderUri[0].fsPath;
-			const urn = urnify(object.objectId!);
-			let cancelled = false;
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Downloading glTF: ${objectKey}`,
-				cancellable: true
-			}, async (progress, token) => {
-				token.onCancellationRequested(() => {
-					cancelled = true;
-				});
-				// Store all viewables under a folder named after the OSS object key.
-				const urnDir = path.join(baseDir, objectKey.replace(/[^a-zA-Z0-9\.]/g, '_').toLowerCase());
-				fse.ensureDirSync(urnDir);
-				progress.report({ message: 'Retrieving manifest' });
-				const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
-				const manifest = await client.getManifest(urn);
-				const derivatives = findManifestResources(manifest, r => r.type === 'resource' && r.role === 'graphics');
-				for (const derivative of derivatives.filter(d => d.mime === 'application/autodesk-svf')) {
-					if (cancelled) { return; }
-					progress.report({ message: `Converting derivative ${derivative.guid}` });
-					const guidDir = path.join(urnDir, derivative.guid);
-					fse.ensureDirSync(guidDir);
-					const writer = new GLTFWriter({ deduplicate: false, log: (msg: string) => progress.report({ message: msg }) });
-					const reader = await SVFReader.FromDerivativeService(urn, derivative.guid, new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
-					const svf = await reader.read();
-					await writer.write(svf, guidDir);
-				}
-			});
-			const action = await vscode.window.showInformationMessage(`Derivative translation to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
-			if (action === 'Open Folder') {
-				vscode.env.openExternal(vscode.Uri.file(baseDir));
-			}
-		} catch (err) {
-			showErrorMessage(`Could not convert derivatives`, err, this.context);
-		}
-	}
-
 	async downloadDerivativeCustom(object?: IDerivative) {
 		try {
 			if (!object) {
@@ -782,22 +620,6 @@ function getModelDerivativeClientForObject(object: ObjectDetails | IVersion, con
 
 function findViewable(derivative: IDerivative): any {
 	return derivative.bubble.children.find((child: any) => child.role === 'graphics' || child.role === 'pdf-page');
-}
-
-function findManifestResources(manifest: Manifest, predicate: (resource: ManifestResources) => boolean): ManifestResources[] {
-	const results: ManifestResources[] = [];
-	function visit(nodes?: ManifestResources[]) {
-		for (const node of nodes ?? []) {
-			if (predicate(node)) {
-				results.push(node);
-			}
-			visit(node.children);
-		}
-	}
-	for (const derivative of manifest.derivatives) {
-		visit(derivative.children);
-	}
-	return results;
 }
 
 let modelDerivativeFormats: ModelDerivativeFormats | null = null;

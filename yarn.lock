@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@aps_sdk/authentication@^1.0.0", "@aps_sdk/authentication@^1.0.1":
+"@aps_sdk/authentication@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@aps_sdk/authentication/-/authentication-1.0.1.tgz#5582e69510caadea174832a947ac6de560bc981c"
   integrity sha512-i50+BXVcmQ97AiVs2n6qSQVQYRhD6asT1E83FtZiks3LwcwbbmRF60pWDA1J8SxcaKrJKw+2YglWdlUO0AhmFg==
@@ -29,7 +29,7 @@
     "@types/node" "^20.9.0"
     axios "^1.13.5"
 
-"@aps_sdk/model-derivative@^1.1.0", "@aps_sdk/model-derivative@^1.2.1":
+"@aps_sdk/model-derivative@^1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@aps_sdk/model-derivative/-/model-derivative-1.2.1.tgz#1359dfa9b7d3a52c538e1ae2f770ea89639107d8"
   integrity sha512-bR0yqeoRQKjr3J0+7Gbx4otnOzFbyHpk3AWgvzfCjnwrjTMObCwiXVHp3bwoxyPNonIZUNDNzYQllmJ/c5aXmQ==
@@ -340,11 +340,6 @@
     "@microsoft/fast-react-wrapper" "^0.3.22"
     tslib "^2.6.2"
 
-adm-zip@^0.5.9:
-  version "0.5.18"
-  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.5.18.tgz#283a05f2bf1e3fd315f0f31cde29b7a6e3c1619d"
-  integrity sha512-ufJnssQGbxzLNS1Ho9bCtX4rQKCCvoVuDLHoJyc3F9dOGDB4BkWs2Ci0kv53lqocAEQ/Cbi+I2XCsNYGqVYqng==
-
 agent-base@6:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-6.0.2.tgz#49fff58577cfee3f37176feab4c22e00f86d7f77"
@@ -376,7 +371,7 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
-axios@^1.13.5, axios@^1.18.1, axios@^1.8.4:
+axios@^1.13.5, axios@^1.18.1:
   version "1.18.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.18.1.tgz#d63f9863bcd8938815c86f9e2abd380189d96dfe"
   integrity sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==
@@ -677,7 +672,7 @@ form-data@^4.0.5, form-data@^4.0.6:
     hasown "^2.0.4"
     mime-types "^2.1.35"
 
-fs-extra@^11.3.0, fs-extra@^11.3.6:
+fs-extra@^11.3.6:
   version "11.3.6"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.6.tgz#f7cb80e9df550cd1db6f537fa5cdd568d3e70d10"
   integrity sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA==
@@ -1144,19 +1139,6 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-svf-utils@^8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/svf-utils/-/svf-utils-8.0.0.tgz#68b91a2741e8c0e0a9de4b24e5ccdd56506c0841"
-  integrity sha512-ft91yb7ZM3ZGgn6tdNQOZp01eMjEXIkSbBjQslm0rE8z23HRJkWCXpArW54fi/Y2HglwhZ6ZA5daWbxlyCT25Q==
-  dependencies:
-    "@aps_sdk/authentication" "^1.0.0"
-    "@aps_sdk/model-derivative" "^1.1.0"
-    adm-zip "^0.5.9"
-    axios "^1.8.4"
-    fs-extra "^11.3.0"
-    ws "^8.18.0"
-    zod "^3.24.1"
-
 tabbable@^5.2.0:
   version "5.3.3"
   resolved "https://registry.yarnpkg.com/tabbable/-/tabbable-5.3.3.tgz#aac0ff88c73b22d6c3c5a50b1586310006b47fbf"
@@ -1294,13 +1276,3 @@ wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==
-
-ws@^8.18.0:
-  version "8.21.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.21.1.tgz#045650cd4b1207809e7547146223c3814a9af586"
-  integrity sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==
-
-zod@^3.24.1:
-  version "3.25.76"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
-  integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==

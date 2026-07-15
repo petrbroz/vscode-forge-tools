@@ -206,7 +206,7 @@ The registries (constructed with `(context, refresh)`): `EnvironmentCommands`,
 `ModelDerivativesCommands`, `WebhooksCommands`, `DesignAutomationCommands`,
 `SecureServiceAccountsCommands`. The Model Derivative and Design Automation command files are by far
 the largest (~800 and ~700 lines), holding the bulk of the business logic (translation options,
-derivative downloads via `svf-utils`, work-item orchestration, etc.).
+derivative downloads, work-item orchestration, etc.).
 
 Shared helpers live in [src/common.ts](../src/common.ts): `promptBucket` / `promptObject` /
 `promptDerivative` / `promptEngine` (QuickPick prompts), `showErrorMessage` (logs + optional raw
@@ -236,8 +236,6 @@ update forms, custom translation, thumbnails, and derivative preview.
 
 - **`aps-sdk-node`** — the established SDK, used for Authentication, OSS/Data Management, Model
   Derivative (2L + 3L instances), Design Automation, Webhooks, and BIM360.
-- **`svf-utils`** — used by Model Derivative commands to download/convert derivatives (SVF, F2D,
-  glTF).
 - **`@aps_sdk/secure-service-account`** (official Autodesk SDK, successor to `aps-sdk-node`) — used
   for Secure Service Accounts. [src/clients/secure-service-accounts.ts](../src/clients/secure-service-accounts.ts)
   builds the client with a `ClientCredentialsAuthenticationProvider` and an environment-aware
@@ -245,8 +243,8 @@ update forms, custom translation, thumbnails, and derivative preview.
   the SDK at `env.host` instead of always assuming the production APS host). JWT assertion signing
   and exchange (`aps.ssa.generateAssertion` / `generateAccessToken`) use the SDK's own
   `Utils.generateJwtAssertion` and `SecureServiceAccountClient.exchangeJwtAssertion` rather than
-  hand-rolled JWT/fetch code. This `@aps_sdk/*` family (also used transitively by `svf-utils` for
-  Model Derivative) is the intended pattern for future service clients, not `aps-sdk-node`.
+  hand-rolled JWT/fetch code. This `@aps_sdk/*` family is the intended pattern for future service
+  clients, not `aps-sdk-node`.
 - **No client mutates itself in place.** Every client, from every family, is rebuilt fresh by
   `createClients()` whenever the environment or auth mode changes — see the note in
   [Activation](#1-activation--the-shared-context-icontext) above.

@@ -357,24 +357,6 @@
                 "icon": "$(trash)"
             },
             {
-                "command": "aps.md.downloadDerivativeSvf",
-                "title": "Download Derivatives as SVF",
-                "category": "Autodesk Platform Services > Model Derivatives",
-                "icon": "$(cloud-download)"
-            },
-            {
-                "command": "aps.md.downloadDerivativesF2D",
-                "title": "Download Derivatives as F2D",
-                "category": "Autodesk Platform Services > Model Derivatives",
-                "icon": "$(cloud-download)"
-            },
-            {
-                "command": "aps.md.downloadDerivativeGltf",
-                "title": "Download Derivatives as glTF",
-                "category": "Autodesk Platform Services > Model Derivatives",
-                "icon": "$(cloud-download)"
-            },
-            {
                 "command": "aps.md.downloadDerivativeCustom",
                 "title": "Download Non-SVF derivatives",
                 "category": "Autodesk Platform Services > Model Derivatives",
@@ -833,21 +815,6 @@
                     "group": "3_remove@2"
                 },
                 {
-                    "command": "aps.md.downloadDerivativeSvf",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action_md@5"
-                },
-                {
-                    "command": "aps.md.downloadDerivativesF2D",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action_md@6"
-                },
-                {
-                    "command": "aps.md.downloadDerivativeGltf",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action_md@7"
-                },
-                {
                     "command": "aps.md.downloadDerivativeCustom",
                     "when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
                     "group": "1_action_md@8"
@@ -1099,7 +1066,6 @@
         "@types/fs-extra": "^11.0.4",
         "axios": "^1.18.1",
         "form-data": "^4.0.6",
-        "fs-extra": "^11.3.6",
-        "svf-utils": "^8.0.0"
+        "fs-extra": "^11.3.6"
     }
 }
