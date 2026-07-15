@@ -31,7 +31,10 @@ yarn build         # esbuild -> out/ (extension + webviews)
 - `src/webviews/` — React webview apps (`*.tsx`, each exports `render(container, props)`).
 - `src/clients/` — `createClients(env, threeLeggedToken?)`, the single factory that builds every API
   client; a `ClientCredentialsAuthenticationProvider` + `createApsSdkManager` for the `@aps_sdk/*`
-  family; and the Secure Service Accounts client factory.
+  family; and the Secure Service Accounts client factory. Design Automation has no official
+  `@aps_sdk/*` package, so `design-automation.ts` is a hand-written `fetch`-based REST client
+  (`createDesignAutomationClient`) instead, with its request/response types in
+  `src/interfaces/design-automation-api.ts`.
 - 3-legged OAuth login lives in `src/commands/authentication.ts` (local HTTP callback server on port
   `8123` by default; token kept in memory as `context.threeLeggedToken`). Migrating this to a
   `vscode.AuthenticationProvider` is a planned change.
@@ -64,7 +67,17 @@ yarn build         # esbuild -> out/ (extension + webviews)
 - **New service clients should use the official `@aps_sdk/*` SDKs** (e.g. `@aps_sdk/secure-service-account`,
   `@aps_sdk/oss`, `@aps_sdk/model-derivative`), not the legacy `aps-sdk-node`. Reuse
   `ClientCredentialsAuthenticationProvider` and `createApsSdkManager` from `src/clients/` for
-  auth/host wiring instead of rolling new token-fetching code.
+  auth/host wiring instead of rolling new token-fetching code. If a service has no official
+  `@aps_sdk/*` package (e.g. Design Automation), write a minimal `fetch`-based REST wrapper instead
+  of pulling in an HTTP library — see `src/clients/design-automation.ts`.
+- No `axios` or `fs-extra` dependency — use the global `fetch`/`FormData`/`Blob` for HTTP calls and
+  plain `fs` (`mkdirSync`, `writeFileSync`, etc.) for filesystem access.
 - Two auth modes coexist: 2-legged (app credentials, default) and 3-legged (user login, used by the
   Hubs view and `modelDerivativeClient3L`).
-- Match the surrounding code style; there is no automated formatter/linter step in the build.
+- Match the surrounding code style; there is no automated formatter/linter step in the build (tslint
+  was removed; `yarn typecheck` runs `tsc --noEmit` for type-checking only).
+- **Every user-facing code change must add an entry to [CHANGELOG.md](../CHANGELOG.md) in the same
+  commit.** Add a bullet under the appropriate `Added`/`Changed`/`Removed`/`Fixed` subsection of the
+  `[Unreleased]` section at the top of the file (create the subsection if it doesn't exist yet); don't
+  create a new version heading yourself — that happens at release time. Purely internal changes with no
+  observable effect on the extension's behavior (e.g. comments, test-only changes) don't need an entry.

@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - (**MAJOR**) Unified all API client construction into a single `createClients()` factory, used by
+    activation, environment switching, and login/logout, instead of mutating clients in place
+  - Replaced the Kiota-generated Secure Service Accounts client with the official `@aps_sdk/secure-service-account` SDK
+  - Replaced the legacy Design Automation SDK with a hand-written `fetch`-based REST client wrapper (no official `@aps_sdk/*` package exists for this service yet)
+  - Commands and `package.json` contributes are now hand-synced instead of generated via decorators; removed the decorator-based command registry and the `update-contributes` codegen script
+  - Replaced `axios` and `fs-extra` with the built-in `fetch` and `fs` APIs
+  - Upgraded npm dependencies (React, esbuild, webview UI toolkit, etc.) and adapted to their breaking changes
+  - Upgraded to TypeScript 7.0 and modernized `tsconfig.json`; added a `typecheck` script since the build previously had no type-checking step
+- Removed
+  - SVF/F2D/glTF derivative download commands and the `svf-utils` dependency they relied on
+  - `tslint` dependency (already unused; no linting step exists in the build)
+
 ## [2.11.2] - 2025-10-21
 
 - Fixed
