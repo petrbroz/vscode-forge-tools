@@ -13,7 +13,7 @@ import {
 	IDerivativeTree,
 	ModelDerivativeClient
 } from 'aps-sdk-node';
-import { SvfReader, GltfWriter, SvfDownloader, F2dDownloader, TwoLeggedAuthenticationProvider } from 'svf-utils';
+import { SVFReader, GLTFWriter, SVFDownloader, F2DDownloader, TwoLeggedAuthenticationProvider, CancellationToken } from 'svf-utils';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
 import { IDerivative } from '../interfaces/model-derivative';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
@@ -537,19 +537,20 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				cancellable: true
 			}, async (progress, token) => {
 				let cancelled = false;
-				const svfDownloader = new SvfDownloader(new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
-				const svfDownloadTask = svfDownloader.download(urn, {
+				const svfDownloader = new SVFDownloader(new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
+				const cancellationToken = new CancellationToken();
+				token.onCancellationRequested(() => {
+					cancellationToken.cancel();
+					cancelled = true;
+				});
+				await svfDownloader.download(urn, {
 					outputDir: baseDir,
+					cancellationToken,
 					log: (message: string) => {
 						this.context.log.info(message);
 						progress.report({ message });
 					}
 				});
-				token.onCancellationRequested(() => {
-					svfDownloadTask.cancel();
-					cancelled = true;
-				});
-				await svfDownloadTask.ready;
 			});
 			const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
 			if (action === 'Open Folder') {
@@ -589,16 +590,17 @@ export class ModelDerivativesCommands extends CommandRegistry {
 				cancellable: true
 			}, async (progress, token) => {
 				let cancelled = false;
-				const f2dDownloader = new F2dDownloader(new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
-				const f2dDownloadTask = f2dDownloader.download(urn, {
-					outputDir: baseDir,
-					log: (message: string) => progress.report({ message })
-				});
+				const f2dDownloader = new F2DDownloader(new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
+				const cancellationToken = new CancellationToken();
 				token.onCancellationRequested(() => {
-					f2dDownloadTask.cancel();
+					cancellationToken.cancel();
 					cancelled = true;
 				});
-				await f2dDownloadTask.ready;
+				await f2dDownloader.download(urn, {
+					outputDir: baseDir,
+					cancellationToken,
+					log: (message: string) => progress.report({ message })
+				});
 			});
 			const action = await vscode.window.showInformationMessage(`Derivative download to ${baseDir} ${cancelled ? 'cancelled' : 'succeeded'}.`, 'Open Folder');
 			if (action === 'Open Folder') {
@@ -654,8 +656,8 @@ export class ModelDerivativesCommands extends CommandRegistry {
 					progress.report({ message: `Converting derivative ${derivative.guid}` });
 					const guidDir = path.join(urnDir, derivative.guid);
 					fse.ensureDirSync(guidDir);
-					const writer = new GltfWriter({ deduplicate: false, log: (msg: string) => progress.report({ message: msg }) });
-					const reader = await SvfReader.FromDerivativeService(urn, derivative.guid, new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
+					const writer = new GLTFWriter({ deduplicate: false, log: (msg: string) => progress.report({ message: msg }) });
+					const reader = await SVFReader.FromDerivativeService(urn, derivative.guid, new TwoLeggedAuthenticationProvider(this.context.environment.clientId, this.context.environment.clientSecret));
 					const svf = await reader.read();
 					await writer.write(svf, guidDir);
 				}
