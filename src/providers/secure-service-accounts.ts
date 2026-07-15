@@ -59,7 +59,7 @@ export class SecureServiceAccountsDataProvider implements vscode.TreeDataProvide
     }
 
     protected async getSecureServiceAccounts(): Promise<ISecureServiceAccount[]> {
-        const response = await this.context.secureServiceAccountsClient.serviceAccounts.get();
+        const response = await this.context.secureServiceAccountsClient.getServiceAccounts();
         return (response?.serviceAccounts || []).map(account => ({
             type: EntryType.SecureServiceAccount,
             id: account.serviceAccountId!,
@@ -68,7 +68,7 @@ export class SecureServiceAccountsDataProvider implements vscode.TreeDataProvide
     }
 
     protected async getSecureServiceAccountKeys(accountId: string): Promise<ISecureServiceAccountKey[]> {
-        const response = await this.context.secureServiceAccountsClient.serviceAccounts.byServiceAccountId(accountId).keys.get();
+        const response = await this.context.secureServiceAccountsClient.getAllServiceAccountKeys(accountId);
         return (response?.keys || []).map(key => ({
             type: EntryType.SecureServiceAccountKey,
             id: key.kid!,

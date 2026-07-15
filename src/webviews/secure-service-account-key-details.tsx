@@ -2,10 +2,10 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { Grid } from './components/Grid';
-import { KeysGetResponse_keys } from '../clients/secure-service-accounts/serviceAccounts/item/keys';
+import { ServiceAccountKeyDetails } from '@aps_sdk/secure-service-account';
 
 export interface ISecureServiceAccountKeyDetailsProps {
-    detail: KeysGetResponse_keys;
+    detail: ServiceAccountKeyDetails;
 }
 
 const SecureServiceAccountDetails = ({ detail }: ISecureServiceAccountKeyDetailsProps) => (
@@ -14,8 +14,8 @@ const SecureServiceAccountDetails = ({ detail }: ISecureServiceAccountKeyDetails
         <Grid>
             <VSCodeTextField readOnly value={detail.kid!}>ID</VSCodeTextField>
             <VSCodeTextField readOnly value={detail.status!}>Status</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.createdAt!.toString()}>Created At</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.accessedAt!.toString()}>Accessed At</VSCodeTextField>
+            <VSCodeTextField readOnly value={detail.createdAt!}>Created At</VSCodeTextField>
+            <VSCodeTextField readOnly value={detail.accessedAt!}>Accessed At</VSCodeTextField>
         </Grid>
     </div>
 );
