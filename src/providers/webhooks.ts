@@ -80,6 +80,10 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
     async getChildren(entry?: WebhookEntry | undefined): Promise<WebhookEntry[]> {
         const authContext = this._authContext;
         if (!entry) {
+            // User-owned webhooks need a user session -> return nothing so the "Sign in to APS" welcome view is shown instead.
+            if (authContext === 'user' && !this._context.session) {
+                return [];
+            }
             return WEBHOOKS.map(webhook => ({ type: 'system', name: webhook.name, system: webhook.id, authContext }));
         } else if (isWebhookSystem(entry)) {
             const system = WEBHOOKS.find(webhook => webhook.id === entry.system) as WebhookSystem;

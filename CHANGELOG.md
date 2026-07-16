@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added
   - (**MAJOR**) Support for all APS authentication mechanisms behind VS Code's built-in authentication
-    infrastructure. Signing in (via the status bar or the VS Code Accounts menu) now offers a choice of
+    infrastructure. Signing in (via a user-context tree view's "Sign in to APS" button or the VS Code
+    Accounts menu) now offers a choice of
     3-legged OAuth (confidential client), 3-legged OAuth with PKCE (public client, no secret), Secure
     Service Account (sign in on behalf of a service account using its private key), or pasting an access
     token obtained from another APS application. Plain 2-legged (app) access remains the always-available
@@ -27,7 +28,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     "Webhooks (app)" (plus a new "Webhooks (user)" view), "Automation" → "Automation (app)", and
     "Secure Service Accounts" → "Secure Service Accounts (app)"
   - User-context views (Data & Derivatives (user), Webhooks (user)) now show a "Sign in to APS" welcome
-    button until a user session is available, instead of surfacing errors when browsed while signed out
+    button until a user session is available, instead of surfacing errors when browsed while signed out,
+    and expose a "Logout" action in their view title bar once signed in (replacing the "APS Auth" status
+    bar item, which has been removed)
   - Renamed the "ACC Cost Management" and "ACC Issues" webhook systems in the tree view to their
     current APS names, "Cost Management" and "Forma Issues"
   - (**MAJOR**) Unified all API client construction into a single `createServices()` factory, used by

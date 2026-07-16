@@ -106,7 +106,6 @@ export async function activate(_context: vscode.ExtensionContext) {
 		await applySession(context.environment);
 		refreshAllViews();
 		updateEnvironmentStatus(envStatusBarItem);
-		updateAuthStatus(authStatusBarItem);
 	});
 	context.extensionContext.subscriptions.push(...environmentCommands.registerCommands());
 
@@ -119,7 +118,6 @@ export async function activate(_context: vscode.ExtensionContext) {
 		await applySession(context.environment);
 		hubsDataProvider.refresh();
 		refreshWebhooks();
-		updateAuthStatus(authStatusBarItem);
 	}));
 
 	const objectStorageServiceCommands = new ObjectStorageServiceCommands(context, () => simpleStorageDataProvider.refresh());
@@ -155,28 +153,8 @@ export async function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(envStatusBarItem);
 	updateEnvironmentStatus(envStatusBarItem);
 
-	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
-		const labels: Record<string, string> = {
-			'authorization-code': '3-legged',
-			'authorization-code-pkce': '3-legged (PKCE)',
-			'service-account': 'service account',
-			'manual-token': 'manual token'
-		};
-		if (context.session) {
-			statusBarItem.text = 'APS Auth: ' + (labels[context.session.mode.kind] ?? 'signed in');
-			statusBarItem.command = 'aps.auth.logout';
-		} else {
-			statusBarItem.text = 'APS Auth: 2-legged';
-			statusBarItem.command = 'aps.auth.login';
-		}
-		statusBarItem.show();
-	}
-	const authStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-	context.extensionContext.subscriptions.push(authStatusBarItem);
-
-	// Restore the startup environment's persisted session (if any) before showing the auth status.
+	// Restore the startup environment's persisted session (if any).
 	await applySession(env);
-	updateAuthStatus(authStatusBarItem);
 }
 
 export function deactivate() { }

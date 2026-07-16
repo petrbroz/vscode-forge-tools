@@ -686,6 +686,11 @@
                     "group": "navigation"
                 },
                 {
+                    "command": "aps.auth.logout",
+                    "when": "(view == apsHubsView || view == apsWebhooksUserView) && aps:userSession",
+                    "group": "navigation"
+                },
+                {
                     "command": "aps.da.refreshDesignAutomationTree",
                     "when": "view == apsDesignAutomationView",
                     "group": "navigation"
