@@ -3,6 +3,5 @@
 src
 .gitignore
 tsconfig.json
-tslint.json
 esbuild.js
 node_modules

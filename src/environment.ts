@@ -1,19 +1,5 @@
 import * as vscode from 'vscode';
-
-// TODO: reuse the enum from aps-sdk-node
-export enum DesignAutomationRegion {
-    US_WEST = 'us-west',
-    US_EAST = 'us-east'
-}
-
-export interface IEnvironment {
-    title: string;
-    clientId: string;
-    clientSecret: string;
-    region?: string;
-    host?: string;
-    designAutomationRegion?: string;
-}
+import { IEnvironment } from './models/environment';
 
 export function getEnvironments(): IEnvironment[] {
     let environments = vscode.workspace.getConfiguration(undefined, null).get<IEnvironment[]>('autodesk.forge.environments') || [];

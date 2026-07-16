@@ -6,7 +6,7 @@
     "description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
     "author": "Petr Broz <petr.broz@autodesk.com>",
     "license": "MIT",
-    "version": "2.11.2",
+    "version": "3.0.0",
     "homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
     "repository": {
         "type": "git",
@@ -132,31 +132,64 @@
             "apsViewContainer": [
                 {
                     "id": "apsDataManagementView",
-                    "name": "Buckets & Derivatives",
+                    "name": "Data & Derivatives (app)",
                     "icon": "$(database)"
                 },
                 {
                     "id": "apsHubsView",
-                    "name": "Hubs & Derivatives",
+                    "name": "Data & Derivatives (user)",
                     "icon": "$(list-tree)"
                 },
                 {
+                    "id": "apsIssuesView",
+                    "name": "Issues (user)",
+                    "icon": "$(issues)"
+                },
+                {
                     "id": "apsWebhooksView",
-                    "name": "Webhooks",
+                    "name": "Webhooks (app)",
+                    "icon": "$(bell)"
+                },
+                {
+                    "id": "apsWebhooksUserView",
+                    "name": "Webhooks (user)",
                     "icon": "$(bell)"
                 },
                 {
                     "id": "apsDesignAutomationView",
-                    "name": "Automation",
+                    "name": "Automation (app)",
                     "icon": "$(code)"
                 },
                 {
                     "id": "apsSecureServiceAccountsView",
-                    "name": "Secure Service Accounts",
+                    "name": "Secure Service Accounts (app)",
                     "icon": "$(robot)"
                 }
             ]
         },
+        "viewsWelcome": [
+            {
+                "view": "apsHubsView",
+                "when": "!aps:userSession",
+                "contents": "Data Management hubs require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsIssuesView",
+                "when": "!aps:userSession",
+                "contents": "ACC issues require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsWebhooksUserView",
+                "when": "!aps:userSession",
+                "contents": "User-owned webhooks require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            }
+        ],
+        "authentication": [
+            {
+                "id": "aps",
+                "label": "Autodesk Platform Services"
+            }
+        ],
         "commands": [
             {
                 "command": "aps.switchEnvironment",
@@ -303,6 +336,18 @@
                 "icon": "$(copy)"
             },
             {
+                "command": "aps.issues.viewIssueDetails",
+                "title": "View Issue Details",
+                "category": "Autodesk Platform Services > Issues",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.issues.copyIssueID",
+                "title": "Copy Issue ID to Clipboard",
+                "category": "Autodesk Platform Services > Issues",
+                "icon": "$(copy)"
+            },
+            {
                 "command": "aps.md.translateObject",
                 "title": "Translate Object",
                 "category": "Autodesk Platform Services > Model Derivatives",
@@ -355,24 +400,6 @@
                 "title": "Delete Object Manifest",
                 "category": "Autodesk Platform Services > Model Derivatives",
                 "icon": "$(trash)"
-            },
-            {
-                "command": "aps.md.downloadDerivativeSvf",
-                "title": "Download Derivatives as SVF",
-                "category": "Autodesk Platform Services > Model Derivatives",
-                "icon": "$(cloud-download)"
-            },
-            {
-                "command": "aps.md.downloadDerivativesF2D",
-                "title": "Download Derivatives as F2D",
-                "category": "Autodesk Platform Services > Model Derivatives",
-                "icon": "$(cloud-download)"
-            },
-            {
-                "command": "aps.md.downloadDerivativeGltf",
-                "title": "Download Derivatives as glTF",
-                "category": "Autodesk Platform Services > Model Derivatives",
-                "icon": "$(cloud-download)"
             },
             {
                 "command": "aps.md.downloadDerivativeCustom",
@@ -677,7 +704,12 @@
                 },
                 {
                     "command": "aps.wh.refreshWebhooks",
-                    "when": "view == apsWebhooksView",
+                    "when": "view == apsWebhooksView || view == apsWebhooksUserView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.auth.logout",
+                    "when": "(view == apsHubsView || view == apsIssuesView || view == apsWebhooksUserView) && aps:userSession",
                     "group": "navigation"
                 },
                 {
@@ -788,6 +820,16 @@
                     "group": "0_view@1"
                 },
                 {
+                    "command": "aps.issues.viewIssueDetails",
+                    "when": "view == apsIssuesView && viewItem == issue",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.issues.copyIssueID",
+                    "when": "view == apsIssuesView && viewItem == issue",
+                    "group": "0_view@2"
+                },
+                {
                     "command": "aps.md.translateObject",
                     "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
                     "group": "1_action_md@2"
@@ -833,21 +875,6 @@
                     "group": "3_remove@2"
                 },
                 {
-                    "command": "aps.md.downloadDerivativeSvf",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action_md@5"
-                },
-                {
-                    "command": "aps.md.downloadDerivativesF2D",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action_md@6"
-                },
-                {
-                    "command": "aps.md.downloadDerivativeGltf",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action_md@7"
-                },
-                {
                     "command": "aps.md.downloadDerivativeCustom",
                     "when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
                     "group": "1_action_md@8"
@@ -859,22 +886,22 @@
                 },
                 {
                     "command": "aps.wh.createWebhook",
-                    "when": "view == apsWebhooksView && viewItem == event",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == event",
                     "group": "2_modify"
                 },
                 {
                     "command": "aps.wh.updateWebhook",
-                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == hook",
                     "group": "2_modify"
                 },
                 {
                     "command": "aps.wh.deleteWebhook",
-                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == hook",
                     "group": "3_remove"
                 },
                 {
                     "command": "aps.wh.viewWebhookDetails",
-                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == hook",
                     "group": "0_view"
                 },
                 {
@@ -1072,35 +1099,34 @@
     },
     "scripts": {
         "vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
-        "build": "node ./esbuild.js"
+        "build": "node ./esbuild.js",
+        "typecheck": "tsc --noEmit",
+        "compile-tests": "tsc -p tsconfig.test.json",
+        "pretest": "yarn build && yarn compile-tests",
+        "test": "vscode-test"
     },
     "devDependencies": {
-        "@types/jsonwebtoken": "^9.0.10",
-        "@types/mocha": "^2.2.42",
-        "@types/node": "^12.0.0",
-        "@types/react": "^18.0.28",
-        "@types/react-dom": "^18.0.11",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^22.0.0",
+        "@types/react": "^19.2.17",
+        "@types/react-dom": "^19.2.3",
         "@types/vscode": "1.92",
-        "@vscode/webview-ui-toolkit": "^1.2.2",
-        "esbuild": "^0.25.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "tslint": "^5.12.1",
-        "typescript": "^5.9.3",
-        "vscode-test": "^1.3.0"
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
+        "@vscode/webview-ui-toolkit": "^1.4.0",
+        "esbuild": "^0.28.1",
+        "react": "^19.2.7",
+        "react-dom": "^19.2.7",
+        "typescript": "^7.0.2"
     },
     "dependencies": {
-        "@microsoft/kiota-abstractions": "^1.0.0-preview.98",
-        "@microsoft/kiota-http-fetchlibrary": "^1.0.0-preview.98",
-        "@microsoft/kiota-serialization-form": "^1.0.0-preview.98",
-        "@microsoft/kiota-serialization-json": "^1.0.0-preview.98",
-        "@microsoft/kiota-serialization-multipart": "^1.0.0-preview.98",
-        "@microsoft/kiota-serialization-text": "^1.0.0-preview.98",
-        "@types/fs-extra": "^9.0.0",
-        "aps-sdk-node": "^10.0.1",
-        "axios": "^1.8.2",
-        "fs-extra": "^9.0.0",
-        "jsonwebtoken": "^9.0.2",
-        "svf-utils": "^5.0.5"
+        "@aps_sdk/authentication": "^1.0.1",
+        "@aps_sdk/autodesk-sdkmanager": "^1.0.1",
+        "@aps_sdk/construction-issues": "^1.1.0",
+        "@aps_sdk/data-management": "^1.1.4",
+        "@aps_sdk/model-derivative": "^1.2.1",
+        "@aps_sdk/oss": "^1.3.3",
+        "@aps_sdk/secure-service-account": "^1.0.0-beta.1",
+        "@aps_sdk/webhooks": "^1.4.0"
     }
 }

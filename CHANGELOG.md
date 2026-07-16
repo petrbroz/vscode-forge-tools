@@ -6,6 +6,59 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-07-16
+
+- Added
+  - New "Issues (user)" tree view for browsing ACC/BIM 360 issues (hub → project → issue), backed by the
+    official `@aps_sdk/construction-issues` SDK, with a "View Issue Details" webview panel that also
+    lists the issue's comments, if any. Requires a user context (same sign-in as the other "(user)"
+    views)
+  - (**MAJOR**) Support for all APS authentication mechanisms behind VS Code's built-in authentication
+    infrastructure. Signing in (via a user-context tree view's "Sign in to APS" button or the VS Code
+    Accounts menu) now offers a choice of
+    3-legged OAuth (confidential client), 3-legged OAuth with PKCE (public client, no secret), Secure
+    Service Account (sign in on behalf of a service account using its private key), or pasting an access
+    token obtained from another APS application. Plain 2-legged (app) access remains the always-available
+    default when not signed in.
+  - Sessions are now persisted per environment in VS Code's encrypted secret storage, so they survive a
+    window reload; 3-legged/PKCE tokens are refreshed automatically instead of silently expiring
+  - Separate "(app)" and "(user)" webhook tree views, so app-owned and user-owned webhooks can be managed
+    independently
+  - Cost Management `segmentValue.*` webhook events, the Forma Reviews webhook system
+    (`review.created-1.0`, `review.closed-1.0`), and the Autodesk Tandem webhook system
+    (`dt.applyTemplate`, `dt.removeTemplate`, `dt.mutation`, `dt.alert`, `dt.streamConnectivity`)
+    to the webhook catalog
+- Changed
+  - Renamed the tree views to distinguish authentication context: "Buckets & Derivatives" →
+    "Data & Derivatives (app)", "Hubs & Derivatives" → "Data & Derivatives (user)", "Webhooks" →
+    "Webhooks (app)" (plus a new "Webhooks (user)" view), "Automation" → "Automation (app)", and
+    "Secure Service Accounts" → "Secure Service Accounts (app)"
+  - User-context views (Data & Derivatives (user), Webhooks (user)) now show a "Sign in to APS" welcome
+    button until a user session is available, instead of surfacing errors when browsed while signed out,
+    and expose a "Logout" action in their view title bar once signed in (replacing the "APS Auth" status
+    bar item, which has been removed)
+  - Renamed the "ACC Cost Management" and "ACC Issues" webhook systems in the tree view to their
+    current APS names, "Cost Management" and "Forma Issues"
+  - (**MAJOR**) Unified all API client construction into a single `createServices()` factory, used by
+    activation, environment switching, and login/logout, instead of mutating clients in place
+  - (**MAJOR**) Reorganized the source into explicit layers with a one-directional dependency rule:
+    `src/models` (types/interfaces, no `vscode`), `src/services` (domain logic, no `vscode`, the only
+    layer that talks to `@aps_sdk/*`), `src/webviews` (React panels that import only from `src/models`),
+    `src/commands` and `src/providers` (thin `vscode` wrappers over the services). All APS domain logic
+    (Object Storage, Model Derivative, Hubs, Design Automation, Secure Service Accounts, Webhooks,
+    Authentication) now lives in per-service classes exposed on the context as `context.<name>Service`,
+    replacing the raw SDK clients previously called directly from commands and tree views; duplicated
+    logic such as the manifest-to-derivative transforms is consolidated in one place
+  - Replaced the Kiota-generated Secure Service Accounts client with the official `@aps_sdk/secure-service-account` SDK
+  - Replaced the legacy Design Automation SDK with a hand-written `fetch`-based REST client wrapper (no official `@aps_sdk/*` package exists for this service yet)
+  - Commands and `package.json` contributes are now hand-synced instead of generated via decorators; removed the decorator-based command registry and the `update-contributes` codegen script
+  - Replaced `axios` and `fs-extra` with the built-in `fetch` and `fs` APIs
+  - Upgraded npm dependencies (React, esbuild, webview UI toolkit, etc.) and adapted to their breaking changes
+  - Upgraded to TypeScript 7.0 and modernized `tsconfig.json`; added a `typecheck` script since the build previously had no type-checking step
+- Removed
+  - SVF/F2D/glTF derivative download commands and the `svf-utils` dependency they relied on
+  - `tslint` dependency (already unused; no linting step exists in the build)
+
 ## [2.11.2] - 2025-10-21
 
 - Fixed

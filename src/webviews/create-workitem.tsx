@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
-import { IActivityDetail, IActivityParam, IWorkItemParam } from 'aps-sdk-node';
+import { IActivityDetail, IActivityParam, IWorkItemParam } from '../models/design-automation-api';
 import { postMessage } from './common';
 import { Actions } from './components/Actions';
 
@@ -53,10 +53,10 @@ function packParameters(params: IParameter[]): ({ [key: string]: IWorkItemParam 
 const CreateWorkItem = ({ activity }: ICreateWorkItemProps) => {
     const [parameters, setParameters] = useState<IParameter[]>(activity.parameters ? unpackParameters(activity.parameters) : []);
     const updateParameter = (newIndex: number, newParameter: IParameter) => setParameters(parameters.map((param, i) => i === newIndex ? newParameter : param));
-    const ParameterPropertyInput = ({ index, parameter, field, placeholder }: { index: number, parameter: IParameter, field: keyof IParameter, placeholder?: string }) => (
+    const ParameterPropertyInput = ({ index, parameter, field, placeholder }: { index: number, parameter: IParameter, field: 'name' | 'url' | 'localName' | 'pathInZip' | 'headers', placeholder?: string }) => (
         <VSCodeTextField value={parameter[field] || ''} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).value })} placeholder={placeholder} />
     );
-    const ParameterPropertyCheckbox = ({ index, parameter, field }: { index: number, parameter: IParameter, field: keyof IParameter }) => (
+    const ParameterPropertyCheckbox = ({ index, parameter, field }: { index: number, parameter: IParameter, field: 'optional' }) => (
         <VSCodeCheckbox checked={!!parameter[field]} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).checked })} />
     );
 

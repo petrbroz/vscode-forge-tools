@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
-import { IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from 'aps-sdk-node';
+import { IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from '../models/design-automation-api';
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
@@ -90,10 +90,10 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
     const addParameter = () => setParameters([...parameters, { name: '', verb: 'get' }]);
     const removeParameter = (index: number) => setParameters(parameters.filter((_, i) => i !== index));
     const updateParameter = (newIndex: number, newParameter: IActivityParam) => setParameters(parameters.map((param, i) => i === newIndex ? newParameter : param));
-    const ParameterPropertyInput = ({ index, parameter, field }: { index: number, parameter: IActivityParam, field: keyof IActivityParam }) => (
+    const ParameterPropertyInput = ({ index, parameter, field }: { index: number, parameter: IActivityParam, field: 'name' | 'description' | 'localName' }) => (
         <VSCodeTextField value={parameter[field] || ''} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).value })}></VSCodeTextField>
     );
-    const ParameterPropertyCheckbox = ({ index, parameter, field }: { index: number, parameter: IActivityParam, field: keyof IActivityParam }) => (
+    const ParameterPropertyCheckbox = ({ index, parameter, field }: { index: number, parameter: IActivityParam, field: 'required' | 'zip' | 'ondemand' }) => (
         <VSCodeCheckbox checked={!!parameter[field]} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).checked })}></VSCodeCheckbox>
     );
 

@@ -1,0 +1,10 @@
+{
+	"autodesk.forge.environments": [
+		{
+			"title": "Test Environment",
+			"clientId": "test-client-id",
+			"clientSecret": "test-client-secret",
+			"region": "US"
+		}
+	]
+}

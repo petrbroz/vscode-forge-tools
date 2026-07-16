@@ -1,11 +1,11 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
-import { IWebhook } from 'aps-sdk-node';
+import { HookDetails } from '../models/webhooks';
 import { Grid } from './components/Grid';
 
 export interface IWebhookDetailsProps {
-    detail: IWebhook & { filter?: string; hookAttribute?: string; };
+    detail: HookDetails & { filter?: string; hookAttribute?: string; };
 }
 
 const WebhookDetails = ({ detail }: IWebhookDetailsProps) => (
@@ -25,8 +25,8 @@ const WebhookDetails = ({ detail }: IWebhookDetailsProps) => (
             <VSCodeTextField readOnly value={detail.tenant}>Tenant</VSCodeTextField>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'end' }}>
-                <VSCodeTextField readOnly value={Object.keys(detail.scope)[0]}>Scope</VSCodeTextField>
-                <VSCodeTextField readOnly value={Object.values(detail.scope)[0]}></VSCodeTextField>
+                <VSCodeTextField readOnly value={Object.keys(detail.scope ?? {})[0]}>Scope</VSCodeTextField>
+                <VSCodeTextField readOnly value={Object.values(detail.scope ?? {})[0]}></VSCodeTextField>
             </div>
             <VSCodeTextField readOnly value={detail.callbackUrl}>Callback URL</VSCodeTextField>
 

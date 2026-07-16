@@ -1,25 +1,12 @@
 import * as vscode from 'vscode';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
-import { WebhookSystem, WEBHOOKS } from '../interfaces/webhooks';
+import { WebhookSystem, IWebhookSystem, IWebhookEvent, IWebhook, WebhookAuthContext } from '../models/webhooks';
+import { WEBHOOKS } from '../services/webhooks-catalog';
+import { WebhooksService } from '../services/webhooks';
 
-export interface IWebhookSystem {
-    type: 'system';
-    name: string;
-    system: string;
-}
-
-export interface IWebhookEvent {
-    type: 'event';
-    name: string;
-    system: string;
-    event: string;
-}
-
-export interface IWebhook {
-    type: 'hook';
-    id: string;
-    system: string;
-    event: string;
+/** The Webhooks service instance backing a given auth context (app-owned vs user-owned hooks). */
+export function webhooksServiceFor(context: IContext, authContext: WebhookAuthContext): WebhooksService {
+    return authContext === 'user' ? context.webhooksServiceUser : context.webhooksServiceApp;
 }
 
 type WebhookEntry = IWebhookSystem | IWebhookEvent | IWebhook;
@@ -38,12 +25,14 @@ function isWebhook(entry: WebhookEntry): entry is IWebhook {
 
 export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntry> {
     private _context: IContext;
+    private _authContext: WebhookAuthContext;
     private _onDidChangeTreeData: vscode.EventEmitter<WebhookEntry | null> = new vscode.EventEmitter<WebhookEntry | null>();
 
 	readonly onDidChangeTreeData?: vscode.Event<WebhookEntry | null> = this._onDidChangeTreeData.event;
 
-    constructor(context: IContext) {
+    constructor(context: IContext, authContext: WebhookAuthContext) {
         this._context = context;
+        this._authContext = authContext;
     }
 
     refresh(entry?: WebhookEntry) {
@@ -89,18 +78,22 @@ export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntr
     }
 
     async getChildren(entry?: WebhookEntry | undefined): Promise<WebhookEntry[]> {
+        const authContext = this._authContext;
         if (!entry) {
-            return WEBHOOKS.map(webhook => ({ type: 'system', name: webhook.name, system: webhook.id }));
+            // User-owned webhooks need a user session -> return nothing so the "Sign in to APS" welcome view is shown instead.
+            if (authContext === 'user' && !this._context.session) {
+                return [];
+            }
+            return WEBHOOKS.map(webhook => ({ type: 'system', name: webhook.name, system: webhook.id, authContext }));
         } else if (isWebhookSystem(entry)) {
             const system = WEBHOOKS.find(webhook => webhook.id === entry.system) as WebhookSystem;
-            return system.events.map(event => ({ type: 'event', name: event.id, system: system.id, event: event.id }));
+            return system.events.map(event => ({ type: 'event', name: event.id, system: system.id, event: event.id, authContext }));
         } else if (isWebhookEvent(entry)) {
             try {
                 const { system, event } = entry;
-                // @ts-ignore
-                const webhooks = await this._context.webhookClient.listHooks(system, event);
+                const webhooks = await webhooksServiceFor(this._context, authContext).getAllSystemEventHooks(system, event);
                 return webhooks.map(webhook => {
-                    return { type: 'hook', id: webhook.hookId, system, event } as IWebhook;
+                    return { type: 'hook', id: webhook.hookId!, system, event, authContext } as IWebhook;
                 }).sort(stringPropertySorter('id'));
             } catch(err) {
                 showErrorMessage(`Could not list webhooks`, err);

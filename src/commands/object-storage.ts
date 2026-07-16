@@ -1,156 +1,48 @@
-import axios from 'axios';
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { IBucket, IObject, DataRetentionPolicy } from 'aps-sdk-node';
+import { BucketsItems, ObjectDetails } from '../models/oss';
 import { createWebViewPanel, IContext, promptBucket, promptObject, showErrorMessage, withProgress } from '../common';
-import { CommandCategory, Command, CommandRegistry, ViewTitleMenu, ViewItemContextMenu } from './shared';
 
-const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
-const DeleteBatchSize = 8;
-const AllowedMimeTypes = {
-	'a': 'application/octet-stream',
-	'ai': 'application/postscript',
-	'aif': 'audio/x-aiff',
-	'aifc': 'audio/x-aiff',
-	'aiff': 'audio/x-aiff',
-	'au': 'audio/basic',
-	'avi': 'video/x-msvideo',
-	'bat': 'text/plain',
-	'bin': 'application/octet-stream',
-	'bmp': 'image/x-ms-bmp',
-	'c': 'text/plain',
-	'cdf': 'application/x-cdf',
-	'csh': 'application/x-csh',
-	'css': 'text/css',
-	'dll': 'application/octet-stream',
-	'doc': 'application/msword',
-	'dot': 'application/msword',
-	'dvi': 'application/x-dvi',
-	'eml': 'message/rfc822',
-	'eps': 'application/postscript',
-	'etx': 'text/x-setext',
-	'exe': 'application/octet-stream',
-	'gif': 'image/gif',
-	'gtar': 'application/x-gtar',
-	'h': 'text/plain',
-	'hdf': 'application/x-hdf',
-	'htm': 'text/html',
-	'html': 'text/html',
-	'jpe': 'image/jpeg',
-	'jpeg': 'image/jpeg',
-	'jpg': 'image/jpeg',
-	'js': 'application/x-javascript',
-	'ksh': 'text/plain',
-	'latex': 'application/x-latex',
-	'm1v': 'video/mpeg',
-	'man': 'application/x-troff-man',
-	'me': 'application/x-troff-me',
-	'mht': 'message/rfc822',
-	'mhtml': 'message/rfc822',
-	'mif': 'application/x-mif',
-	'mov': 'video/quicktime',
-	'movie': 'video/x-sgi-movie',
-	'mp2': 'audio/mpeg',
-	'mp3': 'audio/mpeg',
-	'mp4': 'video/mp4',
-	'mpa': 'video/mpeg',
-	'mpe': 'video/mpeg',
-	'mpeg': 'video/mpeg',
-	'mpg': 'video/mpeg',
-	'ms': 'application/x-troff-ms',
-	'nc': 'application/x-netcdf',
-	'nws': 'message/rfc822',
-	'o': 'application/octet-stream',
-	'obj': 'application/octet-stream',
-	'oda': 'application/oda',
-	'pbm': 'image/x-portable-bitmap',
-	'pdf': 'application/pdf',
-	'pfx': 'application/x-pkcs12',
-	'pgm': 'image/x-portable-graymap',
-	'png': 'image/png',
-	'pnm': 'image/x-portable-anymap',
-	'pot': 'application/vnd.ms-powerpoint',
-	'ppa': 'application/vnd.ms-powerpoint',
-	'ppm': 'image/x-portable-pixmap',
-	'pps': 'application/vnd.ms-powerpoint',
-	'ppt': 'application/vnd.ms-powerpoint',
-	'pptx': 'application/vnd.ms-powerpoint',
-	'ps': 'application/postscript',
-	'pwz': 'application/vnd.ms-powerpoint',
-	'py': 'text/x-python',
-	'pyc': 'application/x-python-code',
-	'pyo': 'application/x-python-code',
-	'qt': 'video/quicktime',
-	'ra': 'audio/x-pn-realaudio',
-	'ram': 'application/x-pn-realaudio',
-	'ras': 'image/x-cmu-raster',
-	'rdf': 'application/xml',
-	'rgb': 'image/x-rgb',
-	'roff': 'application/x-troff',
-	'rtx': 'text/richtext',
-	'sgm': 'text/x-sgml',
-	'sgml': 'text/x-sgml',
-	'sh': 'application/x-sh',
-	'shar': 'application/x-shar',
-	'snd': 'audio/basic',
-	'so': 'application/octet-stream',
-	'src': 'application/x-wais-source',
-	'swf': 'application/x-shockwave-flash',
-	't': 'application/x-troff',
-	'tar': 'application/x-tar',
-	'tcl': 'application/x-tcl',
-	'tex': 'application/x-tex',
-	'texi': 'application/x-texinfo',
-	'texinfo': 'application/x-texinfo',
-	'tif': 'image/tiff',
-	'tiff': 'image/tiff',
-	'tr': 'application/x-troff',
-	'tsv': 'text/tab-separated-values',
-	'txt': 'text/plain',
-	'ustar': 'application/x-ustar',
-	'vcf': 'text/x-vcard',
-	'wav': 'audio/x-wav',
-	'wiz': 'application/msword',
-	'wsdl': 'application/xml',
-	'xbm': 'image/x-xbitmap',
-	'xlb': 'application/vnd.ms-excel',
-	'xls': 'application/vnd.ms-excel',
-	'xlsx': 'application/vnd.ms-excel',
-	'xml': 'text/xml',
-	'xpdl': 'application/xml',
-	'xpm': 'image/x-xpixmap',
-	'xsl': 'application/xml',
-	'xwd': 'image/x-xwindowdump',
-	'zip': 'application/zip'
-};
-
-@CommandCategory({ category: 'Autodesk Platform Services > Object Storage Service', prefix: 'aps.oss' })
-export class ObjectStorageServiceCommands extends CommandRegistry {
+export class ObjectStorageServiceCommands {
     constructor(protected context: IContext, protected refresh: () => void) {
-        super();
     }
 
-    @Command({ title: 'Refresh Buckets', icon: 'refresh' })
-    @ViewTitleMenu({ when: 'view == apsDataManagementView', group: 'navigation' })
+    registerCommands(): vscode.Disposable[] {
+        return [
+            vscode.commands.registerCommand('aps.oss.refreshBuckets', this.refreshBuckets.bind(this)),
+            vscode.commands.registerCommand('aps.oss.createBucket', this.createBucket.bind(this)),
+            vscode.commands.registerCommand('aps.oss.viewBucketDetails', this.viewBucketDetails.bind(this)),
+            vscode.commands.registerCommand('aps.oss.copyBucketKey', this.copyBucketKey.bind(this)),
+            vscode.commands.registerCommand('aps.oss.deleteBucketObjects', this.deleteBucketObjects.bind(this)),
+            vscode.commands.registerCommand('aps.oss.viewObjectDetails', this.viewObjectDetails.bind(this)),
+            vscode.commands.registerCommand('aps.oss.copyObjectKey', this.copyObjectKey.bind(this)),
+            vscode.commands.registerCommand('aps.oss.uploadObject', this.uploadObject.bind(this)),
+            vscode.commands.registerCommand('aps.oss.createEmptyObject', this.createEmptyObject.bind(this)),
+            vscode.commands.registerCommand('aps.oss.copyObject', this.copyObject.bind(this)),
+            vscode.commands.registerCommand('aps.oss.renameObject', this.renameObject.bind(this)),
+            vscode.commands.registerCommand('aps.oss.downloadObject', this.downloadObject.bind(this)),
+            vscode.commands.registerCommand('aps.oss.deleteObject', this.deleteObject.bind(this)),
+            vscode.commands.registerCommand('aps.oss.generateSignedUrl', this.generateSignedUrl.bind(this)),
+            vscode.commands.registerCommand('aps.oss.deleteBucket', this.deleteBucket.bind(this)),
+        ];
+    }
+
     async refreshBuckets() {
         this.refresh();
     }
 
-    @Command({ title: 'Create Bucket', icon: 'add' })
-    @ViewTitleMenu({ when: 'view == apsDataManagementView', group: 'navigation' })
     async createBucket() {
         const name = await vscode.window.showInputBox({ prompt: 'Enter unique bucket name' });
         if (!name) {
             return;
         }
-        const retention = await vscode.window.showQuickPick(RetentionPolicyKeys, { placeHolder: 'Select retention policy' });
+        const retention = await vscode.window.showQuickPick(this.context.ossService.retentionPolicies, { placeHolder: 'Select retention policy' });
         if (!retention) {
             return;
         }
 
         try {
-            const bucket = await withProgress(`Creating bucket: ${name}`, this.context.dataManagementClient.createBucket(name, <DataRetentionPolicy>retention));
+            const bucket = await withProgress(`Creating bucket: ${name}`, this.context.ossService.createBucket(this.context.environment.region as string, name, retention));
             vscode.window.showInformationMessage(`Bucket created: ${bucket.bucketKey}`);
         } catch (err) {
             showErrorMessage('Could not create bucket', err, this.context);
@@ -158,9 +50,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({ title: 'View Bucket Details', icon: 'eye' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@1' })
-    async viewBucketDetails(bucket?: IBucket) {
+    async viewBucketDetails(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -170,7 +60,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
             }
 
             const { bucketKey } = bucket;
-            const bucketDetails = await withProgress(`Getting bucket details: ${bucketKey}`, this.context.dataManagementClient.getBucketDetails(bucketKey));
+            const bucketDetails = await withProgress(`Getting bucket details: ${bucketKey}`, this.context.ossService.getBucketDetails(bucketKey));
             createWebViewPanel(this.context, 'bucket-details.js', 'bucket-details', `Bucket Details: ${bucketKey}`, { detail: bucketDetails });
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(bucketDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
@@ -179,9 +69,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({ title: 'Copy Bucket Key to Clipboard', icon: 'copy' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '0_view@2' })
-    async copyBucketKey(bucket?: IBucket) {
+    async copyBucketKey(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -197,9 +85,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({ title: 'Delete All Objects', icon: 'trash' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@1' })
-    async deleteBucketObjects(bucket?: IBucket) {
+    async deleteBucketObjects(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -209,7 +95,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
             }
 
             const { bucketKey } = bucket;
-            const objects = await this.context.dataManagementClient.listObjects(bucketKey);
+            const objects = await this.context.ossService.getAllObjects(bucketKey);
             if (objects.length === 0) {
                 vscode.window.showInformationMessage('No objects to delete');
                 return;
@@ -229,19 +115,11 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 token.onCancellationRequested(() => {
                     cancelled = true;
                 });
-                let batch = [];
                 progress.report({ increment: 0 });
-                for (let i = 0, len = objects.length; i < len; i++) {
-                    if (cancelled) {
-                        break;
-                    }
-                    batch.push(this.context.dataManagementClient.deleteObject(bucketKey, objects[i].objectKey));
-                    if (batch.length === DeleteBatchSize || i === len - 1) {
-                        await Promise.all(batch);
-                        progress.report({ increment: 100.0 * batch.length / len });
-                        batch = [];
-                    }
-                }
+                await this.context.ossService.deleteObjects(bucketKey, objects.map(object => object.objectKey!), {
+                    onProgress: (increment) => progress.report({ increment }),
+                    isCancelled: () => cancelled
+                });
             });
             vscode.window.showInformationMessage(`Objects deleted`);
         } catch(err) {
@@ -250,9 +128,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({ title: 'View Object Details', icon: 'eye' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@1' })
-    async viewObjectDetails(object?: IObject) {
+    async viewObjectDetails(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -265,8 +141,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 }
             }
 
-            const { objectKey, bucketKey } = object;
-            const objectDetails = await withProgress(`Getting object details: ${objectKey}`, this.context.dataManagementClient.getObjectDetails(bucketKey, objectKey));
+            const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
+            const objectDetails = await withProgress(`Getting object details: ${objectKey}`, this.context.ossService.getObjectDetails(bucketKey, objectKey));
             createWebViewPanel(this.context, 'object-details.js', 'object-details', `Object Details: ${objectKey}`, { detail: objectDetails });
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
@@ -275,9 +151,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({ title: 'Copy Object Key to Clipboard', icon: 'copy' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '0_view@2' })
-    async copyObjectKey(object?: IObject) {
+    async copyObjectKey(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -290,39 +164,34 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 }
             }
 
-            await vscode.env.clipboard.writeText(object.objectKey);
+            await vscode.env.clipboard.writeText(object.objectKey!);
             vscode.window.showInformationMessage(`Object key copied to clipboard: ${object.objectKey}`);
         } catch (err) {
             showErrorMessage('Could not obtain object key', err, this.context);
         }
     }
 
-    @Command({ title: 'Upload Object', icon: 'cloud-upload' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@1' })
-    async uploadObject(bucket?: IBucket) {
+    async uploadObject(bucket?: BucketsItems) {
         // TODO: re-introduce support for cancellable uploads
-        const chunkBytes = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.data.uploadChunkSize') || (2 << 20);
-
         async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
             const filepath = uri.fsPath;
             try {
-                const stream = fs.createReadStream(filepath);
                 await vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: `Uploading file: ${filepath}`,
                     cancellable: false
                 }, async (progress, token) => {
-                    await context.dataManagementClient.uploadObjectStream(bucketKey, name, stream, {
+                    await context.ossService.uploadObject(bucketKey, name, filepath, {
                         contentType,
-                        progress: (bytesUploaded, totalBytes) => progress.report({ increment: 100.0 * bytesUploaded / totalBytes! })
+                        onProgress: (percentCompleted) => progress.report({ increment: percentCompleted })
                     });
                 });
                 const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
                 if (res === 'Translate') {
-                    const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
+                    const obj = await context.ossService.getObjectDetails(bucketKey, name);
                     vscode.commands.executeCommand('aps.md.translateObject', obj);
                 } else if (res === 'Translate (Custom)') {
-                    const obj = await context.dataManagementClient.getObjectDetails(bucketKey, name);
+                    const obj = await context.ossService.getObjectDetails(bucketKey, name);
                     vscode.commands.executeCommand('aps.md.translateObjectCustom', obj);
                 }
             } catch (err) {
@@ -357,7 +226,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
             // Pick the content type for the uploaded file
             let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
             if (!contentType) {
-                contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+                contentType = await vscode.window.showQuickPick(this.context.ossService.contentTypes, { canPickMany: false, placeHolder: 'Select content type' });
                 if (!contentType) {
                     return;
                 }
@@ -370,9 +239,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({ title: 'Create Empty Object', icon: 'new-file' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '1_action@2' })
-    async createEmptyObject(bucket?: IBucket) {
+    async createEmptyObject(bucket?: BucketsItems) {
         if (!bucket) {
             bucket = await promptBucket(this.context);
             if (!bucket) {
@@ -388,25 +255,22 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
         let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
         if (!contentType) {
-            contentType = await vscode.window.showQuickPick(Object.values(AllowedMimeTypes), { canPickMany: false, placeHolder: 'Select content type' });
+            contentType = await vscode.window.showQuickPick(this.context.ossService.contentTypes, { canPickMany: false, placeHolder: 'Select content type' });
         }
         if (!contentType) {
             return;
         }
 
         try {
-            const signedUrl = await this.context.dataManagementClient.createSignedUrl(bucketKey, name, "write");
-            const { data } = await axios.put(signedUrl.signedUrl, Buffer.from([]));
-            vscode.window.showInformationMessage(`Object created: ${data.objectId}`);
+            const objectId = await this.context.ossService.createEmptyObject(bucketKey, name);
+            vscode.window.showInformationMessage(`Object created: ${objectId}`);
         } catch(err) {
             showErrorMessage('Could not create file', err, this.context);
         }
         this.refresh();
     }
 
-    @Command({ title: 'Copy Object', icon: 'copy' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@3' })
-    async copyObject(object?: IObject) {
+    async copyObject(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -423,8 +287,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
 
-            const { bucketKey, objectKey } = object;
-            await withProgress(`Copying file: ${object.objectKey}`, this.context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
+            const bucketKey = object.bucketKey!, objectKey = object.objectKey!;
+            await withProgress(`Copying file: ${object.objectKey}`, this.context.ossService.copyObject(bucketKey, objectKey, newObjectKey));
             vscode.window.showInformationMessage(`Object copy created: ${newObjectKey}`);
         } catch(err) {
             showErrorMessage('Could not copy object', err, this.context);
@@ -432,9 +296,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({ title: 'Rename Object', icon: 'edit' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@2' })
-    async renameObject(object?: IObject) {
+    async renameObject(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -451,9 +313,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
 
-            const { bucketKey, objectKey } = object;
-            await withProgress(`Renaming file: ${object.objectKey}`, this.context.dataManagementClient.copyObject(bucketKey, objectKey, newObjectKey));
-            await withProgress(`Renaming file: ${object.objectKey}`, this.context.dataManagementClient.deleteObject(bucketKey, objectKey));
+            const bucketKey = object.bucketKey!, objectKey = object.objectKey!;
+            await withProgress(`Renaming file: ${object.objectKey}`, this.context.ossService.renameObject(bucketKey, objectKey, newObjectKey));
             vscode.window.showInformationMessage(`
                 Object successfully renamed to ${newObjectKey}. Note that any derivatives created for
                 the object's original name will not be accesible now but they still exist. You can
@@ -466,9 +327,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({ title: 'Download Object', icon: 'cloud-download' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@1' })
-    async downloadObject(object?: IObject) {
+    async downloadObject(object?: ObjectDetails) {
         if (!object) {
             const bucket = await promptBucket(this.context);
             if (!bucket) {
@@ -479,7 +338,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
         }
-        const { objectKey, bucketKey } = object;
+        const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
 
         const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(objectKey) });
         if (!uri) {
@@ -487,8 +346,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
 
         try {
-            const arrayBuffer = await withProgress(`Downloading file: ${uri.fsPath}`, this.context.dataManagementClient.downloadObject(bucketKey, objectKey));
-            fs.writeFileSync(uri.fsPath, Buffer.from(arrayBuffer), { encoding: 'binary' });
+            await withProgress(`Downloading file: ${uri.fsPath}`, this.context.ossService.downloadObject(bucketKey, objectKey, uri.fsPath));
             const action = await vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`, 'Open File');
             if (action === 'Open File') {
                 vscode.env.openExternal(uri);
@@ -498,9 +356,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({ title: 'Delete Object', icon: 'trash' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '3_remove@1' })
-    async deleteObject(object?: IObject) {
+    async deleteObject(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -518,8 +374,8 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                 return;
             }
 
-            const { bucketKey, objectKey } = object;
-            await withProgress(`Deleting object: ${object.objectKey}`, this.context.dataManagementClient.deleteObject(bucketKey, objectKey));
+            const bucketKey = object.bucketKey!, objectKey = object.objectKey!;
+            await withProgress(`Deleting object: ${object.objectKey}`, this.context.ossService.deleteObject(bucketKey, objectKey));
             vscode.window.showInformationMessage(`Object deleted: ${object.objectKey}`);
         } catch(err) {
             showErrorMessage('Could not delete object', err, this.context);
@@ -527,9 +383,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         this.refresh();
     }
 
-    @Command({ title: 'Generate Signed URL', icon: 'link' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == object', group: '1_action@4' })
-    async generateSignedUrl(object?: IObject) {
+    async generateSignedUrl(object?: ObjectDetails) {
         try {
             if (!object) {
                 const bucket = await promptBucket(this.context);
@@ -541,14 +395,14 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
                     return;
                 }
             }
-            const { objectKey, bucketKey } = object;
+            const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
             const permissions = await vscode.window.showQuickPick(['read', 'write', 'readwrite'], {
                 canPickMany: false, placeHolder: 'Select access permissions for the new URL'
             });
             if (!permissions) {
                 return;
             }
-            const signedUrl = await this.context.dataManagementClient.createSignedUrl(bucketKey, objectKey, permissions);
+            const signedUrl = await this.context.ossService.createSignedUrl(bucketKey, objectKey, permissions as 'read' | 'write' | 'readwrite');
             const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
             if (action === 'Copy URL to Clipboard') {
                 vscode.env.clipboard.writeText(signedUrl.signedUrl);
@@ -558,9 +412,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
         }
     }
 
-    @Command({ title: 'Delete Bucket', icon: 'trash' })
-    @ViewItemContextMenu({ when: 'view == apsDataManagementView && viewItem == bucket', group: '3_remove@2' })
-    async deleteBucket(bucket?: IBucket) {
+    async deleteBucket(bucket?: BucketsItems) {
         try {
             if (!bucket) {
                 bucket = await promptBucket(this.context);
@@ -575,7 +427,7 @@ export class ObjectStorageServiceCommands extends CommandRegistry {
             }
 
             const { bucketKey } = bucket;
-            await withProgress(`Deleting bucket: ${bucketKey}`, this.context.dataManagementClient.deleteBucket(bucketKey));
+            await withProgress(`Deleting bucket: ${bucketKey}`, this.context.ossService.deleteBucket(bucketKey));
             vscode.window.showInformationMessage(`Bucket deleted: ${bucketKey}`);
         } catch(err) {
             showErrorMessage('Could not delete bucket', err, this.context);

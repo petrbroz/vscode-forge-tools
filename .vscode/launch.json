@@ -17,6 +17,18 @@
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"preLaunchTask": "npm: build"
+		},
+		{
+			"name": "Attach to Extension Host (tests)",
+			"type": "node",
+			"request": "attach",
+			"port": 9229,
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js"
+			],
+			"skipFiles": [
+				"<node_internals>/**"
+			]
 		}
 	]
 }
