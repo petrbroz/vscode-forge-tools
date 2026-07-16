@@ -6,7 +6,7 @@
     "description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
     "author": "Petr Broz <petr.broz@autodesk.com>",
     "license": "MIT",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
     "repository": {
         "type": "git",
@@ -116,6 +116,22 @@
                     "type": "number",
                     "default": 2097152,
                     "description": "Size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality."
+                },
+                "autodesk.forge.data.pageSize": {
+                    "scope": "resource",
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 32,
+                    "description": "Number of buckets/objects to fetch per page in the Data & Derivatives (app) tree view, before showing a \"Load more\" item."
+                },
+                "autodesk.forge.data.hubsPageSize": {
+                    "scope": "resource",
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 200,
+                    "default": 32,
+                    "description": "Number of projects/folder items/versions to fetch per page in the Data & Derivatives (user) tree view, before showing a \"Load more\" item."
                 }
             }
         },
@@ -228,6 +244,18 @@
                 "icon": "$(add)"
             },
             {
+                "command": "aps.oss.filterObjects",
+                "title": "Filter Objects by Prefix",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(search)"
+            },
+            {
+                "command": "aps.oss.clearObjectsFilter",
+                "title": "Clear Object Filter",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(search-stop)"
+            },
+            {
                 "command": "aps.oss.viewBucketDetails",
                 "title": "View Bucket Details",
                 "category": "Autodesk Platform Services > Object Storage Service",
@@ -304,6 +332,18 @@
                 "title": "Delete Bucket",
                 "category": "Autodesk Platform Services > Object Storage Service",
                 "icon": "$(trash)"
+            },
+            {
+                "command": "aps.oss.loadMore",
+                "title": "Load More",
+                "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(ellipsis)"
+            },
+            {
+                "command": "aps.dm.loadMore",
+                "title": "Load More",
+                "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(ellipsis)"
             },
             {
                 "command": "aps.dm.copyHubID",
@@ -691,6 +731,16 @@
             }
         ],
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "aps.oss.loadMore",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.dm.loadMore",
+                    "when": "false"
+                }
+            ],
             "view/title": [
                 {
                     "command": "aps.oss.refreshBuckets",
@@ -731,17 +781,17 @@
             "view/item/context": [
                 {
                     "command": "aps.oss.viewBucketDetails",
-                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
                     "group": "0_view@1"
                 },
                 {
                     "command": "aps.oss.copyBucketKey",
-                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
                     "group": "0_view@2"
                 },
                 {
                     "command": "aps.oss.deleteBucketObjects",
-                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
                     "group": "3_remove@1"
                 },
                 {
@@ -756,13 +806,23 @@
                 },
                 {
                     "command": "aps.oss.uploadObject",
-                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
                     "group": "1_action@1"
                 },
                 {
                     "command": "aps.oss.createEmptyObject",
-                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
                     "group": "1_action@2"
+                },
+                {
+                    "command": "aps.oss.filterObjects",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "aps.oss.clearObjectsFilter",
+                    "when": "view == apsDataManagementView && viewItem == bucket-filtered",
+                    "group": "inline@2"
                 },
                 {
                     "command": "aps.oss.copyObject",
@@ -791,7 +851,7 @@
                 },
                 {
                     "command": "aps.oss.deleteBucket",
-                    "when": "view == apsDataManagementView && viewItem == bucket",
+                    "when": "view == apsDataManagementView && (viewItem == bucket || viewItem == bucket-filtered)",
                     "group": "3_remove@2"
                 },
                 {

@@ -1,7 +1,19 @@
 import { DataManagementClient } from '@aps_sdk/data-management';
-import { IHub, IProject, IFolder, IItem, IVersion } from '../models/hubs';
+import { IHub, IProject, IFolder, IItem, IVersion, IPage } from '../models/hubs';
 import { Manifest, IDerivative } from '../models/model-derivative';
 import { ModelDerivativeService } from './model-derivative';
+
+/**
+ * `next` (when present) is a full JSON:API pagination URL; this extracts the `page[number]` query
+ * param to feed back into the next request's `pageNumber` option.
+ */
+function nextPageNumber(next?: { href?: string }): number | undefined {
+    if (!next?.href) {
+        return undefined;
+    }
+    const value = new URL(next.href).searchParams.get('page[number]');
+    return value ? parseInt(value, 10) : undefined;
+}
 
 /**
  * Domain logic for the Data Management "Hubs" hierarchy (hubs > projects > folders > items >
@@ -26,15 +38,30 @@ export class HubsService {
         }));
     }
 
-    /** Lists the projects of a hub. */
+    /** Lists one page of a hub's projects, starting at the given page number (if any). */
+    async getProjectsPage(hubId: string, pageNumber?: number, limit?: number): Promise<IPage<IProject>> {
+        const projects = await this.client.getHubProjects(hubId, { pageNumber, pageLimit: limit });
+        return {
+            items: (projects.data ?? []).map(project => ({
+                kind: 'project',
+                hubId,
+                id: project.id,
+                name: project.attributes.name || '<no name>'
+            })),
+            nextPageNumber: nextPageNumber(projects.links?.next)
+        };
+    }
+
+    /** Lists every project of a hub, paginating internally via {@link getProjectsPage}. */
     async getProjects(hubId: string): Promise<IProject[]> {
-        const projects = await this.client.getHubProjects(hubId);
-        return (projects.data ?? []).map(project => ({
-            kind: 'project',
-            hubId,
-            id: project.id,
-            name: project.attributes.name || '<no name>'
-        }));
+        const items: IProject[] = [];
+        let pageNumber: number | undefined;
+        do {
+            const page = await this.getProjectsPage(hubId, pageNumber);
+            items.push(...page.items);
+            pageNumber = page.nextPageNumber;
+        } while (pageNumber !== undefined);
+        return items;
     }
 
     /** Lists the top-level folders of a project. Hidden folders are prefixed with `(hidden)`. */
@@ -54,10 +81,10 @@ export class HubsService {
         });
     }
 
-    /** Lists the contents of a folder (sub-folders and items). */
-    async getFolderContents(projectId: string, folderId: string): Promise<(IFolder | IItem)[]> {
-        const contents = await this.client.getFolderContents(projectId, folderId);
-        return (contents.data ?? []).map(item => {
+    /** Lists one page of a folder's contents (sub-folders and items), starting at the given page number (if any). */
+    async getFolderContentsPage(projectId: string, folderId: string, pageNumber?: number, limit?: number): Promise<IPage<IFolder | IItem>> {
+        const contents = await this.client.getFolderContents(projectId, folderId, { pageNumber, pageLimit: limit });
+        const items = (contents.data ?? []).map(item => {
             switch (item.type) {
                 case 'folders':
                     const folder: IFolder = {
@@ -79,17 +106,45 @@ export class HubsService {
                     throw new Error('Unexpected item type.');
             }
         });
+        return { items, nextPageNumber: nextPageNumber(contents.links?.next) };
     }
 
-    /** Lists the versions of an item. */
+    /** Lists every item in a folder, paginating internally via {@link getFolderContentsPage}. */
+    async getFolderContents(projectId: string, folderId: string): Promise<(IFolder | IItem)[]> {
+        const items: (IFolder | IItem)[] = [];
+        let pageNumber: number | undefined;
+        do {
+            const page = await this.getFolderContentsPage(projectId, folderId, pageNumber);
+            items.push(...page.items);
+            pageNumber = page.nextPageNumber;
+        } while (pageNumber !== undefined);
+        return items;
+    }
+
+    /** Lists one page of an item's versions, starting at the given page number (if any). */
+    async getItemVersionsPage(projectId: string, itemId: string, pageNumber?: number, limit?: number): Promise<IPage<IVersion>> {
+        const versions = await this.client.getItemVersions(projectId, itemId, { pageNumber, pageLimit: limit });
+        return {
+            items: (versions.data ?? []).map(version => ({
+                kind: 'version',
+                itemId,
+                id: version.id,
+                name: version.attributes.lastModifiedTime || version.attributes.createTime || '<no name>'
+            })),
+            nextPageNumber: nextPageNumber(versions.links?.next)
+        };
+    }
+
+    /** Lists every version of an item, paginating internally via {@link getItemVersionsPage}. */
     async getItemVersions(projectId: string, itemId: string): Promise<IVersion[]> {
-        const versions = await this.client.getItemVersions(projectId, itemId);
-        return (versions.data ?? []).map(version => ({
-            kind: 'version',
-            itemId,
-            id: version.id,
-            name: version.attributes.lastModifiedTime || version.attributes.createTime || '<no name>'
-        }));
+        const items: IVersion[] = [];
+        let pageNumber: number | undefined;
+        do {
+            const page = await this.getItemVersionsPage(projectId, itemId, pageNumber);
+            items.push(...page.items);
+            pageNumber = page.nextPageNumber;
+        } while (pageNumber !== undefined);
+        return items;
     }
 
     /** Fetches the manifest of a version (used to check translation status before listing derivatives). */

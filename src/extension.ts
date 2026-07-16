@@ -129,13 +129,23 @@ export async function activate(_context: vscode.ExtensionContext) {
 		refreshWebhooks();
 	}));
 
-	const objectStorageServiceCommands = new ObjectStorageServiceCommands(context, () => simpleStorageDataProvider.refresh());
+	const objectStorageServiceCommands = new ObjectStorageServiceCommands(
+		context,
+		() => simpleStorageDataProvider.refresh(),
+		(parentKey) => simpleStorageDataProvider.loadMore(parentKey),
+		(bucketKey) => simpleStorageDataProvider.getFilter(bucketKey),
+		(bucketKey, prefix) => simpleStorageDataProvider.setFilter(bucketKey, prefix)
+	);
 	context.extensionContext.subscriptions.push(...objectStorageServiceCommands.registerCommands());
 
-	const dataManagementCommands = new DataManagementCommands(context, () => {
-		simpleStorageDataProvider.refresh();
-		hubsDataProvider.refresh();
-	});
+	const dataManagementCommands = new DataManagementCommands(
+		context,
+		() => {
+			simpleStorageDataProvider.refresh();
+			hubsDataProvider.refresh();
+		},
+		(parentId) => hubsDataProvider.loadMore(parentId)
+	);
 	context.extensionContext.subscriptions.push(...dataManagementCommands.registerCommands());
 
 	const modelDerivativeCommands = new ModelDerivativesCommands(context, () => {
@@ -165,8 +175,13 @@ export async function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(envStatusBarItem);
 	updateEnvironmentStatus(envStatusBarItem);
 
-	// Restore the startup environment's persisted session (if any).
+	// Restore the startup environment's persisted session (if any). The tree views above were already
+	// created (and rendered empty) before this resolves, so the user-context views need an explicit
+	// refresh to pick up the restored session.
 	await applySession(env);
+	hubsDataProvider.refresh();
+	issuesDataProvider.refresh();
+	refreshWebhooks();
 }
 
 export function deactivate() { }

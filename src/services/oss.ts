@@ -1,5 +1,5 @@
 import { OssClient, BucketsItems, ObjectDetails, Bucket, ObjectFullDetails, CreateObjectSigned, Access, PolicyKey, Region } from '@aps_sdk/oss';
-import { SignedUrlAccess } from '../models/oss';
+import { SignedUrlAccess, IPage } from '../models/oss';
 
 /** Retention policies that can be assigned to a new bucket. */
 const RetentionPolicyKeys = ['transient', 'temporary', 'persistent'];
@@ -166,34 +166,41 @@ export class OssService {
         return Object.values(AllowedMimeTypes);
     }
 
-    /**
-     * Lists every bucket owned by the application. The official OSS SDK's `getBuckets` returns a
-     * single page (`{ items, next }`); this loops on `next` to restore "list everything" behavior.
-     */
+    /** Lists one page of buckets owned by the application, starting at the given continuation token (if any). */
+    async getBucketsPage(options?: { region?: string; startAt?: string; limit?: number }): Promise<IPage<BucketsItems>> {
+        const { region, startAt, limit } = options ?? {};
+        const page = await this.client.getBuckets({ region: region as Region | undefined, startAt, limit });
+        return { items: page.items, nextStartAt: nextStartAt(page.next) };
+    }
+
+    /** Lists one page of objects in a bucket, starting at the given continuation token (if any), optionally restricted to keys starting with `beginsWith`. */
+    async getObjectsPage(bucketKey: string, options?: { startAt?: string; limit?: number; beginsWith?: string }): Promise<IPage<ObjectDetails>> {
+        const { startAt, limit, beginsWith } = options ?? {};
+        const page = await this.client.getObjects(bucketKey, { startAt, limit, beginsWith });
+        return { items: page.items ?? [], nextStartAt: nextStartAt(page.next) };
+    }
+
+    /** Lists every bucket owned by the application, paginating internally via {@link getBucketsPage}. */
     async getAllBuckets(region?: string): Promise<BucketsItems[]> {
         const items: BucketsItems[] = [];
         let startAt: string | undefined;
-        let next: string | undefined;
         do {
-            const page = await this.client.getBuckets({ region: region as Region | undefined, startAt });
+            const page = await this.getBucketsPage({ region, startAt });
             items.push(...page.items);
-            next = page.next;
-            startAt = nextStartAt(next);
-        } while (next);
+            startAt = page.nextStartAt;
+        } while (startAt);
         return items;
     }
 
-    /** Lists every object in a bucket, paginating internally like {@link getAllBuckets}. */
+    /** Lists every object in a bucket, paginating internally via {@link getObjectsPage}. */
     async getAllObjects(bucketKey: string): Promise<ObjectDetails[]> {
         const items: ObjectDetails[] = [];
         let startAt: string | undefined;
-        let next: string | undefined;
         do {
-            const page = await this.client.getObjects(bucketKey, { startAt });
-            items.push(...(page.items ?? []));
-            next = page.next;
-            startAt = nextStartAt(next);
-        } while (next);
+            const page = await this.getObjectsPage(bucketKey, { startAt });
+            items.push(...page.items);
+            startAt = page.nextStartAt;
+        } while (startAt);
         return items;
     }
 

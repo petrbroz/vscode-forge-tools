@@ -3,6 +3,19 @@ export interface IHint {
     tooltip?: string;
 }
 
+/** One page of a paginated Data Management list, plus the next page number to fetch (if any). */
+export interface IPage<T> {
+    items: T[];
+    nextPageNumber?: number;
+}
+
+/** Synthetic leaf shown after a partial page of projects/folder contents/versions, to fetch the next page on click. */
+export interface ILoadMore {
+    loadMore: true;
+    /** ID of the parent (hub/folder/item) whose next page this loads. */
+    parentId: string;
+}
+
 export interface IHub {
     kind: 'hub';
     id: string;

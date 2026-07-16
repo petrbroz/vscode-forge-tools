@@ -4,3 +4,9 @@ export type { BucketsItems, ObjectDetails, Bucket, ObjectFullDetails } from '@ap
 
 /** Access levels for a signed resource, in plain domain form (the SDK's `Access` enum stays inside the service). */
 export type SignedUrlAccess = 'read' | 'write' | 'readwrite';
+
+/** One page of paginated OSS results, plus an opaque continuation token for the next page (if any). */
+export interface IPage<T> {
+    items: T[];
+    nextStartAt?: string;
+}
