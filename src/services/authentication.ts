@@ -1,5 +1,18 @@
 import * as http from 'http';
-import { AuthenticationClient, Scopes } from '@aps_sdk/authentication';
+import * as crypto from 'crypto';
+import { AuthenticationClient, Scopes, ThreeLeggedToken } from '@aps_sdk/authentication';
+
+/** Base64url-encodes a buffer (RFC 7636 / PKCE: no padding, URL-safe alphabet). */
+function base64UrlEncode(buffer: Buffer): string {
+    return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/** Generates a PKCE `code_verifier` and its S256 `code_challenge`. */
+function generatePkcePair(): { verifier: string; challenge: string } {
+    const verifier = base64UrlEncode(crypto.randomBytes(32));
+    const challenge = base64UrlEncode(crypto.createHash('sha256').update(verifier).digest());
+    return { verifier, challenge };
+}
 
 /** Scopes offered when generating access tokens and requested during the 3-legged login flow. */
 const DefaultScopes: string[] = [
@@ -12,7 +25,7 @@ const DefaultScopes: string[] = [
     Scopes.UserProfileRead
 ]; // TODO: make the list configurable?
 
-function renderLoginPage(clientId: string, port: number, scopes: string[]): string {
+function renderLoginPage(clientId: string, port: number, scopes: string[], codeChallenge?: string): string {
     return /*html*/ `
         <!DOCTYPE html>
         <html lang="en">
@@ -44,6 +57,8 @@ function renderLoginPage(clientId: string, port: number, scopes: string[]): stri
                     url.searchParams.set('redirect_uri', baseUrl + '/auth/callback');
                     url.searchParams.set('response_type', 'code');
                     url.searchParams.set('scope', '${scopes.join(' ')}');
+                    ${codeChallenge ? `url.searchParams.set('code_challenge', '${codeChallenge}');
+                    url.searchParams.set('code_challenge_method', 'S256');` : ''}
                     window.location.replace(url.toString());
                 });
                 document.getElementById('cancel').addEventListener('click', () => {
@@ -103,36 +118,67 @@ export class AuthenticationService {
     }
 
     /**
-     * Runs the 3-legged OAuth login flow: starts a local HTTP callback server on `port`, invokes
-     * `onListening` with the local URL for the caller to open in the browser, and resolves with the
-     * user token once the callback delivers an authorization code and it's exchanged for a token.
-     * Rejects if the user cancels or the flow times out (2 minutes).
+     * Runs the 3-legged OAuth login flow for a confidential client (exchanges the authorization code
+     * using the client secret). Starts a local HTTP callback server on `port`, invokes `onListening`
+     * with the local URL for the caller to open in the browser, and resolves with the user token once
+     * the callback delivers an authorization code and it's exchanged. Rejects if the user cancels or the
+     * flow times out (2 minutes).
      */
-    login(clientId: string, port: number, onListening: (url: string) => void): Promise<{ token: string; expiresIn: number }> {
+    login(clientId: string, port: number, onListening: (url: string) => void): Promise<{ token: string; expiresIn: number; refreshToken?: string }> {
+        return this.runLoginFlow(clientId, port, onListening,
+            (code, redirectUri) => this.client.getThreeLeggedToken(clientId, code, redirectUri, { clientSecret: this.clientSecret }));
+    }
+
+    /**
+     * Runs the 3-legged OAuth login flow for a public client using PKCE (no client secret): generates a
+     * `code_verifier`/`code_challenge` pair, passes the challenge to the authorize page, and exchanges
+     * the authorization code with the verifier. Otherwise identical to {@link login}.
+     */
+    loginWithPkce(clientId: string, port: number, onListening: (url: string) => void): Promise<{ token: string; expiresIn: number; refreshToken?: string }> {
+        const { verifier, challenge } = generatePkcePair();
+        return this.runLoginFlow(clientId, port, onListening,
+            (code, redirectUri) => this.client.getThreeLeggedToken(clientId, code, redirectUri, { code_verifier: verifier }), challenge);
+    }
+
+    /**
+     * Shared machinery for the 3-legged login flows: serves the login/callback pages from a local HTTP
+     * server and defers the token exchange to `exchange` (which differs between the confidential and
+     * PKCE flows). Passing `codeChallenge` adds the PKCE parameters to the authorize URL.
+     */
+    private runLoginFlow(
+        clientId: string,
+        port: number,
+        onListening: (url: string) => void,
+        exchange: (code: string, redirectUri: string) => Promise<ThreeLeggedToken>,
+        codeChallenge?: string
+    ): Promise<{ token: string; expiresIn: number; refreshToken?: string }> {
         const timeout = 2 * 60 * 1000; // Wait for 2 minutes
         const scopes = DefaultScopes;
-        const client = this.client;
-        const clientSecret = this.clientSecret;
         return new Promise(function (resolve, reject) {
             const server = http.createServer(async function (req, res) {
                 if (req.url === '/') {
-                    res.end(renderLoginPage(clientId, port, scopes));
+                    res.end(renderLoginPage(clientId, port, scopes, codeChallenge));
                 } else if (req.url === '/auth/cancel') {
                     res.end(renderMessagePage('Login process has been cancelled.'));
                     server.close();
                     reject('Cancelled by user.');
                 } else if (req.url?.startsWith('/auth/callback')) {
-                    const url = new URL(req.url, `http://localhost:${port}`);
-                    const code = url.searchParams.get('code') as string;
-                    url.searchParams.delete('code');
-                    const credentials = await client.getThreeLeggedToken(clientId, code, url.toString(), { clientSecret });
-                    res.end(renderMessagePage('You are logged in!'));
-                    server.close();
-                    if (!credentials.access_token || !credentials.expires_in) {
-                        reject(new Error('Authentication data missing or incorrect.'));
-                        return;
+                    try {
+                        const url = new URL(req.url, `http://localhost:${port}`);
+                        const code = url.searchParams.get('code') as string;
+                        url.searchParams.delete('code');
+                        const credentials = await exchange(code, url.toString());
+                        res.end(renderMessagePage('You are logged in!'));
+                        server.close();
+                        if (!credentials.access_token || !credentials.expires_in) {
+                            reject(new Error('Authentication data missing or incorrect.'));
+                            return;
+                        }
+                        resolve({ token: credentials.access_token, expiresIn: credentials.expires_in, refreshToken: credentials.refresh_token });
+                    } catch (err) {
+                        server.close();
+                        reject(err);
                     }
-                    resolve({ token: credentials.access_token, expiresIn: credentials.expires_in });
                 } else {
                     res.statusCode = 404;
                     res.end();

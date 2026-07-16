@@ -2,30 +2,21 @@ import * as assert from 'assert';
 import { ModelDerivativeService } from '../../services/model-derivative';
 
 describe('ModelDerivativeService', () => {
-	describe('client selection (2-legged vs 3-legged)', () => {
-		const manifest2L = { status: 'success', source: '2L' };
-		const manifest3L = { status: 'success', source: '3L' };
-		const fakeClient2L = { getManifest: async () => manifest2L };
-		const fakeClient3L = { getManifest: async () => manifest3L };
+	describe('client selection (app vs user context)', () => {
+		const manifestApp = { status: 'success', source: 'app' };
+		const manifestUser = { status: 'success', source: 'user' };
+		const fakeAppClient = { getManifest: async () => manifestApp };
+		const fakeUserClient = { getManifest: async () => manifestUser };
 		const ossObject = { objectId: 'urn:adsk.objects:os.object:my-bucket/model.rvt', objectKey: 'model.rvt' };
 		const hubsVersion = { kind: 'version', itemId: 'item-1', id: 'version-1', name: 'v1' };
+		const service = new ModelDerivativeService(fakeAppClient as any, fakeUserClient as any, {} as any, {} as any);
 
-		it('always uses the 2-legged client for OSS objects, regardless of login state', async () => {
-			const noToken = new ModelDerivativeService(fakeClient2L as any, fakeClient3L as any, {} as any, 'id', 'secret');
-			const withToken = new ModelDerivativeService(fakeClient2L as any, fakeClient3L as any, {} as any, 'id', 'secret', 'three-legged-token');
-
-			assert.strictEqual(await noToken.getObjectManifest(ossObject as any), manifest2L);
-			assert.strictEqual(await withToken.getObjectManifest(ossObject as any), manifest2L);
+		it('uses the app (2-legged) client for OSS objects', async () => {
+			assert.strictEqual(await service.getObjectManifest(ossObject as any), manifestApp);
 		});
 
-		it('uses the 2-legged client for Hubs versions when not logged in', async () => {
-			const service = new ModelDerivativeService(fakeClient2L as any, fakeClient3L as any, {} as any, 'id', 'secret');
-			assert.strictEqual(await service.getObjectManifest(hubsVersion as any), manifest2L);
-		});
-
-		it('uses the 3-legged client for Hubs versions when logged in', async () => {
-			const service = new ModelDerivativeService(fakeClient2L as any, fakeClient3L as any, {} as any, 'id', 'secret', 'three-legged-token');
-			assert.strictEqual(await service.getObjectManifest(hubsVersion as any), manifest3L);
+		it('uses the user client for Hubs versions', async () => {
+			assert.strictEqual(await service.getObjectManifest(hubsVersion as any), manifestUser);
 		});
 	});
 
@@ -38,7 +29,7 @@ describe('ModelDerivativeService', () => {
 					return { formats: { svf2: ['rvt'] } };
 				}
 			};
-			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, {} as any);
 			const object = { objectId: 'urn:x', objectKey: 'model.rvt' };
 
 			assert.deepStrictEqual(await service.getSupportedOutputFormats(object as any), ['svf2']);
@@ -57,7 +48,7 @@ describe('ModelDerivativeService', () => {
 					return { formats: { svf2: ['rvt'] } };
 				}
 			};
-			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, {} as any);
 			const object = { objectId: 'urn:x', objectKey: 'model.rvt' };
 
 			await assert.rejects(() => service.getSupportedOutputFormats(object as any));
@@ -69,7 +60,7 @@ describe('ModelDerivativeService', () => {
 	describe('getManifestDerivatives', () => {
 		it('maps a viewable (svf2) derivative to geometry view models', async () => {
 			const fakeClient2L = { getFormats: async () => ({ formats: { svf2: ['rvt'] } }) };
-			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, {} as any);
 			const manifest = {
 				derivatives: [
 					{
@@ -91,7 +82,7 @@ describe('ModelDerivativeService', () => {
 
 		it('maps a non-viewable derivative to downloadable resource view models', async () => {
 			const fakeClient2L = { getFormats: async () => ({ formats: { obj: ['rvt'] } }) };
-			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService(fakeClient2L as any, {} as any, {} as any, {} as any);
 			const manifest = {
 				derivatives: [
 					{
@@ -115,7 +106,7 @@ describe('ModelDerivativeService', () => {
 
 	describe('getVersionDerivatives', () => {
 		it('returns geometry derivatives for an already-translated version', async () => {
-			const service = new ModelDerivativeService({} as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService({} as any, {} as any, {} as any, {} as any);
 			const manifest = {
 				status: 'success',
 				derivatives: [{ outputType: 'svf2', children: [{ type: 'geometry', name: 'View1', role: '3d', guid: 'guid-1' }] }]
@@ -128,36 +119,28 @@ describe('ModelDerivativeService', () => {
 		});
 
 		it('throws when the manifest status is not success', async () => {
-			const service = new ModelDerivativeService({} as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService({} as any, {} as any, {} as any, {} as any);
 			await assert.rejects(() => service.getVersionDerivatives('version-1', { status: 'failed', derivatives: [] } as any));
 		});
 
 		it('returns an empty array when there is no viewable derivative yet', async () => {
-			const service = new ModelDerivativeService({} as any, {} as any, {} as any, 'id', 'secret');
+			const service = new ModelDerivativeService({} as any, {} as any, {} as any, {} as any);
 			const manifest = { status: 'success', derivatives: [] };
 			assert.deepStrictEqual(await service.getVersionDerivatives('version-1', manifest as any), []);
 		});
 	});
 
 	describe('getViewerAccessToken', () => {
-		it('returns the stored 3-legged token for Hubs URNs when logged in', async () => {
-			const service = new ModelDerivativeService({} as any, {} as any, {} as any, 'id', 'secret', 'my-3l-token');
-			assert.strictEqual(await service.getViewerAccessToken('url_safe_hubs_urn'), 'my-3l-token');
+		const appViewerProvider = { getAccessToken: async () => 'app-viewer-token' };
+		const userProvider = { getAccessToken: async () => 'user-token' };
+		const service = new ModelDerivativeService({} as any, {} as any, appViewerProvider as any, userProvider as any);
+
+		it('returns the user-context token for Hubs URNs', async () => {
+			assert.strictEqual(await service.getViewerAccessToken('url_safe_hubs_urn'), 'user-token');
 		});
 
-		it('fetches a fresh 2-legged token otherwise', async () => {
-			let received: any;
-			const fakeAuthenticationClient = {
-				getTwoLeggedToken: async (clientId: string, clientSecret: string, scopes: string[]) => {
-					received = { clientId, clientSecret, scopes };
-					return { access_token: 'fresh-2l-token' };
-				}
-			};
-			const service = new ModelDerivativeService({} as any, {} as any, fakeAuthenticationClient as any, 'my-id', 'my-secret');
-
-			assert.strictEqual(await service.getViewerAccessToken('plainurn'), 'fresh-2l-token');
-			assert.strictEqual(received.clientId, 'my-id');
-			assert.strictEqual(received.clientSecret, 'my-secret');
+		it('returns an app (viewables:read) token for OSS URNs', async () => {
+			assert.strictEqual(await service.getViewerAccessToken('plainurn'), 'app-viewer-token');
 		});
 	});
 });

@@ -3,6 +3,7 @@ import { BucketsItems, ObjectDetails } from './models/oss';
 import { urnify } from './urn';
 import { IDerivative } from './models/model-derivative';
 import { IEnvironment } from './models/environment';
+import { IApsAuthSession } from './models/authentication';
 import { IServices } from './services';
 
 export interface IPreviewSettings {
@@ -15,7 +16,8 @@ export interface IContext extends IServices {
     environment: IEnvironment;
     extensionContext: vscode.ExtensionContext;
     previewSettings: IPreviewSettings;
-    threeLeggedToken?: string;
+    /** The active user-context session, or `undefined` when running 2-legged (app identity) only. */
+    session?: IApsAuthSession;
     log: vscode.LogOutputChannel;
 }
 

@@ -7,6 +7,7 @@ import { ModelDerivativeService } from '../../services/model-derivative';
 import { DesignAutomationService } from '../../services/design-automation';
 import { SecureServiceAccountsService } from '../../services/secure-service-accounts';
 import { AuthenticationService } from '../../services/authentication';
+import { StaticTokenAuthenticationProvider } from '../../services/static-token-authentication-provider';
 
 const FAKE_ENV = {
 	title: 'Test Environment',
@@ -21,14 +22,16 @@ describe('createServices', () => {
 		assert.ok(services.ossService instanceof OssService);
 		assert.ok(services.modelDerivativeService instanceof ModelDerivativeService);
 		assert.ok(services.designAutomationService instanceof DesignAutomationService);
-		assert.ok(services.webhooksService instanceof WebhooksService);
+		assert.ok(services.webhooksServiceApp instanceof WebhooksService);
+		assert.ok(services.webhooksServiceUser instanceof WebhooksService);
 		assert.ok(services.hubsService instanceof HubsService);
 		assert.ok(services.secureServiceAccountsService instanceof SecureServiceAccountsService);
 	});
 
-	it('wires up every service from a plain environment plus a 3-legged token', () => {
-		const services = createServices(FAKE_ENV, 'fake-three-legged-token');
+	it('wires up every service from a plain environment plus an active user-context provider', () => {
+		const services = createServices(FAKE_ENV, new StaticTokenAuthenticationProvider('fake-user-token'));
 		assert.ok(services.hubsService instanceof HubsService);
 		assert.ok(services.modelDerivativeService instanceof ModelDerivativeService);
+		assert.ok(services.webhooksServiceUser instanceof WebhooksService);
 	});
 });

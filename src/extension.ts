@@ -5,7 +5,9 @@ import { IContext } from './common';
 import { WebhooksDataProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
 import { getEnvironments, setupNewEnvironment } from './environment';
-import { createServices } from './services';
+import { IEnvironment } from './models/environment';
+import { createServices, createSessionAuthenticationProvider } from './services';
+import { ApsAuthenticationProvider } from './auth-provider';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { AuthenticationCommands } from './commands/authentication';
 import { ObjectStorageServiceCommands } from './commands/object-storage';
@@ -16,7 +18,7 @@ import { SecureServiceAccountsCommands } from './commands/secure-service-account
 import { WebhooksCommands } from './commands/webhooks';
 import { EnvironmentCommands } from './commands/environment';
 
-export function activate(_context: vscode.ExtensionContext) {
+export async function activate(_context: vscode.ExtensionContext) {
 	const environments = getEnvironments();
 	if (environments.length === 0) {
 		// If no environment is configured, offer a guided process for creating one using vscode UI
@@ -38,46 +40,87 @@ export function activate(_context: vscode.ExtensionContext) {
 	};
     context.log.info('Extension has been loaded.');
 
-	// Setup buckets view
+    // Register the APS authentication provider (owns the single user-context session per environment).
+    const authProvider = new ApsAuthenticationProvider(_context.secrets, () => context);
+    context.extensionContext.subscriptions.push(
+        vscode.authentication.registerAuthenticationProvider(ApsAuthenticationProvider.id, ApsAuthenticationProvider.label, authProvider, { supportsMultipleAccounts: false })
+    );
+
+	// Setup Data & Derivatives (app) view (OSS buckets/objects)
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(context);
 	let dataManagementView = vscode.window.createTreeView('apsDataManagementView', { treeDataProvider: simpleStorageDataProvider });
 	context.extensionContext.subscriptions.push(dataManagementView);
 
-	// Setup hubs view
+	// Setup Data & Derivatives (user) view (Data Management hubs)
 	let hubsDataProvider = new HubsDataProvider(context);
 	let hubsView = vscode.window.createTreeView('apsHubsView', { treeDataProvider: hubsDataProvider });
 	context.extensionContext.subscriptions.push(hubsView);
 
-    // Setup design automation view
+    // Setup Automation (app) view
 	let designAutomationDataProvider = new DesignAutomationDataProvider(context);
 	let designAutomationView = vscode.window.createTreeView('apsDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
 	context.extensionContext.subscriptions.push(designAutomationView);
 
-	// Setup webhooks view
-	let webhooksDataProvider = new WebhooksDataProvider(context);
-	let webhooksView = vscode.window.createTreeView('apsWebhooksView', { treeDataProvider: webhooksDataProvider });
-	context.extensionContext.subscriptions.push(webhooksView);
+	// Setup Webhooks (app) and Webhooks (user) views
+	let webhooksAppDataProvider = new WebhooksDataProvider(context, 'app');
+	let webhooksAppView = vscode.window.createTreeView('apsWebhooksView', { treeDataProvider: webhooksAppDataProvider });
+	context.extensionContext.subscriptions.push(webhooksAppView);
+	let webhooksUserDataProvider = new WebhooksDataProvider(context, 'user');
+	let webhooksUserView = vscode.window.createTreeView('apsWebhooksUserView', { treeDataProvider: webhooksUserDataProvider });
+	context.extensionContext.subscriptions.push(webhooksUserView);
+	const refreshWebhooks = () => { webhooksAppDataProvider.refresh(); webhooksUserDataProvider.refresh(); };
 
-    // Setup secure service accounts view
+    // Setup Secure Service Accounts (app) view
     let secureServiceAccountsProvider = new SecureServiceAccountsDataProvider(context);
     let secureServiceAccountsView = vscode.window.createTreeView('apsSecureServiceAccountsView', { treeDataProvider: secureServiceAccountsProvider });
     context.extensionContext.subscriptions.push(secureServiceAccountsView);
 
-	const environmentCommands = new EnvironmentCommands(context, () => {
+	function updateUserSessionContext() {
+		vscode.commands.executeCommand('setContext', 'aps:userSession', !!context.session);
+	}
+
+	/**
+	 * Rebuilds every service for the given environment, restoring that environment's persisted session
+	 * (if any) as the user-context provider. This is the single place the active session is applied -
+	 * startup, sign-in/out, and environment switching all funnel through it.
+	 */
+	async function applySession(environment: IEnvironment) {
+		const session = await authProvider.getStoredSession(environment);
+		const userProvider = session
+			? createSessionAuthenticationProvider(environment, session, updated => authProvider.updateStoredSession(environment, updated))
+			: undefined;
+		Object.assign(context, createServices(environment, userProvider));
+		context.session = session;
+		updateUserSessionContext();
+	}
+
+	function refreshAllViews() {
 		simpleStorageDataProvider.refresh();
-        designAutomationDataProvider.refresh();
-        hubsDataProvider.refresh();
-        webhooksDataProvider.refresh();
-        secureServiceAccountsProvider.refresh();
-        updateEnvironmentStatus(envStatusBarItem);
+		hubsDataProvider.refresh();
+		designAutomationDataProvider.refresh();
+		refreshWebhooks();
+		secureServiceAccountsProvider.refresh();
+	}
+
+	const environmentCommands = new EnvironmentCommands(context, async () => {
+		await applySession(context.environment);
+		refreshAllViews();
+		updateEnvironmentStatus(envStatusBarItem);
+		updateAuthStatus(authStatusBarItem);
 	});
 	context.extensionContext.subscriptions.push(...environmentCommands.registerCommands());
 
-    const authenticationCommands = new AuthenticationCommands(context, () => {
-		hubsDataProvider.refresh();
-		updateAuthStatus(authStatusBarItem);
-	});
+    const authenticationCommands = new AuthenticationCommands(context, authProvider);
 	context.extensionContext.subscriptions.push(...authenticationCommands.registerCommands());
+
+	// A session added/removed via the provider (sign-in/out, or the VS Code Accounts menu) rebuilds the
+	// services for the current environment and refreshes the user-context views.
+	context.extensionContext.subscriptions.push(authProvider.onDidChangeSessions(async () => {
+		await applySession(context.environment);
+		hubsDataProvider.refresh();
+		refreshWebhooks();
+		updateAuthStatus(authStatusBarItem);
+	}));
 
 	const objectStorageServiceCommands = new ObjectStorageServiceCommands(context, () => simpleStorageDataProvider.refresh());
 	context.extensionContext.subscriptions.push(...objectStorageServiceCommands.registerCommands());
@@ -97,7 +140,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	const designAutomationCommands = new DesignAutomationCommands(context, () => designAutomationDataProvider.refresh());
 	context.extensionContext.subscriptions.push(...designAutomationCommands.registerCommands());
 
-	const webhooksCommands = new WebhooksCommands(context, () => webhooksDataProvider.refresh());
+	const webhooksCommands = new WebhooksCommands(context, refreshWebhooks);
 	context.extensionContext.subscriptions.push(...webhooksCommands.registerCommands());
 
 	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
@@ -113,8 +156,14 @@ export function activate(_context: vscode.ExtensionContext) {
 	updateEnvironmentStatus(envStatusBarItem);
 
 	function updateAuthStatus(statusBarItem: vscode.StatusBarItem) {
-		if (context.threeLeggedToken) {
-			statusBarItem.text = 'APS Auth: 3-legged';
+		const labels: Record<string, string> = {
+			'authorization-code': '3-legged',
+			'authorization-code-pkce': '3-legged (PKCE)',
+			'service-account': 'service account',
+			'manual-token': 'manual token'
+		};
+		if (context.session) {
+			statusBarItem.text = 'APS Auth: ' + (labels[context.session.mode.kind] ?? 'signed in');
 			statusBarItem.command = 'aps.auth.logout';
 		} else {
 			statusBarItem.text = 'APS Auth: 2-legged';
@@ -124,6 +173,9 @@ export function activate(_context: vscode.ExtensionContext) {
 	}
 	const authStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 	context.extensionContext.subscriptions.push(authStatusBarItem);
+
+	// Restore the startup environment's persisted session (if any) before showing the auth status.
+	await applySession(env);
 	updateAuthStatus(authStatusBarItem);
 }
 

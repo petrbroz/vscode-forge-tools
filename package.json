@@ -132,31 +132,54 @@
             "apsViewContainer": [
                 {
                     "id": "apsDataManagementView",
-                    "name": "Buckets & Derivatives",
+                    "name": "Data & Derivatives (app)",
                     "icon": "$(database)"
                 },
                 {
                     "id": "apsHubsView",
-                    "name": "Hubs & Derivatives",
+                    "name": "Data & Derivatives (user)",
                     "icon": "$(list-tree)"
                 },
                 {
                     "id": "apsWebhooksView",
-                    "name": "Webhooks",
+                    "name": "Webhooks (app)",
+                    "icon": "$(bell)"
+                },
+                {
+                    "id": "apsWebhooksUserView",
+                    "name": "Webhooks (user)",
                     "icon": "$(bell)"
                 },
                 {
                     "id": "apsDesignAutomationView",
-                    "name": "Automation",
+                    "name": "Automation (app)",
                     "icon": "$(code)"
                 },
                 {
                     "id": "apsSecureServiceAccountsView",
-                    "name": "Secure Service Accounts",
+                    "name": "Secure Service Accounts (app)",
                     "icon": "$(robot)"
                 }
             ]
         },
+        "viewsWelcome": [
+            {
+                "view": "apsHubsView",
+                "when": "!aps:userSession",
+                "contents": "Data Management hubs require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsWebhooksUserView",
+                "when": "!aps:userSession",
+                "contents": "User-owned webhooks require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            }
+        ],
+        "authentication": [
+            {
+                "id": "aps",
+                "label": "Autodesk Platform Services"
+            }
+        ],
         "commands": [
             {
                 "command": "aps.switchEnvironment",
@@ -659,7 +682,7 @@
                 },
                 {
                     "command": "aps.wh.refreshWebhooks",
-                    "when": "view == apsWebhooksView",
+                    "when": "view == apsWebhooksView || view == apsWebhooksUserView",
                     "group": "navigation"
                 },
                 {
@@ -826,22 +849,22 @@
                 },
                 {
                     "command": "aps.wh.createWebhook",
-                    "when": "view == apsWebhooksView && viewItem == event",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == event",
                     "group": "2_modify"
                 },
                 {
                     "command": "aps.wh.updateWebhook",
-                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == hook",
                     "group": "2_modify"
                 },
                 {
                     "command": "aps.wh.deleteWebhook",
-                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == hook",
                     "group": "3_remove"
                 },
                 {
                     "command": "aps.wh.viewWebhookDetails",
-                    "when": "view == apsWebhooksView && viewItem == hook",
+                    "when": "(view == apsWebhooksView || view == apsWebhooksUserView) && viewItem == hook",
                     "group": "0_view"
                 },
                 {

@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { IContext } from '../common';
 import { getEnvironments } from '../environment';
 import { IEnvironment } from '../models/environment';
-import { createServices } from '../services';
 
 export class EnvironmentCommands {
 	constructor(protected context: IContext, protected refresh: () => void) {
@@ -20,11 +19,9 @@ export class EnvironmentCommands {
         if (!name) {
             return;
         }
-        const context = this.context;
-        const env = environments.find(environment => environment.title === name) as IEnvironment;
-        delete context.threeLeggedToken;
-        context.environment = env;
-        Object.assign(context, createServices(env));
+        // Only update the selected environment here; the refresh callback rebuilds the services for the
+        // new environment and restores that environment's persisted session (see `activate`).
+        this.context.environment = environments.find(environment => environment.title === name) as IEnvironment;
         this.refresh();
     }
 }

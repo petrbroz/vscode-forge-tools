@@ -121,6 +121,10 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async getChildren(entry?: HubsEntry | undefined): Promise<HubsEntry[]> {
         if (!entry) {
+            // No user session -> return nothing so the "Sign in to APS" welcome view is shown instead.
+            if (!this._context.session) {
+                return [];
+            }
             return this._getHubs();
         } else if (isHub(entry)) {
             return this._getProjects(entry.id);
@@ -160,7 +164,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve hubs.',
-                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+                tooltip: 'An error occurred while retrieving data from the Data Management API.'
             }];
         }
     }
@@ -171,7 +175,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve projects.',
-                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+                tooltip: 'An error occurred while retrieving data from the Data Management API.'
             }];
         }
     }
@@ -182,7 +186,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve top-level folders.',
-                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+                tooltip: 'An error occurred while retrieving data from the Data Management API.'
             }];
         }
     }
@@ -193,7 +197,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve folder contents.',
-                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+                tooltip: 'An error occurred while retrieving data from the Data Management API.'
             }];
         }
     }
@@ -204,7 +208,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve item versions.',
-                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+                tooltip: 'An error occurred while retrieving data from the Data Management API.'
             }];
         }
     }
@@ -215,7 +219,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } catch (err) {
             return [{
                 hint: 'Could not retrieve derivatives.',
-                tooltip: 'Try logging in with the 3-legged OAuth workflow.'
+                tooltip: 'An error occurred while retrieving data from the Data Management API.'
             }];
         }
     }

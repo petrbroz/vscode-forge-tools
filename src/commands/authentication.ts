@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
-import { createServices } from '../services';
-
-const DefaultAuthPort = 8123;
+import { ApsAuthenticationProvider } from '../auth-provider';
 
 export class AuthenticationCommands {
-    constructor(protected context: IContext, protected refresh: () => void) {
+    constructor(protected context: IContext, protected authProvider: ApsAuthenticationProvider) {
     }
 
     registerCommands(): vscode.Disposable[] {
@@ -17,31 +15,26 @@ export class AuthenticationCommands {
     }
 
     async login() {
-        const env = this.context.environment;
         try {
-            const port = vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.authentication.port') || DefaultAuthPort;
-            const clientId = this.context.environment.clientId;
-            const { token, expiresIn } = await this.context.authenticationService.login(clientId, port, (url) => {
-                vscode.env.openExternal(vscode.Uri.parse(url));
-            });
-            this.context.threeLeggedToken = token;
-            Object.assign(this.context, createServices(env, token));
-            this.refresh();
-            vscode.window.showInformationMessage(`You are now logged in. Autodesk Platform Services requiring 3-legged authentication will be available for as long as the generated token is valid (${expiresIn} seconds), or until you manually log out.`);
+            // Delegates to the APS authentication provider, which runs the sign-in-mode quick-pick and
+            // persists the session. The extension's onDidChangeSessions handler rebuilds the services.
+            await vscode.authentication.getSession(ApsAuthenticationProvider.id, [], { createIfNone: true, clearSessionPreference: true });
         } catch (err) {
             vscode.window.showWarningMessage(`Could not log in: ${err}`);
         }
     }
 
     async logout() {
-		const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to log out?' });
-        const env = this.context.environment;
-		if (answer === 'Yes') {
-			delete this.context.threeLeggedToken;
-			Object.assign(this.context, createServices(env));
-            this.refresh();
-			vscode.window.showInformationMessage(`You are now logged out. Autodesk Platform Services requiring 3-legged authentication will no longer be available.`);
-		}
+        const sessions = await this.authProvider.getSessions();
+        if (sessions.length === 0) {
+            vscode.window.showInformationMessage('You are not signed in.');
+            return;
+        }
+        const answer = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: 'Would you like to sign out?' });
+        if (answer === 'Yes') {
+            await this.authProvider.removeSession(sessions[0].id);
+            vscode.window.showInformationMessage(`You are now signed out. Autodesk Platform Services requiring a user context will no longer be available.`);
+        }
     }
 
     async getAccessToken() {

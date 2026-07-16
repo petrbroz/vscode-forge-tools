@@ -8,7 +8,7 @@ import {
     Properties,
     ModelViews
 } from '@aps_sdk/model-derivative';
-import { AuthenticationClient, Scopes } from '@aps_sdk/authentication';
+import { IAuthenticationProvider } from '@aps_sdk/autodesk-sdkmanager';
 import { urnify } from '../urn';
 import { ObjectDetails } from '../models/oss';
 import { IVersion } from '../models/hubs';
@@ -82,43 +82,42 @@ class ModelDerivativeFormats {
 }
 
 /**
- * Domain logic for the Model Derivative service. Wraps the 2-legged and 3-legged
- * `ModelDerivativeClient`s (and the shared `AuthenticationClient` for viewer tokens) and exposes
- * plain, domain-shaped operations so the vscode layers never touch the SDK's clients, enums, or
- * manifest transforms. Owns all `@aps_sdk/model-derivative` access and the supported-formats cache.
+ * Domain logic for the Model Derivative service. Wraps an app-context (2-legged) and a user-context
+ * `ModelDerivativeClient` and exposes plain, domain-shaped operations so the vscode layers never touch
+ * the SDK's clients, enums, or manifest transforms. Client selection is purely by resource: OSS objects
+ * are app-owned so they use the app client, while Hubs versions require user context so they use the
+ * user client (the user client's provider is the active session, or a 2-legged fallback - Hubs views are
+ * gated behind sign-in, so the fallback is never actually exercised). Owns all
+ * `@aps_sdk/model-derivative` access and the supported-formats cache.
  */
 export class ModelDerivativeService {
     private _formats: Promise<ModelDerivativeFormats> | null = null;
 
     constructor(
-        private readonly client2L: ModelDerivativeClient,
-        private readonly client3L: ModelDerivativeClient,
-        private readonly authenticationClient: AuthenticationClient,
-        private readonly clientId: string,
-        private readonly clientSecret: string,
-        private readonly threeLeggedToken?: string
+        private readonly appClient: ModelDerivativeClient,
+        private readonly userClient: ModelDerivativeClient,
+        private readonly appViewerProvider: IAuthenticationProvider,
+        private readonly userProvider: IAuthenticationProvider
     ) {}
 
-    /** Picks the 2-legged or 3-legged client for a URN: user context for Hubs resources when logged in. */
+    /** Picks the client for a URN: user context for Hubs resources, app context for OSS objects. */
     private clientForUrn(urn: string): ModelDerivativeClient {
-        return inHubs(urn) && this.threeLeggedToken ? this.client3L : this.client2L;
+        return inHubs(urn) ? this.userClient : this.appClient;
     }
 
-    /** Picks the client for a tree object: OSS objects use the app client, Hubs versions the user client when logged in. */
+    /** Picks the client for a tree object: OSS objects use the app client, Hubs versions the user client. */
     private clientForObject(object: ObjectDetails | IVersion): ModelDerivativeClient {
-        if ('objectId' in object) { // ObjectDetails
-            return this.client2L;
-        } else if ('itemId' in object) { // IVersion
-            return this.threeLeggedToken ? this.client3L : this.client2L;
+        if ('itemId' in object) { // IVersion (Hubs)
+            return this.userClient;
         }
-        return this.client2L;
+        return this.appClient; // ObjectDetails (OSS) and any fallback
     }
 
     private async getFormats(): Promise<ModelDerivativeFormats> {
         if (this._formats === null) {
             this._formats = (async () => {
                 const availableTranslations: DerivativeTranslation[] = [];
-                const { formats = {} } = await this.client2L.getFormats();
+                const { formats = {} } = await this.appClient.getFormats();
                 for (const outputFormat in formats) {
                     if (Object.prototype.hasOwnProperty.call(formats, outputFormat)) {
                         availableTranslations.push({ outputFormat, sourceFormats: formats[outputFormat] });
@@ -182,7 +181,7 @@ export class ModelDerivativeService {
 
     /** Fetches the manifest of an already-encoded URN (OSS objects use the app client). */
     getManifest(urn: string): Promise<Manifest> {
-        return this.client2L.getManifest(urn);
+        return this.appClient.getManifest(urn);
     }
 
     /** Fetches the manifest of a Hubs version (uses the user client when logged in). */
@@ -264,7 +263,7 @@ export class ModelDerivativeService {
      */
     async getViewableDerivatives(objectId: string): Promise<IDerivative[] | null> {
         const urn = urnify(objectId);
-        const manifest = await this.client2L.getManifest(urn) as any;
+        const manifest = await this.appClient.getManifest(urn) as any;
         const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
         if (!svf) {
             return null;
@@ -282,7 +281,7 @@ export class ModelDerivativeService {
     async getCustomDerivatives(objectId: string): Promise<IDerivative[]> {
         const urn = urnify(objectId);
         const formats = await this.getFormats();
-        const manifest = await this.client2L.getManifest(urn) as any;
+        const manifest = await this.appClient.getManifest(urn) as any;
         return manifest.derivatives
             .filter((deriv: any) => formats.hasOutput(deriv.outputType))
             .filter((deriv: any) => !isViewableFormat(deriv.outputType))
@@ -308,7 +307,7 @@ export class ModelDerivativeService {
 
     /** Downloads the bytes of a (non-viewable) derivative via its signed download URL. */
     async downloadDerivative(fileUrn: string, modelUrn: string): Promise<Uint8Array> {
-        const derivativeDownload = await this.client2L.getDerivativeUrl(encodeURI(fileUrn), modelUrn);
+        const derivativeDownload = await this.appClient.getDerivativeUrl(encodeURI(fileUrn), modelUrn);
         const response = await fetch(derivativeDownload.url!);
         if (!response.ok) {
             throw new Error(`Request failed with status code ${response.status}`);
@@ -317,14 +316,10 @@ export class ModelDerivativeService {
     }
 
     /**
-     * Returns an access token for loading a derivative in the viewer: the current 3-legged user token
-     * for Hubs resources when logged in, otherwise a fresh 2-legged token with `viewables:read` scope.
+     * Returns an access token for loading a derivative in the viewer: the active user-context token for
+     * Hubs resources, otherwise a 2-legged token with `viewables:read` scope for OSS objects.
      */
     async getViewerAccessToken(urn: string): Promise<string> {
-        if (inHubs(urn) && this.threeLeggedToken) {
-            return this.threeLeggedToken;
-        }
-        const token = await this.authenticationClient.getTwoLeggedToken(this.clientId, this.clientSecret, [Scopes.ViewablesRead]);
-        return token.access_token!;
+        return inHubs(urn) ? this.userProvider.getAccessToken() : this.appViewerProvider.getAccessToken();
     }
 }
