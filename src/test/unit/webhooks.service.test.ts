@@ -35,6 +35,16 @@ describe('WebhooksService', () => {
 			const service = new WebhooksService({} as any);
 			assert.throws(() => service.getEventScopes('not-a-system', 'not-an-event'));
 		});
+
+		it('returns the scopes of the new Forma Reviews system/event from the catalog', () => {
+			const service = new WebhooksService({} as any);
+			assert.deepStrictEqual(service.getEventScopes('autodesk.construction.reviews', 'review.created-1.0'), ['project']);
+		});
+
+		it('returns the scopes of the new Autodesk Tandem system/event from the catalog', () => {
+			const service = new WebhooksService({} as any);
+			assert.deepStrictEqual(service.getEventScopes('adsk.tandem', 'dt.mutation'), ['modelUrn']);
+		});
 	});
 
 	describe('createWebhook', () => {

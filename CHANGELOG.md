@@ -6,7 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Cost Management `segmentValue.*` webhook events, the Forma Reviews webhook system
+    (`review.created-1.0`, `review.closed-1.0`), and the Autodesk Tandem webhook system
+    (`dt.applyTemplate`, `dt.removeTemplate`, `dt.mutation`, `dt.alert`, `dt.streamConnectivity`)
+    to the webhook catalog
 - Changed
+  - Renamed the "ACC Cost Management" and "ACC Issues" webhook systems in the tree view to their
+    current APS names, "Cost Management" and "Forma Issues"
   - (**MAJOR**) Unified all API client construction into a single `createServices()` factory, used by
     activation, environment switching, and login/logout, instead of mutating clients in place
   - (**MAJOR**) Reorganized the source into explicit layers with a one-directional dependency rule:

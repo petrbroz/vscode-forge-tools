@@ -183,7 +183,7 @@ export const WEBHOOKS: WebhookSystem[] = [
     },
     {
         id: 'autodesk.construction.cost',
-        name: 'ACC Cost Management',
+        name: 'Cost Management',
         events: [
             {
                 id: 'budget.created-1.0',
@@ -399,6 +399,21 @@ export const WEBHOOKS: WebhookSystem[] = [
                 id: 'sco.deleted-1.0',
                 description: 'When a subcontractor change order is deleted.',
                 scopes: ['project']
+            },
+            {
+                id: 'segmentValue.created-1.0',
+                description: 'When a segment value is created.',
+                scopes: ['project']
+            },
+            {
+                id: 'segmentValue.updated-1.0',
+                description: 'When a segment value is updated.',
+                scopes: ['project']
+            },
+            {
+                id: 'segmentValue.deleted-1.0',
+                description: 'When a segment value is deleted.',
+                scopes: ['project']
             }
         ]
     },
@@ -440,7 +455,7 @@ export const WEBHOOKS: WebhookSystem[] = [
     },
     {
         id: 'autodesk.construction.issues',
-        name: 'ACC Issues',
+        name: 'Forma Issues',
         events: [
             {
                 id: 'issue.created-1.0',
@@ -466,6 +481,53 @@ export const WEBHOOKS: WebhookSystem[] = [
                 id: 'issue.unlinked-1.0',
                 description: 'When an issue is unlinked from a placement.',
                 scopes: ['project']
+            }
+        ]
+    },
+    {
+        id: 'autodesk.construction.reviews',
+        name: 'Forma Reviews',
+        events: [
+            {
+                id: 'review.created-1.0',
+                description: 'When a review is created.',
+                scopes: ['project']
+            },
+            {
+                id: 'review.closed-1.0',
+                description: 'When a review is closed.',
+                scopes: ['project']
+            }
+        ]
+    },
+    {
+        id: 'adsk.tandem',
+        name: 'Autodesk Tandem',
+        events: [
+            {
+                id: 'dt.applyTemplate',
+                description: 'When a template is applied to a facility.',
+                scopes: ['twinUrn']
+            },
+            {
+                id: 'dt.removeTemplate',
+                description: 'When a template is deleted from a facility.',
+                scopes: ['twinUrn']
+            },
+            {
+                id: 'dt.mutation',
+                description: 'When a model element is changed.',
+                scopes: ['modelUrn']
+            },
+            {
+                id: 'dt.alert',
+                description: 'When a stream alert occurs.',
+                scopes: ['twinUrn']
+            },
+            {
+                id: 'dt.streamConnectivity',
+                description: 'When a stream state changes.',
+                scopes: ['twinUrn']
             }
         ]
     }
