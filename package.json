@@ -123,7 +123,15 @@
                     "minimum": 1,
                     "maximum": 100,
                     "default": 32,
-                    "description": "Number of buckets/objects to fetch per page in the Data & Derivatives tree view, before showing a \"Load more\" item."
+                    "description": "Number of buckets/objects to fetch per page in the Data & Derivatives (app) tree view, before showing a \"Load more\" item."
+                },
+                "autodesk.forge.data.hubsPageSize": {
+                    "scope": "resource",
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 200,
+                    "default": 32,
+                    "description": "Number of projects/folder items/versions to fetch per page in the Data & Derivatives (user) tree view, before showing a \"Load more\" item."
                 }
             }
         },
@@ -329,6 +337,12 @@
                 "command": "aps.oss.loadMore",
                 "title": "Load More",
                 "category": "Autodesk Platform Services > Object Storage Service",
+                "icon": "$(ellipsis)"
+            },
+            {
+                "command": "aps.dm.loadMore",
+                "title": "Load More",
+                "category": "Autodesk Platform Services > Data Management",
                 "icon": "$(ellipsis)"
             },
             {
@@ -720,6 +734,10 @@
             "commandPalette": [
                 {
                     "command": "aps.oss.loadMore",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.dm.loadMore",
                     "when": "false"
                 }
             ],

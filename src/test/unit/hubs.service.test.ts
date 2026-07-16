@@ -69,6 +69,32 @@ describe('HubsService', () => {
 			const service = new HubsService(fakeClient as any, {} as any);
 			await assert.rejects(() => service.getFolderContents('project-1', 'folder-0'));
 		});
+
+		it('follows the links.next -> page[number] continuation loop across pages', async () => {
+			const seenPageNumbers: (number | undefined)[] = [];
+			const fakeClient = {
+				getFolderContents: async (_projectId: string, _folderId: string, { pageNumber }: { pageNumber?: number }) => {
+					seenPageNumbers.push(pageNumber);
+					if (pageNumber === undefined) {
+						return {
+							data: [{ type: 'items', id: 'item-1', attributes: { displayName: 'a.txt' } }],
+							links: { next: { href: 'https://x/api?page%5Bnumber%5D=1' } }
+						};
+					}
+					assert.strictEqual(pageNumber, 1);
+					return {
+						data: [{ type: 'items', id: 'item-2', attributes: { displayName: 'b.txt' } }],
+						links: {}
+					};
+				}
+			};
+
+			const service = new HubsService(fakeClient as any, {} as any);
+			const contents = await service.getFolderContents('project-1', 'folder-0');
+
+			assert.deepStrictEqual(contents.map(c => c.id), ['item-1', 'item-2']);
+			assert.deepStrictEqual(seenPageNumbers, [undefined, 1]);
+		});
 	});
 
 	describe('version derivative delegation', () => {

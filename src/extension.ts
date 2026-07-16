@@ -138,10 +138,14 @@ export async function activate(_context: vscode.ExtensionContext) {
 	);
 	context.extensionContext.subscriptions.push(...objectStorageServiceCommands.registerCommands());
 
-	const dataManagementCommands = new DataManagementCommands(context, () => {
-		simpleStorageDataProvider.refresh();
-		hubsDataProvider.refresh();
-	});
+	const dataManagementCommands = new DataManagementCommands(
+		context,
+		() => {
+			simpleStorageDataProvider.refresh();
+			hubsDataProvider.refresh();
+		},
+		(parentId) => hubsDataProvider.loadMore(parentId)
+	);
 	context.extensionContext.subscriptions.push(...dataManagementCommands.registerCommands());
 
 	const modelDerivativeCommands = new ModelDerivativesCommands(context, () => {

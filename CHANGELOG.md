@@ -16,6 +16,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     to keys starting with a given prefix (OSS's `beginsWith` list option); the active filter is shown
     next to the bucket's name, with an inline icon on the bucket's tree item to set the filter, and
     another (shown only while a filter is active) to clear it
+  - Pagination for the Data & Derivatives (user) tree view: a hub's projects, a folder's contents, and
+    an item's versions now load one page at a time via the Data Management API's `page[number]`/
+    `page[limit]` options, with a "Load more…" item to fetch the next page. Hubs and a project's
+    top-level folders are unaffected, since those Data Management endpoints don't paginate
+  - New `autodesk.forge.data.hubsPageSize` setting (1-200, default 32) to control how many
+    projects/folder items/versions are fetched per page in that tree view
 - Fixed
   - "(User)" tree views (Data Management hubs, Issues, Webhooks) appearing empty after restarting VS
     Code with a persisted session, even though the Accounts menu showed a signed-in user; the views now

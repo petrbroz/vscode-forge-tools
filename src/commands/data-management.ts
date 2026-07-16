@@ -3,17 +3,22 @@ import { IContext } from '../common';
 import { IHub, IProject, IFolder, IItem, IVersion } from '../models/hubs';
 
 export class DataManagementCommands {
-    constructor(protected context: IContext, protected refresh: () => void) {
+    constructor(protected context: IContext, protected refresh: () => void, protected onLoadMore: (parentId: string) => void) {
     }
 
     registerCommands(): vscode.Disposable[] {
         return [
+            vscode.commands.registerCommand('aps.dm.loadMore', this.loadMore.bind(this)),
             vscode.commands.registerCommand('aps.dm.copyHubID', this.copyHubID.bind(this)),
             vscode.commands.registerCommand('aps.dm.copyProjectID', this.copyProjectID.bind(this)),
             vscode.commands.registerCommand('aps.dm.copyFolderID', this.copyFolderID.bind(this)),
             vscode.commands.registerCommand('aps.dm.copyItemID', this.copyItemID.bind(this)),
             vscode.commands.registerCommand('aps.dm.copyVersionID', this.copyVersionID.bind(this)),
         ];
+    }
+
+    async loadMore(parentId: string) {
+        this.onLoadMore(parentId);
     }
 
     protected ensureInput<T>(input: T | undefined): T {
