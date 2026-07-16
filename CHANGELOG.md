@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - "(User)" tree views (Data Management hubs, Issues, Webhooks) appearing empty after restarting VS
+    Code with a persisted session, even though the Accounts menu showed a signed-in user; the views now
+    refresh once the restored session is applied on startup
+
 ## [3.0.0] - 2026-07-16
 
 - Added

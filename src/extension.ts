@@ -165,8 +165,13 @@ export async function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(envStatusBarItem);
 	updateEnvironmentStatus(envStatusBarItem);
 
-	// Restore the startup environment's persisted session (if any).
+	// Restore the startup environment's persisted session (if any). The tree views above were already
+	// created (and rendered empty) before this resolves, so the user-context views need an explicit
+	// refresh to pick up the restored session.
 	await applySession(env);
+	hubsDataProvider.refresh();
+	issuesDataProvider.refresh();
+	refreshWebhooks();
 }
 
 export function deactivate() { }
