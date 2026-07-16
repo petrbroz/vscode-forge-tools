@@ -1040,7 +1040,10 @@
     "scripts": {
         "vscode:prepublish": "NODE_ENV=production node ./esbuild.js",
         "build": "node ./esbuild.js",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "compile-tests": "tsc -p tsconfig.test.json",
+        "pretest": "yarn build && yarn compile-tests",
+        "test": "vscode-test"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
@@ -1048,12 +1051,13 @@
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "@types/vscode": "1.92",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
         "@vscode/webview-ui-toolkit": "^1.4.0",
         "esbuild": "^0.28.1",
         "react": "^19.2.7",
         "react-dom": "^19.2.7",
-        "typescript": "^7.0.2",
-        "vscode-test": "^1.6.1"
+        "typescript": "^7.0.2"
     },
     "dependencies": {
         "@aps_sdk/authentication": "^1.0.1",

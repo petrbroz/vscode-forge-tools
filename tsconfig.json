@@ -7,7 +7,7 @@
 			"es2022",
 			"dom"
 		],
-		"types": ["node"],
+		"types": ["node", "mocha"],
 		"isolatedModules": true,
 		"jsx": "react",
 		"sourceMap": true,
