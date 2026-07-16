@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-07-16
+
 - Added
   - New "Issues (user)" tree view for browsing ACC/BIM 360 issues (hub → project → issue), backed by the
     official `@aps_sdk/construction-issues` SDK, with a "View Issue Details" webview panel that also
