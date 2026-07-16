@@ -1,8 +1,9 @@
 # Autodesk Platform Services (VSCode Extension)
 
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/petrbroz.vscode-forge-tools.svg)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/petrbroz.vscode-forge-tools.svg)
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/petrbroz.vscode-forge-tools.svg)
+![Visual Studio Marketplace Version](https://vsmarketplacebadges.dev/version/petrbroz.vscode-forge-tools.svg)
+![Visual Studio Marketplace Installs](https://vsmarketplacebadges.dev/installs/petrbroz.vscode-forge-tools.svg)
+![Visual Studio Marketplace Downloads](https://vsmarketplacebadges.dev/downloads/petrbroz.vscode-forge-tools.svg)
+![Visual Studio Marketplace Rating](https://vsmarketplacebadges.dev/rating/petrbroz.vscode-forge-tools.svg)
 ![platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.svg)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
