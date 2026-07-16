@@ -4,12 +4,21 @@ import { BucketsItems, ObjectDetails } from '../models/oss';
 import { createWebViewPanel, IContext, promptBucket, promptObject, showErrorMessage, withProgress } from '../common';
 
 export class ObjectStorageServiceCommands {
-    constructor(protected context: IContext, protected refresh: () => void) {
+    constructor(
+        protected context: IContext,
+        protected refresh: () => void,
+        protected onLoadMore: (parentKey: string) => void,
+        protected onGetFilter: (bucketKey: string) => string | undefined,
+        protected onSetFilter: (bucketKey: string, prefix: string | undefined) => void
+    ) {
     }
 
     registerCommands(): vscode.Disposable[] {
         return [
             vscode.commands.registerCommand('aps.oss.refreshBuckets', this.refreshBuckets.bind(this)),
+            vscode.commands.registerCommand('aps.oss.loadMore', this.loadMore.bind(this)),
+            vscode.commands.registerCommand('aps.oss.filterObjects', this.filterObjects.bind(this)),
+            vscode.commands.registerCommand('aps.oss.clearObjectsFilter', this.clearObjectsFilter.bind(this)),
             vscode.commands.registerCommand('aps.oss.createBucket', this.createBucket.bind(this)),
             vscode.commands.registerCommand('aps.oss.viewBucketDetails', this.viewBucketDetails.bind(this)),
             vscode.commands.registerCommand('aps.oss.copyBucketKey', this.copyBucketKey.bind(this)),
@@ -29,6 +38,49 @@ export class ObjectStorageServiceCommands {
 
     async refreshBuckets() {
         this.refresh();
+    }
+
+    async loadMore(parentKey: string) {
+        this.onLoadMore(parentKey);
+    }
+
+    async filterObjects(bucket?: BucketsItems) {
+        try {
+            if (!bucket) {
+                bucket = await promptBucket(this.context);
+                if (!bucket) {
+                    return;
+                }
+            }
+
+            const { bucketKey } = bucket;
+            const prefix = await vscode.window.showInputBox({
+                prompt: `Enter a key prefix to filter objects in bucket: ${bucketKey}`,
+                placeHolder: 'e.g. folder/subfolder/',
+                value: this.onGetFilter(bucketKey)
+            });
+            if (prefix === undefined) {
+                return;
+            }
+            this.onSetFilter(bucketKey, prefix || undefined);
+        } catch (err) {
+            showErrorMessage('Could not filter objects', err, this.context);
+        }
+    }
+
+    async clearObjectsFilter(bucket?: BucketsItems) {
+        try {
+            if (!bucket) {
+                bucket = await promptBucket(this.context);
+                if (!bucket) {
+                    return;
+                }
+            }
+
+            this.onSetFilter(bucket.bucketKey, undefined);
+        } catch (err) {
+            showErrorMessage('Could not clear object filter', err, this.context);
+        }
     }
 
     async createBucket() {

@@ -129,7 +129,13 @@ export async function activate(_context: vscode.ExtensionContext) {
 		refreshWebhooks();
 	}));
 
-	const objectStorageServiceCommands = new ObjectStorageServiceCommands(context, () => simpleStorageDataProvider.refresh());
+	const objectStorageServiceCommands = new ObjectStorageServiceCommands(
+		context,
+		() => simpleStorageDataProvider.refresh(),
+		(parentKey) => simpleStorageDataProvider.loadMore(parentKey),
+		(bucketKey) => simpleStorageDataProvider.getFilter(bucketKey),
+		(bucketKey, prefix) => simpleStorageDataProvider.setFilter(bucketKey, prefix)
+	);
 	context.extensionContext.subscriptions.push(...objectStorageServiceCommands.registerCommands());
 
 	const dataManagementCommands = new DataManagementCommands(context, () => {

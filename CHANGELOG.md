@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Pagination for the Object Storage Service tree view: buckets and bucket objects now load one page
+    at a time, with a "Load more…" item to fetch the next page, instead of fetching the entire (possibly
+    very large) list up front
+  - New `autodesk.forge.data.pageSize` setting (1-100, default 32) to control how many buckets/objects
+    are fetched per page in that tree view
+  - "Filter Objects by Prefix" and "Clear Object Filter" commands to narrow a bucket's object list down
+    to keys starting with a given prefix (OSS's `beginsWith` list option); the active filter is shown
+    next to the bucket's name, with an inline icon on the bucket's tree item to set the filter, and
+    another (shown only while a filter is active) to clear it
 - Fixed
   - "(User)" tree views (Data Management hubs, Issues, Webhooks) appearing empty after restarting VS
     Code with a persisted session, even though the Accounts menu showed a signed-in user; the views now
