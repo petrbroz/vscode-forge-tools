@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-07-16
+
 - Added
   - Pagination for the Object Storage Service tree view: buckets and bucket objects now load one page
     at a time, with a "Load more…" item to fetch the next page, instead of fetching the entire (possibly
