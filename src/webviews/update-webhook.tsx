@@ -2,7 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { useState } from 'react';
 import { VSCodeTextField, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
-import { HookDetails } from '@aps_sdk/webhooks';
+import { HookDetails } from '../models/webhooks';
 import { Grid } from './components/Grid';
 import { postMessage } from './common';
 import { Actions } from './components/Actions';

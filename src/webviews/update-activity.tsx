@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
-import { IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from '../interfaces/design-automation-api';
+import { IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from '../models/design-automation-api';
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';

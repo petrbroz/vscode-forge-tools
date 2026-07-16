@@ -1,14 +1,7 @@
 import * as vscode from 'vscode';
-import { Manifest } from '@aps_sdk/model-derivative';
-import { urnify as _urnify } from '../urn';
-import { IDerivative } from '../interfaces/model-derivative';
-import { IContext, inHubs } from '../common';
-import * as hi from '../interfaces/hubs';
-import { isViewableFormat } from './model-derivative';
-
-function urnify(id: string): string {
-    return _urnify(id).replace('/', '_');
-}
+import { Manifest, IDerivative } from '../models/model-derivative';
+import { IContext } from '../common';
+import * as hi from '../models/hubs';
 
 type HubsEntry = hi.IHub | hi.IProject | hi.IFolder | hi.IItem | hi.IVersion | IDerivative | hi.IHint;
 
@@ -138,21 +131,17 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         } else if (isItem(entry)) {
             return this._getItemVersions(entry.projectId, entry.id);
         } else if (isVersion(entry)) {
-            const urn = urnify(entry.id);
             try {
-                const client = this._context.threeLeggedToken
-                    ? this._context.modelDerivativeClient3L
-                    : this._context.modelDerivativeClient2L;
-                const manifest = await client.getManifest(urn);
+                const manifest = await this._context.hubsService.getVersionManifest(entry.id);
                 switch (manifest.status) {
                     case 'success':
-                        return this._getVersionDerivatives(entry.id);
+                        return this._getVersionDerivatives(entry.id, manifest);
                     case 'failed':
-                        return [this._getManifestErrorHint(manifest, urn)];
+                        return [this._getManifestErrorHint(manifest)];
                     default:
                         // If still in progress, schedule auto-refresh in 1 second
                         setTimeout(() => { this.refresh(entry); }, 1000);
-                        return [this._getManifestProgressHint(manifest, urn)];
+                        return [this._getManifestProgressHint(manifest)];
                 }
             } catch(err) {
                 return [{
@@ -167,15 +156,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getHubs(): Promise<HubsEntry[]> {
         try {
-            const hubs = await this._context.bim360Client.getHubs();
-            return (hubs.data ?? []).map(hub => {
-                let entry: hi.IHub = {
-                    kind: 'hub',
-                    id: hub.id!,
-                    name: hub.attributes?.name || '<no name>'
-                };
-                return entry;
-            });
+            return await this._context.hubsService.getHubs();
         } catch (err) {
             return [{
                 hint: 'Could not retrieve hubs.',
@@ -186,16 +167,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getProjects(hubId: string): Promise<HubsEntry[]> {
         try {
-            const projects = await this._context.bim360Client.getHubProjects(hubId);
-            return (projects.data ?? []).map(project => {
-                let entry: hi.IProject = {
-                    kind: 'project',
-                    hubId,
-                    id: project.id,
-                    name: project.attributes.name || '<no name>'
-                };
-                return entry;
-            });
+            return await this._context.hubsService.getProjects(hubId);
         } catch (err) {
             return [{
                 hint: 'Could not retrieve projects.',
@@ -206,19 +178,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getTopFolders(hubId: string, projectId: string): Promise<HubsEntry[]> {
         try {
-            const folders = await this._context.bim360Client.getProjectTopFolders(hubId, projectId);
-            return (folders.data ?? []).map(folder => {
-                let entry: hi.IFolder = {
-                    kind: 'folder',
-                    projectId,
-                    id: folder.id,
-                    name: folder.attributes.name || '<no name>'
-                };
-                if (folder.attributes.hidden) {
-                    entry.name = '(hidden) ' + entry.name;
-                }
-                return entry;
-            });
+            return await this._context.hubsService.getTopFolders(hubId, projectId);
         } catch (err) {
             return [{
                 hint: 'Could not retrieve top-level folders.',
@@ -229,29 +189,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getFolderContents(projectId: string, folderId: string): Promise<HubsEntry[]> {
         try {
-            const contents = await this._context.bim360Client.getFolderContents(projectId, folderId);
-            return (contents.data ?? []).map(item => {
-                switch (item.type) {
-                    case 'folders':
-                        let folder: hi.IFolder = {
-                            kind: 'folder',
-                            projectId,
-                            id: item.id,
-                            name: item.attributes.name || '<no name>'
-                        };
-                        return folder;
-                    case 'items':
-                        let file: hi.IItem = {
-                            kind: 'item',
-                            projectId,
-                            id: item.id,
-                            name: item.attributes.displayName || '<no name>'
-                        };
-                        return file;
-                    default:
-                        throw new Error('Unexpected item type.');
-                }
-            });
+            return await this._context.hubsService.getFolderContents(projectId, folderId);
         } catch (err) {
             return [{
                 hint: 'Could not retrieve folder contents.',
@@ -262,16 +200,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
 
     async _getItemVersions(projectId: string, itemId: string): Promise<HubsEntry[]> {
         try {
-            const versions = await this._context.bim360Client.getItemVersions(projectId, itemId);
-            return (versions.data ?? []).map(version => {
-                let entry: hi.IVersion = {
-                    kind: 'version',
-                    itemId,
-                    id: version.id,
-                    name: version.attributes.lastModifiedTime || version.attributes.createTime || '<no name>'
-                };
-                return entry;
-            });
+            return await this._context.hubsService.getItemVersions(projectId, itemId);
         } catch (err) {
             return [{
                 hint: 'Could not retrieve item versions.',
@@ -280,31 +209,9 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         }
     }
 
-    async _getVersionDerivatives(versionId: string): Promise<(IDerivative | hi.IHint)[]> {
+    async _getVersionDerivatives(versionId: string, manifest?: Manifest): Promise<(IDerivative | hi.IHint)[]> {
         try {
-            const urn = urnify(versionId);
-            const client = this._context.threeLeggedToken
-                ? this._context.modelDerivativeClient3L
-                : this._context.modelDerivativeClient2L;
-            const manifest = await client.getManifest(urn);
-            if (manifest.status !== 'success') {
-                throw new Error('Unexpected manifest status: ' + manifest.status);
-            }
-            const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
-            if (!svf || !svf.children) {
-                return [];
-            } else {
-                return svf.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
-                    return {
-                        urn,
-                        name: geometry.name,
-                        role: geometry.role,
-                        guid: geometry.guid,
-                        format: svf.outputType!,
-                        bubble: geometry
-                    };
-                });
-            }
+            return await this._context.hubsService.getVersionDerivatives(versionId, manifest);
         } catch (err) {
             return [{
                 hint: 'Could not retrieve derivatives.',
@@ -313,7 +220,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         }
     }
 
-    private _getManifestErrorHint(manifest: any, urn: string): hi.IHint {
+    private _getManifestErrorHint(manifest: any): hi.IHint {
         const failed = manifest.derivatives.find((deriv: any) => deriv.status === 'failed');
         if (failed && failed.messages) {
             return {
@@ -328,7 +235,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
         }
     }
 
-    private _getManifestProgressHint(manifest: Manifest, urn: string): hi.IHint {
+    private _getManifestProgressHint(manifest: Manifest): hi.IHint {
         return { hint: `Translation in progress (${manifest.progress})` };
     }
 }

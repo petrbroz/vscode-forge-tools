@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { BucketsItems, ObjectDetails } from '@aps_sdk/oss';
-import { Manifest } from '@aps_sdk/model-derivative';
-import { getAllBuckets, getAllObjects } from '../clients/oss-pagination';
+import { BucketsItems, ObjectDetails } from '../models/oss';
+import { Manifest, IDerivative } from '../models/model-derivative';
 import { urnify } from '../urn';
-import { IDerivative } from '../interfaces/model-derivative';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
-import { ModelDerivativeFormats, isViewableFormat } from './model-derivative';
 
 export interface IHint {
     hint: string;
@@ -33,7 +29,6 @@ function isHint(entry: SimpleStorageEntry): entry is IHint {
 
 export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry> {
     private _context: IContext;
-    private _modelDerivativeFormats: ModelDerivativeFormats | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<SimpleStorageEntry | null> = new vscode.EventEmitter<SimpleStorageEntry | null>();
 
 	readonly onDidChangeTreeData?: vscode.Event<SimpleStorageEntry | null> = this._onDidChangeTreeData.event;
@@ -92,15 +87,15 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         try {
             if (element) {
                 if (isBucket(element)) {
-                    const objects = await getAllObjects(this._context.dataManagementClient, element.bucketKey);
+                    const objects = await this._context.ossService.getAllObjects(element.bucketKey);
                     return objects.sort(stringPropertySorter('objectKey'));
                 } else if (isObject(element)) {
                     const urn = urnify(element.objectId!);
                     try {
-                        const manifest = await this._context.modelDerivativeClient2L.getManifest(urn);
+                        const manifest = await this._context.modelDerivativeService.getManifest(urn);
                         switch (manifest.status) {
                             case 'success':
-                                const derivatives = await this._getManifestDerivatives(manifest, urn);
+                                const derivatives = await this._context.modelDerivativeService.getManifestDerivatives(manifest, urn);
                                 return derivatives.sort(stringPropertySorter('name'));
                             case 'failed':
                                 return [this._getManifestErrorHint(manifest, urn)];
@@ -119,48 +114,13 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     return [];
                 }
             } else {
-                const buckets = await getAllBuckets(this._context.dataManagementClient);
+                const buckets = await this._context.ossService.getAllBuckets();
                 return buckets.sort(stringPropertySorter('bucketKey'));
             }
         } catch(err) {
             showErrorMessage(`Could not load objects or buckets`, err);
         }
         return [];
-    }
-
-    private async _getManifestDerivatives(manifest: any, urn: string): Promise<IDerivative[]> {
-        const formats = await this._findDerivativeFormats();
-
-        const derivative = manifest.derivatives.find((deriv: any) => formats.hasOutput(deriv.outputType));
-
-        if (isViewableFormat(derivative.outputType)) {
-            return derivative.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
-                return {
-                    urn: urn,
-                    name: geometry.name,
-                    role: geometry.role,
-                    guid: geometry.guid,
-                    format: derivative.outputType,
-                    bubble: geometry
-                };
-            });
-        } else {
-            return derivative.children.filter((child: any) => child.role === derivative.outputType).map((resource: any) => {
-                const fileUrn: string = resource.urn;
-
-                return {
-                    urn,
-                    name: path.basename(fileUrn),
-                    role: resource.role,
-                    guid: resource.guid,
-                    format: derivative.outputType,
-                    bubble: {
-                        fileUrn
-                    },
-                    nonViewable: true
-                }
-            });
-        }
     }
 
     private _getManifestErrorHint(manifest: any, urn: string): IHint {
@@ -180,12 +140,5 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
 
     private _getManifestProgressHint(manifest: Manifest, urn: string): IHint {
         return { hint: `Translation in progress (${manifest.progress})` };
-    }
-
-    private async _findDerivativeFormats(): Promise<ModelDerivativeFormats> {
-        if (!this._modelDerivativeFormats)
-            this._modelDerivativeFormats = await ModelDerivativeFormats.create(this._context);
-
-        return this._modelDerivativeFormats;
     }
 }

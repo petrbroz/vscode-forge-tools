@@ -1,15 +1,6 @@
-export interface WebhookSystem {
-    id: string;
-    name: string;
-    events: WebhookEvent[];
-}
+import { WebhookSystem } from '../models/webhooks';
 
-export interface WebhookEvent {
-    id: string;
-    description: string;
-    scopes: string[];
-}
-
+/** Static catalog of webhook-capable systems/events and the scopes each event supports. */
 export const WEBHOOKS: WebhookSystem[] = [
     {
         id: 'data',

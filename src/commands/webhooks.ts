@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext, showErrorMessage } from '../common';
-import { IWebhook, IWebhookEvent } from '../providers/webhooks';
 import { withProgress, createWebViewPanel } from '../common';
-import { WebhookEvent, WEBHOOKS, WebhookSystem } from '../interfaces/webhooks';
+import { IWebhook, IWebhookEvent } from '../models/webhooks';
 
 export class WebhooksCommands {
     constructor(protected context: IContext, protected refresh: () => void) {
@@ -41,16 +40,15 @@ export class WebhooksCommands {
 }
 
 async function createWebhook({ system, event }: IWebhookEvent, context: IContext, successCallback?: () => void) {
-	const _system = WEBHOOKS.find(webhook => webhook.id === system) as WebhookSystem;
-	const _event = _system.events.find(ev => ev.id === event) as WebhookEvent;
-	const { scopes } = _event;
+	const scopes = context.webhooksService.getEventScopes(system, event);
 	let panel = createWebViewPanel(context, 'create-webhook.js', 'create-webhook', 'Create Webhook', { system, event, scopes }, async message => {
 		switch (message.command) {
 			case 'create':
 				try {
-					await withProgress(`Creating webhook`, context.webhookClient.createSystemEventHook(system, event, {
+					await withProgress(`Creating webhook`, context.webhooksService.createWebhook(system, event, {
 						callbackUrl: message.webhook.callbackUrl,
-						scope: { [message.webhook.scopeKey]: message.webhook.scopeValue },
+						scopeKey: message.webhook.scopeKey,
+						scopeValue: message.webhook.scopeValue,
 						filter: message.webhook.filter || undefined,
 						hookAttribute: message.webhook.attributes ? JSON.parse(message.webhook.attributes) : undefined
 					}));
@@ -69,7 +67,7 @@ async function createWebhook({ system, event }: IWebhookEvent, context: IContext
 
 async function viewWebhookDetails({ id, system, event }: IWebhook, context: IContext) {
 	try {
-		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, context.webhookClient.getHookDetails(system, event, id));
+		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, context.webhooksService.getHookDetails(system, event, id));
 		createWebViewPanel(context, 'webhook-details.js', 'webhook-details', `Webhook Details: ${id}`, { detail: webhookDetail });
 	} catch(err) {
 		showErrorMessage('Could not access webhook', err, context);
@@ -83,7 +81,7 @@ async function deleteWebhook({ system, event, id }: IWebhook, context: IContext)
 			return;
 		}
 
-		await withProgress(`Removing webhook: ${id}`, context.webhookClient.deleteSystemEventHook(system, event, id));
+		await withProgress(`Removing webhook: ${id}`, context.webhooksService.deleteWebhook(system, event, id));
 		vscode.window.showInformationMessage(`Webhook removed: ${id}`);
 	} catch(err) {
 		showErrorMessage('Could not remove webhook', err, context);
@@ -92,16 +90,13 @@ async function deleteWebhook({ system, event, id }: IWebhook, context: IContext)
 
 async function updateWebhook({ system, event, id }: IWebhook, context: IContext, successCallback?: () => void) {
 	try {
-		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, context.webhookClient.getHookDetails(system, event, id));
-		const _system = WEBHOOKS.find(webhook => webhook.id === system) as WebhookSystem;
-		const _event = _system.events.find(ev => ev.id === event) as WebhookEvent;
-		const { scopes } = _event;
+		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, context.webhooksService.getHookDetails(system, event, id));
+		const scopes = context.webhooksService.getEventScopes(system, event);
 		let panel = createWebViewPanel(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail, scopes }, async message => {
 			switch (message.command) {
 				case 'update':
 					try {
-						await withProgress(`Updating webhook ${id}`, context.webhookClient.patchSystemEventHook(system, event, id, {
-							// status: message.webhook.status,
+						await withProgress(`Updating webhook ${id}`, context.webhooksService.updateWebhook(system, event, id, {
 							filter: message.webhook.filter || undefined,
 							hookAttribute: message.webhook.attributes ? JSON.parse(message.webhook.attributes) : undefined
 						}));

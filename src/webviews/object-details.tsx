@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
-import { ObjectFullDetails } from '@aps_sdk/oss';
+import { ObjectFullDetails } from '../models/oss';
 import { Grid } from './components/Grid';
 
 export interface IObjectDetailsProps {

@@ -1,3 +1,5 @@
+export type { ServiceAccountDetails, ServiceAccountKeyDetails } from '@aps_sdk/secure-service-account';
+
 export enum EntryType {
     SecureServiceAccount = 'secure-service-account',
     SecureServiceAccountKey = 'secure-service-account-key'

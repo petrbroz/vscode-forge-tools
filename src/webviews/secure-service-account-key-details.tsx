@@ -2,7 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { Grid } from './components/Grid';
-import { ServiceAccountKeyDetails } from '@aps_sdk/secure-service-account';
+import { ServiceAccountKeyDetails } from '../models/secure-service-accounts';
 
 export interface ISecureServiceAccountKeyDetailsProps {
     detail: ServiceAccountKeyDetails;

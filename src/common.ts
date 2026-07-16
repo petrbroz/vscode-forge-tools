@@ -1,12 +1,9 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { BucketsItems, ObjectDetails } from '@aps_sdk/oss';
-import { getAllBuckets, getAllObjects } from './clients/oss-pagination';
+import { BucketsItems, ObjectDetails } from './models/oss';
 import { urnify } from './urn';
-import { IDerivative } from './interfaces/model-derivative';
-import { IEnvironment } from './environment';
-import { ModelDerivativeFormats, isViewableFormat } from './providers/model-derivative';
-import { IClients } from './clients';
+import { IDerivative } from './models/model-derivative';
+import { IEnvironment } from './models/environment';
+import { IServices } from './services';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -14,7 +11,7 @@ export interface IPreviewSettings {
     api?: string;
 }
 
-export interface IContext extends IClients {
+export interface IContext extends IServices {
     environment: IEnvironment;
     extensionContext: vscode.ExtensionContext;
     previewSettings: IPreviewSettings;
@@ -23,7 +20,7 @@ export interface IContext extends IClients {
 }
 
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
-    const buckets = await getAllBuckets(context.dataManagementClient);
+    const buckets = await context.ossService.getAllBuckets();
     const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
     if (!bucketKey) {
         return undefined;
@@ -33,7 +30,7 @@ export async function promptBucket(context: IContext): Promise<BucketsItems | un
 }
 
 export async function promptObject(context: IContext, bucketKey: string): Promise<ObjectDetails | undefined> {
-    const objects = await getAllObjects(context.dataManagementClient, bucketKey);
+    const objects = await context.ossService.getAllObjects(bucketKey);
     const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: 'Select object' });
     if (!objectKey) {
         return undefined;
@@ -43,22 +40,11 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 }
 
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const urn = urnify(objectId);
-    const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
-    const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
-    if (!svf) {
-        vscode.window.showWarningMessage(`No derivatives yet for ${urn}`);
+    const derivatives = await context.modelDerivativeService.getViewableDerivatives(objectId);
+    if (!derivatives) {
+        vscode.window.showWarningMessage(`No derivatives yet for ${urnify(objectId)}`);
         return undefined;
     }
-    const derivatives: IDerivative[] = svf.children.filter((child: any) => child.type === 'geometry').map((geometry: any) => {
-        return {
-            urn: urn,
-            name: geometry.name,
-            role: geometry.role,
-            guid: geometry.guid,
-            bubble: geometry
-        };
-    });
 
     const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
     if (!derivativeName) {
@@ -68,28 +54,8 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
     }
 }
 
-export async function promptCustomDerivative(context: IContext, objectId: string, formats: ModelDerivativeFormats): Promise<IDerivative | undefined> {
-    const urn = urnify(objectId);
-    const manifest = await context.modelDerivativeClient2L.getManifest(urn) as any;
-
-    const derivatives: IDerivative[] = manifest.derivatives
-        .filter((deriv: any) => formats.hasOutput(deriv.outputType))
-        .filter((deriv: any) => !isViewableFormat(deriv.outputType))
-        .flatMap((deriv: any) => deriv.children.filter((child: any) => child.role === deriv.outputType))
-        .map((resource: any) => {
-            const fileUrn: string = resource.urn;
-
-            return {
-                urn,
-                name: path.basename(fileUrn),
-                role: resource.role,
-                guid: resource.guid,
-                format: resource.role,
-                bubble: {
-                    fileUrn
-                }
-            }
-        });
+export async function promptCustomDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
+    const derivatives = await context.modelDerivativeService.getCustomDerivatives(objectId);
 
     const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
     if (!derivativeName) {
@@ -100,12 +66,12 @@ export async function promptCustomDerivative(context: IContext, objectId: string
 }
 
 export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
-    const appBundles = await context.designAutomationClient.listAppBundles();
-    return vscode.window.showQuickPick(appBundles.filter(id => !id.endsWith('$LATEST')), { canPickMany: false, placeHolder: 'Select app bundle' });
+    const appBundles = await context.designAutomationService.getAvailableAppBundles();
+    return vscode.window.showQuickPick(appBundles, { canPickMany: false, placeHolder: 'Select app bundle' });
 }
 
 export async function promptEngine(context: IContext): Promise<string | undefined> {
-    const engines = await context.designAutomationClient.listEngines();
+    const engines = await context.designAutomationService.listEngines();
     return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
 }
 
@@ -152,10 +118,6 @@ export function stringPropertySorter<T>(propName: keyof T) {
         else if (a[propName] > b[propName]) { return +1; }
         else { return 0; }
     };
-}
-
-export function inHubs(urn: string): boolean {
-    return urn.indexOf('_') !== -1;
 }
 
 export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {

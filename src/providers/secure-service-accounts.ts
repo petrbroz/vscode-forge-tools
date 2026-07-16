@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IContext } from '../common';
-import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../interfaces/secure-service-accounts';
+import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../models/secure-service-accounts';
 
 type SecureServiceAccountsEntry = ISecureServiceAccount | ISecureServiceAccountKey;
 
@@ -59,21 +59,10 @@ export class SecureServiceAccountsDataProvider implements vscode.TreeDataProvide
     }
 
     protected async getSecureServiceAccounts(): Promise<ISecureServiceAccount[]> {
-        const response = await this.context.secureServiceAccountsClient.getServiceAccounts();
-        return (response?.serviceAccounts || []).map(account => ({
-            type: EntryType.SecureServiceAccount,
-            id: account.serviceAccountId!,
-            email: account.email!,
-        }));
+        return this.context.secureServiceAccountsService.getServiceAccounts();
     }
 
     protected async getSecureServiceAccountKeys(accountId: string): Promise<ISecureServiceAccountKey[]> {
-        const response = await this.context.secureServiceAccountsClient.getAllServiceAccountKeys(accountId);
-        return (response?.keys || []).map(key => ({
-            type: EntryType.SecureServiceAccountKey,
-            id: key.kid!,
-            status: key.status!,
-            secureServiceAccountId: accountId,
-        }));
+        return this.context.secureServiceAccountsService.getServiceAccountKeys(accountId);
     }
 }

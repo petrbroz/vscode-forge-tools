@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IContext } from '../common';
-import { IHub, IProject, IFolder, IItem, IVersion } from '../interfaces/hubs';
+import { IHub, IProject, IFolder, IItem, IVersion } from '../models/hubs';
 
 export class DataManagementCommands {
     constructor(protected context: IContext, protected refresh: () => void) {

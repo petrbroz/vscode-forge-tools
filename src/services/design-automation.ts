@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { IAuthenticationProvider } from '@aps_sdk/autodesk-sdkmanager';
-import { IEnvironment, DesignAutomationRegion } from '../environment';
+import { IEnvironment, DesignAutomationRegion } from '../models/environment';
 import { ClientCredentialsAuthenticationProvider } from './client-credentials-authentication-provider';
 import {
     DesignAutomationID,
@@ -14,7 +14,7 @@ import {
     ICodeOnEngineUrlSetting,
     IWorkItemDetail,
     IWorkItemParam
-} from '../interfaces/design-automation-api';
+} from '../models/design-automation-api';
 
 // Re-export the Design Automation types + ID helper so consumers (commands/providers) have a single
 // import site, mirroring how the legacy SDK client exposed both the client and its types.
@@ -256,4 +256,237 @@ export function createDesignAutomationClient(env: IEnvironment): DesignAutomatio
         env.host,
         env.designAutomationRegion as DesignAutomationRegion
     );
+}
+
+/** Owner (nickname) plus the unique, owner-scoped IDs of the app bundles/activities they own. */
+export interface IOwnedItems {
+    nickname: string;
+    ids: string[];
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Domain logic for the Design Automation service. Wraps the low-level {@link DesignAutomationClient}
+ * and exposes plain, domain-shaped operations (owner/`$LATEST` filtering, app bundle archive uploads,
+ * work item polling and report retrieval) so the vscode layers never touch the REST client, the
+ * `DesignAutomationID` parsing, or `fetch`/`fs` directly.
+ */
+export class DesignAutomationService {
+    private _nickname: Promise<string> | null = null;
+
+    constructor(private readonly client: DesignAutomationClient) {}
+
+    // General
+
+    getNickname(): Promise<string> {
+        return this.client.getNickname();
+    }
+
+    /** The current app's nickname, fetched once and cached for the lifetime of this service instance. */
+    private getCachedNickname(): Promise<string> {
+        if (this._nickname === null) {
+            this._nickname = this.client.getNickname().catch(err => {
+                this._nickname = null;
+                throw err;
+            });
+        }
+        return this._nickname;
+    }
+
+    /** Splits full IDs into ones owned by `nickname` (deduped, bare IDs) and ones shared (full IDs). */
+    private static splitByOwner(fullIds: string[], nickname: string): { ownedIds: string[]; sharedFullIds: string[] } {
+        const parsed = fullIds.map(DesignAutomationID.parse).filter((item): item is DesignAutomationID => item !== null);
+        const ownedIds = Array.from(new Set(parsed.filter(item => item.owner === nickname).map(item => item.id)));
+        const sharedFullIds = parsed.filter(item => item.owner !== nickname).map(item => item.toString());
+        return { ownedIds, sharedFullIds };
+    }
+
+    /** Lists every available engine, in the order returned by the API (for populating UI pickers). */
+    listEngines(): Promise<string[]> {
+        return this.client.listEngines();
+    }
+
+    /** Lists every available engine, sorted alphabetically (for the create/update activity views). */
+    async findAvailableEngines(): Promise<string[]> {
+        const engines = await this.client.listEngines();
+        return engines.sort();
+    }
+
+    // App bundles
+
+    /** Lists every app bundle full ID, unfiltered (for populating UI pickers). */
+    listAppBundles(): Promise<string[]> {
+        return this.client.listAppBundles();
+    }
+
+    /** Lists app bundle full IDs excluding the `$LATEST` pseudo-versions (for the activity views). */
+    async getAvailableAppBundles(): Promise<string[]> {
+        const appBundles = await this.client.listAppBundles();
+        return appBundles.filter(id => !id.endsWith('$LATEST'));
+    }
+
+    /** Returns the unique IDs of app bundles owned by the current app, plus its nickname. */
+    async getOwnedAppBundles(): Promise<IOwnedItems> {
+        const nickname = await this.getCachedNickname();
+        const appBundleIDs = await this.client.listAppBundles();
+        const { ownedIds } = DesignAutomationService.splitByOwner(appBundleIDs, nickname);
+        return { nickname, ids: ownedIds };
+    }
+
+    /** Returns the full IDs of app bundles shared with (but not owned by) the current app. */
+    async getSharedAppBundles(): Promise<string[]> {
+        const nickname = await this.getCachedNickname();
+        const appBundleIDs = await this.client.listAppBundles();
+        return DesignAutomationService.splitByOwner(appBundleIDs, nickname).sharedFullIds;
+    }
+
+    getAppBundle(id: string): Promise<IAppBundleDetail> {
+        return this.client.getAppBundle(id);
+    }
+
+    getAppBundleVersion(name: string, version: number): Promise<IAppBundleDetail> {
+        return this.client.getAppBundleVersion(name, version);
+    }
+
+    createAppBundle(name: string, engine: string, description: string): Promise<IAppBundleUploadParams> {
+        return this.client.createAppBundle(name, engine, undefined, description);
+    }
+
+    updateAppBundle(name: string, engine: string, description: string): Promise<IAppBundleUploadParams> {
+        return this.client.updateAppBundle(name, engine, undefined, description);
+    }
+
+    /** Uploads an app bundle archive from a local file path to the signed URL in `details`. */
+    uploadAppBundleArchive(details: IAppBundleUploadParams, filePath: string): Promise<void> {
+        return this.client.uploadAppBundleArchive(details, fs.createReadStream(filePath));
+    }
+
+    deleteAppBundle(id: string): Promise<void> {
+        return this.client.deleteAppBundle(id);
+    }
+
+    listAppBundleVersions(id: string): Promise<number[]> {
+        return this.client.listAppBundleVersions(id);
+    }
+
+    deleteAppBundleVersion(id: string, version: number): Promise<void> {
+        return this.client.deleteAppBundleVersion(id, version);
+    }
+
+    listAppBundleAliases(id: string): Promise<IAlias[]> {
+        return this.client.listAppBundleAliases(id);
+    }
+
+    /** Lists an app bundle's aliases excluding the `$LATEST` pseudo-alias (for the tree view). */
+    async getAppBundleAliases(id: string): Promise<IAlias[]> {
+        const aliases = await this.client.listAppBundleAliases(id);
+        return aliases.filter(alias => alias.id !== '$LATEST');
+    }
+
+    createAppBundleAlias(id: string, alias: string, version: number, receiver?: string): Promise<IAlias> {
+        return this.client.createAppBundleAlias(id, alias, version, receiver);
+    }
+
+    updateAppBundleAlias(id: string, alias: string, version: number, receiver?: string): Promise<IAlias> {
+        return this.client.updateAppBundleAlias(id, alias, version, receiver);
+    }
+
+    deleteAppBundleAlias(id: string, alias: string): Promise<void> {
+        return this.client.deleteAppBundleAlias(id, alias);
+    }
+
+    // Activities
+
+    /** Returns the unique IDs of activities owned by the current app, plus its nickname. */
+    async getOwnedActivities(): Promise<IOwnedItems> {
+        const nickname = await this.getCachedNickname();
+        const activityIDs = await this.client.listActivities();
+        const { ownedIds } = DesignAutomationService.splitByOwner(activityIDs, nickname);
+        return { nickname, ids: ownedIds };
+    }
+
+    /** Returns the full IDs of activities shared with (but not owned by) the current app. */
+    async getSharedActivities(): Promise<string[]> {
+        const nickname = await this.getCachedNickname();
+        const activityIDs = await this.client.listActivities();
+        return DesignAutomationService.splitByOwner(activityIDs, nickname).sharedFullIds;
+    }
+
+    getActivity(id: string): Promise<IActivityDetail> {
+        return this.client.getActivity(id);
+    }
+
+    getActivityVersion(name: string, version: number): Promise<IActivityDetail> {
+        return this.client.getActivityVersion(name, version);
+    }
+
+    createActivity(id: string, engine: string, commands: string[], appBundles: string[], parameters: { [key: string]: IActivityParam }, settings: ActivitySettings, description: string): Promise<IActivityDetail> {
+        return this.client.createActivity(id, engine, commands, appBundles, parameters, settings, description);
+    }
+
+    updateActivity(id: string, engine: string, commands: string[], appBundles: string[], parameters: { [key: string]: IActivityParam }, settings: ActivitySettings, description: string): Promise<IActivityDetail> {
+        return this.client.updateActivity(id, engine, commands, appBundles, parameters, settings, description);
+    }
+
+    deleteActivity(id: string): Promise<void> {
+        return this.client.deleteActivity(id);
+    }
+
+    listActivityVersions(id: string): Promise<number[]> {
+        return this.client.listActivityVersions(id);
+    }
+
+    deleteActivityVersion(id: string, version: number): Promise<void> {
+        return this.client.deleteActivityVersion(id, version);
+    }
+
+    listActivityAliases(id: string): Promise<IAlias[]> {
+        return this.client.listActivityAliases(id);
+    }
+
+    /** Lists an activity's aliases excluding the `$LATEST` pseudo-alias (for the tree view). */
+    async getActivityAliases(id: string): Promise<IAlias[]> {
+        const aliases = await this.client.listActivityAliases(id);
+        return aliases.filter(alias => alias.id !== '$LATEST');
+    }
+
+    createActivityAlias(id: string, alias: string, version: number, receiver?: string): Promise<IAlias> {
+        return this.client.createActivityAlias(id, alias, version, receiver);
+    }
+
+    updateActivityAlias(id: string, alias: string, version: number, receiver?: string): Promise<IAlias> {
+        return this.client.updateActivityAlias(id, alias, version, receiver);
+    }
+
+    deleteActivityAlias(id: string, alias: string): Promise<void> {
+        return this.client.deleteActivityAlias(id, alias);
+    }
+
+    // Work items
+
+    createWorkItem(activityId: string, parameters: { [key: string]: IWorkItemParam }): Promise<IWorkItemDetail> {
+        return this.client.createWorkItem(activityId, parameters);
+    }
+
+    /**
+     * Polls a work item every 5 seconds until it leaves the `pending`/`inprogress` state, invoking
+     * `onProgress` with the latest status after each poll, and returns the final work item detail.
+     */
+    async waitForWorkItem(workitem: IWorkItemDetail, onProgress?: (status: string) => void): Promise<IWorkItemDetail> {
+        while (workitem.status === 'inprogress' || workitem.status === 'pending') {
+            await sleep(5000);
+            workitem = await this.client.getWorkItem(workitem.id);
+            onProgress?.(workitem.status);
+        }
+        return workitem;
+    }
+
+    /** Fetches the plain-text report for a (completed) work item. */
+    async getWorkItemReport(workitem: IWorkItemDetail): Promise<string> {
+        const response = await fetch(workitem.reportUrl);
+        return response.text();
+    }
 }

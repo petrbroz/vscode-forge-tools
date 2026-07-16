@@ -7,8 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Changed
-  - (**MAJOR**) Unified all API client construction into a single `createClients()` factory, used by
+  - (**MAJOR**) Unified all API client construction into a single `createServices()` factory, used by
     activation, environment switching, and login/logout, instead of mutating clients in place
+  - (**MAJOR**) Reorganized the source into explicit layers with a one-directional dependency rule:
+    `src/models` (types/interfaces, no `vscode`), `src/services` (domain logic, no `vscode`, the only
+    layer that talks to `@aps_sdk/*`), `src/webviews` (React panels that import only from `src/models`),
+    `src/commands` and `src/providers` (thin `vscode` wrappers over the services). All APS domain logic
+    (Object Storage, Model Derivative, Hubs, Design Automation, Secure Service Accounts, Webhooks,
+    Authentication) now lives in per-service classes exposed on the context as `context.<name>Service`,
+    replacing the raw SDK clients previously called directly from commands and tree views; duplicated
+    logic such as the manifest-to-derivative transforms is consolidated in one place
   - Replaced the Kiota-generated Secure Service Accounts client with the official `@aps_sdk/secure-service-account` SDK
   - Replaced the legacy Design Automation SDK with a hand-written `fetch`-based REST client wrapper (no official `@aps_sdk/*` package exists for this service yet)
   - Commands and `package.json` contributes are now hand-synced instead of generated via decorators; removed the decorator-based command registry and the `update-contributes` codegen script

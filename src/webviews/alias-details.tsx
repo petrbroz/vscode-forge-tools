@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
-import { IAlias } from '../interfaces/design-automation-api';
+import { IAlias } from '../models/design-automation-api';
 import { Grid } from './components/Grid';
 
 export interface IAliasDetailsProps {

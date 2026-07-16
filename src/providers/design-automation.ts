@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import { DesignAutomationID } from '../clients/design-automation';
 import { IContext } from '../common';
-import * as dai from '../interfaces/design-automation';
+import * as dai from '../models/design-automation';
 
 type DesignAutomationEntry =
     | dai.IOwnedAppBundlesEntry | dai.ISharedAppBundlesEntry
@@ -116,18 +115,13 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getOwnedAppBundles(entry: dai.IOwnedAppBundlesEntry): Promise<dai.IAppBundleEntry[]> {
-        const nickname = await this._context.designAutomationClient.getNickname();
-        const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
-        const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === nickname) as DesignAutomationID[];
-        const uniqueIDs = new Set(filteredIDs.map(item => item.id));
-        return Array.from(uniqueIDs.values()).map(appbundle => ({ type: 'owned-appbundle', client: nickname, appbundle: appbundle, label: appbundle }));
+        const { nickname, ids } = await this._context.designAutomationService.getOwnedAppBundles();
+        return ids.map(appbundle => ({ type: 'owned-appbundle', client: nickname, appbundle: appbundle, label: appbundle }));
     }
 
     private async _getSharedAppBundles(entry: dai.ISharedAppBundlesEntry): Promise<dai.ISharedAppBundleEntry[]> {
-        const nickname = await this._context.designAutomationClient.getNickname();
-        const appBundleIDs = await this._context.designAutomationClient.listAppBundles();
-        const filteredIDs = appBundleIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== nickname) as DesignAutomationID[];
-        return filteredIDs.map(id => ({ type: 'shared-appbundle', fullid: id.toString(), label: id.toString() }));
+        const fullIDs = await this._context.designAutomationService.getSharedAppBundles();
+        return fullIDs.map(fullid => ({ type: 'shared-appbundle', fullid, label: fullid }));
     }
 
     private async _getAppBundleChildren(entry: dai.IAppBundleEntry): Promise<(dai.IAppBundleAliasesEntry | dai.IAppBundleVersionsEntry)[]> {
@@ -138,30 +132,24 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getAppBundleAliases(entry: dai.IAppBundleAliasesEntry): Promise<dai.IAppBundleAliasEntry[]> {
-        const aliases = await this._context.designAutomationClient.listAppBundleAliases(entry.appbundle);
+        const aliases = await this._context.designAutomationService.getAppBundleAliases(entry.appbundle);
         return aliases
-            .filter(alias => alias.id !== '$LATEST')
             .map(alias => ({ type: 'appbundle-alias', client: entry.client, appbundle: entry.appbundle, alias: alias.id, label: alias.id, version: alias.version }));
     }
 
     private async _getAppBundleVersions(entry: dai.IAppBundleVersionsEntry): Promise<dai.IAppBundleVersionEntry[]> {
-        const versions = await this._context.designAutomationClient.listAppBundleVersions(entry.appbundle);
+        const versions = await this._context.designAutomationService.listAppBundleVersions(entry.appbundle);
         return versions.map(version => ({ type: 'appbundle-version', client: entry.client, appbundle: entry.appbundle, version: version, label: version.toString() }));
     }
 
     private async _getOwnedActivities(entry: dai.IOwnedActivitiesEntry): Promise<dai.IActivityEntry[]> {
-        const nickname = await this._context.designAutomationClient.getNickname();
-        const activityIDs = await this._context.designAutomationClient.listActivities();
-        const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner === nickname) as DesignAutomationID[];
-        const uniqueIDs = new Set<string>(filteredIDs.map(id => id.id));
-        return Array.from(uniqueIDs.values()).map(activity => ({ type: 'owned-activity', client: nickname, activity: activity, label: activity }));
+        const { nickname, ids } = await this._context.designAutomationService.getOwnedActivities();
+        return ids.map(activity => ({ type: 'owned-activity', client: nickname, activity: activity, label: activity }));
     }
 
     private async _getSharedActivities(entry: dai.ISharedActivitiesEntry): Promise<dai.ISharedActivityEntry[]> {
-        const nickname = await this._context.designAutomationClient.getNickname();
-        const activityIDs = await this._context.designAutomationClient.listActivities();
-        const filteredIDs = activityIDs.map(DesignAutomationID.parse).filter(item => item !== null && item.owner !== nickname) as DesignAutomationID[];
-        return filteredIDs.map(id => ({ type: 'shared-activity', fullid: id.toString(), label: id.toString() }));
+        const fullIDs = await this._context.designAutomationService.getSharedActivities();
+        return fullIDs.map(fullid => ({ type: 'shared-activity', fullid, label: fullid }));
     }
 
     private async _getActivityChildren(entry: dai.IActivityEntry): Promise<(dai.IActivityAliasesEntry | dai.IActivityVersionsEntry)[]> {
@@ -172,14 +160,13 @@ export class DesignAutomationDataProvider implements vscode.TreeDataProvider<Des
     }
 
     private async _getActivityAliases(entry: dai.IActivityAliasesEntry): Promise<DesignAutomationEntry[]> {
-        const aliases = await this._context.designAutomationClient.listActivityAliases(entry.activity);
+        const aliases = await this._context.designAutomationService.getActivityAliases(entry.activity);
         return aliases
-            .filter(alias => alias.id !== '$LATEST')
             .map(alias => ({ type: 'activity-alias', client: entry.client, activity: entry.activity, alias: alias.id, label: alias.id, version: alias.version }));
     }
 
     private async _getActivityVersions(entry: dai.IActivityVersionsEntry): Promise<DesignAutomationEntry[]> {
-        const versions = await this._context.designAutomationClient.listActivityVersions(entry.activity);
+        const versions = await this._context.designAutomationService.listActivityVersions(entry.activity);
         return versions.map(version => ({ type: 'activity-version', client: entry.client, activity: entry.activity, version: version, label: version.toString() }));
     }
 }

@@ -5,7 +5,7 @@ import { VSCodeTextField, VSCodeDropdown, VSCodeOption, VSCodeCheckbox, VSCodeBu
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
-import { svf2 } from '../providers/model-derivative';
+import { svf2 } from '../models/model-derivative';
 
 export interface ICustomDerivativeProps {
     urn: string;

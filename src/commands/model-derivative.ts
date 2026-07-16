@@ -1,21 +1,11 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { Scopes } from '@aps_sdk/authentication';
-import { ObjectDetails } from '@aps_sdk/oss';
-import {
-	ModelDerivativeClient,
-	ObjectTree,
-	Properties,
-	JobPayload
-} from '@aps_sdk/model-derivative';
-import { urnify as _urnify } from '../urn';
-import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, inHubs, promptCustomDerivative } from '../common';
-import { IDerivative } from '../interfaces/model-derivative';
+import { ObjectDetails } from '../models/oss';
+import { ObjectTree, Properties, JobPayload, IDerivative, svf2 } from '../models/model-derivative';
+import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, promptCustomDerivative } from '../common';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
-import { ModelDerivativeFormats, svf2 } from '../providers/model-derivative';
-import { IVersion } from '../interfaces/hubs';
+import { IVersion } from '../models/hubs';
 
 export class ModelDerivativesCommands {
 	constructor(protected context: IContext, protected refresh: () => void) {
@@ -50,20 +40,13 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			const formats = await getModelDerivativeFormats(this.context);
-
-			const extension = getFileExtension(object);
-
-			const availableFormats = formats.findAvailableOutputFormats(extension);
-
+			const availableFormats = await this.context.modelDerivativeService.getSupportedOutputFormats(object);
 			if (!availableFormats.find(x => x === svf2)) {
 				showErrorMessage("The conversion to SVF2 is not supported for this file by Model derivative service", {});
 				return;
 			}
 
-			let urn = getURN(object);
-			let client = getModelDerivativeClientForObject(object, this.context);
-			client.startJob({ input: { urn }, output: { formats: [{ type: svf2, views: ['2d', '3d'] }] as any } }, { xAdsForce: true });
+			this.context.modelDerivativeService.translateToSvf2(object);
 			vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 		} catch (err) {
 			showErrorMessage('Could not translate object', err, this.context);
@@ -84,20 +67,14 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			let urn = getURN(object);
-			let client = getModelDerivativeClientForObject(object, this.context);
-
-			const formats = await getModelDerivativeFormats(this.context);
-
-			const extension = getFileExtension(object);
-
-			const availableFormats = formats.findAvailableOutputFormats(extension);
-
+			const urn = this.context.modelDerivativeService.getObjectUrn(object);
+			const availableFormats = await this.context.modelDerivativeService.getSupportedOutputFormats(object);
 			if (availableFormats.length === 0) {
 				showErrorMessage("Source file format is not supported by Model derivative service", {});
 				return;
 			}
 
+			const translateObject = object;
 			let panel = createWebViewPanel<ICustomDerivativeProps>(this.context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats }, async (message: ICustomDerivativeMessage) => {
 				switch (message.type) {
 					case 'translate':
@@ -124,7 +101,7 @@ export class ModelDerivativesCommands {
 								output: { formats: [outputOptions] },
 								misc: workflowId ? { workflow: workflowId, workflowAttribute: workflowAttributes ? JSON.parse(workflowAttributes) : undefined } : undefined
 							};
-							await client.startJob(jobPayload, { xAdsForce: true });
+							await this.context.modelDerivativeService.startCustomTranslation(translateObject, jobPayload);
 							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						} catch (err: any) {
 							if (err.response && err.response.statusCode === 406) {
@@ -155,9 +132,7 @@ export class ModelDerivativesCommands {
 					return;
 				}
 			}
-			const urn = getURN(object);
-			const client = getModelDerivativeClientForObject(object, this.context);
-			const metadata = await withProgress(`Retrieving list of viewables`, client.getModelViews(urn));
+			const metadata = await withProgress(`Retrieving list of viewables`, this.context.modelDerivativeService.getModelViews(object));
 			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(metadata, null, 4), language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		} catch (err) {
@@ -181,9 +156,7 @@ export class ModelDerivativesCommands {
 					return;
 				}
 			}
-			const token = inHubs(derivative.urn) && this.context.threeLeggedToken
-				? { access_token: this.context.threeLeggedToken }
-				: await this.context.authenticationClient.getTwoLeggedToken(this.context.clientId, this.context.clientSecret, [Scopes.ViewablesRead]);
+			const accessToken = await this.context.modelDerivativeService.getViewerAccessToken(derivative.urn);
 			let env = this.context.previewSettings.env;
 			if (!env) {
 				env = derivative.format === svf2 ? 'AutodeskProduction2' : 'AutodeskProduction';
@@ -198,7 +171,7 @@ export class ModelDerivativesCommands {
 			}
 			createViewerWebViewPanel(this.context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
 				api, env,
-				token: token.access_token,
+				token: accessToken,
 				urn: derivative.urn,
 				guid: derivative.guid,
 				config: {
@@ -235,11 +208,10 @@ export class ModelDerivativesCommands {
 			const viewable = findViewable(derivative);
 			const { urn } = derivative;
 			const { guid } = viewable;
-			const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
 			let forceDownload = false;
 			let tree: ObjectTree | undefined = undefined;
 			try {
-				tree = await withProgress(`Retrieving viewable tree`, client.getObjectTree(urn, guid));
+				tree = await withProgress(`Retrieving viewable tree`, this.context.modelDerivativeService.getObjectTree(urn, guid));
 			} catch (err: any) {
 				// APS may respond with code 413 to indicate that the requested JSON data is too large.
 				// In that case, offer an option of downloading the content to a local file.
@@ -251,7 +223,7 @@ export class ModelDerivativesCommands {
 					switch (action) {
 						case 'Force Download':
 							// TODO: redirect the downloaded data directly into a file stream
-							tree = await withProgress(`Downloading viewable tree`, client.getObjectTree(urn, guid, { forceget: 'true' }));
+							tree = await withProgress(`Downloading viewable tree`, this.context.modelDerivativeService.getObjectTree(urn, guid, true));
 							forceDownload = true;
 							break;
 						case 'Cancel':
@@ -265,8 +237,7 @@ export class ModelDerivativesCommands {
 				const defaultPath = vscode.workspace.asRelativePath('tree.json');
 				const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(defaultPath) });
 				if (uri) {
-					fs.mkdirSync(path.dirname(uri.fsPath), { recursive: true });
-					fs.writeFileSync(uri.fsPath, JSON.stringify(tree, null, 4));
+					await this.context.modelDerivativeService.saveToFile(uri.fsPath, JSON.stringify(tree, null, 4));
 					const action = await vscode.window.showInformationMessage(`Tree downloaded to ${uri.fsPath}.`, 'Open Folder');
 					if (action === 'Open Folder') {
 						vscode.env.openExternal(vscode.Uri.file(path.dirname(uri.fsPath)));
@@ -301,11 +272,10 @@ export class ModelDerivativesCommands {
 			const viewable = findViewable(derivative);
 			const { urn } = derivative;
 			const { guid } = viewable;
-			const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
 			let forceDownload = false;
 			let props: Properties | undefined = undefined;
 			try {
-				props = await withProgress(`Retrieving viewable properties`, client.getAllProperties(urn, guid));
+				props = await withProgress(`Retrieving viewable properties`, this.context.modelDerivativeService.getAllProperties(urn, guid));
 			} catch (err: any) {
 				// APS may respond with code 413 to indicate that the requested JSON data is too large.
 				// In that case, offer an option of downloading the content to a local file.
@@ -317,7 +287,7 @@ export class ModelDerivativesCommands {
 					switch (action) {
 						case 'Force Download':
 							// TODO: redirect the downloaded data directly into a file stream
-							props = await withProgress(`Downloading viewable properties`, client.getAllProperties(urn, guid, { forceget: 'true' }));
+							props = await withProgress(`Downloading viewable properties`, this.context.modelDerivativeService.getAllProperties(urn, guid, true));
 							forceDownload = true;
 							break;
 						case 'Cancel':
@@ -331,8 +301,7 @@ export class ModelDerivativesCommands {
 				const defaultPath = vscode.workspace.asRelativePath('properties.json');
 				const uri = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.file(defaultPath) });
 				if (uri) {
-					fs.mkdirSync(path.dirname(uri.fsPath), { recursive: true });
-					fs.writeFileSync(uri.fsPath, JSON.stringify(props, null, 4));
+					await this.context.modelDerivativeService.saveToFile(uri.fsPath, JSON.stringify(props, null, 4));
 					const action = await vscode.window.showInformationMessage(`Properties downloaded to ${uri.fsPath}.`, 'Open Folder');
 					if (action === 'Open Folder') {
 						vscode.env.openExternal(vscode.Uri.file(path.dirname(uri.fsPath)));
@@ -361,10 +330,8 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			let urn = getURN(object);
-			let client = getModelDerivativeClientForObject(object, this.context);
-
-			const manifest = await withProgress(`Retrieving manifest for ${urn}`, client.getManifest(urn));
+			const urn = this.context.modelDerivativeService.getObjectUrn(object);
+			const manifest = await withProgress(`Retrieving manifest for ${urn}`, this.context.modelDerivativeService.getObjectManifest(object));
 			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
 			await vscode.window.showTextDocument(doc, { preview: false });
 		} catch (err) {
@@ -373,14 +340,14 @@ export class ModelDerivativesCommands {
 	}
 
 	async viewObjectThumbnail(object?: ObjectDetails | IVersion) {
-		async function downloadThumbnail(png: string, defaultUri: vscode.Uri) {
+		const downloadThumbnail = async (png: string, defaultUri: vscode.Uri) => {
 			const uri = await vscode.window.showSaveDialog({ defaultUri });
 			if (!uri) {
 				return;
 			}
-			fs.writeFileSync(uri.fsPath, Buffer.from(png, 'binary'), { encoding: 'binary' });
+			await this.context.modelDerivativeService.saveToFile(uri.fsPath, Buffer.from(png, 'binary'));
 			vscode.window.showInformationMessage(`Thumbnail downloaded: ${uri.fsPath}`);
-		}
+		};
 
 		try {
 			if (!object) {
@@ -394,10 +361,9 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			let urn = getURN(object);
-			let key = getKey(object);
-			let id = getId(object);
-			let client = getModelDerivativeClientForObject(object, this.context);
+			const thumbnailObject = object;
+			const key = getKey(object);
+			const id = getId(object);
 
 			try {
 				const thumbnails = await vscode.window.withProgress({
@@ -405,12 +371,8 @@ export class ModelDerivativesCommands {
 					title: `Downloading thumbnails: ${key}`,
 					cancellable: false
 				}, async (progress, token) => {
-					await client.getManifest(urn); // Check if the manifest exists
-					return await Promise.all([
-						client.getThumbnail(urn, { width: 100, height: 100 }),
-						client.getThumbnail(urn, { width: 200, height: 200 }),
-						client.getThumbnail(urn, { width: 400, height: 400 })
-					]);
+					await this.context.modelDerivativeService.getObjectManifest(thumbnailObject); // Check if the manifest exists
+					return await this.context.modelDerivativeService.getObjectThumbnails(thumbnailObject);
 				});
 				const pngToDataURI = (img: string) => 'data:image/png;base64,' + Buffer.from(img, 'binary').toString('base64');
 				createWebViewPanel(this.context, 'thumbnails.js', 'thumbnails', `Thumbnails: ${key}`, {
@@ -466,16 +428,15 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			const urn = urnify(object.objectId!);
+			const urn = this.context.modelDerivativeService.getObjectUrn(object);
 
 			const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete manifest for ${urn}? This action cannot be undone.`, { modal: true }, 'Delete');
 			if (confirm !== 'Delete') {
 				return;
 			}
 
-			const client = inHubs(urn) && this.context.threeLeggedToken ? this.context.modelDerivativeClient3L : this.context.modelDerivativeClient2L;
 			try {
-				await withProgress(`Deleting manifest for ${urn}`, client.deleteManifest(urn));
+				await withProgress(`Deleting manifest for ${urn}`, this.context.modelDerivativeService.deleteManifest(object));
 			} catch (_) {
 				const action = await vscode.window.showInformationMessage(`
 					In order to access the manifest of ${object.objectId}, the object must be translated first.
@@ -509,9 +470,7 @@ export class ModelDerivativesCommands {
 					return;
 				}
 
-				const formats = await getModelDerivativeFormats(this.context);
-
-				object = await promptCustomDerivative(this.context, bucketObject.objectId!, formats);
+				object = await promptCustomDerivative(this.context, bucketObject.objectId!);
 
 				if (!object) {
 					return;
@@ -531,13 +490,8 @@ export class ModelDerivativesCommands {
 				title: `Downloading the derivative: ${object.name}`,
 				cancellable: false
 			}, async () => {
-				fs.mkdirSync(baseDir, { recursive: true });
-				const derivativeDownload = await this.context.modelDerivativeClient2L.getDerivativeUrl(encodeURI(object!.bubble.fileUrn), object!.urn);
-				const response = await fetch(derivativeDownload.url!);
-				if (!response.ok) {
-					throw new Error(`Request failed with status code ${response.status}`);
-				}
-				await fs.promises.writeFile(targetFileName, new Uint8Array(await response.arrayBuffer()));
+				const bytes = await this.context.modelDerivativeService.downloadDerivative(object!.bubble.fileUrn, object!.urn);
+				await this.context.modelDerivativeService.saveToFile(targetFileName, bytes);
 			});
 
 			const action = await vscode.window.showInformationMessage('Derivative downloaded successfully', 'Open Folder');
@@ -562,7 +516,7 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			let urn = getURN(object);
+			const urn = this.context.modelDerivativeService.getObjectUrn(object);
 			await vscode.env.clipboard.writeText(urn);
 			vscode.window.showInformationMessage(`Object URN copied to clipboard: ${urn}`);
 		} catch (err) {
@@ -574,10 +528,6 @@ export class ModelDerivativesCommands {
 enum TranslationActions {
 	Translate = 'Translate',
 	TranslateAsArchive = 'Translate as Archive'
-}
-
-function urnify(id: string): string {
-	return _urnify(id).replace('/', '_');
 }
 
 function getKey(object: ObjectDetails | IVersion): string {
@@ -598,36 +548,6 @@ function getId(object: ObjectDetails | IVersion): string {
 	return '';
 }
 
-function getURN(object: ObjectDetails | IVersion): string {
-	return urnify(getId(object));
-}
-
-function getFileExtension(object: ObjectDetails | IVersion): string {
-	if ("objectKey" in object) {
-		return path.extname(object.objectKey!).substring(1).toLowerCase();
-	}
-	return "";
-}
-
-function getModelDerivativeClientForObject(object: ObjectDetails | IVersion, context: IContext): ModelDerivativeClient {
-	if ('objectId' in object) { //IObject
-		return context.modelDerivativeClient2L;
-	} else if ('itemId' in object) { //IVersion
-		const client = context.threeLeggedToken ? context.modelDerivativeClient3L : context.modelDerivativeClient2L;
-		return client;
-	}
-	return context.modelDerivativeClient2L;
-}
-
 function findViewable(derivative: IDerivative): any {
 	return derivative.bubble.children.find((child: any) => child.role === 'graphics' || child.role === 'pdf-page');
-}
-
-let modelDerivativeFormats: ModelDerivativeFormats | null = null;
-
-async function getModelDerivativeFormats(context: IContext) {
-	if (modelDerivativeFormats === null)
-		modelDerivativeFormats = await ModelDerivativeFormats.create(context);
-
-	return modelDerivativeFormats;
 }

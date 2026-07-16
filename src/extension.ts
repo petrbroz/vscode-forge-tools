@@ -5,7 +5,7 @@ import { IContext } from './common';
 import { WebhooksDataProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
 import { getEnvironments, setupNewEnvironment } from './environment';
-import { createClients } from './clients';
+import { createServices } from './services';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { AuthenticationCommands } from './commands/authentication';
 import { ObjectStorageServiceCommands } from './commands/object-storage';
@@ -28,7 +28,7 @@ export function activate(_context: vscode.ExtensionContext) {
 	let context: IContext = {
 		extensionContext: _context,
         environment: env,
-        ...createClients(env),
+        ...createServices(env),
 		previewSettings: {
 			extensions: vscode.workspace.getConfiguration(undefined, null).get<string[]>('autodesk.forge.viewer.extensions') || [],
 			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),

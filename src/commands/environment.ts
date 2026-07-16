@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { IContext } from '../common';
-import { getEnvironments, IEnvironment } from '../environment';
-import { createClients } from '../clients';
+import { getEnvironments } from '../environment';
+import { IEnvironment } from '../models/environment';
+import { createServices } from '../services';
 
 export class EnvironmentCommands {
 	constructor(protected context: IContext, protected refresh: () => void) {
@@ -23,7 +24,7 @@ export class EnvironmentCommands {
         const env = environments.find(environment => environment.title === name) as IEnvironment;
         delete context.threeLeggedToken;
         context.environment = env;
-        Object.assign(context, createClients(env));
+        Object.assign(context, createServices(env));
         this.refresh();
     }
 }
