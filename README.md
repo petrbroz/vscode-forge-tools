@@ -60,9 +60,13 @@ If you have configured multiple APS environments, you can switch between them vi
 
 > Note: if you have configured the extension both in the _User_ scope and in the _Workspace_ scope, the extension will present the list of environments from the _Workspace_ scope as it has higher precedence.
 
-### Buckets & Derivatives View
+### Authentication
 
-The _Buckets & Derivatives_ view allows you to browse [Data Management](https://aps.autodesk.com/en/docs/data/v2/developers_guide/overview) OSS (object simple storage) content, create buckets, upload & download files, translate them using the [Model Derivative](https://aps.autodesk.com/en/docs/model-derivative/v2) service, and even preview the generated derivatives in a custom editor tab. All derivatives are listed as children of their corresponding objects in the tree. If there are no derivatives yet, or if there's been an issue with the translation, the tree view will provide additional information.
+Plain 2-legged (app) access is always available by default, and backs every "(app)" view below. Views and commands that need a user context — _Data & Derivatives (user)_, _Issues (user)_, and _Webhooks (user)_ — show a "Sign in to APS" welcome button until you're signed in; you can also sign in via the `aps.auth.login` command or the VS Code Accounts menu. Signing in offers a choice of 3-legged OAuth (confidential client), 3-legged OAuth with PKCE (public client, no secret), a Secure Service Account (sign in on behalf of a service account using its private key), or pasting an access token obtained from another APS application. Sessions are persisted per environment in VS Code's encrypted secret storage, so they survive a window reload, and 3-legged/PKCE tokens are refreshed automatically. Once signed in, use the "Logout" action in the title bar of any user-context view (or the `aps.auth.logout` command) to sign out again.
+
+### Data & Derivatives (app) View
+
+The _Data & Derivatives (app)_ view allows you to browse [Data Management](https://aps.autodesk.com/en/docs/data/v2/developers_guide/overview) OSS (object simple storage) content, create buckets, upload & download files, translate them using the [Model Derivative](https://aps.autodesk.com/en/docs/model-derivative/v2) service, and even preview the generated derivatives in a custom editor tab. All derivatives are listed as children of their corresponding objects in the tree. If there are no derivatives yet, or if there's been an issue with the translation, the tree view will provide additional information.
 
 Here's some actions you can try:
 
@@ -84,21 +88,25 @@ Here's some actions you can try:
 
 ![Preview design](./docs/06-preview-design.gif)
 
-### Hubs & Derivatives View (Experimental)
+### Data & Derivatives (user) View
 
-Similar to the _Buckets & Derivatives_ view, but using a 3-legged authentication instead, allowing the user to browse their existing design data hosted in BIM360, ACC, and other products built with the Autodesk Platform Services. In order for this view to be available, the user must first log into the currently active APS application with their Autodesk account. This can be done either by clicking the "APS Login" button in the bottom status bar, or by using the `aps.auth.login` command. The extension will spin up a temporary web server on a preconfigured port (8123 by default), providing additional information about the login process, and waiting for a callback from the Autodesk servers.
+Similar to the _Data & Derivatives (app)_ view, but using a signed-in user context instead, allowing you to browse your existing design data hosted in BIM 360, ACC, and other products built with the Autodesk Platform Services. See [Authentication](#authentication) above for how to sign in.
 
-### Webhooks View
+### Issues (user) View
 
-The _Webhooks_ view can be used to browse and manage your webhooks in the [Webhooks](https://aps.autodesk.com/en/docs/webhooks/v1/developers_guide/overview) service.
+The _Issues (user)_ view lets you browse [ACC/BIM 360 issues](https://aps.autodesk.com/en/docs/issues/v2/developers_guide/overview/) in a hub → project → issue tree, and open a details panel for an individual issue that also lists its comments, if any. Requires the same signed-in user context as the other "(user)" views.
 
-### Design Automation View
+### Webhooks (app) and Webhooks (user) Views
 
-The _Design Automation_ view can be used for browsing [Design Automation](https://aps.autodesk.com/en/docs/design-automation/v3/developers_guide/overview) entities such as app bundles or activities. It also provides a context menu that can be used to view additinal details of individual bundles or activities.
+The _Webhooks (app)_ and _Webhooks (user)_ views can be used to browse and manage app-owned and user-owned webhooks, respectively, in the [Webhooks](https://aps.autodesk.com/en/docs/webhooks/v1/developers_guide/overview) service, across all supported webhook systems (Data Management, Model Derivative, Cost Management, Forma Issues, Forma Reviews, Autodesk Tandem, and more).
 
-### Secure Service Accounts
+### Design Automation (app) View
 
-Manage your [Secure Service Accounts](https://aps.autodesk.com/en/docs/ssa/v1/developers_guide/overview/) through the _SECURE SERVICE ACCOUNTS_ view and the context menu of individual tree items, or use any commands starting with `Secure Service Accounts:`.
+The _Design Automation (app)_ view can be used for browsing [Design Automation](https://aps.autodesk.com/en/docs/design-automation/v3/developers_guide/overview) entities such as app bundles and activities, creating and updating them, and submitting work items against an activity. It also provides a context menu that can be used to view additional details of individual bundles or activities.
+
+### Secure Service Accounts (app) View
+
+Manage your [Secure Service Accounts](https://aps.autodesk.com/en/docs/ssa/v1/developers_guide/overview/) and their keys through the _Secure Service Accounts (app)_ view and the context menu of individual tree items — including generating assertions and access tokens for a key — or use any commands starting with `Secure Service Accounts:`.
 
 ## Known Limitations & Issues
 
