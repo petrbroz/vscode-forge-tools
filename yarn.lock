@@ -20,6 +20,15 @@
     cockatiel "^3.1.1"
     winston "^3.9.0"
 
+"@aps_sdk/construction-issues@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@aps_sdk/construction-issues/-/construction-issues-1.1.0.tgz#d0dcc094d2d975e3283e50ab1bf70ceb3cee1c45"
+  integrity sha512-TXApJ1hGsVmQNwHHPOY6EBXTD606ycPZTTtIYDw/8V81jwXpdbBvtl/HFiIzISO/wwNsElDlzplQQ/KG4rR4Tw==
+  dependencies:
+    "@aps_sdk/autodesk-sdkmanager" "^1.0.0"
+    "@types/node" "^20.9.0"
+    axios "^1.7.8"
+
 "@aps_sdk/data-management@^1.1.4":
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/@aps_sdk/data-management/-/data-management-1.1.4.tgz#708860a40d4cf2a8eafcfd3f5dc145011f003769"
@@ -537,7 +546,7 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
-axios@^1.13.5:
+axios@^1.13.5, axios@^1.7.8:
   version "1.18.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.18.1.tgz#d63f9863bcd8938815c86f9e2abd380189d96dfe"
   integrity sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==

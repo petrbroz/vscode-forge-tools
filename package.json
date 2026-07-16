@@ -141,6 +141,11 @@
                     "icon": "$(list-tree)"
                 },
                 {
+                    "id": "apsIssuesView",
+                    "name": "Issues (user)",
+                    "icon": "$(issues)"
+                },
+                {
                     "id": "apsWebhooksView",
                     "name": "Webhooks (app)",
                     "icon": "$(bell)"
@@ -167,6 +172,11 @@
                 "view": "apsHubsView",
                 "when": "!aps:userSession",
                 "contents": "Data Management hubs require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsIssuesView",
+                "when": "!aps:userSession",
+                "contents": "ACC issues require a user context.\n[Sign in to APS](command:aps.auth.login)"
             },
             {
                 "view": "apsWebhooksUserView",
@@ -323,6 +333,18 @@
                 "command": "aps.dm.copyVersionID",
                 "title": "Copy Version ID to Clipboard",
                 "category": "Autodesk Platform Services > Data Management",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.issues.viewIssueDetails",
+                "title": "View Issue Details",
+                "category": "Autodesk Platform Services > Issues",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.issues.copyIssueID",
+                "title": "Copy Issue ID to Clipboard",
+                "category": "Autodesk Platform Services > Issues",
                 "icon": "$(copy)"
             },
             {
@@ -687,7 +709,7 @@
                 },
                 {
                     "command": "aps.auth.logout",
-                    "when": "(view == apsHubsView || view == apsWebhooksUserView) && aps:userSession",
+                    "when": "(view == apsHubsView || view == apsIssuesView || view == apsWebhooksUserView) && aps:userSession",
                     "group": "navigation"
                 },
                 {
@@ -796,6 +818,16 @@
                     "command": "aps.dm.copyVersionID",
                     "when": "view == apsHubsView && viewItem == version",
                     "group": "0_view@1"
+                },
+                {
+                    "command": "aps.issues.viewIssueDetails",
+                    "when": "view == apsIssuesView && viewItem == issue",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.issues.copyIssueID",
+                    "when": "view == apsIssuesView && viewItem == issue",
+                    "group": "0_view@2"
                 },
                 {
                     "command": "aps.md.translateObject",
@@ -1090,6 +1122,7 @@
     "dependencies": {
         "@aps_sdk/authentication": "^1.0.1",
         "@aps_sdk/autodesk-sdkmanager": "^1.0.1",
+        "@aps_sdk/construction-issues": "^1.1.0",
         "@aps_sdk/data-management": "^1.1.4",
         "@aps_sdk/model-derivative": "^1.2.1",
         "@aps_sdk/oss": "^1.3.3",

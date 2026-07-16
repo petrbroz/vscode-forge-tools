@@ -4,6 +4,7 @@ import { DesignAutomationDataProvider }from './providers/design-automation';
 import { IContext } from './common';
 import { WebhooksDataProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
+import { IssuesDataProvider } from './providers/issues';
 import { getEnvironments, setupNewEnvironment } from './environment';
 import { IEnvironment } from './models/environment';
 import { createServices, createSessionAuthenticationProvider } from './services';
@@ -16,6 +17,7 @@ import { DesignAutomationCommands } from './commands/design-automation';
 import { ModelDerivativesCommands } from './commands/model-derivative';
 import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
 import { WebhooksCommands } from './commands/webhooks';
+import { IssuesCommands } from './commands/issues';
 import { EnvironmentCommands } from './commands/environment';
 
 export async function activate(_context: vscode.ExtensionContext) {
@@ -55,6 +57,11 @@ export async function activate(_context: vscode.ExtensionContext) {
 	let hubsDataProvider = new HubsDataProvider(context);
 	let hubsView = vscode.window.createTreeView('apsHubsView', { treeDataProvider: hubsDataProvider });
 	context.extensionContext.subscriptions.push(hubsView);
+
+	// Setup Issues (user) view (ACC/BIM 360 issues)
+	let issuesDataProvider = new IssuesDataProvider(context);
+	let issuesView = vscode.window.createTreeView('apsIssuesView', { treeDataProvider: issuesDataProvider });
+	context.extensionContext.subscriptions.push(issuesView);
 
     // Setup Automation (app) view
 	let designAutomationDataProvider = new DesignAutomationDataProvider(context);
@@ -97,6 +104,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	function refreshAllViews() {
 		simpleStorageDataProvider.refresh();
 		hubsDataProvider.refresh();
+		issuesDataProvider.refresh();
 		designAutomationDataProvider.refresh();
 		refreshWebhooks();
 		secureServiceAccountsProvider.refresh();
@@ -117,6 +125,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(authProvider.onDidChangeSessions(async () => {
 		await applySession(context.environment);
 		hubsDataProvider.refresh();
+		issuesDataProvider.refresh();
 		refreshWebhooks();
 	}));
 
@@ -143,6 +152,9 @@ export async function activate(_context: vscode.ExtensionContext) {
 
 	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
 	context.extensionContext.subscriptions.push(...secureServiceAccountsCommands.registerCommands());
+
+	const issuesCommands = new IssuesCommands(context, () => issuesDataProvider.refresh());
+	context.extensionContext.subscriptions.push(...issuesCommands.registerCommands());
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + context.environment.title;

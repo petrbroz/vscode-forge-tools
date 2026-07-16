@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Added
+  - New "Issues (user)" tree view for browsing ACC/BIM 360 issues (hub → project → issue), backed by the
+    official `@aps_sdk/construction-issues` SDK, with a "View Issue Details" webview panel that also
+    lists the issue's comments, if any. Requires a user context (same sign-in as the other "(user)"
+    views)
   - (**MAJOR**) Support for all APS authentication mechanisms behind VS Code's built-in authentication
     infrastructure. Signing in (via a user-context tree view's "Sign in to APS" button or the VS Code
     Accounts menu) now offers a choice of

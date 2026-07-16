@@ -4,6 +4,7 @@ import { OssClient } from '@aps_sdk/oss';
 import { ModelDerivativeClient } from '@aps_sdk/model-derivative';
 import { WebhooksClient } from '@aps_sdk/webhooks';
 import { DataManagementClient } from '@aps_sdk/data-management';
+import { IssuesClient } from '@aps_sdk/construction-issues';
 import { IEnvironment } from '../models/environment';
 import { IApsAuthSession } from '../models/authentication';
 import { createApsSdkManager } from './aps-sdk-manager';
@@ -18,6 +19,7 @@ import { AuthenticationService } from './authentication';
 import { ModelDerivativeService } from './model-derivative';
 import { HubsService } from './hubs';
 import { WebhooksService } from './webhooks';
+import { IssuesService } from './issues';
 
 const OSS_SCOPES: string[] = [Scopes.BucketCreate, Scopes.BucketRead, Scopes.BucketUpdate, Scopes.BucketDelete, Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate];
 const MODEL_DERIVATIVE_SCOPES: string[] = [Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate, Scopes.ViewablesRead];
@@ -33,6 +35,7 @@ export interface IServices {
     webhooksServiceApp: WebhooksService;  // Webhooks (app) view - app-owned hooks (2-legged)
     webhooksServiceUser: WebhooksService; // Webhooks (user) view - user-owned hooks (active session)
     hubsService: HubsService; // hubs/projects/folders/items/versions, used by the Data & Derivatives (user) view
+    issuesService: IssuesService; // ACC/BIM 360 issues, used by the Issues (user) view (user context only)
     secureServiceAccountsService: SecureServiceAccountsService;
 }
 
@@ -104,6 +107,7 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
     const appViewerProvider = new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, VIEWER_SCOPES, env.host);
     const modelDerivativeService = new ModelDerivativeService(modelDerivativeClientApp, modelDerivativeClientUser, appViewerProvider, user);
     const dataManagementClient = new DataManagementClient({ sdkManager, authenticationProvider: user });
+    const issuesClient = new IssuesClient({ sdkManager, authenticationProvider: user });
 
     return {
         authenticationService: new AuthenticationService(authenticationClient, env.clientId, env.clientSecret),
@@ -119,6 +123,7 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
         })),
         webhooksServiceUser: new WebhooksService(new WebhooksClient({ sdkManager, authenticationProvider: user })),
         hubsService: new HubsService(dataManagementClient, modelDerivativeService),
+        issuesService: new IssuesService(issuesClient),
         secureServiceAccountsService: new SecureServiceAccountsService(createSecureServiceAccountsClient(env))
     };
 }
