@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     that `vscode.env.asExternalUri` appends on desktop, since that value changes across window reloads and
     would otherwise make the `redirect_uri` fail APS's exact-match check against the registered callback
     URL.
+  - Read-only JSON/text detail views (Model Derivative viewables/tree/properties/manifest, Design
+    Automation app bundle/activity/alias details and work item reports, Secure Service Account private
+    keys/assertions/access tokens) now open as virtual documents backed by a
+    `vscode.workspace.registerTextDocumentContentProvider` (`aps-readonly:` scheme) instead of unsaved
+    "Untitled" editor tabs. Reopening the same resource updates and reveals its existing tab instead of
+    creating a new one, and closing the tab no longer prompts to save changes.
 
 ## [3.2.0] - 2026-07-17
 

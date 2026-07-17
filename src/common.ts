@@ -5,6 +5,7 @@ import { IDerivative } from './models/model-derivative';
 import { IEnvironment } from './models/environment';
 import { IApsAuthSession } from './models/authentication';
 import { IServices } from './services';
+import { readOnlyUri, ReadOnlyContentProvider } from './providers/readonly-content';
 
 export interface IPreviewSettings {
     extensions: string[];
@@ -19,6 +20,8 @@ export interface IContext extends IServices {
     /** The active user-context session, or `undefined` when running 2-legged (app identity) only. */
     session?: IApsAuthSession;
     log: vscode.LogOutputChannel;
+    /** Backs the virtual, read-only documents (JSON details, reports, generated secrets) opened via {@link showReadOnlyJson}/{@link showReadOnlyText}. */
+    readOnlyContentProvider: ReadOnlyContentProvider;
 }
 
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
@@ -129,6 +132,20 @@ export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
         cancellable: false
     }, (progress, token) => task);
 };
+
+/** Opens (or reveals/updates, if already open) a read-only virtual document showing `data` as formatted JSON. `pathSegments` must uniquely identify the underlying resource so re-opening it reuses the same tab. */
+export function showReadOnlyJson(context: IContext, pathSegments: string[], data: unknown): Thenable<void> {
+    return context.readOnlyContentProvider.open(withExtension(pathSegments, 'json'), JSON.stringify(data, null, 4));
+}
+
+/** Opens (or reveals/updates, if already open) a read-only virtual document showing `content` as plain text. `pathSegments` must uniquely identify the underlying resource so re-opening it reuses the same tab. */
+export function showReadOnlyText(context: IContext, pathSegments: string[], content: string): Thenable<void> {
+    return context.readOnlyContentProvider.open(withExtension(pathSegments, 'txt'), content);
+}
+
+function withExtension(pathSegments: string[], extension: string): vscode.Uri {
+    return readOnlyUri(...pathSegments.slice(0, -1), `${pathSegments[pathSegments.length - 1]}.${extension}`);
+}
 
 export function createWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
     let disposables: vscode.Disposable[] = [];

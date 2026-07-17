@@ -10,6 +10,7 @@ import { IEnvironment } from './models/environment';
 import { createServices, createSessionAuthenticationProvider } from './services';
 import { ApsAuthenticationProvider } from './auth-provider';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
+import { ReadOnlyContentProvider, READONLY_SCHEME } from './providers/readonly-content';
 import { AuthenticationCommands } from './commands/authentication';
 import { ObjectStorageServiceCommands } from './commands/object-storage';
 import { DataManagementCommands } from './commands/data-management';
@@ -29,6 +30,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	}
 	let env = environments[0];
 
+	const readOnlyContentProvider = new ReadOnlyContentProvider();
 	let context: IContext = {
 		extensionContext: _context,
         environment: env,
@@ -38,9 +40,11 @@ export async function activate(_context: vscode.ExtensionContext) {
 			env: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.env'),
 			api: vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.viewer.api')
 		},
-        log: vscode.window.createOutputChannel("Autodesk Platform Services", { log: true })
+        log: vscode.window.createOutputChannel("Autodesk Platform Services", { log: true }),
+        readOnlyContentProvider
 	};
     context.log.info('Extension has been loaded.');
+    context.extensionContext.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider(READONLY_SCHEME, readOnlyContentProvider));
 
     // Register the APS authentication provider (owns the single user-context session per environment).
     const authProvider = new ApsAuthenticationProvider(_context.secrets, () => context);
