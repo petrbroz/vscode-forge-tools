@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
+import { createWebViewPanel, IContext, showErrorMessage, showReadOnlyJson, showReadOnlyText, withProgress } from '../common';
 import { ISecureServiceAccount, ISecureServiceAccountKey } from '../models/secure-service-accounts';
 
 export class SecureServiceAccountsCommands {
@@ -143,8 +143,7 @@ export class SecureServiceAccountsCommands {
                 `Generating private key for secure service account: ${secureServiceAccount.id}`,
                 this.context.secureServiceAccountsService.createServiceAccountKey(secureServiceAccount.id)
             );
-            const doc = await vscode.workspace.openTextDocument({ content: privateKey! });
-            await vscode.window.showTextDocument(doc, { preview: false });
+            await showReadOnlyText(this.context, ['secure-service-accounts', 'private-key', secureServiceAccount.id], privateKey!);
             vscode.window.showWarningMessage(`Make sure to copy the private key as it will not be shown again!`);
         } catch (err) {
             showErrorMessage('Could not generate private key for secure service account', err, this.context);
@@ -267,8 +266,7 @@ export class SecureServiceAccountsCommands {
         const action = await vscode.window.showInformationMessage('Assertion generated', 'Open in New Tab', 'Copy to Clipboard');
         switch (action) {
             case 'Open in New Tab':
-                const doc = await vscode.workspace.openTextDocument({ content: assertion });
-                await vscode.window.showTextDocument(doc, { preview: false });
+                await showReadOnlyText(this.context, ['secure-service-accounts', 'assertion', secureServiceAccountKey.id], assertion);
                 break;
             case 'Copy to Clipboard':
                 await vscode.env.clipboard.writeText(assertion);
@@ -316,8 +314,7 @@ export class SecureServiceAccountsCommands {
         const action = await vscode.window.showInformationMessage('Access token generated', 'Open in New Tab', 'Copy to Clipboard');
         switch (action) {
             case 'Open in New Tab':
-                const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(accessToken, null, 2), language: 'json' });
-                await vscode.window.showTextDocument(doc, { preview: false });
+                await showReadOnlyJson(this.context, ['secure-service-accounts', 'access-token', secureServiceAccountKey.id], accessToken);
                 break;
             case 'Copy to Clipboard':
                 await vscode.env.clipboard.writeText(JSON.stringify(accessToken, null, 2));

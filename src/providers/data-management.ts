@@ -38,9 +38,14 @@ function isHint(entry: SimpleStorageEntry): entry is IHint {
     return (<IHint>entry).hint !== undefined;
 }
 
-export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry> {
+export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry>, vscode.TreeDragAndDropController<SimpleStorageEntry> {
     /** Key used for the bucket list's page/continuation-token cache (the object list uses its bucket key instead). */
     static readonly rootKey = 'root';
+
+    /** Accepts files dropped from outside VS Code (e.g. the OS file explorer); see {@link handleDrop}. */
+    readonly dropMimeTypes = ['text/uri-list'];
+    /** This tree doesn't act as a drag source. */
+    readonly dragMimeTypes: readonly string[] = [];
 
     private _context: IContext;
     private _onDidChangeTreeData: vscode.EventEmitter<SimpleStorageEntry | null> = new vscode.EventEmitter<SimpleStorageEntry | null>();
@@ -108,6 +113,38 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         } catch(err) {
             showErrorMessage(`Could not load more items`, err);
         }
+    }
+
+    /** Uploads files dropped (from the OS file explorer) onto a bucket node, via the {@link vscode.TreeDragAndDropController} API. */
+    async handleDrop(target: SimpleStorageEntry | undefined, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+        if (!target || !isBucket(target)) {
+            return;
+        }
+        const item = dataTransfer.get('text/uri-list');
+        if (!item) {
+            return;
+        }
+        const uris = (await item.asString())
+            .split('\n')
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => vscode.Uri.parse(line))
+            .filter(uri => uri.scheme === 'file');
+        const fileUris: vscode.Uri[] = [];
+        for (const uri of uris) {
+            try {
+                const stat = await vscode.workspace.fs.stat(uri);
+                if (stat.type === vscode.FileType.File) {
+                    fileUris.push(uri);
+                }
+            } catch {
+                // Skip entries that can no longer be accessed.
+            }
+        }
+        if (fileUris.length === 0) {
+            return;
+        }
+        await vscode.commands.executeCommand('aps.oss.uploadObject', target, fileUris);
     }
 
     /** Fires a change event for the bucket node with the given key, falling back to a full refresh if it isn't loaded (yet). */

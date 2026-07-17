@@ -41,7 +41,6 @@ The extension exposes the following settings:
   - `clientId` (required) - APS client ID
   - `clientSecret` (required) - APS client secret
   - `region` - data region for storing design data; can be `US` (default), `EMEA`, or `APAC`
-- `autodesk.forge.authentication.port` - server port to use during 3-legged authentication workflows
 - `autodesk.forge.data.defaultContentType` - content type to use for all files uploaded to OSS
 - `autodesk.forge.data.uploadChunkSize` - size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality
 - `autodesk.forge.viewer.extensions` - array of Viewer [extension](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions) IDs (for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be automatically loaded when previewing derivatives
@@ -63,6 +62,8 @@ If you have configured multiple APS environments, you can switch between them vi
 ### Authentication
 
 Plain 2-legged (app) access is always available by default, and backs every "(app)" view below. Views and commands that need a user context — _Data & Derivatives (user)_, _Issues (user)_, and _Webhooks (user)_ — show a "Sign in to APS" welcome button until you're signed in; you can also sign in via the `aps.auth.login` command or the VS Code Accounts menu. Signing in offers a choice of 3-legged OAuth (confidential client), 3-legged OAuth with PKCE (public client, no secret), a Secure Service Account (sign in on behalf of a service account using its private key), or pasting an access token obtained from another APS application. Sessions are persisted per environment in VS Code's encrypted secret storage, so they survive a window reload, and 3-legged/PKCE tokens are refreshed automatically. Once signed in, use the "Logout" action in the title bar of any user-context view (or the `aps.auth.logout` command) to sign out again.
+
+> The 3-legged OAuth flows redirect back into VS Code via a `vscode://petrbroz.vscode-forge-tools/callback` URI (resolved through `vscode.env.asExternalUri`, so it also works in remote/SSH, Codespaces, and vscode.dev). Make sure this URL - or, when working in a remote/web context, whatever URL `vscode.env.asExternalUri` resolves it to - is registered as a callback URL for your application on [https://aps.autodesk.com/myapps](https://aps.autodesk.com/myapps).
 
 ### Data & Derivatives (app) View
 

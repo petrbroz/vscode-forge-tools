@@ -3,7 +3,7 @@ import * as path from 'path';
 import { ObjectDetails } from '../models/oss';
 import { ObjectTree, Properties, IDerivative, svf2 } from '../models/model-derivative';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, promptCustomDerivative } from '../common';
-import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
+import { withProgress, createWebViewPanel, createViewerWebViewPanel, showReadOnlyJson } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
 import { IVersion } from '../models/hubs';
 
@@ -112,8 +112,8 @@ export class ModelDerivativesCommands {
 				}
 			}
 			const metadata = await withProgress(`Retrieving list of viewables`, this.context.modelDerivativeService.getModelViews(object));
-			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(metadata, null, 4), language: 'json' });
-			await vscode.window.showTextDocument(doc, { preview: false });
+			const urn = this.context.modelDerivativeService.getObjectUrn(object);
+			await showReadOnlyJson(this.context, ['model-derivative', 'viewables', urn], metadata);
 		} catch (err) {
 			showErrorMessage('Could not retrieve viewables', err, this.context);
 		}
@@ -223,9 +223,7 @@ export class ModelDerivativesCommands {
 					}
 				}
 			} else {
-				const content = JSON.stringify(tree, null, 4);
-				const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await showReadOnlyJson(this.context, ['model-derivative', 'tree', urn, guid], tree);
 			}
 		} catch (err) {
 			showErrorMessage('Could not access derivative tree', err, this.context);
@@ -287,9 +285,7 @@ export class ModelDerivativesCommands {
 					}
 				}
 			} else {
-				const content = JSON.stringify(props, null, 4);
-				const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await showReadOnlyJson(this.context, ['model-derivative', 'properties', urn, guid], props);
 			}
 		} catch (err) {
 			showErrorMessage('Could not access derivative properties', err, this.context);
@@ -311,8 +307,7 @@ export class ModelDerivativesCommands {
 
 			const urn = this.context.modelDerivativeService.getObjectUrn(object);
 			const manifest = await withProgress(`Retrieving manifest for ${urn}`, this.context.modelDerivativeService.getObjectManifest(object));
-			const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(manifest, null, 4), language: 'json' });
-			await vscode.window.showTextDocument(doc, { preview: false });
+			await showReadOnlyJson(this.context, ['model-derivative', 'manifest', urn], manifest);
 		} catch (err) {
 			showErrorMessage('Could not access object manifest', err, this.context);
 		}

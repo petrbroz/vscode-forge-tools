@@ -20,6 +20,15 @@
     cockatiel "^3.1.1"
     winston "^3.9.0"
 
+"@aps_sdk/construction-account-admin@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@aps_sdk/construction-account-admin/-/construction-account-admin-1.2.1.tgz#98aca9cd7383d4d071c6afb860cc8e19f81035bb"
+  integrity sha512-+LHW3k7aTZvwXrqDSeC0PtludenanFdeEteCaSY/Yld+yhcjMeV2rHc46yl8gRm/1N8gEIQuJJMs+pFCe90bgQ==
+  dependencies:
+    "@aps_sdk/autodesk-sdkmanager" "^1.0.0"
+    "@types/node" "^20.9.0"
+    axios "^1.7.8"
+
 "@aps_sdk/construction-issues@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@aps_sdk/construction-issues/-/construction-issues-1.1.0.tgz#d0dcc094d2d975e3283e50ab1bf70ceb3cee1c45"

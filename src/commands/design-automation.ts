@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IActivityDetail, DesignAutomationID } from '../models/design-automation-api';
-import { withProgress, createWebViewPanel } from '../common';
+import { withProgress, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
 import { ICreateActivityProps } from '../webviews/create-activity';
 import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../models/design-automation';
 
@@ -10,6 +10,10 @@ type UnqualifiedID = string;
 interface INameAndVersion {
 	name: string;
 	version: number;
+}
+
+function idKey(id: FullyQualifiedID | INameAndVersion): string {
+	return typeof id === 'string' ? id : `${id.name}.${id.version}`;
 }
 
 export class DesignAutomationCommands {
@@ -284,8 +288,7 @@ async function viewAppBundleDetailsJSON(id: FullyQualifiedID | INameAndVersion |
 			? context.designAutomationService.getAppBundle(id)
 			: context.designAutomationService.getAppBundleVersion((<INameAndVersion>id).name, (<INameAndVersion>id).version)
 		);
-		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(appBundleDetail, null, 4), language: 'json' });
-		await vscode.window.showTextDocument(doc, { preview: false });
+		await showReadOnlyJson(context, ['design-automation', 'appbundle', idKey(id)], appBundleDetail);
 	} catch (err) {
 		showErrorMessage('Could not access app bundle', err, context);
 	}
@@ -323,8 +326,7 @@ async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undefined, c
 		const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
 		const aliases = await withProgress(`Getting app bundle alias details: ${id}`, context.designAutomationService.listAppBundleAliases(daid.id));
 		const alias = aliases.find(entry => entry.id === daid.alias);
-		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(alias, null, 4), language: 'json' });
-		await vscode.window.showTextDocument(doc, { preview: false });
+		await showReadOnlyJson(context, ['design-automation', 'appbundle-alias', id as string], alias);
 	} catch(err) {
 		showErrorMessage('Could not access app bundle alias', err, context);
 	}
@@ -342,9 +344,7 @@ async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, conte
 async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		const activityDetail = await withProgress(`Getting activity details: ${id}`, typeof(id) === 'string' ? context.designAutomationService.getActivity(id) : context.designAutomationService.getActivityVersion(id.name, id.version));
-		createWebViewPanel(context, 'activity-details.js', 'activity-details', `Activity Details: ${activityDetail.id}`, { detail: activityDetail });
-		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(activityDetail, null, 4), language: 'json' });
-		await vscode.window.showTextDocument(doc, { preview: false });
+		await showReadOnlyJson(context, ['design-automation', 'activity', idKey(id)], activityDetail);
 	} catch(err) {
 		showErrorMessage('Could not access activity', err, context);
 	}
@@ -382,8 +382,7 @@ async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefined, co
 		const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
 		const aliases = await withProgress(`Getting activity alias details: ${id}`, context.designAutomationService.listActivityAliases(daid.id));
 		const alias = aliases.find(entry => entry.id === daid.alias);
-		const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(alias, null, 4), language: 'json' });
-		await vscode.window.showTextDocument(doc, { preview: false });
+		await showReadOnlyJson(context, ['design-automation', 'activity-alias', id as string], alias);
 	} catch(err) {
 		showErrorMessage('Could not access activity alias', err, context);
 	}
@@ -648,8 +647,7 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 							}
 							if (action === 'View Report') {
 								const report = await context.designAutomationService.getWorkItemReport(workitem);
-								const doc = await vscode.workspace.openTextDocument({ content: report });
-								vscode.window.showTextDocument(doc);
+								await showReadOnlyText(context, ['design-automation', 'workitem-report', workitem.id], report);
 							}
 						} catch(err) {
 							showErrorMessage('Could not start workitem', err, context);
