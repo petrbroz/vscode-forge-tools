@@ -2,7 +2,7 @@ import * as React from 'react';
 
 interface IGridProps {
     columns?: string;
-    children: React.ReactNode[];
+    children: React.ReactNode | React.ReactNode[];
 }
 
 export const Grid = ({ children, columns }: IGridProps) => (

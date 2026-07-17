@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ObjectDetails } from '../models/oss';
-import { ObjectTree, Properties, JobPayload, IDerivative, svf2 } from '../models/model-derivative';
+import { ObjectTree, Properties, IDerivative, svf2 } from '../models/model-derivative';
 import { IContext, promptBucket, promptObject, promptDerivative, showErrorMessage, promptCustomDerivative } from '../common';
 import { withProgress, createWebViewPanel, createViewerWebViewPanel } from '../common';
 import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
@@ -73,35 +73,14 @@ export class ModelDerivativesCommands {
 				showErrorMessage("Source file format is not supported by Model derivative service", {});
 				return;
 			}
+			const sourceFormat = this.context.modelDerivativeService.getSourceFileFormat(object);
 
 			const translateObject = object;
-			let panel = createWebViewPanel<ICustomDerivativeProps>(this.context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats }, async (message: ICustomDerivativeMessage) => {
+			let panel = createWebViewPanel<ICustomDerivativeProps>(this.context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats, sourceFormat }, async (message: ICustomDerivativeMessage) => {
 				switch (message.type) {
 					case 'translate':
-						const {
-							outputFormat,
-							rootFilename,
-							switchLoader,
-							generateMasterViews,
-							workflowId,
-							workflowAttributes
-						} = message.data;
-						// TODO: support additional flags in the output format payload
-						const outputOptions = {
-							type: outputFormat,
-							views: ['2d', '3d'],
-							advanced: {
-								switchLoader,
-								generateMasterViews
-							}
-						} as any;
 						try {
-							const jobPayload: JobPayload = {
-								input: { urn, compressedUrn: !!rootFilename, rootFilename },
-								output: { formats: [outputOptions] },
-								misc: workflowId ? { workflow: workflowId, workflowAttribute: workflowAttributes ? JSON.parse(workflowAttributes) : undefined } : undefined
-							};
-							await this.context.modelDerivativeService.startCustomTranslation(translateObject, jobPayload);
+							await this.context.modelDerivativeService.startCustomTranslation(translateObject, message.data);
 							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						} catch (err: any) {
 							if (err.response && err.response.statusCode === 406) {

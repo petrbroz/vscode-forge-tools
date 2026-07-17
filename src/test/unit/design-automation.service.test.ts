@@ -82,4 +82,52 @@ describe('DesignAutomationService', () => {
 			assert.strictEqual(await service.waitForWorkItem(workitem), workitem);
 		});
 	});
+
+	describe('getWorkItemReport', () => {
+		const originalFetch = global.fetch;
+		afterEach(() => {
+			global.fetch = originalFetch;
+		});
+
+		it('fetches the plain-text report from the work item\'s reportUrl', async () => {
+			let requestedUrl: string | undefined;
+			global.fetch = (async (url: string) => {
+				requestedUrl = url;
+				return { text: async () => 'line 1\nline 2' };
+			}) as any;
+
+			const service = new DesignAutomationService({} as any);
+			const report = await service.getWorkItemReport({ id: 'wi-1', status: 'success', reportUrl: 'https://example.com/report.txt' });
+
+			assert.strictEqual(requestedUrl, 'https://example.com/report.txt');
+			assert.strictEqual(report, 'line 1\nline 2');
+		});
+	});
+
+	describe('getAvailableAppBundles', () => {
+		it('excludes the $LATEST pseudo-version but keeps every other version/alias', async () => {
+			const fakeClient = {
+				listAppBundles: async () => ['nick1.Bundle1+$LATEST', 'nick1.Bundle1+1', 'other.Bundle2+$LATEST', 'other.Bundle2+prod']
+			};
+			const service = new DesignAutomationService(fakeClient as any);
+
+			assert.deepStrictEqual(await service.getAvailableAppBundles(), ['nick1.Bundle1+1', 'other.Bundle2+prod']);
+		});
+	});
+
+	describe('findAvailableEngines', () => {
+		it('sorts the engines alphabetically', async () => {
+			const fakeClient = { listEngines: async () => ['Revit+2024', 'AutoCAD+2024', 'Inventor+2024'] };
+			const service = new DesignAutomationService(fakeClient as any);
+
+			assert.deepStrictEqual(await service.findAvailableEngines(), ['AutoCAD+2024', 'Inventor+2024', 'Revit+2024']);
+		});
+
+		it('does not mutate the order returned by listEngines (unsorted)', async () => {
+			const fakeClient = { listEngines: async () => ['Revit+2024', 'AutoCAD+2024'] };
+			const service = new DesignAutomationService(fakeClient as any);
+
+			assert.deepStrictEqual(await service.listEngines(), ['Revit+2024', 'AutoCAD+2024']);
+		});
+	});
 });

@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-07-17
+
+- Added
+  - "Translate Object (Custom)" now exposes the full set of documented output-format-specific and
+    source-format-specific "advanced" options from the Model Derivative Create Translation Job API:
+    per-source-format options for SVF/SVF2 (Revit, DGN, DWG, IDW, IFC, Navisworks, VUE), plus STL, OBJ,
+    STEP, IGES, DWG, IFC, and Thumbnail width/height. The 2D/3D view toggle is now user-controlled
+    (previously hardcoded) for SVF/SVF2 outputs, and "Generate Master Views" moved from an
+    always-visible checkbox to the Revit-specific subform, matching where it's documented to apply. The
+    form is now grouped into "Input Settings", "Output Settings", "Advanced Settings", and "Webhook
+    Settings" sections, and whether the source is a compressed (ZIP) archive is now an explicit checkbox
+    (auto-detected from the source file's extension) instead of being inferred from the root filename.
+- Removed
+  - The undocumented "Switch Loader" checkbox from "Translate Object (Custom)". It dates back to a 2019
+    Forge blog post about toggling between the legacy Navisworks-based and newer Revit-based IFC
+    importers, predates the current Model Derivative SDK and REST reference (neither mentions it), and
+    has since been superseded by the now-official, more granular `conversionMethod` option exposed in
+    the IFC source subform.
+- Fixed
+  - The Object Storage Service tree view no longer crashes (instead of showing an error notification and
+    an empty list) when fetching a page of buckets or objects fails, e.g. due to a network error.
+
 ## [3.1.1] - 2026-07-16
 
 - Fixed
