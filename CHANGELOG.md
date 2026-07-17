@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-07-17
+
 - Added
   - Dragging & dropping files from the OS file explorer onto a bucket in the Data & Derivatives (app)
     view now uploads them, same as the existing "Upload Object" command.
