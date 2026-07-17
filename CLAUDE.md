@@ -174,5 +174,6 @@ only — esbuild does all emitting). There is no separate lint/format step.
 - **Every user-facing code change must add an entry to [CHANGELOG.md](CHANGELOG.md) in the same
   commit.** Add a bullet under the appropriate `Added`/`Changed`/`Removed`/`Fixed` subsection of the
   `[Unreleased]` section at the top of the file (create the subsection if it doesn't exist yet); don't
-  create a new version heading yourself — that happens at release time. Purely internal changes with no
-  observable effect on the extension's behavior (e.g. comments, test-only changes) don't need an entry.
+  create a new version heading yourself — that happens at release time. Keep the entries very short.
+  Purely internal changes with no observable effect on the extension's behavior (e.g. comments,
+  test-only changes) don't need an entry.
