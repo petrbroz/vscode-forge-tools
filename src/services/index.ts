@@ -5,6 +5,7 @@ import { ModelDerivativeClient } from '@aps_sdk/model-derivative';
 import { WebhooksClient } from '@aps_sdk/webhooks';
 import { DataManagementClient } from '@aps_sdk/data-management';
 import { IssuesClient } from '@aps_sdk/construction-issues';
+import { AdminClient } from '@aps_sdk/construction-account-admin';
 import { IEnvironment } from '../models/environment';
 import { IApsAuthSession } from '../models/authentication';
 import { createApsSdkManager } from './aps-sdk-manager';
@@ -20,12 +21,14 @@ import { ModelDerivativeService } from './model-derivative';
 import { HubsService } from './hubs';
 import { WebhooksService } from './webhooks';
 import { IssuesService } from './issues';
+import { HubAdminService } from './hub-admin';
 
 const OSS_SCOPES: string[] = [Scopes.BucketCreate, Scopes.BucketRead, Scopes.BucketUpdate, Scopes.BucketDelete, Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate];
 const MODEL_DERIVATIVE_SCOPES: string[] = [Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate, Scopes.ViewablesRead];
 const WEBHOOKS_SCOPES: string[] = [Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate];
 const DATA_MANAGEMENT_SCOPES: string[] = [Scopes.DataRead];
 const VIEWER_SCOPES: string[] = [Scopes.ViewablesRead];
+const HUB_ADMIN_SCOPES: string[] = [Scopes.AccountRead];
 
 export interface IServices {
     authenticationService: AuthenticationService;
@@ -35,8 +38,11 @@ export interface IServices {
     webhooksServiceApp: WebhooksService;  // Webhooks (app) view - app-owned hooks (2-legged)
     webhooksServiceUser: WebhooksService; // Webhooks (user) view - user-owned hooks (active session)
     hubsService: HubsService; // hubs/projects/folders/items/versions, used by the Data & Derivatives (user) view
+    hubsServiceApp: HubsService; // hub listing (2-legged), used to seed the Hub Admin (app) view's tree roots
     issuesService: IssuesService; // ACC/BIM 360 issues, used by the Issues (user) view (user context only)
     secureServiceAccountsService: SecureServiceAccountsService;
+    hubAdminServiceApp: HubAdminService;  // Hub Admin (app) view - account/project/company data (2-legged)
+    hubAdminServiceUser: HubAdminService; // Hub Admin (user) view - account/project/company data (active session)
 }
 
 /**
@@ -107,6 +113,10 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
     const appViewerProvider = new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, VIEWER_SCOPES, env.host);
     const modelDerivativeService = new ModelDerivativeService(modelDerivativeClientApp, modelDerivativeClientUser, appViewerProvider, user);
     const dataManagementClient = new DataManagementClient({ sdkManager, authenticationProvider: user });
+    const dataManagementClientApp = new DataManagementClient({
+        sdkManager,
+        authenticationProvider: new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, DATA_MANAGEMENT_SCOPES, env.host)
+    });
     const issuesClient = new IssuesClient({ sdkManager, authenticationProvider: user });
 
     return {
@@ -123,7 +133,13 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
         })),
         webhooksServiceUser: new WebhooksService(new WebhooksClient({ sdkManager, authenticationProvider: user })),
         hubsService: new HubsService(dataManagementClient, modelDerivativeService),
+        hubsServiceApp: new HubsService(dataManagementClientApp, modelDerivativeService),
         issuesService: new IssuesService(issuesClient),
-        secureServiceAccountsService: new SecureServiceAccountsService(createSecureServiceAccountsClient(env))
+        secureServiceAccountsService: new SecureServiceAccountsService(createSecureServiceAccountsClient(env)),
+        hubAdminServiceApp: new HubAdminService(new AdminClient({
+            sdkManager,
+            authenticationProvider: new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, HUB_ADMIN_SCOPES, env.host)
+        })),
+        hubAdminServiceUser: new HubAdminService(new AdminClient({ sdkManager, authenticationProvider: user }))
     };
 }

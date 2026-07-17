@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added
   - Dragging & dropping files from the OS file explorer onto a bucket in the Data & Derivatives (app)
     view now uploads them, same as the existing "Upload Object" command.
+  - Two new read-only views, Hub Admin (app) and Hub Admin (user), backed by the official
+    `@aps_sdk/construction-account-admin` SDK. Each hub expands into Users, Projects, and Companies, with
+    project nodes further expanding into their assigned project users; every leaf has a "View Details" and
+    "Copy ID to Clipboard" command. The (app) view uses 2-legged app credentials, the (user) view uses the
+    active signed-in session, matching the existing Webhooks (app)/(user) split.
 - Changed
   - The 3-legged OAuth login flows ("3-legged OAuth" and "3-legged OAuth with PKCE") no longer start a
     local HTTP server to catch the browser redirect; they now register a `vscode://petrbroz.vscode-

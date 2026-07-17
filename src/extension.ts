@@ -10,6 +10,7 @@ import { IEnvironment } from './models/environment';
 import { createServices, createSessionAuthenticationProvider } from './services';
 import { ApsAuthenticationProvider } from './auth-provider';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
+import { HubAdminDataProvider } from './providers/hub-admin';
 import { ReadOnlyContentProvider, READONLY_SCHEME } from './providers/readonly-content';
 import { AuthenticationCommands } from './commands/authentication';
 import { ObjectStorageServiceCommands } from './commands/object-storage';
@@ -18,6 +19,7 @@ import { DesignAutomationCommands } from './commands/design-automation';
 import { ModelDerivativesCommands } from './commands/model-derivative';
 import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
 import { WebhooksCommands } from './commands/webhooks';
+import { HubAdminCommands } from './commands/hub-admin';
 import { IssuesCommands } from './commands/issues';
 import { EnvironmentCommands } from './commands/environment';
 
@@ -88,6 +90,15 @@ export async function activate(_context: vscode.ExtensionContext) {
     let secureServiceAccountsView = vscode.window.createTreeView('apsSecureServiceAccountsView', { treeDataProvider: secureServiceAccountsProvider });
     context.extensionContext.subscriptions.push(secureServiceAccountsView);
 
+	// Setup Hub Admin (app) and Hub Admin (user) views
+	let hubAdminAppDataProvider = new HubAdminDataProvider(context, 'app');
+	let hubAdminAppView = vscode.window.createTreeView('apsHubAdminAppView', { treeDataProvider: hubAdminAppDataProvider });
+	context.extensionContext.subscriptions.push(hubAdminAppView);
+	let hubAdminUserDataProvider = new HubAdminDataProvider(context, 'user');
+	let hubAdminUserView = vscode.window.createTreeView('apsHubAdminUserView', { treeDataProvider: hubAdminUserDataProvider });
+	context.extensionContext.subscriptions.push(hubAdminUserView);
+	const refreshHubAdmin = () => { hubAdminAppDataProvider.refresh(); hubAdminUserDataProvider.refresh(); };
+
 	function updateUserSessionContext() {
 		vscode.commands.executeCommand('setContext', 'aps:userSession', !!context.session);
 	}
@@ -114,6 +125,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 		designAutomationDataProvider.refresh();
 		refreshWebhooks();
 		secureServiceAccountsProvider.refresh();
+		refreshHubAdmin();
 	}
 
 	const environmentCommands = new EnvironmentCommands(context, async () => {
@@ -133,6 +145,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 		hubsDataProvider.refresh();
 		issuesDataProvider.refresh();
 		refreshWebhooks();
+		refreshHubAdmin();
 	}));
 
 	const objectStorageServiceCommands = new ObjectStorageServiceCommands(
@@ -169,6 +182,9 @@ export async function activate(_context: vscode.ExtensionContext) {
 	const secureServiceAccountsCommands = new SecureServiceAccountsCommands(context, () => secureServiceAccountsProvider.refresh());
 	context.extensionContext.subscriptions.push(...secureServiceAccountsCommands.registerCommands());
 
+	const hubAdminCommands = new HubAdminCommands(context, refreshHubAdmin);
+	context.extensionContext.subscriptions.push(...hubAdminCommands.registerCommands());
+
 	const issuesCommands = new IssuesCommands(context, () => issuesDataProvider.refresh());
 	context.extensionContext.subscriptions.push(...issuesCommands.registerCommands());
 
@@ -188,6 +204,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	hubsDataProvider.refresh();
 	issuesDataProvider.refresh();
 	refreshWebhooks();
+	refreshHubAdmin();
 }
 
 export function deactivate() { }

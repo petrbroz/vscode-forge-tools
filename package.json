@@ -176,6 +176,16 @@
                     "id": "apsSecureServiceAccountsView",
                     "name": "Secure Service Accounts (app)",
                     "icon": "$(robot)"
+                },
+                {
+                    "id": "apsHubAdminAppView",
+                    "name": "Hub Admin (app)",
+                    "icon": "$(organization)"
+                },
+                {
+                    "id": "apsHubAdminUserView",
+                    "name": "Hub Admin (user)",
+                    "icon": "$(organization)"
                 }
             ]
         },
@@ -194,6 +204,11 @@
                 "view": "apsWebhooksUserView",
                 "when": "!aps:userSession",
                 "contents": "User-owned webhooks require a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsHubAdminUserView",
+                "when": "!aps:userSession",
+                "contents": "Hub Admin (user) data requires a user context.\n[Sign in to APS](command:aps.auth.login)"
             }
         ],
         "authentication": [
@@ -724,6 +739,60 @@
                 "title": "Generate Access Token",
                 "category": "Autodesk Platform Services > Secure Service Accounts",
                 "icon": "$(key)"
+            },
+            {
+                "command": "aps.hubAdmin.refresh",
+                "title": "Refresh Hub Admin",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "aps.hubAdmin.viewUserDetails",
+                "title": "View User Details",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.hubAdmin.copyUserID",
+                "title": "Copy User ID to Clipboard",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.hubAdmin.viewProjectDetails",
+                "title": "View Project Details",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.hubAdmin.copyProjectID",
+                "title": "Copy Project ID to Clipboard",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.hubAdmin.viewProjectUserDetails",
+                "title": "View Project User Details",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.hubAdmin.copyProjectUserID",
+                "title": "Copy Project User ID to Clipboard",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.hubAdmin.viewCompanyDetails",
+                "title": "View Company Details",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.hubAdmin.copyCompanyID",
+                "title": "Copy Company ID to Clipboard",
+                "category": "Autodesk Platform Services > Hub Admin",
+                "icon": "$(copy)"
             }
         ],
         "menus": {
@@ -755,7 +824,7 @@
                 },
                 {
                     "command": "aps.auth.logout",
-                    "when": "(view == apsHubsView || view == apsIssuesView || view == apsWebhooksUserView) && aps:userSession",
+                    "when": "(view == apsHubsView || view == apsIssuesView || view == apsWebhooksUserView || view == apsHubAdminUserView) && aps:userSession",
                     "group": "navigation"
                 },
                 {
@@ -771,6 +840,11 @@
                 {
                     "command": "aps.ssa.createAccount",
                     "when": "view == apsSecureServiceAccountsView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.hubAdmin.refresh",
+                    "when": "view == apsHubAdminAppView || view == apsHubAdminUserView",
                     "group": "navigation"
                 }
             ],
@@ -1149,6 +1223,46 @@
                     "command": "aps.ssa.generateAccessToken",
                     "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
                     "group": "1_action"
+                },
+                {
+                    "command": "aps.hubAdmin.viewUserDetails",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-user'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.hubAdmin.copyUserID",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-user'",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.hubAdmin.viewProjectDetails",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.hubAdmin.copyProjectID",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project'",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.hubAdmin.viewProjectUserDetails",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project-user'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.hubAdmin.copyProjectUserID",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project-user'",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.hubAdmin.viewCompanyDetails",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-company'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.hubAdmin.copyCompanyID",
+                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-company'",
+                    "group": "0_view@2"
                 }
             ]
         }
@@ -1178,6 +1292,7 @@
     "dependencies": {
         "@aps_sdk/authentication": "^1.0.1",
         "@aps_sdk/autodesk-sdkmanager": "^1.0.1",
+        "@aps_sdk/construction-account-admin": "^1.2.1",
         "@aps_sdk/construction-issues": "^1.1.0",
         "@aps_sdk/data-management": "^1.1.4",
         "@aps_sdk/model-derivative": "^1.2.1",
