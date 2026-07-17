@@ -177,7 +177,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
         try {
             if (element) {
                 if (isBucket(element)) {
-                    return this._getPage(element.bucketKey, 'objectKey', () => this._context.ossService.getObjectsPage(element.bucketKey, { limit: this._pageSize(), beginsWith: this._filters.get(element.bucketKey) }));
+                    return await this._getPage(element.bucketKey, 'objectKey', () => this._context.ossService.getObjectsPage(element.bucketKey, { limit: this._pageSize(), beginsWith: this._filters.get(element.bucketKey) }));
                 } else if (isObject(element)) {
                     const urn = urnify(element.objectId!);
                     try {
@@ -203,7 +203,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     return [];
                 }
             } else {
-                return this._getPage(SimpleStorageDataProvider.rootKey, 'bucketKey', () => this._context.ossService.getBucketsPage({ limit: this._pageSize() }));
+                return await this._getPage(SimpleStorageDataProvider.rootKey, 'bucketKey', () => this._context.ossService.getBucketsPage({ limit: this._pageSize() }));
             }
         } catch(err) {
             showErrorMessage(`Could not load objects or buckets`, err);

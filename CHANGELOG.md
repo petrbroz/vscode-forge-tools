@@ -22,6 +22,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     importers, predates the current Model Derivative SDK and REST reference (neither mentions it), and
     has since been superseded by the now-official, more granular `conversionMethod` option exposed in
     the IFC source subform.
+- Fixed
+  - The Object Storage Service tree view no longer crashes (instead of showing an error notification and
+    an empty list) when fetching a page of buckets or objects fails, e.g. due to a network error.
 
 ## [3.1.1] - 2026-07-16
 
