@@ -4,10 +4,16 @@ import { IContext, withProgress } from './common';
 import { IEnvironment } from './models/environment';
 import { ApsAuthMode, ApsAuthModeKind, IApsAuthSession } from './models/authentication';
 
-const DefaultAuthPort = 8123;
+/** How long to wait for the OAuth browser redirect to reach {@link ApsAuthenticationProvider.handleUri}. */
+const LoginTimeoutMs = 2 * 60 * 1000;
 
 interface IModeQuickPickItem extends vscode.QuickPickItem {
     authMode: ApsAuthModeKind;
+}
+
+interface IPendingLogin {
+    resolve: (code: string) => void;
+    reject: (reason: Error) => void;
 }
 
 /**
@@ -17,15 +23,20 @@ interface IModeQuickPickItem extends vscode.QuickPickItem {
  * persists the resulting {@link IApsAuthSession} - including any secret material needed to refresh or
  * re-mint the token - to `context.secrets`, keyed per environment so it survives a window reload.
  *
+ * Also implements `vscode.UriHandler` for the `vscode://<publisher>.<name>/callback` redirect used by
+ * the 3-legged OAuth flows (see {@link runOAuthFlow}) - this replaces the previous local HTTP callback
+ * server, so the login flow works the same way in desktop, remote, and web (vscode.dev) contexts.
+ *
  * This is vscode glue: it imports `vscode` and the domain services (via the `IContext` accessor) but
  * never `@aps_sdk/*` - token minting/refresh lives entirely in the services layer.
  */
-export class ApsAuthenticationProvider implements vscode.AuthenticationProvider {
+export class ApsAuthenticationProvider implements vscode.AuthenticationProvider, vscode.UriHandler {
     static readonly id = 'aps';
     static readonly label = 'Autodesk Platform Services';
 
     private readonly _onDidChangeSessions = new vscode.EventEmitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
     readonly onDidChangeSessions = this._onDidChangeSessions.event;
+    private readonly pendingLogins = new Map<string, IPendingLogin>();
 
     constructor(
         private readonly secrets: vscode.SecretStorage,
@@ -95,24 +106,100 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider 
         return picked?.authMode;
     }
 
-    private getPort(): number {
-        return vscode.workspace.getConfiguration(undefined, null).get<number>('autodesk.forge.authentication.port') || DefaultAuthPort;
+    /**
+     * Handles the `vscode://<publisher>.<name>/callback` redirect delivered after the user completes
+     * the APS login page in the browser. Matches the callback's `state` query parameter against a
+     * pending {@link runOAuthFlow} call and resolves/rejects it; unrecognized or already-settled `state`
+     * values (e.g. a duplicate/stale redirect) are ignored.
+     */
+    handleUri(uri: vscode.Uri): void {
+        const params = new URLSearchParams(uri.query);
+        const state = params.get('state');
+        const pending = state ? this.pendingLogins.get(state) : undefined;
+        if (!state || !pending) {
+            return;
+        }
+        this.pendingLogins.delete(state);
+        const error = params.get('error');
+        if (error) {
+            pending.reject(new Error(params.get('error_description') || error));
+            return;
+        }
+        const code = params.get('code');
+        if (!code) {
+            pending.reject(new Error('Authorization callback did not include a code.'));
+            return;
+        }
+        pending.resolve(code);
     }
 
     private openBrowser = (url: string) => {
         vscode.env.openExternal(vscode.Uri.parse(url));
     };
 
+    /**
+     * Runs the 3-legged OAuth authorization code grant using VS Code's URI-handler pattern instead of a
+     * local HTTP server: builds a `vscode://<publisher>.<name>/callback` redirect URI (resolved through
+     * `vscode.env.asExternalUri` so it also works from remote/web contexts), opens the APS authorize page
+     * in the system browser, and waits for {@link handleUri} to deliver the matching authorization code.
+     * Pass `usePkce: true` for the public-client PKCE flow (no client secret exchanged).
+     */
+    private async runOAuthFlow(env: IEnvironment, usePkce: boolean): Promise<{ token: string; expiresIn: number; refreshToken?: string }> {
+        const { authenticationService, extensionContext } = this.getContext();
+        const state = randomUUID();
+        const externalUri = await vscode.env.asExternalUri(
+            vscode.Uri.parse(`${vscode.env.uriScheme}://${extensionContext.extension.id}/callback`)
+        );
+        const redirectUri = this.stripWindowId(externalUri).toString(true);
+
+        const pkce = usePkce ? authenticationService.createPkcePair() : undefined;
+        const authorizeUrl = authenticationService.buildAuthorizationUrl(env.clientId, redirectUri, state, pkce?.challenge);
+
+        const codePromise = this.waitForCallback(state);
+        this.openBrowser(authorizeUrl);
+        const code = await codePromise;
+
+        return pkce
+            ? authenticationService.exchangeAuthorizationCodeWithPkce(env.clientId, code, redirectUri, pkce.verifier)
+            : authenticationService.exchangeAuthorizationCode(env.clientId, code, redirectUri);
+    }
+
+    /**
+     * `vscode.env.asExternalUri` appends a `windowId` query parameter to `vscode://` URIs on desktop, so
+     * the OS can route the callback back to this window. That value changes across window reloads/
+     * restarts, so leaving it in would make the OAuth `redirect_uri` different on every login attempt -
+     * and APS requires an exact match against the app's registered callback URL. Strips it out.
+     */
+    private stripWindowId(uri: vscode.Uri): vscode.Uri {
+        const query = new URLSearchParams(uri.query);
+        query.delete('windowId');
+        return uri.with({ query: query.toString() });
+    }
+
+    /** Registers a pending login under `state`, settled by {@link handleUri} or after {@link LoginTimeoutMs}. */
+    private waitForCallback(state: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                this.pendingLogins.delete(state);
+                reject(new Error('Login timed out.'));
+            }, LoginTimeoutMs);
+            this.pendingLogins.set(state, {
+                resolve: code => { clearTimeout(timer); resolve(code); },
+                reject: err => { clearTimeout(timer); reject(err); }
+            });
+        });
+    }
+
     private async runModeFlow(env: IEnvironment, kind: ApsAuthModeKind, scopes: string[]): Promise<IApsAuthSession> {
         const { authenticationService } = this.getContext();
         const base = { id: randomUUID(), environmentKey: env.clientId };
         switch (kind) {
             case 'authorization-code': {
-                const { token, expiresIn, refreshToken } = await authenticationService.login(env.clientId, this.getPort(), this.openBrowser);
+                const { token, expiresIn, refreshToken } = await this.runOAuthFlow(env, false);
                 return { ...base, mode: { kind }, scopes: authenticationService.defaultScopes, label: '3-legged', accessToken: token, expiresAt: Date.now() + expiresIn * 1000, refreshToken };
             }
             case 'authorization-code-pkce': {
-                const { token, expiresIn, refreshToken } = await authenticationService.loginWithPkce(env.clientId, this.getPort(), this.openBrowser);
+                const { token, expiresIn, refreshToken } = await this.runOAuthFlow(env, true);
                 return { ...base, mode: { kind }, scopes: authenticationService.defaultScopes, label: '3-legged (PKCE)', accessToken: token, expiresAt: Date.now() + expiresIn * 1000, refreshToken };
             }
             case 'service-account':

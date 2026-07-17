@@ -28,7 +28,9 @@
     "categories": [
         "Other"
     ],
-    "activationEvents": [],
+    "activationEvents": [
+        "onUri"
+    ],
     "main": "./out/extension.js",
     "contributes": {
         "configuration": {
@@ -98,12 +100,6 @@
                     "scope": "resource",
                     "type": "string",
                     "description": "Custom Model Derivative API used by the APS Viewer. By default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)."
-                },
-                "autodesk.forge.authentication.port": {
-                    "scope": "resource",
-                    "type": "number",
-                    "default": 8123,
-                    "description": "Server port to use during 3-legged authentication workflows"
                 },
                 "autodesk.forge.data.defaultContentType": {
                     "scope": "resource",

@@ -47,6 +47,8 @@ export async function activate(_context: vscode.ExtensionContext) {
     context.extensionContext.subscriptions.push(
         vscode.authentication.registerAuthenticationProvider(ApsAuthenticationProvider.id, ApsAuthenticationProvider.label, authProvider, { supportsMultipleAccounts: false })
     );
+    // Delivers the OAuth redirect for the 3-legged login flows (see ApsAuthenticationProvider.handleUri).
+    context.extensionContext.subscriptions.push(vscode.window.registerUriHandler(authProvider));
 
 	// Setup Data & Derivatives (app) view (OSS buckets/objects)
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(context);

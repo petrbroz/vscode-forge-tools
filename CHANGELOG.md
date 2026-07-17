@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - The 3-legged OAuth login flows ("3-legged OAuth" and "3-legged OAuth with PKCE") no longer start a
+    local HTTP server to catch the browser redirect; they now register a `vscode://petrbroz.vscode-
+    forge-tools/callback` URI handler instead, using `vscode.env.asExternalUri` to build the redirect URL.
+    This works uniformly across desktop, remote/SSH, Codespaces, and vscode.dev, and removes the need for
+    the "Server port to use during 3-legged authentication workflows" setting
+    (`autodesk.forge.authentication.port`), which has been removed. Existing APS apps must register the
+    new callback URL (see the Authentication section of the README) instead of the old
+    `http://localhost:8123/...` one. The redirect URI no longer includes the `windowId` query parameter
+    that `vscode.env.asExternalUri` appends on desktop, since that value changes across window reloads and
+    would otherwise make the `redirect_uri` fail APS's exact-match check against the registered callback
+    URL.
+
 ## [3.2.0] - 2026-07-17
 
 - Added
