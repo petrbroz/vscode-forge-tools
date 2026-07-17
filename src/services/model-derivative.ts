@@ -12,7 +12,10 @@ import { IAuthenticationProvider } from '@aps_sdk/autodesk-sdkmanager';
 import { urnify } from '../urn';
 import { ObjectDetails } from '../models/oss';
 import { IVersion } from '../models/hubs';
-import { IDerivative, DerivativeTranslation, svf, svf2 } from '../models/model-derivative';
+import {
+    IDerivative, DerivativeTranslation, svf, svf2,
+    ICustomTranslationOptions, JobAdvancedOptions, JobPayloadFormat
+} from '../models/model-derivative';
 
 /**
  * Returns `true` for URNs that belong to a Hubs (Data Management) resource rather than an OSS object.
@@ -47,6 +50,41 @@ function getFileExtension(object: ObjectDetails | IVersion): string {
         return path.extname(object.objectKey!).substring(1).toLowerCase();
     }
     return '';
+}
+
+/**
+ * Shapes a single `output.formats` entry for a Create Translation Job payload from the flat
+ * `JobAdvancedOptions` bag the custom translation webview collects. Only the fields relevant to
+ * `outputFormat` are picked out; the rest (belonging to other, unselected formats) are ignored.
+ */
+function buildOutputFormat(outputFormat: string, advanced: JobAdvancedOptions, views2d: boolean, views3d: boolean): JobPayloadFormat {
+    const {
+        format, exportColor, exportFileStructure, unit, modelGuid, objectIds,
+        exportSettingName, width, height, applicationProtocol, tolerance, surfaceType, sheetType, solidType,
+        ...svfAdvanced
+    } = advanced;
+    switch (outputFormat) {
+        case svf:
+        case svf2: {
+            const views = [...(views2d ? ['2d'] : []), ...(views3d ? ['3d'] : [])];
+            return { type: outputFormat, views, advanced: svfAdvanced } as JobPayloadFormat;
+        }
+        case 'thumbnail':
+            return { type: outputFormat, advanced: { width, height } } as JobPayloadFormat;
+        case 'stl':
+            return { type: outputFormat, advanced: { advanced: { format, exportColor, exportFileStructure } } } as JobPayloadFormat;
+        case 'obj':
+            return { type: outputFormat, advanced: { advanced: { exportFileStructure, unit, modelGuid, objectIds } } } as JobPayloadFormat;
+        case 'step':
+            return { type: outputFormat, advanced: { applicationProtocol, tolerance } } as JobPayloadFormat;
+        case 'iges':
+            return { type: outputFormat, advanced: { tolerance, surfaceType, sheetType, solidType } } as JobPayloadFormat;
+        case 'dwg':
+        case 'ifc':
+            return { type: outputFormat, advanced: { exportSettingName } } as JobPayloadFormat;
+        default: // e.g. 'fbx' - no typed advanced bag exists in the SDK for this output type
+            return { type: outputFormat } as JobPayloadFormat;
+    }
 }
 
 /**
@@ -144,6 +182,11 @@ export class ModelDerivativeService {
         return formats.findAvailableOutputFormats(getFileExtension(object));
     }
 
+    /** The source file's format (lowercased extension, no dot), e.g. 'rvt', 'dwg', 'idw'. */
+    getSourceFileFormat(object: ObjectDetails | IVersion): string {
+        return getFileExtension(object);
+    }
+
     /** Starts a default SVF2 (2d + 3d) translation job for the given tree object, forcing re-translation. */
     translateToSvf2(object: ObjectDetails | IVersion): Promise<unknown> {
         const urn = this.getObjectUrn(object);
@@ -153,8 +196,15 @@ export class ModelDerivativeService {
         );
     }
 
-    /** Starts a custom translation job (payload built by the caller) for the given tree object. */
-    async startCustomTranslation(object: ObjectDetails | IVersion, jobPayload: JobPayload): Promise<void> {
+    /** Builds and starts a translation job for the given tree object from the custom translation webview's options. */
+    async startCustomTranslation(object: ObjectDetails | IVersion, options: ICustomTranslationOptions): Promise<void> {
+        const { outputFormat, compressedUrn, rootFilename, views2d, views3d, advanced, workflowId, workflowAttributes } = options;
+        const urn = this.getObjectUrn(object);
+        const jobPayload: JobPayload = {
+            input: { urn, compressedUrn, rootFilename: compressedUrn ? rootFilename : undefined },
+            output: { formats: [buildOutputFormat(outputFormat, advanced, views2d, views3d)] },
+            misc: workflowId ? { workflow: workflowId, workflowAttribute: workflowAttributes ? JSON.parse(workflowAttributes) : undefined } : undefined
+        };
         await this.clientForObject(object).startJob(jobPayload, { xAdsForce: true });
     }
 
