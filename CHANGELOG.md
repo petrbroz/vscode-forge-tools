@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-07-17
+
 - Added
   - "Translate Object (Custom)" now exposes the full set of documented output-format-specific and
     source-format-specific "advanced" options from the Model Derivative Create Translation Job API:
