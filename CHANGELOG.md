@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Dragging & dropping files from the OS file explorer onto a bucket in the Data & Derivatives (app)
+    view now uploads them, same as the existing "Upload Object" command.
 - Changed
   - The 3-legged OAuth login flows ("3-legged OAuth" and "3-legged OAuth with PKCE") no longer start a
     local HTTP server to catch the browser redirect; they now register a `vscode://petrbroz.vscode-

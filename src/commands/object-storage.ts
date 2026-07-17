@@ -223,7 +223,7 @@ export class ObjectStorageServiceCommands {
         }
     }
 
-    async uploadObject(bucket?: BucketsItems) {
+    async uploadObject(bucket?: BucketsItems, uris?: vscode.Uri[]) {
         // TODO: re-introduce support for cancellable uploads
         async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
             const filepath = uri.fsPath;
@@ -260,10 +260,12 @@ export class ObjectStorageServiceCommands {
 
         const { bucketKey } = bucket;
 
-        // Collect inputs
-        const uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: true });
+        // Collect inputs (unless files were already provided, e.g. by dragging & dropping them onto the bucket)
         if (!uris) {
-            return;
+            uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: true });
+            if (!uris) {
+                return;
+            }
         }
 
         if (uris.length === 1) {

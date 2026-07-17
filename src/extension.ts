@@ -56,7 +56,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 
 	// Setup Data & Derivatives (app) view (OSS buckets/objects)
 	let simpleStorageDataProvider = new SimpleStorageDataProvider(context);
-	let dataManagementView = vscode.window.createTreeView('apsDataManagementView', { treeDataProvider: simpleStorageDataProvider });
+	let dataManagementView = vscode.window.createTreeView('apsDataManagementView', { treeDataProvider: simpleStorageDataProvider, dragAndDropController: simpleStorageDataProvider });
 	context.extensionContext.subscriptions.push(dataManagementView);
 
 	// Setup Data & Derivatives (user) view (Data Management hubs)
