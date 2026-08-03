@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { SimpleStorageDataProvider } from '../../providers/data-management';
 
 function makeProvider(ossService: any = {}, modelDerivativeService: any = {}): SimpleStorageDataProvider {
-	return new SimpleStorageDataProvider({ ossService, modelDerivativeService } as any);
+	return new SimpleStorageDataProvider({ ossService, modelDerivativeService, environment: { region: 'US' } } as any);
 }
 
 describe('SimpleStorageDataProvider', () => {
