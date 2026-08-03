@@ -67,7 +67,12 @@
                                 "enum": [
                                     "US",
                                     "EMEA",
-                                    "APAC"
+                                    "AUS",
+                                    "CAN",
+                                    "DEU",
+                                    "IND",
+                                    "JPN",
+                                    "GBR"
                                 ],
                                 "default": "US"
                             },

@@ -97,7 +97,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             const loaded = this._loadedItems.get(parentKey) ?? [];
             const isRoot = parentKey === SimpleStorageDataProvider.rootKey;
             const page = isRoot
-                ? await this._context.ossService.getBucketsPage({ startAt, limit: this._pageSize() })
+                ? await this._context.ossService.getBucketsPage({ region: this._context.environment.region, startAt, limit: this._pageSize() })
                 : await this._context.ossService.getObjectsPage(parentKey, { startAt, limit: this._pageSize(), beginsWith: this._filters.get(parentKey) });
             this._loadedItems.set(parentKey, [...loaded, ...page.items]);
             if (page.nextStartAt) {
@@ -240,7 +240,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
                     return [];
                 }
             } else {
-                return await this._getPage(SimpleStorageDataProvider.rootKey, 'bucketKey', () => this._context.ossService.getBucketsPage({ limit: this._pageSize() }));
+                return await this._getPage(SimpleStorageDataProvider.rootKey, 'bucketKey', () => this._context.ossService.getBucketsPage({ region: this._context.environment.region, limit: this._pageSize() }));
             }
         } catch(err) {
             showErrorMessage(`Could not load objects or buckets`, err);

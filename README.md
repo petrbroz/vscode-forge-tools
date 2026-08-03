@@ -40,7 +40,7 @@ The extension exposes the following settings:
   - `title` (required) - unique name of the environment (will be shown in the status bar and listed when switching between other environments)
   - `clientId` (required) - APS client ID
   - `clientSecret` (required) - APS client secret
-  - `region` - data region for storing design data; can be `US` (default), `EMEA`, or `APAC`
+  - `region` - data region for storing design data; can be `US` (default), `EMEA`, `AUS`, `CAN`, `DEU`, `IND`, `JPN`, or `GBR`
 - `autodesk.forge.data.defaultContentType` - content type to use for all files uploaded to OSS
 - `autodesk.forge.data.uploadChunkSize` - size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality
 - `autodesk.forge.viewer.extensions` - array of Viewer [extension](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions) IDs (for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be automatically loaded when previewing derivatives

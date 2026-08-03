@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - The `region` property of `autodesk.forge.environments`, and the region picker shown when setting up a
+    new environment, now offer the full list of OSS regions (`US`, `EMEA`, `AUS`, `CAN`, `DEU`, `IND`,
+    `JPN`, `GBR`) instead of the old `US`/`EMEA`/`APAC` list.
+- Fixed
+  - The Data & Derivatives (app) view now lists buckets from the environment's configured region instead
+    of always defaulting to `US`.
+
 ## [3.3.0] - 2026-07-17
 
 - Added
