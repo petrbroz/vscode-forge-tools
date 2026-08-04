@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Added
+  - A "Get Started with Autodesk Platform Services (Standalone App)" walkthrough (shown on the Welcome
+    page) that guides first-time users through creating an APS app, registering its client ID/secret,
+    creating an OSS bucket, uploading a design, translating it, and previewing the 2D/3D outputs.
+  - A "Get Started with Autodesk Platform Services (Forma Extension)" walkthrough that guides users
+    through creating a Traditional Web App (including its callback URL), registering its client
+    ID/secret, provisioning API access for it in Forma's Hub Admin, signing in with a Forma account, and
+    browsing/previewing hubs, projects, folders, designs, and versions.
   - The first time you sign in with "3-legged OAuth" or "3-legged OAuth with PKCE", the extension now
     shows the `vscode://petrbroz.vscode-forge-tools/callback` redirect URL and reminds you to register it
     as a callback URL for your APS app, with actions to copy it to clipboard & open https://aps.autodesk.com/myapps.

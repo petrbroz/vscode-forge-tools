@@ -1270,7 +1270,155 @@
                     "group": "0_view@2"
                 }
             ]
-        }
+        },
+        "walkthroughs": [
+            {
+                "id": "aps.gettingStartedStandalone",
+                "title": "Get Started with Autodesk Platform Services (Standalone App)",
+                "description": "Register an APS app, upload a design, and preview it in the Viewer.",
+                "steps": [
+                    {
+                        "id": "createApp",
+                        "title": "Create a new APS app",
+                        "description": "Every APS integration starts with an app registered on the APS portal. If you don't have one yet, create an app of type \"Traditional Web App\".\n\n[Open APS Portal](https://aps.autodesk.com/myapps)",
+                        "media": {
+                            "image": "media/walkthrough/standalone/01-create-app.png",
+                            "altText": "Screenshot of creating a new app on the APS portal"
+                        }
+                    },
+                    {
+                        "id": "registerCredentials",
+                        "title": "Register your client ID and secret",
+                        "description": "Copy the client ID and secret of your new app into a new APS \"environment\" for this extension. The extension will prompt you for these values automatically the first time it activates with no environments configured; you can also add or update them anytime from the settings.\n\n[Open Extension Settings](command:workbench.action.openSettings?%22autodesk.forge.environments%22)",
+                        "media": {
+                            "image": "media/walkthrough/standalone/02-register-credentials.png",
+                            "altText": "Screenshot of registering the client ID and secret in the extension settings"
+                        },
+                        "completionEvents": [
+                            "onSettingChanged:autodesk.forge.environments"
+                        ]
+                    },
+                    {
+                        "id": "createBucket",
+                        "title": "Create an OSS bucket",
+                        "description": "Buckets are the top-level containers for your designs in the Object Storage Service. Open the Data & Derivatives (app) view and create your first bucket.\n\nNote that bucket names must be globally unique - if you see a `409 Conflict` error, choose a different name.\n\n[Create Bucket](command:aps.oss.createBucket)",
+                        "media": {
+                            "image": "media/walkthrough/standalone/03-create-bucket.png",
+                            "altText": "Screenshot of creating a new OSS bucket"
+                        },
+                        "completionEvents": [
+                            "onCommand:aps.oss.createBucket"
+                        ]
+                    },
+                    {
+                        "id": "uploadDesign",
+                        "title": "Upload a design file",
+                        "description": "Upload a design file (for example, an RVT, IPT, or DWG file) to your new bucket.\n\n[Upload Object](command:aps.oss.uploadObject)",
+                        "media": {
+                            "image": "media/walkthrough/standalone/04-upload-design.png",
+                            "altText": "Screenshot of uploading a design file to a bucket"
+                        },
+                        "completionEvents": [
+                            "onCommand:aps.oss.uploadObject"
+                        ]
+                    },
+                    {
+                        "id": "translateDesign",
+                        "title": "Translate the file",
+                        "description": "Translate your design with the Model Derivative service so it can be viewed in the browser.\n\n[Translate Object](command:aps.md.translateObject)",
+                        "media": {
+                            "image": "media/walkthrough/standalone/05-translate-design.png",
+                            "altText": "Screenshot of translating a design file"
+                        },
+                        "completionEvents": [
+                            "onCommand:aps.md.translateObject"
+                        ]
+                    },
+                    {
+                        "id": "previewDerivative",
+                        "title": "Preview the 2D/3D outputs",
+                        "description": "Once translation finishes, preview the generated 2D/3D derivatives directly in a new editor tab, powered by the APS Viewer.\n\n[Preview Derivative](command:aps.md.previewDerivative)",
+                        "media": {
+                            "image": "media/walkthrough/standalone/06-preview-output.png",
+                            "altText": "Screenshot of previewing a translated design in the Viewer"
+                        },
+                        "completionEvents": [
+                            "onCommand:aps.md.previewDerivative"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "aps.gettingStartedIntegration",
+                "title": "Get Started with Autodesk Platform Services (Forma Integration)",
+                "description": "Sign in with your Forma account and browse hubs, projects, and designs as that user, right from VS Code.",
+                "steps": [
+                    {
+                        "id": "createApp",
+                        "title": "Create a new APS app",
+                        "description": "Every APS integration starts with an app registered on the APS portal. If you don't have one yet, create an app of type \"Traditional Web App\".\n\n[Open APS Portal](https://aps.autodesk.com/myapps)",
+                        "media": {
+                            "image": "media/walkthrough/integration/01-create-app.png",
+                            "altText": "Screenshot of creating a new app on the APS portal"
+                        }
+                    },
+                    {
+                        "id": "registerCredentials",
+                        "title": "Register your client ID and secret",
+                        "description": "Copy the client ID and secret of your new app into a new APS \"environment\" for this extension. The extension will prompt you for these values automatically the first time it activates with no environments configured; you can also add or update them anytime from the settings.\n\n[Open Extension Settings](command:workbench.action.openSettings?%22autodesk.forge.environments%22)",
+                        "media": {
+                            "image": "media/walkthrough/integration/02-register-credentials.png",
+                            "altText": "Screenshot of registering the client ID and secret in the extension settings"
+                        },
+                        "completionEvents": [
+                            "onSettingChanged:autodesk.forge.environments"
+                        ]
+                    },
+                    {
+                        "id": "provisionFormaAccess",
+                        "title": "Provision access in Autodesk Forma",
+                        "description": "In your Forma hub, go to Hub Admin > Custom Integrations > Add custom integration, and enter the same client ID as your APS app to grant it access to the hub's data.\n\n[Manage API Access to Forma (docs)](https://aps.autodesk.com/en/docs/acc/v1/tutorials/getting-started/manage-access-to-acc/)",
+                        "media": {
+                            "image": "media/walkthrough/integration/03-provision-forma-access.png",
+                            "altText": "Screenshot of adding a custom integration for a client ID in Forma Hub Admin"
+                        }
+                    },
+                    {
+                        "id": "loginForma",
+                        "title": "Log in with your Forma account",
+                        "description": "Open the Data & Derivatives (user) view and sign in, choosing \"3-legged OAuth\" when prompted. A browser window will open for you to log in with your Forma account.\n\n[Sign In](command:aps.auth.login)",
+                        "media": {
+                            "image": "media/walkthrough/integration/04-login-forma.png",
+                            "altText": "Screenshot of signing in to APS with a Forma account via 3-legged OAuth"
+                        },
+                        "completionEvents": [
+                            "onContext:aps:userSession"
+                        ]
+                    },
+                    {
+                        "id": "browseHubs",
+                        "title": "Browse hubs, projects, folders, designs, and versions",
+                        "description": "Expand the tree in the Data & Derivatives (user) view to browse your Forma hubs, projects, folders, designs (items), and their versions.",
+                        "media": {
+                            "image": "media/walkthrough/integration/05-browse-hubs.png",
+                            "altText": "Screenshot of browsing hubs, projects, folders, and designs in the Data & Derivatives (user) view"
+                        },
+                        "completionEvents": [
+                            "onView:apsHubsView"
+                        ]
+                    },
+                    {
+                        "id": "previewVersion",
+                        "title": "Preview a design version",
+                        "description": "Expand a design version to see its derivatives, then preview one directly in a new editor tab, powered by the APS Viewer.",
+                        "media": {
+                            "image": "media/walkthrough/integration/06-preview-version.png",
+                            "altText": "Screenshot of previewing a design version's derivative in the Viewer"
+                        }
+                    }
+                ]
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "NODE_ENV=production node ./esbuild.js",

@@ -9,7 +9,7 @@
 
 [Visual Studio Code](https://code.visualstudio.com) extension for accessing [Autodesk Platform Services](https://aps.autodesk.com) services and content.
 
-![Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/docs/screenshot.png)
+![Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/media/docs/screenshot.png)
 
 > Note: [Autodesk Forge is now Autodesk Platform Services](https://aps.autodesk.com/blog/autodesk-forge-becoming-autodesk-platform-services) but you may still see the _Forge_ brand used in different areas of this extension. These references have been kept to maintain backwards compatibility.
 
@@ -28,11 +28,11 @@ While in Visual Studio Code:
 
 1. Switch to the _Extensions_ sidebar (`Cmd`+`Shift`+`X` on macOS or `Ctrl`+`Shift`+`X` on Windows), search for the _Autodesk Platform Services_ extension, and install it.
 
-![Install extension](./docs/01-install-extension.gif)
+![Install extension](./media/docs/01-install-extension.gif)
 
 2. When you activate the _Autodesk Platform Services_ extension for the first time, it'll guide you through creating your first "environment". An environment is basically a configuration for a specific APS application, including its client ID and secret, or region, for example.
 
-![Setup extension](./docs/02-setup-extension.gif)
+![Setup extension](./media/docs/02-setup-extension.gif)
 
 > You can configure additional environments or update existing ones by going to _User Settings_ (`Cmd`+`,` on macOS or `Ctrl`+`,` on Windows), searching for _autodesk environments_, clicking the _Edit in settings.json_ link, and modifying the JSON settings manually. Switch to _User_ or _Workspace_ tab depending on whether you want to persist the settings globally (for all instances of the editor) or locally (only for a specific workspace).
 
@@ -53,7 +53,7 @@ The extension exposes the following settings:
 
 Here's an example of how the extension settings might look like in the JSON format:
 
-![Extension Settings](./docs/extension-settings.png)
+![Extension Settings](./media/docs/extension-settings.png)
 
 ## Features
 
@@ -79,19 +79,19 @@ Here's some actions you can try:
 
 > Note that bucket names must be globally unique. If you see a `409 Conflict` error, you'll need to choose a different name.
 
-![Create bucket](./docs/03-create-bucket.gif)
+![Create bucket](./media/docs/03-create-bucket.gif)
 
 2. Upload a design to your bucket.
 
-![Upload design](./docs/04-upload-design.gif)
+![Upload design](./media/docs/04-upload-design.gif)
 
 3. Translate the design for viewing.
 
-![Translate design](./docs/05-translate-design.gif)
+![Translate design](./media/docs/05-translate-design.gif)
 
 4. Preview design derivatives in a new editor tab.
 
-![Preview design](./docs/06-preview-design.gif)
+![Preview design](./media/docs/06-preview-design.gif)
 
 ### Data & Derivatives (user) View
 
