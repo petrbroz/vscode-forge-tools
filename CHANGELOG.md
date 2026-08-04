@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - Downloading an OSS object no longer produces a truncated file with a random size. The `@aps_sdk/oss`
+    SDK's `OssClient.downloadObject` (used for the "Download Object" command) writes chunks to disk
+    without waiting for them to finish, so the download could complete before all of the file's bytes
+    were flushed; the extension now downloads objects itself via a signed S3 URL instead.
+
 ## [3.4.0] - 2026-08-04
 
 - Added
