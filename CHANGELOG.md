@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-08-04
+
 - Added
   - A "Get Started with Autodesk Platform Services (Standalone App)" walkthrough (shown on the Welcome
     page) that guides first-time users through creating an APS app, registering its client ID/secret,
