@@ -40,13 +40,13 @@ export class ModelDerivativesCommands {
 				}
 			}
 
-			const availableFormats = await this.context.modelDerivativeService.getSupportedOutputFormats(object);
+			const availableFormats = await withProgress('Retrieving supported output formats', this.context.modelDerivativeService.getSupportedOutputFormats(object));
 			if (!availableFormats.find(x => x === svf2)) {
 				showErrorMessage("The conversion to SVF2 is not supported for this file by Model derivative service", {});
 				return;
 			}
 
-			this.context.modelDerivativeService.translateToSvf2(object);
+			await withProgress('Starting translation...', this.context.modelDerivativeService.translateToSvf2(object));
 			vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 		} catch (err) {
 			showErrorMessage('Could not translate object', err, this.context);
@@ -68,7 +68,7 @@ export class ModelDerivativesCommands {
 			}
 
 			const urn = this.context.modelDerivativeService.getObjectUrn(object);
-			const availableFormats = await this.context.modelDerivativeService.getSupportedOutputFormats(object);
+			const availableFormats = await withProgress('Retrieving supported output formats', this.context.modelDerivativeService.getSupportedOutputFormats(object));
 			if (availableFormats.length === 0) {
 				showErrorMessage("Source file format is not supported by Model derivative service", {});
 				return;
@@ -80,7 +80,7 @@ export class ModelDerivativesCommands {
 				switch (message.type) {
 					case 'translate':
 						try {
-							await this.context.modelDerivativeService.startCustomTranslation(translateObject, message.data);
+							await withProgress('Starting translation...', this.context.modelDerivativeService.startCustomTranslation(translateObject, message.data));
 							vscode.window.showInformationMessage(`Translation started. Expand the object in the tree to see details.`);
 						} catch (err: any) {
 							if (err.response && err.response.statusCode === 406) {
@@ -135,7 +135,7 @@ export class ModelDerivativesCommands {
 					return;
 				}
 			}
-			const accessToken = await this.context.modelDerivativeService.getViewerAccessToken(derivative.urn);
+			const accessToken = await withProgress('Retrieving viewer access token', this.context.modelDerivativeService.getViewerAccessToken(derivative.urn));
 			let env = this.context.previewSettings.env;
 			if (!env) {
 				env = derivative.format === svf2 ? 'AutodeskProduction2' : 'AutodeskProduction';

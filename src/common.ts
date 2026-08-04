@@ -25,7 +25,7 @@ export interface IContext extends IServices {
 }
 
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
-    const buckets = await context.ossService.getAllBuckets();
+    const buckets = await withProgress('Loading buckets...', context.ossService.getAllBuckets());
     const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
     if (!bucketKey) {
         return undefined;
@@ -35,7 +35,7 @@ export async function promptBucket(context: IContext): Promise<BucketsItems | un
 }
 
 export async function promptObject(context: IContext, bucketKey: string): Promise<ObjectDetails | undefined> {
-    const objects = await context.ossService.getAllObjects(bucketKey);
+    const objects = await withProgress('Loading objects...', context.ossService.getAllObjects(bucketKey));
     const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: 'Select object' });
     if (!objectKey) {
         return undefined;
@@ -45,7 +45,7 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 }
 
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const derivatives = await context.modelDerivativeService.getViewableDerivatives(objectId);
+    const derivatives = await withProgress('Loading derivatives...', context.modelDerivativeService.getViewableDerivatives(objectId));
     if (!derivatives) {
         vscode.window.showWarningMessage(`No derivatives yet for ${urnify(objectId)}`);
         return undefined;
@@ -60,7 +60,7 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
 }
 
 export async function promptCustomDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const derivatives = await context.modelDerivativeService.getCustomDerivatives(objectId);
+    const derivatives = await withProgress('Loading derivatives...', context.modelDerivativeService.getCustomDerivatives(objectId));
 
     const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
     if (!derivativeName) {
@@ -71,12 +71,12 @@ export async function promptCustomDerivative(context: IContext, objectId: string
 }
 
 export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
-    const appBundles = await context.designAutomationService.getAvailableAppBundles();
+    const appBundles = await withProgress('Loading app bundles...', context.designAutomationService.getAvailableAppBundles());
     return vscode.window.showQuickPick(appBundles, { canPickMany: false, placeHolder: 'Select app bundle' });
 }
 
 export async function promptEngine(context: IContext): Promise<string | undefined> {
-    const engines = await context.designAutomationService.listEngines();
+    const engines = await withProgress('Loading engines...', context.designAutomationService.listEngines());
     return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
 }
 

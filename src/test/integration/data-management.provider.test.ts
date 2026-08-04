@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { SimpleStorageDataProvider } from '../../providers/data-management';
 
 function makeProvider(ossService: any = {}, modelDerivativeService: any = {}): SimpleStorageDataProvider {
-	return new SimpleStorageDataProvider({ ossService, modelDerivativeService } as any);
+	return new SimpleStorageDataProvider({ ossService, modelDerivativeService, environment: { region: 'US' } } as any);
 }
 
 describe('SimpleStorageDataProvider', () => {
@@ -195,7 +195,7 @@ describe('SimpleStorageDataProvider', () => {
 
 		it('renders a bucket node', () => {
 			const node = provider.getTreeItem({ bucketKey: 'my-bucket', policyKey: 'transient' } as any) as vscode.TreeItem;
-			assert.strictEqual(node.label, 'my-bucket');
+			assert.strictEqual(node.label, 'my-bucket (US)');
 			assert.strictEqual(node.collapsibleState, vscode.TreeItemCollapsibleState.Collapsed);
 			assert.strictEqual(node.contextValue, 'bucket');
 			assert.strictEqual((node.iconPath as vscode.ThemeIcon).id, 'folder');

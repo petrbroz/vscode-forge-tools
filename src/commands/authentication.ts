@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, showErrorMessage } from '../common';
+import { IContext, showErrorMessage, withProgress } from '../common';
 import { ApsAuthenticationProvider } from '../auth-provider';
 
 export class AuthenticationCommands {
@@ -43,7 +43,7 @@ export class AuthenticationCommands {
             return;
         }
         try {
-            const { accessToken, expiresIn } = await this.context.authenticationService.getAccessToken(scopes);
+            const { accessToken, expiresIn } = await withProgress('Generating access token...', this.context.authenticationService.getAccessToken(scopes));
             const action = await vscode.window.showInformationMessage(`Access token generated (expires in: ${expiresIn} seconds)`, 'Copy Token to Clipboard');
             if (action === 'Copy Token to Clipboard') {
                 await vscode.env.clipboard.writeText(accessToken);

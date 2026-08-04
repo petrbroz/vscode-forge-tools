@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-08-04
+
+- Added
+  - A "Get Started with Autodesk Platform Services (Standalone App)" walkthrough (shown on the Welcome
+    page) that guides first-time users through creating an APS app, registering its client ID/secret,
+    creating an OSS bucket, uploading a design, translating it, and previewing the 2D/3D outputs.
+  - A "Get Started with Autodesk Platform Services (Forma Extension)" walkthrough that guides users
+    through creating a Traditional Web App (including its callback URL), registering its client
+    ID/secret, provisioning API access for it in Forma's Hub Admin, signing in with a Forma account, and
+    browsing/previewing hubs, projects, folders, designs, and versions.
+  - The first time you sign in with "3-legged OAuth" or "3-legged OAuth with PKCE", the extension now
+    shows the `vscode://petrbroz.vscode-forge-tools/callback` redirect URL and reminds you to register it
+    as a callback URL for your APS app, with actions to copy it to clipboard & open https://aps.autodesk.com/myapps.
+- Changed
+  - The `region` property of `autodesk.forge.environments`, and the region picker shown when setting up a
+    new environment, now offer the full list of OSS regions (`US`, `EMEA`, `AUS`, `CAN`, `DEU`, `IND`,
+    `JPN`, `GBR`) instead of the old `US`/`EMEA`/`APAC` list.
+  - Buckets in the Data & Derivatives (app) view now show their region in parentheses next to the bucket
+    name.
+- Fixed
+  - The Data & Derivatives (app) view now lists buckets from the environment's configured region instead
+    of always defaulting to `US`.
+  - Every command that calls an Autodesk Platform Services API now shows progress feedback, including a
+    few spots (starting an SVF2 translation, uploading an app bundle) that previously fired the request
+    without awaiting it.
+
 ## [3.3.0] - 2026-07-17
 
 - Added

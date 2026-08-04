@@ -43,7 +43,10 @@ export class SecureServiceAccountsCommands {
         }
 
         try {
-            const email = await this.context.secureServiceAccountsService.createServiceAccount(name, firstName, lastName);
+            const email = await withProgress(
+                `Creating secure service account: ${name}`,
+                this.context.secureServiceAccountsService.createServiceAccount(name, firstName, lastName)
+            );
             vscode.window.showInformationMessage(`Secure service account created: ${email}`);
         } catch (error) {
             showErrorMessage('Could not create secure service account', error, this.context);

@@ -97,8 +97,8 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
 
     private async pickMode(): Promise<ApsAuthModeKind | undefined> {
         const items: IModeQuickPickItem[] = [
-            { authMode: 'authorization-code', label: '$(sign-in) 3-legged OAuth', detail: 'Interactive browser login using your APS app client ID and secret (confidential client).' },
-            { authMode: 'authorization-code-pkce', label: '$(sign-in) 3-legged OAuth with PKCE', detail: 'Interactive browser login for public clients, without a client secret.' },
+            { authMode: 'authorization-code', label: '$(sign-in) 3-legged OAuth', detail: 'Interactive browser login using your APS app client ID and secret (confidential client). Requires a callback URL registered on your app.' },
+            { authMode: 'authorization-code-pkce', label: '$(sign-in) 3-legged OAuth with PKCE', detail: 'Interactive browser login for public clients, without a client secret. Requires a callback URL registered on your app.' },
             { authMode: 'service-account', label: '$(robot) Secure Service Account', detail: 'Sign in on behalf of a secure service account using its private key.' },
             { authMode: 'manual-token', label: '$(key) Paste access token', detail: 'Use an access token obtained from another APS application.' }
         ];
@@ -151,6 +151,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
             vscode.Uri.parse(`${vscode.env.uriScheme}://${extensionContext.extension.id}/callback`)
         );
         const redirectUri = this.stripWindowId(externalUri).toString(true);
+        await this.notifyCallbackUriIfNeeded(env, redirectUri, extensionContext);
 
         const pkce = usePkce ? authenticationService.createPkcePair() : undefined;
         const authorizeUrl = authenticationService.buildAuthorizationUrl(env.clientId, redirectUri, state, pkce?.challenge);
@@ -162,6 +163,30 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         return pkce
             ? authenticationService.exchangeAuthorizationCodeWithPkce(env.clientId, code, redirectUri, pkce.verifier)
             : authenticationService.exchangeAuthorizationCode(env.clientId, code, redirectUri);
+    }
+
+    /**
+     * Warns the user, before opening the browser, that the 3-legged OAuth flow needs `redirectUri`
+     * registered as a callback URL on their APS app - otherwise the login page will reject it with a
+     * redirect URI mismatch. Shown once per environment (tracked in `globalState`, keyed by client ID)
+     * unless dismissed without acknowledging, in which case it's shown again on the next login attempt.
+     */
+    private async notifyCallbackUriIfNeeded(env: IEnvironment, redirectUri: string, extensionContext: vscode.ExtensionContext): Promise<void> {
+        const seenKey = `aps.callbackUriNotified.${env.clientId}`;
+        if (extensionContext.globalState.get<boolean>(seenKey)) {
+            return;
+        }
+        const action = await vscode.window.showInformationMessage(
+            `Signing in to Autodesk Platform Services requires this callback URL to be registered for your app: ${redirectUri}`,
+            'Copy URL & Open APS Dev Portal', 'Got it, don\'t show again'
+        );
+        if (action === 'Copy URL & Open APS Dev Portal') {
+            await vscode.env.clipboard.writeText(redirectUri);
+            vscode.env.openExternal(vscode.Uri.parse('https://aps.autodesk.com/myapps'));
+        }
+        if (action) {
+            await extensionContext.globalState.update(seenKey, true);
+        }
     }
 
     /**
