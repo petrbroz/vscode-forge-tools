@@ -26,6 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed
   - The Data & Derivatives (app) view now lists buckets from the environment's configured region instead
     of always defaulting to `US`.
+  - Every command that calls an Autodesk Platform Services API now shows progress feedback, including a
+    few spots (starting an SVF2 translation, uploading an app bundle) that previously fired the request
+    without awaiting it.
 
 ## [3.3.0] - 2026-07-17
 

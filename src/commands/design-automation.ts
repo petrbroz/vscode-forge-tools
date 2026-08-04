@@ -249,7 +249,7 @@ async function uploadAppBundle(name: string | undefined, context: IContext) {
 		const details = exists
 			? await context.designAutomationService.updateAppBundle(name, engine, description)
 			: await context.designAutomationService.createAppBundle(name, engine, description);
-		withProgress(`Uploading app bundle: ${filepath}`, context.designAutomationService.uploadAppBundleArchive(details, filepath));
+		await withProgress(`Uploading app bundle: ${filepath}`, context.designAutomationService.uploadAppBundleArchive(details, filepath));
         vscode.window.showInformationMessage(`App bundle uploaded: ${filepath}`);
 	} catch(err) {
 		showErrorMessage('Could not upload app bundle', err, context);
@@ -403,7 +403,7 @@ async function createActivity(successCallback: (activity: IActivityDetail) => vo
 				case 'create':
 					try {
 						const { id, description, engine, commands, parameters, settings, appBundles } = message.activity;
-						const activity = await context.designAutomationService.createActivity(
+						const activity = await withProgress(`Creating activity: ${id}`, context.designAutomationService.createActivity(
 							id,
 							engine,
 							commands,
@@ -411,7 +411,7 @@ async function createActivity(successCallback: (activity: IActivityDetail) => vo
 							parameters,
 							settings,
 							description
-						);
+						));
 						panel.dispose();
 						vscode.window.showInformationMessage(`Activity created: ${activity.id} (version ${activity.version})`);
 						successCallback(activity);
@@ -428,9 +428,9 @@ async function createActivity(successCallback: (activity: IActivityDetail) => vo
 
 async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCallback: (activity: IActivityDetail) => void, context: IContext) {
 	try {
-		let originalActivity: IActivityDetail = typeof(id) === 'string'
-			? await context.designAutomationService.getActivity(id)
-			: await context.designAutomationService.getActivityVersion(id.name, id.version);
+		let originalActivity: IActivityDetail = await withProgress(`Getting activity details: ${idKey(id)}`, typeof(id) === 'string'
+			? context.designAutomationService.getActivity(id)
+			: context.designAutomationService.getActivityVersion(id.name, id.version));
 
 		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for activity`, context.designAutomationService.getAvailableAppBundles());
@@ -446,7 +446,7 @@ async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCal
 				case 'update':
 					try {
 						const { id, description, engine, commands, parameters, settings, appBundles } = message.activity;
-						const activity = await context.designAutomationService.updateActivity(id, engine, commands, appBundles, parameters, settings, description);
+						const activity = await withProgress(`Updating activity: ${id}`, context.designAutomationService.updateActivity(id, engine, commands, appBundles, parameters, settings, description));
 						panel.dispose();
 						vscode.window.showInformationMessage(`Activity updated: ${activity.id} (version ${activity.version})`);
 						successCallback(activity);
@@ -481,7 +481,7 @@ async function createAppBundleAlias(id: UnqualifiedID, context: IContext) {
 		if (!alias) {
 			return;
 		}
-		const appBundleVersions = await context.designAutomationService.listAppBundleVersions(id);
+		const appBundleVersions = await withProgress(`Listing app bundle versions: ${id}`, context.designAutomationService.listAppBundleVersions(id));
 		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select app bundle version'
 		});
@@ -498,7 +498,7 @@ async function createAppBundleAlias(id: UnqualifiedID, context: IContext) {
 
 async function updateAppBundleAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
-		const appBundleVersions = await context.designAutomationService.listAppBundleVersions(id);
+		const appBundleVersions = await withProgress(`Listing app bundle versions: ${id}`, context.designAutomationService.listAppBundleVersions(id));
 		const appBundleVersion = await vscode.window.showQuickPick(appBundleVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select app bundle version'
 		});
@@ -589,7 +589,7 @@ async function createActivityAlias(id: UnqualifiedID, context: IContext) {
 		if (!alias) {
 			return;
 		}
-		const activityVersions = await context.designAutomationService.listActivityVersions(id);
+		const activityVersions = await withProgress(`Listing activity versions: ${id}`, context.designAutomationService.listActivityVersions(id));
 		const activityVersion = await vscode.window.showQuickPick(activityVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select activity version'
 		});
@@ -606,7 +606,7 @@ async function createActivityAlias(id: UnqualifiedID, context: IContext) {
 
 async function updateActivityAlias(id: UnqualifiedID, alias: string, context: IContext) {
 	try {
-		const activityVersions = await context.designAutomationService.listActivityVersions(id);
+		const activityVersions = await withProgress(`Listing activity versions: ${id}`, context.designAutomationService.listActivityVersions(id));
 		const activityVersion = await vscode.window.showQuickPick(activityVersions.map((v: number) => v.toString()), {
 			canPickMany: false, placeHolder: 'Select activity version'
 		});
@@ -630,13 +630,14 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 					case 'create':
 						try {
 							const { parameters } = message;
-							let workitem = await context.designAutomationService.createWorkItem(id, parameters);
-							await vscode.window.withProgress({
+							let workitem = await vscode.window.withProgress({
 								location: vscode.ProgressLocation.Notification,
-								title: `Processing workitem: ${workitem.id}`,
+								title: `Processing workitem`,
 								cancellable: false
 							}, async (progress, token) => {
-								workitem = await context.designAutomationService.waitForWorkItem(workitem, status => progress.report({ message: status }));
+								let workitem = await context.designAutomationService.createWorkItem(id, parameters);
+								progress.report({ message: workitem.status });
+								return await context.designAutomationService.waitForWorkItem(workitem, status => progress.report({ message: status }));
 							});
 
 							let action: string | undefined;
@@ -646,7 +647,7 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 								action = await vscode.window.showErrorMessage(`Workitem failed`, 'View Report');
 							}
 							if (action === 'View Report') {
-								const report = await context.designAutomationService.getWorkItemReport(workitem);
+								const report = await withProgress(`Getting workitem report: ${workitem.id}`, context.designAutomationService.getWorkItemReport(workitem));
 								await showReadOnlyText(context, ['design-automation', 'workitem-report', workitem.id], report);
 							}
 						} catch(err) {

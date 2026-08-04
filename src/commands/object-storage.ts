@@ -147,7 +147,7 @@ export class ObjectStorageServiceCommands {
             }
 
             const { bucketKey } = bucket;
-            const objects = await this.context.ossService.getAllObjects(bucketKey);
+            const objects = await withProgress(`Loading objects in bucket: ${bucketKey}`, this.context.ossService.getAllObjects(bucketKey));
             if (objects.length === 0) {
                 vscode.window.showInformationMessage('No objects to delete');
                 return;
@@ -240,10 +240,10 @@ export class ObjectStorageServiceCommands {
                 });
                 const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
                 if (res === 'Translate') {
-                    const obj = await context.ossService.getObjectDetails(bucketKey, name);
+                    const obj = await withProgress(`Getting object details: ${name}`, context.ossService.getObjectDetails(bucketKey, name));
                     vscode.commands.executeCommand('aps.md.translateObject', obj);
                 } else if (res === 'Translate (Custom)') {
-                    const obj = await context.ossService.getObjectDetails(bucketKey, name);
+                    const obj = await withProgress(`Getting object details: ${name}`, context.ossService.getObjectDetails(bucketKey, name));
                     vscode.commands.executeCommand('aps.md.translateObjectCustom', obj);
                 }
             } catch (err) {
@@ -316,7 +316,7 @@ export class ObjectStorageServiceCommands {
         }
 
         try {
-            const objectId = await this.context.ossService.createEmptyObject(bucketKey, name);
+            const objectId = await withProgress(`Creating object: ${name}`, this.context.ossService.createEmptyObject(bucketKey, name));
             vscode.window.showInformationMessage(`Object created: ${objectId}`);
         } catch(err) {
             showErrorMessage('Could not create file', err, this.context);
@@ -456,7 +456,7 @@ export class ObjectStorageServiceCommands {
             if (!permissions) {
                 return;
             }
-            const signedUrl = await this.context.ossService.createSignedUrl(bucketKey, objectKey, permissions as 'read' | 'write' | 'readwrite');
+            const signedUrl = await withProgress(`Generating signed URL: ${objectKey}`, this.context.ossService.createSignedUrl(bucketKey, objectKey, permissions as 'read' | 'write' | 'readwrite'));
             const action = await vscode.window.showInformationMessage(`Signed URL: ${signedUrl.signedUrl} (expires in ${signedUrl.expiration})`, 'Copy URL to Clipboard');
             if (action === 'Copy URL to Clipboard') {
                 vscode.env.clipboard.writeText(signedUrl.signedUrl);
