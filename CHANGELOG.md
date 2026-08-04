@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - The first time you sign in with "3-legged OAuth" or "3-legged OAuth with PKCE", the extension now
+    shows the `vscode://petrbroz.vscode-forge-tools/callback` redirect URL and reminds you to register it
+    as a callback URL for your APS app, with actions to copy it to clipboard & open https://aps.autodesk.com/myapps.
 - Changed
   - The `region` property of `autodesk.forge.environments`, and the region picker shown when setting up a
     new environment, now offer the full list of OSS regions (`US`, `EMEA`, `AUS`, `CAN`, `DEU`, `IND`,

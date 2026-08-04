@@ -17,6 +17,10 @@
 
 - [Visual Studio Code](https://code.visualstudio.com) version 1.92.0 or newer
 - APS app credentials ([tutorial](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
+- **If you plan to sign in with 3-legged OAuth** (see [Authentication](#authentication)), your APS app
+  must have `vscode://petrbroz.vscode-forge-tools/callback` registered as a callback URL on
+  [https://aps.autodesk.com/myapps](https://aps.autodesk.com/myapps) - without it, sign-in will fail with
+  a redirect URI mismatch.
 
 ## Installation
 
@@ -63,7 +67,7 @@ If you have configured multiple APS environments, you can switch between them vi
 
 Plain 2-legged (app) access is always available by default, and backs every "(app)" view below. Views and commands that need a user context — _Data & Derivatives (user)_, _Issues (user)_, and _Webhooks (user)_ — show a "Sign in to APS" welcome button until you're signed in; you can also sign in via the `aps.auth.login` command or the VS Code Accounts menu. Signing in offers a choice of 3-legged OAuth (confidential client), 3-legged OAuth with PKCE (public client, no secret), a Secure Service Account (sign in on behalf of a service account using its private key), or pasting an access token obtained from another APS application. Sessions are persisted per environment in VS Code's encrypted secret storage, so they survive a window reload, and 3-legged/PKCE tokens are refreshed automatically. Once signed in, use the "Logout" action in the title bar of any user-context view (or the `aps.auth.logout` command) to sign out again.
 
-> The 3-legged OAuth flows redirect back into VS Code via a `vscode://petrbroz.vscode-forge-tools/callback` URI (resolved through `vscode.env.asExternalUri`, so it also works in remote/SSH, Codespaces, and vscode.dev). Make sure this URL - or, when working in a remote/web context, whatever URL `vscode.env.asExternalUri` resolves it to - is registered as a callback URL for your application on [https://aps.autodesk.com/myapps](https://aps.autodesk.com/myapps).
+> **Important:** the 3-legged OAuth flows ("3-legged OAuth" and "3-legged OAuth with PKCE") redirect back into VS Code via a `vscode://petrbroz.vscode-forge-tools/callback` URI (resolved through `vscode.env.asExternalUri`, so it also works in remote/SSH, Codespaces, and vscode.dev). **You must register this URL - or, when working in a remote/web context, whatever URL `vscode.env.asExternalUri` resolves it to - as a callback URL for your application on [https://aps.autodesk.com/myapps](https://aps.autodesk.com/myapps), or sign-in will fail.** The extension will also show you this URL, with a "Copy URL" action, the first time you use one of these sign-in methods.
 
 ### Data & Derivatives (app) View
 
