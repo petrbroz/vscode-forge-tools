@@ -162,11 +162,13 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
     getTreeItem(element: SimpleStorageEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (isBucket(element)) {
             const filter = this._filters.get(element.bucketKey);
-            const node = new vscode.TreeItem(element.bucketKey, vscode.TreeItemCollapsibleState.Collapsed);
+            const region = this._context.environment.region ?? 'US';
+            const node = new vscode.TreeItem(`${element.bucketKey} (${region})`, vscode.TreeItemCollapsibleState.Collapsed);
             node.description = filter ? `filter: ${filter}` : undefined;
             node.tooltip = [
                 `Bucket`,
                 `Key: ${element.bucketKey}`,
+                `Region: ${region}`,
                 `Policy: ${element.policyKey}`,
                 ...(filter ? [`Filter: ${filter}`] : [])
             ].join('\n');
