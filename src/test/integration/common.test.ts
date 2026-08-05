@@ -1,6 +1,16 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { showErrorMessage, promptBucket, promptObject, promptDerivative } from '../../common';
+import { showErrorMessage, promptBucket, promptObject, promptDerivative, promptEngine, promptAppBundleFullID } from '../../common';
+
+/** A minimal in-memory `vscode.Memento` for exercising the `globalState`/`workspaceState` persistence in prompt* helpers. */
+function fakeMemento(initial: Record<string, any> = {}): vscode.Memento {
+    const store: Record<string, any> = { ...initial };
+    return {
+        get: (key: string, defaultValue?: any) => (key in store ? store[key] : defaultValue),
+        update: async (key: string, value: any) => { store[key] = value; },
+        keys: () => Object.keys(store)
+    } as any;
+}
 
 describe('showErrorMessage', () => {
 	const originalShowErrorMessage = vscode.window.showErrorMessage;
@@ -102,7 +112,10 @@ describe('promptBucket / promptObject / promptDerivative', () => {
 
 	it('promptBucket returns undefined when the user cancels the quick pick', async () => {
 		(vscode.window as any).showQuickPick = async () => undefined;
-		const fakeContext = { ossService: { getAllBuckets: async () => [{ bucketKey: 'bucket-1' }] } };
+		const fakeContext = {
+			ossService: { getAllBuckets: async () => [{ bucketKey: 'bucket-1' }] },
+			extensionContext: { workspaceState: fakeMemento() }
+		};
 
 		assert.strictEqual(await promptBucket(fakeContext as any), undefined);
 	});
@@ -110,9 +123,25 @@ describe('promptBucket / promptObject / promptDerivative', () => {
 	it('promptBucket returns the picked bucket', async () => {
 		const buckets = [{ bucketKey: 'bucket-1' }, { bucketKey: 'bucket-2' }];
 		(vscode.window as any).showQuickPick = async () => 'bucket-2';
-		const fakeContext = { ossService: { getAllBuckets: async () => buckets } };
+		const fakeContext = {
+			ossService: { getAllBuckets: async () => buckets },
+			extensionContext: { workspaceState: fakeMemento() }
+		};
 
 		assert.strictEqual(await promptBucket(fakeContext as any), buckets[1]);
+	});
+
+	it('promptBucket lists the last-selected bucket first and remembers the new pick', async () => {
+		const buckets = [{ bucketKey: 'bucket-1' }, { bucketKey: 'bucket-2' }, { bucketKey: 'bucket-3' }];
+		let offered: string[] | undefined;
+		(vscode.window as any).showQuickPick = async (items: string[]) => { offered = items; return 'bucket-3'; };
+		const workspaceState = fakeMemento({ 'aps.lastBucket': 'bucket-2' });
+		const fakeContext = { ossService: { getAllBuckets: async () => buckets }, extensionContext: { workspaceState } };
+
+		await promptBucket(fakeContext as any);
+
+		assert.deepStrictEqual(offered, ['bucket-2', 'bucket-1', 'bucket-3']);
+		assert.strictEqual(workspaceState.get('aps.lastBucket'), 'bucket-3');
 	});
 
 	it('promptObject returns undefined when the user cancels the quick pick', async () => {
@@ -152,5 +181,54 @@ describe('promptBucket / promptObject / promptDerivative', () => {
 		const fakeContext = { modelDerivativeService: { getViewableDerivatives: async () => derivatives } };
 
 		assert.strictEqual(await promptDerivative(fakeContext as any, 'my-bucket/model.rvt'), derivatives[1]);
+	});
+});
+
+describe('promptEngine / promptAppBundleFullID', () => {
+	const originalShowQuickPick = vscode.window.showQuickPick;
+
+	afterEach(() => {
+		(vscode.window as any).showQuickPick = originalShowQuickPick;
+	});
+
+	it('promptEngine lists the last-used engine first and remembers the new pick, across workspaces (globalState)', async () => {
+		let offered: string[] | undefined;
+		(vscode.window as any).showQuickPick = async (items: string[]) => { offered = items; return 'Autodesk.Revit+2024'; };
+		const globalState = fakeMemento({ 'aps.lastEngine': 'Autodesk.AutoCAD+24_3' });
+		const fakeContext = {
+			designAutomationService: { listEngines: async () => ['Autodesk.Revit+2024', 'Autodesk.AutoCAD+24_3'] },
+			extensionContext: { globalState }
+		};
+
+		const engine = await promptEngine(fakeContext as any);
+
+		assert.deepStrictEqual(offered, ['Autodesk.AutoCAD+24_3', 'Autodesk.Revit+2024']);
+		assert.strictEqual(engine, 'Autodesk.Revit+2024');
+		assert.strictEqual(globalState.get('aps.lastEngine'), 'Autodesk.Revit+2024');
+	});
+
+	it('promptEngine leaves globalState untouched when the user cancels the quick pick', async () => {
+		(vscode.window as any).showQuickPick = async () => undefined;
+		const globalState = fakeMemento({ 'aps.lastEngine': 'Autodesk.AutoCAD+24_3' });
+		const fakeContext = { designAutomationService: { listEngines: async () => ['Autodesk.AutoCAD+24_3'] }, extensionContext: { globalState } };
+
+		assert.strictEqual(await promptEngine(fakeContext as any), undefined);
+		assert.strictEqual(globalState.get('aps.lastEngine'), 'Autodesk.AutoCAD+24_3');
+	});
+
+	it('promptAppBundleFullID lists the last-used app bundle first and remembers the new pick, across workspaces (globalState)', async () => {
+		let offered: string[] | undefined;
+		(vscode.window as any).showQuickPick = async (items: string[]) => { offered = items; return 'MyBundle.other+alias'; };
+		const globalState = fakeMemento({ 'aps.lastAppBundle': 'MyBundle.prod+alias' });
+		const fakeContext = {
+			designAutomationService: { getAvailableAppBundles: async () => ['MyBundle.prod+alias', 'MyBundle.other+alias'] },
+			extensionContext: { globalState }
+		};
+
+		const appBundle = await promptAppBundleFullID(fakeContext as any);
+
+		assert.deepStrictEqual(offered, ['MyBundle.prod+alias', 'MyBundle.other+alias']);
+		assert.strictEqual(appBundle, 'MyBundle.other+alias');
+		assert.strictEqual(globalState.get('aps.lastAppBundle'), 'MyBundle.other+alias');
 	});
 });

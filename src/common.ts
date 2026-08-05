@@ -24,12 +24,17 @@ export interface IContext extends IServices {
     readOnlyContentProvider: ReadOnlyContentProvider;
 }
 
+/** Key into `workspaceState` for the most recently selected OSS bucket, remembered per workspace. */
+const LAST_BUCKET_KEY = 'aps.lastBucket';
+
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
     const buckets = await withProgress('Loading buckets...', context.ossService.getAllBuckets());
-    const bucketKey = await vscode.window.showQuickPick(buckets.map(item => item.bucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+    const lastBucketKey = context.extensionContext.workspaceState.get<string>(LAST_BUCKET_KEY);
+    const bucketKey = await vscode.window.showQuickPick(sortRecentFirst(buckets.map(item => item.bucketKey), lastBucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
     if (!bucketKey) {
         return undefined;
     } else {
+        await context.extensionContext.workspaceState.update(LAST_BUCKET_KEY, bucketKey);
         return buckets.find(item => item.bucketKey === bucketKey);
     }
 }
@@ -70,14 +75,36 @@ export async function promptCustomDerivative(context: IContext, objectId: string
     }
 }
 
+/** Keys into `globalState` for the most recently selected app bundle/engine, remembered across workspaces. */
+const LAST_APP_BUNDLE_KEY = 'aps.lastAppBundle';
+const LAST_ENGINE_KEY = 'aps.lastEngine';
+
 export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
     const appBundles = await withProgress('Loading app bundles...', context.designAutomationService.getAvailableAppBundles());
-    return vscode.window.showQuickPick(appBundles, { canPickMany: false, placeHolder: 'Select app bundle' });
+    const lastAppBundle = context.extensionContext.globalState.get<string>(LAST_APP_BUNDLE_KEY);
+    const appBundle = await vscode.window.showQuickPick(sortRecentFirst(appBundles, lastAppBundle), { canPickMany: false, placeHolder: 'Select app bundle' });
+    if (appBundle) {
+        await context.extensionContext.globalState.update(LAST_APP_BUNDLE_KEY, appBundle);
+    }
+    return appBundle;
 }
 
 export async function promptEngine(context: IContext): Promise<string | undefined> {
     const engines = await withProgress('Loading engines...', context.designAutomationService.listEngines());
-    return vscode.window.showQuickPick(engines, { canPickMany: false, placeHolder: 'Select engine' });
+    const lastEngine = context.extensionContext.globalState.get<string>(LAST_ENGINE_KEY);
+    const engine = await vscode.window.showQuickPick(sortRecentFirst(engines, lastEngine), { canPickMany: false, placeHolder: 'Select engine' });
+    if (engine) {
+        await context.extensionContext.globalState.update(LAST_ENGINE_KEY, engine);
+    }
+    return engine;
+}
+
+/** Moves `recent` to the front of `items` (if present) so the most recently used choice is offered first in a quick pick. */
+function sortRecentFirst(items: string[], recent: string | undefined): string[] {
+    if (!recent || !items.includes(recent)) {
+        return items;
+    }
+    return [recent, ...items.filter(item => item !== recent)];
 }
 
 export async function showErrorMessage(title: string, err: any, context?: IContext) {
