@@ -14,10 +14,16 @@ import {
     IHubAdminUsersCategory
 } from '../models/hub-admin';
 import { HubAdminService } from '../services/hub-admin';
+import { HubsService } from '../services/hubs';
 
 /** The Hub Admin service instance backing a given auth context (app vs. active user session). */
 export function hubAdminServiceFor(context: IContext, authContext: HubAdminAuthContext): HubAdminService {
     return authContext === 'user' ? context.hubAdminServiceUser : context.hubAdminServiceApp;
+}
+
+/** The Hubs (Data Management) service instance backing a given auth context (app vs. active user session). */
+export function hubsServiceFor(context: IContext, authContext: HubAdminAuthContext): HubsService {
+    return authContext === 'user' ? context.hubsService : context.hubsServiceApp;
 }
 
 type HubAdminEntry =

@@ -47,4 +47,26 @@ export class HubAdminService {
     getCompany(companyId: string, accountId: string): Promise<Company> {
         return this.client.getCompany(companyId, accountId);
     }
+
+    /**
+     * Fetches a user's (or project user's) profile photo and re-encodes it as a data URI, so it can be
+     * embedded directly in a webview without the webview needing to load an external URL. Returns
+     * `undefined` if the user has no photo, or fetching it fails for any reason.
+     */
+    async getProfileImageDataUri(imageUrl: string | undefined): Promise<string | undefined> {
+        if (!imageUrl) {
+            return undefined;
+        }
+        try {
+            const response = await fetch(imageUrl);
+            if (!response.ok) {
+                return undefined;
+            }
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const contentType = response.headers.get('content-type') || 'image/jpeg';
+            return `data:${contentType};base64,${buffer.toString('base64')}`;
+        } catch {
+            return undefined;
+        }
+    }
 }

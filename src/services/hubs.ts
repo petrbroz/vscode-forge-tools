@@ -1,5 +1,5 @@
 import { DataManagementClient } from '@aps_sdk/data-management';
-import { IHub, IProject, IFolder, IItem, IVersion, IPage } from '../models/hubs';
+import { IHub, IHubDetails, IProject, IFolder, IItem, IVersion, IPage } from '../models/hubs';
 import { Manifest, IDerivative } from '../models/model-derivative';
 import { ModelDerivativeService } from './model-derivative';
 
@@ -36,6 +36,17 @@ export class HubsService {
             id: hub.id!,
             name: hub.attributes?.name || '<no name>'
         }));
+    }
+
+    /** Fetches the full attributes of a single hub. */
+    async getHubDetails(hubId: string): Promise<IHubDetails> {
+        const hub = await this.client.getHub(hubId);
+        return {
+            id: hub.data?.id ?? hubId,
+            name: hub.data?.attributes?.name || '<no name>',
+            region: hub.data?.attributes?.region,
+            extensionType: hub.data?.attributes?.extension?.type
+        };
     }
 
     /** Lists one page of a hub's projects, starting at the given page number (if any). */

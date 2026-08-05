@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Hub Admin views now have a "View Hub/User/Project/Project User/Company Details" action that opens a
+    custom webview, alongside the existing/new "(JSON)" variants. The user and project user webviews also
+    show the person's profile photo, fetched from their `imageUrl`.
 - Changed
   - Busy tree item context menus (OSS objects/versions, Design Automation aliases, Secure Service
     Account keys) now group their secondary actions into "View", "Actions", "Model Derivative", and
     "Manage" submenus instead of listing everything flat.
+  - Hub Admin tree item context menus now also group their view actions into a "View" submenu.
 - Fixed
   - Downloading an OSS object no longer produces a truncated file with a random size. The `@aps_sdk/oss`
     SDK's `OssClient.downloadObject` (used for the "Download Object" command) writes chunks to disk
@@ -19,6 +24,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     default in the "Conversion Method" dropdown. Previously the default was only visual: unless the user
     explicitly touched the dropdown, `conversionMethod` was omitted from the translation job payload and
     the Model Derivative service fell back to its own default, the legacy method.
+  - The "View", "Actions", and "Model Derivative" context menu submenus now actually appear for every
+    tree item they were meant to (OSS objects, Hubs versions, derivatives, Design Automation app
+    bundle/activity aliases, Secure Service Account keys, Hub Admin items). VS Code only honors the
+    *first* `view/item/context` contribution that points at a given submenu ID; contributing the same
+    submenu ID a second time (once per `viewItem`, as the previous submenu refactor did) silently drops
+    every contribution after the first, so only one of those tree items actually got its submenu. Each
+    submenu is now contributed once per menu, with the per-item `viewItem` conditions combined into a
+    single `when` clause.
 
 ## [3.4.0] - 2026-08-04
 
