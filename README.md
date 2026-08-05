@@ -4,7 +4,14 @@
 ![Visual Studio Marketplace Installs](https://vsmarketplacebadges.dev/installs/petrbroz.vscode-forge-tools.png)
 ![Visual Studio Marketplace Downloads](https://vsmarketplacebadges.dev/downloads/petrbroz.vscode-forge-tools.png)
 ![Visual Studio Marketplace Rating](https://vsmarketplacebadges.dev/rating/petrbroz.vscode-forge-tools.png)
-![platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.png)
+
+![Open VSX Version](https://img.shields.io/open-vsx/v/petrbroz/vscode-forge-tools
+)
+![Open VSX Installs](https://img.shields.io/open-vsx/dt/petrbroz/vscode-forge-tools
+)
+![Open VSX Rating](https://img.shields.io/open-vsx/rating/petrbroz/vscode-forge-tools
+)
+
 [![license](https://img.shields.io/badge/license-MIT-blue.png)](http://opensource.org/licenses/MIT)
 
 [Visual Studio Code](https://code.visualstudio.com) extension for accessing [Autodesk Platform Services](https://aps.autodesk.com) services and content.
