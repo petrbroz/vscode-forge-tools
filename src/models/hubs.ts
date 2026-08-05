@@ -22,6 +22,14 @@ export interface IHub {
     name: string;
 }
 
+/** Full attributes of a single hub, as shown by the "View Hub Details" action. */
+export interface IHubDetails {
+    id: string;
+    name: string;
+    region?: string;
+    extensionType?: string;
+}
+
 export interface IProject {
     kind: 'project';
     hubId: string;

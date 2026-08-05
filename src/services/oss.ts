@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { OssClient, BucketsItems, ObjectDetails, Bucket, ObjectFullDetails, CreateObjectSigned, Access, PolicyKey, Region } from '@aps_sdk/oss';
 import { SignedUrlAccess, IPage } from '../models/oss';
 
@@ -251,8 +252,22 @@ export class OssService {
         await this.client.deleteObject(bucketKey, objectKey);
     }
 
-    downloadObject(bucketKey: string, objectKey: string, filePath: string): Promise<void> {
-        return this.client.downloadObject(bucketKey, objectKey, filePath);
+    /**
+     * Downloads an object to a local file path via its signed S3 download URL.
+     *
+     * This intentionally bypasses the SDK's own `OssClient.downloadObject`: its chunked download
+     * implementation pipes each 5MB range into the output file stream without awaiting either the pipe
+     * or the stream's completion, so concurrent chunk writes race each other and the function can return
+     * before all of them have flushed to disk, producing truncated, non-deterministic file sizes for any
+     * object larger than one chunk.
+     */
+    async downloadObject(bucketKey: string, objectKey: string, filePath: string): Promise<void> {
+        const { url } = await this.client.signedS3Download(bucketKey, objectKey);
+        const response = await fetch(url!);
+        if (!response.ok) {
+            throw new Error(`Request failed with status code ${response.status}`);
+        }
+        await fs.promises.writeFile(filePath, new Uint8Array(await response.arrayBuffer()));
     }
 
     async deleteObject(bucketKey: string, objectKey: string): Promise<void> {

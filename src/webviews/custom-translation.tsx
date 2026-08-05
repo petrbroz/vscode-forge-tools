@@ -36,7 +36,7 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
     const [rootFilename, setRootFilename] = useState('');
     const [views2d, setViews2d] = useState(true);
     const [views3d, setViews3d] = useState(true);
-    const [advanced, setAdvanced] = useState<JobAdvancedOptions>({});
+    const [advanced, setAdvanced] = useState<JobAdvancedOptions>(() => defaultAdvancedOptions(sourceFormat, outputFormat));
     const [workflowId, setWorkflowId] = useState('');
     const [workflowAttributes, setWorkflowAttributes] = useState('');
 
@@ -48,9 +48,20 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
         return format === svf || format === svf2;
     }
 
+    /**
+     * Defaults that must actually be present in the `advanced` state (not just displayed by a dropdown's
+     * `value={advanced.x || Default}` fallback), because the Model Derivative API falls back to its own
+     * default - not the one shown in the UI - when a field is omitted from the job payload. Currently
+     * only IFC's "Conversion Method" needs this: the UI recommends and defaults to "v4", but the API
+     * defaults an omitted `conversionMethod` to the legacy method.
+     */
+    function defaultAdvancedOptions(forSourceFormat: string, forOutputFormat: string): JobAdvancedOptions {
+        return forSourceFormat === 'ifc' && isSvfFamily(forOutputFormat) ? { conversionMethod: ConversionMethod.V4 } : {};
+    }
+
     function setOutputFormat(value: string) {
         if (isSvfFamily(outputFormat) !== isSvfFamily(value)) {
-            setAdvanced({});
+            setAdvanced(defaultAdvancedOptions(sourceFormat, value));
         }
         setOutputFormatState(value);
     }
