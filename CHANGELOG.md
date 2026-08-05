@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     SDK's `OssClient.downloadObject` (used for the "Download Object" command) writes chunks to disk
     without waiting for them to finish, so the download could complete before all of the file's bytes
     were flushed; the extension now downloads objects itself via a signed S3 URL instead.
+  - Custom translation of IFC files to SVF/SVF2 now actually uses the "v4" conversion method shown as the
+    default in the "Conversion Method" dropdown. Previously the default was only visual: unless the user
+    explicitly touched the dropdown, `conversionMethod` was omitted from the translation job payload and
+    the Model Derivative service fell back to its own default, the legacy method.
 
 ## [3.4.0] - 2026-08-04
 
