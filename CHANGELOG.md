@@ -7,108 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Added
-  - Hub Admin views now have a "View Hub/User/Project/Project User/Company Details" action that opens a
-    custom webview, alongside the existing/new "(JSON)" variants. The user and project user webviews also
-    show the person's profile photo, fetched from their `imageUrl`.
+  - "View Hub/User/Project/Project User/Company Details" webview actions for Hub Admin views, including profile photos for users
 - Changed
-  - Busy tree item context menus (OSS objects/versions, Design Automation aliases, Secure Service
-    Account keys) now group their secondary actions into "View", "Actions", "Model Derivative", and
-    "Manage" submenus instead of listing everything flat.
-  - Hub Admin tree item context menus now also group their view actions into a "View" submenu.
+  - Busy tree item context menus now group their secondary actions into "View", "Actions", "Model Derivative", and "Manage" submenus
 - Fixed
-  - Downloading an OSS object no longer produces a truncated file with a random size. The `@aps_sdk/oss`
-    SDK's `OssClient.downloadObject` (used for the "Download Object" command) writes chunks to disk
-    without waiting for them to finish, so the download could complete before all of the file's bytes
-    were flushed; the extension now downloads objects itself via a signed S3 URL instead.
-  - Custom translation of IFC files to SVF/SVF2 now actually uses the "v4" conversion method shown as the
-    default in the "Conversion Method" dropdown. Previously the default was only visual: unless the user
-    explicitly touched the dropdown, `conversionMethod` was omitted from the translation job payload and
-    the Model Derivative service fell back to its own default, the legacy method.
-  - The "View", "Actions", and "Model Derivative" context menu submenus now actually appear for every
-    tree item they were meant to (OSS objects, Hubs versions, derivatives, Design Automation app
-    bundle/activity aliases, Secure Service Account keys, Hub Admin items). VS Code only honors the
-    *first* `view/item/context` contribution that points at a given submenu ID; contributing the same
-    submenu ID a second time (once per `viewItem`, as the previous submenu refactor did) silently drops
-    every contribution after the first, so only one of those tree items actually got its submenu. Each
-    submenu is now contributed once per menu, with the per-item `viewItem` conditions combined into a
-    single `when` clause.
+  - Downloading an OSS object no longer produces a truncated file
+  - Custom translation of IFC files to SVF/SVF2 now actually uses the "v4" conversion method by default
+  - Context menu submenus now actually appear on every tree item they were meant to
 
 ## [3.4.0] - 2026-08-04
 
 - Added
-  - A "Get Started with Autodesk Platform Services (Standalone App)" walkthrough (shown on the Welcome
-    page) that guides first-time users through creating an APS app, registering its client ID/secret,
-    creating an OSS bucket, uploading a design, translating it, and previewing the 2D/3D outputs.
-  - A "Get Started with Autodesk Platform Services (Forma Extension)" walkthrough that guides users
-    through creating a Traditional Web App (including its callback URL), registering its client
-    ID/secret, provisioning API access for it in Forma's Hub Admin, signing in with a Forma account, and
-    browsing/previewing hubs, projects, folders, designs, and versions.
-  - The first time you sign in with "3-legged OAuth" or "3-legged OAuth with PKCE", the extension now
-    shows the `vscode://petrbroz.vscode-forge-tools/callback` redirect URL and reminds you to register it
-    as a callback URL for your APS app, with actions to copy it to clipboard & open https://aps.autodesk.com/myapps.
+  - A "Get Started with Autodesk Platform Services (Standalone App)" walkthrough for first-time users
+  - A "Get Started with Autodesk Platform Services (Forma Extension)" walkthrough for Forma users
+  - The first 3-legged OAuth (or PKCE) sign-in now reminds you to register its callback URL
 - Changed
-  - The `region` property of `autodesk.forge.environments`, and the region picker shown when setting up a
-    new environment, now offer the full list of OSS regions (`US`, `EMEA`, `AUS`, `CAN`, `DEU`, `IND`,
-    `JPN`, `GBR`) instead of the old `US`/`EMEA`/`APAC` list.
-  - Buckets in the Data & Derivatives (app) view now show their region in parentheses next to the bucket
-    name.
+  - The `region` setting and picker now offer the full list of OSS regions instead of just `US`/`EMEA`/`APAC`
+  - Buckets in the Data & Derivatives (app) view now show their region
 - Fixed
-  - The Data & Derivatives (app) view now lists buckets from the environment's configured region instead
-    of always defaulting to `US`.
-  - Every command that calls an Autodesk Platform Services API now shows progress feedback, including a
-    few spots (starting an SVF2 translation, uploading an app bundle) that previously fired the request
-    without awaiting it.
+  - The Data & Derivatives (app) view now lists buckets from the environment's configured region
+  - Every command that calls an APS API now shows progress feedback
 
 ## [3.3.0] - 2026-07-17
 
 - Added
-  - Dragging & dropping files from the OS file explorer onto a bucket in the Data & Derivatives (app)
-    view now uploads them, same as the existing "Upload Object" command.
-  - Two new read-only views, Hub Admin (app) and Hub Admin (user), backed by the official
-    `@aps_sdk/construction-account-admin` SDK. Each hub expands into Users, Projects, and Companies, with
-    project nodes further expanding into their assigned project users; every leaf has a "View Details" and
-    "Copy ID to Clipboard" command. The (app) view uses 2-legged app credentials, the (user) view uses the
-    active signed-in session, matching the existing Webhooks (app)/(user) split.
+  - Dragging & dropping files onto a bucket in the Data & Derivatives (app) view now uploads them
+  - New Hub Admin (app) and Hub Admin (user) views for browsing a hub's users, projects, and companies
 - Changed
-  - The 3-legged OAuth login flows ("3-legged OAuth" and "3-legged OAuth with PKCE") no longer start a
-    local HTTP server to catch the browser redirect; they now register a `vscode://petrbroz.vscode-
-    forge-tools/callback` URI handler instead, using `vscode.env.asExternalUri` to build the redirect URL.
-    This works uniformly across desktop, remote/SSH, Codespaces, and vscode.dev, and removes the need for
-    the "Server port to use during 3-legged authentication workflows" setting
-    (`autodesk.forge.authentication.port`), which has been removed. Existing APS apps must register the
-    new callback URL (see the Authentication section of the README) instead of the old
-    `http://localhost:8123/...` one. The redirect URI no longer includes the `windowId` query parameter
-    that `vscode.env.asExternalUri` appends on desktop, since that value changes across window reloads and
-    would otherwise make the `redirect_uri` fail APS's exact-match check against the registered callback
-    URL.
-  - Read-only JSON/text detail views (Model Derivative viewables/tree/properties/manifest, Design
-    Automation app bundle/activity/alias details and work item reports, Secure Service Account private
-    keys/assertions/access tokens) now open as virtual documents backed by a
-    `vscode.workspace.registerTextDocumentContentProvider` (`aps-readonly:` scheme) instead of unsaved
-    "Untitled" editor tabs. Reopening the same resource updates and reveals its existing tab instead of
-    creating a new one, and closing the tab no longer prompts to save changes.
+  - 3-legged OAuth login now uses a `vscode://` callback URI instead of a local HTTP server
+  - Read-only JSON/text detail views now open as virtual documents instead of unsaved "Untitled" tabs
 
 ## [3.2.0] - 2026-07-17
 
 - Added
-  - "Translate Object (Custom)" now exposes the full set of documented output-format-specific and
-    source-format-specific "advanced" options from the Model Derivative Create Translation Job API:
-    per-source-format options for SVF/SVF2 (Revit, DGN, DWG, IDW, IFC, Navisworks, VUE), plus STL, OBJ,
-    STEP, IGES, DWG, IFC, and Thumbnail width/height. The 2D/3D view toggle is now user-controlled
-    (previously hardcoded) for SVF/SVF2 outputs, and "Generate Master Views" moved from an
-    always-visible checkbox to the Revit-specific subform, matching where it's documented to apply. The
-    form is now grouped into "Input Settings", "Output Settings", "Advanced Settings", and "Webhook
-    Settings" sections, and whether the source is a compressed (ZIP) archive is now an explicit checkbox
-    (auto-detected from the source file's extension) instead of being inferred from the root filename.
+  - "Translate Object (Custom)" now exposes the full set of documented advanced translation options
 - Removed
-  - The undocumented "Switch Loader" checkbox from "Translate Object (Custom)". It dates back to a 2019
-    Forge blog post about toggling between the legacy Navisworks-based and newer Revit-based IFC
-    importers, predates the current Model Derivative SDK and REST reference (neither mentions it), and
-    has since been superseded by the now-official, more granular `conversionMethod` option exposed in
-    the IFC source subform.
+  - The undocumented "Switch Loader" checkbox, superseded by the official `conversionMethod` option
 - Fixed
-  - The Object Storage Service tree view no longer crashes (instead of showing an error notification and
-    an empty list) when fetching a page of buckets or objects fails, e.g. due to a network error.
+  - The Object Storage Service tree view no longer crashes when a page of buckets or objects fails to load
 
 ## [3.1.1] - 2026-07-16
 
@@ -118,78 +54,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [3.1.0] - 2026-07-16
 
 - Added
-  - Pagination for the Object Storage Service tree view: buckets and bucket objects now load one page
-    at a time, with a "Load more…" item to fetch the next page, instead of fetching the entire (possibly
-    very large) list up front
-  - New `autodesk.forge.data.pageSize` setting (1-100, default 32) to control how many buckets/objects
-    are fetched per page in that tree view
-  - "Filter Objects by Prefix" and "Clear Object Filter" commands to narrow a bucket's object list down
-    to keys starting with a given prefix (OSS's `beginsWith` list option); the active filter is shown
-    next to the bucket's name, with an inline icon on the bucket's tree item to set the filter, and
-    another (shown only while a filter is active) to clear it
-  - Pagination for the Data & Derivatives (user) tree view: a hub's projects, a folder's contents, and
-    an item's versions now load one page at a time via the Data Management API's `page[number]`/
-    `page[limit]` options, with a "Load more…" item to fetch the next page. Hubs and a project's
-    top-level folders are unaffected, since those Data Management endpoints don't paginate
-  - New `autodesk.forge.data.hubsPageSize` setting (1-200, default 32) to control how many
-    projects/folder items/versions are fetched per page in that tree view
+  - Pagination for the Object Storage Service tree view, with a new `autodesk.forge.data.pageSize` setting
+  - "Filter Objects by Prefix" and "Clear Object Filter" commands
+  - Pagination for the Data & Derivatives (user) tree view, with a new `autodesk.forge.data.hubsPageSize` setting
 - Fixed
-  - "(User)" tree views (Data Management hubs, Issues, Webhooks) appearing empty after restarting VS
-    Code with a persisted session, even though the Accounts menu showed a signed-in user; the views now
-    refresh once the restored session is applied on startup
+  - "(User)" tree views no longer appear empty after restarting VS Code with a persisted session
 
 ## [3.0.0] - 2026-07-16
 
 - Added
-  - New "Issues (user)" tree view for browsing ACC/BIM 360 issues (hub → project → issue), backed by the
-    official `@aps_sdk/construction-issues` SDK, with a "View Issue Details" webview panel that also
-    lists the issue's comments, if any. Requires a user context (same sign-in as the other "(user)"
-    views)
-  - (**MAJOR**) Support for all APS authentication mechanisms behind VS Code's built-in authentication
-    infrastructure. Signing in (via a user-context tree view's "Sign in to APS" button or the VS Code
-    Accounts menu) now offers a choice of
-    3-legged OAuth (confidential client), 3-legged OAuth with PKCE (public client, no secret), Secure
-    Service Account (sign in on behalf of a service account using its private key), or pasting an access
-    token obtained from another APS application. Plain 2-legged (app) access remains the always-available
-    default when not signed in.
-  - Sessions are now persisted per environment in VS Code's encrypted secret storage, so they survive a
-    window reload; 3-legged/PKCE tokens are refreshed automatically instead of silently expiring
-  - Separate "(app)" and "(user)" webhook tree views, so app-owned and user-owned webhooks can be managed
-    independently
-  - Cost Management `segmentValue.*` webhook events, the Forma Reviews webhook system
-    (`review.created-1.0`, `review.closed-1.0`), and the Autodesk Tandem webhook system
-    (`dt.applyTemplate`, `dt.removeTemplate`, `dt.mutation`, `dt.alert`, `dt.streamConnectivity`)
-    to the webhook catalog
+  - New "Issues (user)" tree view for browsing ACC/BIM 360 issues
+  - (**MAJOR**) Support for all APS authentication mechanisms: 3-legged OAuth, PKCE, Secure Service Account, or a pasted access token
+  - Sessions now persist per environment, with automatic refresh of 3-legged/PKCE tokens
+  - Separate "(app)" and "(user)" webhook tree views
+  - Cost Management, Forma Reviews, and Autodesk Tandem events added to the webhook catalog
 - Changed
-  - Renamed the tree views to distinguish authentication context: "Buckets & Derivatives" →
-    "Data & Derivatives (app)", "Hubs & Derivatives" → "Data & Derivatives (user)", "Webhooks" →
-    "Webhooks (app)" (plus a new "Webhooks (user)" view), "Automation" → "Automation (app)", and
-    "Secure Service Accounts" → "Secure Service Accounts (app)"
-  - User-context views (Data & Derivatives (user), Webhooks (user)) now show a "Sign in to APS" welcome
-    button until a user session is available, instead of surfacing errors when browsed while signed out,
-    and expose a "Logout" action in their view title bar once signed in (replacing the "APS Auth" status
-    bar item, which has been removed)
-  - Renamed the "ACC Cost Management" and "ACC Issues" webhook systems in the tree view to their
-    current APS names, "Cost Management" and "Forma Issues"
-  - (**MAJOR**) Unified all API client construction into a single `createServices()` factory, used by
-    activation, environment switching, and login/logout, instead of mutating clients in place
-  - (**MAJOR**) Reorganized the source into explicit layers with a one-directional dependency rule:
-    `src/models` (types/interfaces, no `vscode`), `src/services` (domain logic, no `vscode`, the only
-    layer that talks to `@aps_sdk/*`), `src/webviews` (React panels that import only from `src/models`),
-    `src/commands` and `src/providers` (thin `vscode` wrappers over the services). All APS domain logic
-    (Object Storage, Model Derivative, Hubs, Design Automation, Secure Service Accounts, Webhooks,
-    Authentication) now lives in per-service classes exposed on the context as `context.<name>Service`,
-    replacing the raw SDK clients previously called directly from commands and tree views; duplicated
-    logic such as the manifest-to-derivative transforms is consolidated in one place
-  - Replaced the Kiota-generated Secure Service Accounts client with the official `@aps_sdk/secure-service-account` SDK
-  - Replaced the legacy Design Automation SDK with a hand-written `fetch`-based REST client wrapper (no official `@aps_sdk/*` package exists for this service yet)
-  - Commands and `package.json` contributes are now hand-synced instead of generated via decorators; removed the decorator-based command registry and the `update-contributes` codegen script
+  - Renamed the tree views to distinguish authentication context, adding new "(user)" counterparts
+  - User-context views now show "Sign in to APS"/"Logout" actions instead of the removed status bar item
+  - Renamed the "ACC Cost Management" and "ACC Issues" webhook systems to their current APS names
+  - (**MAJOR**) Unified all API client construction into a single `createServices()` factory
+  - (**MAJOR**) Reorganized the source into layered models/services/webviews/commands/providers
+  - Replaced the Kiota-generated Secure Service Accounts client with the official SDK
+  - Replaced the legacy Design Automation SDK with a hand-written REST client wrapper
+  - Commands and `package.json` contributes are now hand-synced instead of generated via decorators
   - Replaced `axios` and `fs-extra` with the built-in `fetch` and `fs` APIs
-  - Upgraded npm dependencies (React, esbuild, webview UI toolkit, etc.) and adapted to their breaking changes
-  - Upgraded to TypeScript 7.0 and modernized `tsconfig.json`; added a `typecheck` script since the build previously had no type-checking step
+  - Upgraded npm dependencies and TypeScript to 7.0, and added a `typecheck` script
 - Removed
-  - SVF/F2D/glTF derivative download commands and the `svf-utils` dependency they relied on
-  - `tslint` dependency (already unused; no linting step exists in the build)
+  - SVF/F2D/glTF derivative download commands and the `svf-utils` dependency
+  - The unused `tslint` dependency
 
 ## [2.11.2] - 2025-10-21
 
