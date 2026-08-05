@@ -23,9 +23,12 @@ interface IPendingLogin {
  * persists the resulting {@link IApsAuthSession} - including any secret material needed to refresh or
  * re-mint the token - to `context.secrets`, keyed per environment so it survives a window reload.
  *
- * Also implements `vscode.UriHandler` for the `vscode://<publisher>.<name>/callback` redirect used by
- * the 3-legged OAuth flows (see {@link runOAuthFlow}) - this replaces the previous local HTTP callback
+ * Also implements `vscode.UriHandler` for the `<uriScheme>://<publisher>.<name>/callback` redirect used
+ * by the 3-legged OAuth flows (see {@link runOAuthFlow}) - this replaces the previous local HTTP callback
  * server, so the login flow works the same way in desktop, remote, and web (vscode.dev) contexts.
+ * `<uriScheme>` is `vscode.env.uriScheme` (e.g. `vscode`, `cursor`, `antigravity-ide`), so the callback
+ * URL that needs registering on the APS app depends on which VS Code-based editor is hosting the
+ * extension.
  *
  * This is vscode glue: it imports `vscode` and the domain services (via the `IContext` accessor) but
  * never `@aps_sdk/*` - token minting/refresh lives entirely in the services layer.
@@ -107,7 +110,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
     }
 
     /**
-     * Handles the `vscode://<publisher>.<name>/callback` redirect delivered after the user completes
+     * Handles the `<uriScheme>://<publisher>.<name>/callback` redirect delivered after the user completes
      * the APS login page in the browser. Matches the callback's `state` query parameter against a
      * pending {@link runOAuthFlow} call and resolves/rejects it; unrecognized or already-settled `state`
      * values (e.g. a duplicate/stale redirect) are ignored.
@@ -139,9 +142,11 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
 
     /**
      * Runs the 3-legged OAuth authorization code grant using VS Code's URI-handler pattern instead of a
-     * local HTTP server: builds a `vscode://<publisher>.<name>/callback` redirect URI (resolved through
-     * `vscode.env.asExternalUri` so it also works from remote/web contexts), opens the APS authorize page
-     * in the system browser, and waits for {@link handleUri} to deliver the matching authorization code.
+     * local HTTP server: builds a `<uriScheme>://<publisher>.<name>/callback` redirect URI (`<uriScheme>`
+     * is `vscode.env.uriScheme`, which varies across VS Code-based editors - e.g. `cursor`,
+     * `antigravity-ide`) resolved through `vscode.env.asExternalUri` so it also works from remote/web
+     * contexts, opens the APS authorize page in the system browser, and waits for {@link handleUri} to
+     * deliver the matching authorization code.
      * Pass `usePkce: true` for the public-client PKCE flow (no client secret exchanged).
      */
     private async runOAuthFlow(env: IEnvironment, usePkce: boolean): Promise<{ token: string; expiresIn: number; refreshToken?: string }> {
