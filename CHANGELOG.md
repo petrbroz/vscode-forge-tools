@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Bucket, Design Automation engine, and app bundle quick picks now default to your most recently used choice
+  - The "Switch Environment" command now defaults to the last environment used in this workspace
+
 ## [3.5.0] - 2026-08-05
 
 - Added

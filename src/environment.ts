@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { IEnvironment } from './models/environment';
 
+/** Key into `workspaceState` for the environment last selected in this workspace (see {@link pickDefaultEnvironment}). */
+export const LAST_ENVIRONMENT_KEY = 'aps.lastEnvironment';
+
 export function getEnvironments(): IEnvironment[] {
     let environments = vscode.workspace.getConfiguration(undefined, null).get<IEnvironment[]>('autodesk.forge.environments') || [];
     if (environments.length === 0) {
@@ -20,6 +23,12 @@ export function getEnvironments(): IEnvironment[] {
         }
     }
     return environments;
+}
+
+/** Picks the environment to activate on startup: the one last selected in this workspace, if it still exists, otherwise the first configured environment. */
+export function pickDefaultEnvironment(environments: IEnvironment[], workspaceState: vscode.Memento): IEnvironment {
+    const lastTitle = workspaceState.get<string>(LAST_ENVIRONMENT_KEY);
+    return environments.find(environment => environment.title === lastTitle) || environments[0];
 }
 
 export async function setupNewEnvironment() {

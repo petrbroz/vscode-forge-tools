@@ -5,7 +5,7 @@ import { IContext } from './common';
 import { WebhooksDataProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
 import { IssuesDataProvider } from './providers/issues';
-import { getEnvironments, setupNewEnvironment } from './environment';
+import { getEnvironments, pickDefaultEnvironment, setupNewEnvironment } from './environment';
 import { IEnvironment } from './models/environment';
 import { createServices, createSessionAuthenticationProvider } from './services';
 import { ApsAuthenticationProvider } from './auth-provider';
@@ -30,7 +30,8 @@ export async function activate(_context: vscode.ExtensionContext) {
 		setupNewEnvironment();
 		return;
 	}
-	let env = environments[0];
+	// Restores the environment last selected in this workspace, if it's still configured (see `EnvironmentCommands.switchEnvironment`).
+	let env = pickDefaultEnvironment(environments, _context.workspaceState);
 
 	const readOnlyContentProvider = new ReadOnlyContentProvider();
 	let context: IContext = {
