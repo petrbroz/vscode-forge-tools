@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - Busy tree item context menus (OSS objects/versions, Design Automation aliases, Secure Service
+    Account keys) now group their secondary actions into "View", "Actions", "Model Derivative", and
+    "Manage" submenus instead of listing everything flat.
 - Fixed
   - Downloading an OSS object no longer produces a truncated file with a random size. The `@aps_sdk/oss`
     SDK's `OssClient.downloadObject` (used for the "Download Object" command) writes chunks to disk

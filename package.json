@@ -800,6 +800,28 @@
                 "icon": "$(copy)"
             }
         ],
+        "submenus": [
+            {
+                "id": "aps.submenu.view",
+                "label": "View",
+                "icon": "$(eye)"
+            },
+            {
+                "id": "aps.submenu.actions",
+                "label": "Actions",
+                "icon": "$(zap)"
+            },
+            {
+                "id": "aps.submenu.modelDerivative",
+                "label": "Model Derivative",
+                "icon": "$(rocket)"
+            },
+            {
+                "id": "aps.submenu.manage",
+                "label": "Manage",
+                "icon": "$(edit)"
+            }
+        ],
         "menus": {
             "commandPalette": [
                 {
@@ -870,14 +892,9 @@
                     "group": "3_remove@1"
                 },
                 {
-                    "command": "aps.oss.viewObjectDetails",
+                    "submenu": "aps.submenu.view",
                     "when": "view == apsDataManagementView && viewItem == object",
                     "group": "0_view@1"
-                },
-                {
-                    "command": "aps.oss.copyObjectKey",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "0_view@2"
                 },
                 {
                     "command": "aps.oss.uploadObject",
@@ -900,17 +917,7 @@
                     "group": "inline@2"
                 },
                 {
-                    "command": "aps.oss.copyObject",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action@3"
-                },
-                {
-                    "command": "aps.oss.renameObject",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action@2"
-                },
-                {
-                    "command": "aps.oss.downloadObject",
+                    "submenu": "aps.submenu.actions",
                     "when": "view == apsDataManagementView && viewItem == object",
                     "group": "1_action@1"
                 },
@@ -918,11 +925,6 @@
                     "command": "aps.oss.deleteObject",
                     "when": "view == apsDataManagementView && viewItem == object",
                     "group": "3_remove@1"
-                },
-                {
-                    "command": "aps.oss.generateSignedUrl",
-                    "when": "view == apsDataManagementView && viewItem == object",
-                    "group": "1_action@4"
                 },
                 {
                     "command": "aps.oss.deleteBucket",
@@ -950,7 +952,7 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.dm.copyVersionID",
+                    "submenu": "aps.submenu.view",
                     "when": "view == apsHubsView && viewItem == version",
                     "group": "0_view@1"
                 },
@@ -965,44 +967,19 @@
                     "group": "0_view@2"
                 },
                 {
-                    "command": "aps.md.translateObject",
-                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
-                    "group": "1_action_md@2"
+                    "submenu": "aps.submenu.modelDerivative",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action_md@1"
                 },
                 {
-                    "command": "aps.md.translateObjectCustom",
-                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
-                    "group": "1_action_md@3"
+                    "submenu": "aps.submenu.modelDerivative",
+                    "when": "view == apsHubsView && viewItem == version",
+                    "group": "1_action_md@1"
                 },
                 {
-                    "command": "aps.md.listViewables",
-                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
-                    "group": "1_action_md@4"
-                },
-                {
-                    "command": "aps.md.previewDerivative",
+                    "submenu": "aps.submenu.view",
                     "when": "viewItem == derivative",
                     "group": "0_view@1"
-                },
-                {
-                    "command": "aps.md.viewDerivativeTree",
-                    "when": "viewItem == derivative",
-                    "group": "0_view@2"
-                },
-                {
-                    "command": "aps.md.viewDerivativeProps",
-                    "when": "viewItem == derivative",
-                    "group": "0_view@3"
-                },
-                {
-                    "command": "aps.md.viewObjectManifest",
-                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
-                    "group": "0_view@4"
-                },
-                {
-                    "command": "aps.md.viewObjectThumbnail",
-                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
-                    "group": "0_view@3"
                 },
                 {
                     "command": "aps.md.deleteObjectManifest",
@@ -1012,12 +989,7 @@
                 {
                     "command": "aps.md.downloadDerivativeCustom",
                     "when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
-                    "group": "1_action_md@8"
-                },
-                {
-                    "command": "aps.md.copyObjectUrn",
-                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
-                    "group": "1_action_md@1"
+                    "group": "1_action_md"
                 },
                 {
                     "command": "aps.wh.createWebhook",
@@ -1051,21 +1023,16 @@
                 },
                 {
                     "command": "aps.da.viewAppBundleDetails",
-                    "when": "view == apsDesignAutomationView && (viewItem == appbundle-alias || viewItem == shared-appbundle)",
+                    "when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
                     "group": "0_view"
                 },
                 {
                     "command": "aps.da.viewAppBundleDetailsJSON",
-                    "when": "view == apsDesignAutomationView && (viewItem == appbundle-alias || viewItem == shared-appbundle)",
+                    "when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
                     "group": "0_view"
                 },
                 {
-                    "command": "aps.da.viewAppBundleAliasDetails",
-                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-                    "group": "0_view"
-                },
-                {
-                    "command": "aps.da.viewAppBundleAliasDetailsJSON",
+                    "submenu": "aps.submenu.view",
                     "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
                     "group": "0_view"
                 },
@@ -1106,21 +1073,16 @@
                 },
                 {
                     "command": "aps.da.viewActivityDetails",
-                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)",
+                    "when": "view == apsDesignAutomationView && viewItem == shared-activity",
                     "group": "0_view"
                 },
                 {
                     "command": "aps.da.viewActivityDetailsJSON",
-                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)",
+                    "when": "view == apsDesignAutomationView && viewItem == shared-activity",
                     "group": "0_view"
                 },
                 {
-                    "command": "aps.da.viewActivityAliasDetails",
-                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
-                    "group": "0_view"
-                },
-                {
-                    "command": "aps.da.viewActivityAliasDetailsJSON",
+                    "submenu": "aps.submenu.view",
                     "when": "view == apsDesignAutomationView && viewItem == activity-alias",
                     "group": "0_view"
                 },
@@ -1151,17 +1113,12 @@
                 },
                 {
                     "command": "aps.da.updateActivity",
-                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == activity-version)",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-version",
                     "group": "2_modify"
                 },
                 {
                     "command": "aps.da.createActivityAlias",
                     "when": "view == apsDesignAutomationView && viewItem == activity-aliases",
-                    "group": "2_modify"
-                },
-                {
-                    "command": "aps.da.updateActivityAlias",
-                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
                     "group": "2_modify"
                 },
                 {
@@ -1171,7 +1128,12 @@
                 },
                 {
                     "command": "aps.da.createWorkItem",
-                    "when": "view == apsDesignAutomationView && (viewItem == activity-alias || viewItem == shared-activity)",
+                    "when": "view == apsDesignAutomationView && viewItem == shared-activity",
+                    "group": "2_modify"
+                },
+                {
+                    "submenu": "aps.submenu.manage",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
                     "group": "2_modify"
                 },
                 {
@@ -1205,7 +1167,7 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.ssa.copyAccountKeyID",
+                    "submenu": "aps.submenu.actions",
                     "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
                     "group": "1_action"
                 },
@@ -1218,16 +1180,6 @@
                     "command": "aps.ssa.deleteAccountKey",
                     "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
                     "group": "3_remove"
-                },
-                {
-                    "command": "aps.ssa.generateAssertion",
-                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
-                    "group": "1_action"
-                },
-                {
-                    "command": "aps.ssa.generateAccessToken",
-                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
-                    "group": "1_action"
                 },
                 {
                     "command": "aps.hubAdmin.viewUserDetails",
@@ -1268,6 +1220,164 @@
                     "command": "aps.hubAdmin.copyCompanyID",
                     "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-company'",
                     "group": "0_view@2"
+                }
+            ],
+            "aps.submenu.view": [
+                {
+                    "command": "aps.oss.viewObjectDetails",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.oss.copyObjectKey",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.md.viewObjectThumbnail",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.md.viewObjectManifest",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "0_view@4"
+                },
+                {
+                    "command": "aps.dm.copyVersionID",
+                    "when": "view == apsHubsView && viewItem == version",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.md.previewDerivative",
+                    "when": "viewItem == derivative",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.md.viewDerivativeTree",
+                    "when": "viewItem == derivative",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.md.viewDerivativeProps",
+                    "when": "viewItem == derivative",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.da.viewAppBundleDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.da.viewAppBundleDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.da.viewAppBundleAliasDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.da.viewAppBundleAliasDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
+                    "group": "0_view@4"
+                },
+                {
+                    "command": "aps.da.viewActivityDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.da.viewActivityDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.da.viewActivityAliasDetails",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.da.viewActivityAliasDetailsJSON",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "0_view@4"
+                }
+            ],
+            "aps.submenu.actions": [
+                {
+                    "command": "aps.oss.downloadObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@1"
+                },
+                {
+                    "command": "aps.oss.renameObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@2"
+                },
+                {
+                    "command": "aps.oss.copyObject",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@3"
+                },
+                {
+                    "command": "aps.oss.generateSignedUrl",
+                    "when": "view == apsDataManagementView && viewItem == object",
+                    "group": "1_action@4"
+                },
+                {
+                    "command": "aps.ssa.copyAccountKeyID",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "1_action@1"
+                },
+                {
+                    "command": "aps.ssa.generateAssertion",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "1_action@2"
+                },
+                {
+                    "command": "aps.ssa.generateAccessToken",
+                    "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
+                    "group": "1_action@3"
+                }
+            ],
+            "aps.submenu.modelDerivative": [
+                {
+                    "command": "aps.md.copyObjectUrn",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@1"
+                },
+                {
+                    "command": "aps.md.translateObject",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@2"
+                },
+                {
+                    "command": "aps.md.translateObjectCustom",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@3"
+                },
+                {
+                    "command": "aps.md.listViewables",
+                    "when": "(view == apsDataManagementView && viewItem == object) || (view == apsHubsView && viewItem == version)",
+                    "group": "1_action_md@4"
+                }
+            ],
+            "aps.submenu.manage": [
+                {
+                    "command": "aps.da.updateActivity",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "2_modify@1"
+                },
+                {
+                    "command": "aps.da.updateActivityAlias",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "2_modify@2"
+                },
+                {
+                    "command": "aps.da.createWorkItem",
+                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
+                    "group": "2_modify@3"
                 }
             ]
         },
