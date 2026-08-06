@@ -143,7 +143,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             node.tooltip = [
                 `Folder`,
                 `ID: ${entry.id}`,
-                `Name: ${entry.name}`
+                ...(entry.rawName ? [`Display Name: ${entry.name}`, `Name: ${entry.rawName}`] : [`Name: ${entry.name}`])
             ].join('\n');
             node.contextValue = 'folder';
             return node;

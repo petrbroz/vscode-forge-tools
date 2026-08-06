@@ -83,8 +83,11 @@ export class HubsService {
                 kind: 'folder',
                 projectId,
                 id: folder.id,
-                name: folder.attributes.name || '<no name>'
+                name: folder.attributes.displayName || folder.attributes.name || '<no name>'
             };
+            if (folder.attributes.name && folder.attributes.name !== entry.name) {
+                entry.rawName = folder.attributes.name;
+            }
             if (folder.attributes.hidden) {
                 entry.name = '(hidden) ' + entry.name;
             }
@@ -102,8 +105,11 @@ export class HubsService {
                         kind: 'folder',
                         projectId,
                         id: item.id,
-                        name: item.attributes.name || '<no name>'
+                        name: item.attributes.displayName || item.attributes.name || '<no name>'
                     };
+                    if (item.attributes.name && item.attributes.name !== folder.name) {
+                        folder.rawName = item.attributes.name;
+                    }
                     return folder;
                 case 'items':
                     const file: IItem = {

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Fixed
+  - Folders in the Hubs view now prefer their display name over their internal name
+  - Tooltips in the Hubs view now show both the display name and the internal name
+
 ## [3.5.1] - 2026-08-05
 
 - Added
