@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react';
+import { Dropdown, Option } from './controls';
 
 interface IEnumDropdownProps<T extends string | number> {
     label: string;
@@ -12,8 +12,8 @@ interface IEnumDropdownProps<T extends string | number> {
 
 /**
  * A labeled dropdown for picking one of a small set of string/number literal values.
- * `VSCodeDropdown`'s only slot is its list of options, so the label has to be rendered separately
- * (unlike `VSCodeTextField`/`VSCodeCheckbox`, whose children *are* their label).
+ * `Dropdown`'s only slot is its list of options, so the label has to be rendered separately
+ * (unlike `TextField`/`Checkbox`, whose children *are* their label).
  */
 export function EnumDropdown<T extends string | number>({ label, value, options, onChange, formatOption, style }: IEnumDropdownProps<T>) {
     function handleChange(ev: Event | React.FormEvent<HTMLElement>) {
@@ -27,13 +27,13 @@ export function EnumDropdown<T extends string | number>({ label, value, options,
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', ...style }}>
             <label>{label}</label>
-            <VSCodeDropdown style={{ width: '100%' }} value={String(value)} onChange={handleChange}>
+            <Dropdown style={{ width: '100%' }} value={String(value)} onChange={handleChange}>
                 {options.map(option => (
-                    <VSCodeOption value={String(option)} key={option}>
+                    <Option value={String(option)} key={option}>
                         {formatOption ? formatOption(option) : String(option)}
-                    </VSCodeOption>
+                    </Option>
                 ))}
-            </VSCodeDropdown>
+            </Dropdown>
         </div>
     );
 }

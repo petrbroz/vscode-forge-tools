@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
+import { TextField, Dropdown, Button, Option, DataGrid, DataGridRow, DataGridCell, Checkbox } from './components/controls';
 import { IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from '../models/design-automation-api';
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
@@ -90,10 +90,10 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
     const removeParameter = (index: number) => setParameters(parameters.filter((_, i) => i !== index));
     const updateParameter = (newIndex: number, newParameter: IActivityParam) => setParameters(parameters.map((param, i) => i === newIndex ? newParameter : param));
     const ParameterPropertyInput = ({ index, parameter, field }: { index: number, parameter: IActivityParam, field: 'name' | 'description' | 'localName' }) => (
-        <VSCodeTextField value={parameter[field] || ''} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).value })}></VSCodeTextField>
+        <TextField value={parameter[field] || ''} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).value })}></TextField>
     );
     const ParameterPropertyCheckbox = ({ index, parameter, field }: { index: number, parameter: IActivityParam, field: 'required' | 'zip' | 'ondemand' }) => (
-        <VSCodeCheckbox checked={!!parameter[field]} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).checked })}></VSCodeCheckbox>
+        <Checkbox checked={!!parameter[field]} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).checked })}></Checkbox>
     );
 
     const addStringSetting = () => setStringSettings([...stringSettings, { name: '', value: '', isEnvironmentVariable: false }]);
@@ -126,159 +126,159 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
             <h1>Update Activity: {activity.id}</h1>
 
             <Grid>
-                <VSCodeTextField value={id} onChange={ev => setId((ev.target as any).value)} placeholder="Activity name">ID</VSCodeTextField>
-                <VSCodeTextField value={description} onChange={ev => setDescription((ev.target as any).value)} placeholder="Activity description">Description</VSCodeTextField>
-                <VSCodeDropdown value={engine} onChange={ev => setEngine((ev.target as any).value)}>
-                    {options.engines.map(engine => <VSCodeOption value={engine}>{engine}</VSCodeOption>)}
-                </VSCodeDropdown>
+                <TextField value={id} onChange={ev => setId((ev.target as any).value)} placeholder="Activity name">ID</TextField>
+                <TextField value={description} onChange={ev => setDescription((ev.target as any).value)} placeholder="Activity description">Description</TextField>
+                <Dropdown value={engine} onChange={ev => setEngine((ev.target as any).value)}>
+                    {options.engines.map(engine => <Option value={engine}>{engine}</Option>)}
+                </Dropdown>
             </Grid>
 
             <h2>Commands</h2>
             <Grid columns={'1fr 8em'}>
                 {commands.map((command, i) => (
                     <>
-                        <VSCodeTextField key={`txt-${i}`} value={command} onChange={ev => updateCommand(i, (ev.target as any).value)}></VSCodeTextField>
-                        <VSCodeButton appearance="secondary" key={`btn-${i}`} onClick={() => removeCommand(i)}>Remove</VSCodeButton>
+                        <TextField key={`txt-${i}`} value={command} onChange={ev => updateCommand(i, (ev.target as any).value)}></TextField>
+                        <Button appearance="secondary" key={`btn-${i}`} onClick={() => removeCommand(i)}>Remove</Button>
                     </>
                 ))}
             </Grid>
-            <VSCodeButton appearance="secondary" onClick={addCommand} style={{ marginTop: '1em' }}>
+            <Button appearance="secondary" onClick={addCommand} style={{ marginTop: '1em' }}>
                 Add Command {/* TODO: figure out a way to add icons (codicons?) */}
-            </VSCodeButton>
+            </Button>
 
             <h2>Parameters</h2>
-            <VSCodeDataGrid gridTemplateColumns="repeat(7, 1fr) 8em">
-                <VSCodeDataGridRow key={0} row-type="header">
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="1">Name</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="2">Description</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="3">Verb</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="4">Local Name</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="5">Required</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="6">Zip</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="7">On Demand</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="8"></VSCodeDataGridCell>
-                </VSCodeDataGridRow>
+            <DataGrid gridTemplateColumns="repeat(7, 1fr) 8em">
+                <DataGridRow key={0} row-type="header">
+                    <DataGridCell cell-type="columnheader" grid-column="1">Name</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="2">Description</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="3">Verb</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="4">Local Name</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="5">Required</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="6">Zip</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="7">On Demand</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="8"></DataGridCell>
+                </DataGridRow>
                 {parameters.map((param, i) => (
-                    <VSCodeDataGridRow key={i + 1}>
-                        <VSCodeDataGridCell grid-column="1">
+                    <DataGridRow key={i + 1}>
+                        <DataGridCell grid-column="1">
                             <ParameterPropertyInput index={i} parameter={param} field={"name"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="2">
+                        </DataGridCell>
+                        <DataGridCell grid-column="2">
                             <ParameterPropertyInput index={i} parameter={param} field={"description"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="3">
-                            <VSCodeDropdown value={param.verb || 'get'} onChange={ev => updateParameter(i, { ...param, verb: (ev.target as any).value })}>
-                                <VSCodeOption value={"get"}>GET</VSCodeOption>
-                                <VSCodeOption value={"put"}>PUT</VSCodeOption>
-                                <VSCodeOption value={"post"}>POST</VSCodeOption>
-                                <VSCodeOption value={"patch"}>PATCH</VSCodeOption>
-                                <VSCodeOption value={"read"}>READ</VSCodeOption>
-                            </VSCodeDropdown>
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="4">
+                        </DataGridCell>
+                        <DataGridCell grid-column="3">
+                            <Dropdown value={param.verb || 'get'} onChange={ev => updateParameter(i, { ...param, verb: (ev.target as any).value })}>
+                                <Option value={"get"}>GET</Option>
+                                <Option value={"put"}>PUT</Option>
+                                <Option value={"post"}>POST</Option>
+                                <Option value={"patch"}>PATCH</Option>
+                                <Option value={"read"}>READ</Option>
+                            </Dropdown>
+                        </DataGridCell>
+                        <DataGridCell grid-column="4">
                             <ParameterPropertyInput index={i} parameter={param} field={"localName"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="5">
+                        </DataGridCell>
+                        <DataGridCell grid-column="5">
                             <ParameterPropertyCheckbox index={i} parameter={param} field={"required"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="6">
+                        </DataGridCell>
+                        <DataGridCell grid-column="6">
                             <ParameterPropertyCheckbox index={i} parameter={param} field={"zip"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="7">
+                        </DataGridCell>
+                        <DataGridCell grid-column="7">
                             <ParameterPropertyCheckbox index={i} parameter={param} field={"ondemand"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="8">
-                            <VSCodeButton appearance="secondary" onClick={() => removeParameter(i)}>Remove</VSCodeButton>
-                        </VSCodeDataGridCell>
-                    </VSCodeDataGridRow>
+                        </DataGridCell>
+                        <DataGridCell grid-column="8">
+                            <Button appearance="secondary" onClick={() => removeParameter(i)}>Remove</Button>
+                        </DataGridCell>
+                    </DataGridRow>
                 ))}
-            </VSCodeDataGrid>
-            <VSCodeButton appearance="secondary" onClick={addParameter} style={{ marginTop: '1em' }}>
+            </DataGrid>
+            <Button appearance="secondary" onClick={addParameter} style={{ marginTop: '1em' }}>
                 Add Parameter {/* TODO: figure out a way to add icons (codicons?) */}
-            </VSCodeButton>
+            </Button>
 
             <h2>Settings</h2>
 
             <h3>String Settings</h3>
-            <VSCodeDataGrid gridTemplateColumns="repeat(3, 1fr) 8em">
-                <VSCodeDataGridRow key={0} row-type="header">
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="1">Name</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="2">Value</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="3">Is Env.</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="4"></VSCodeDataGridCell>
-                </VSCodeDataGridRow>
+            <DataGrid gridTemplateColumns="repeat(3, 1fr) 8em">
+                <DataGridRow key={0} row-type="header">
+                    <DataGridCell cell-type="columnheader" grid-column="1">Name</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="2">Value</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="3">Is Env.</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="4"></DataGridCell>
+                </DataGridRow>
                 {stringSettings.map((setting, i) => (
-                    <VSCodeDataGridRow key={i + 1}>
-                        <VSCodeDataGridCell grid-column="1">
-                            <VSCodeTextField value={setting.name} onChange={ev => updateStringSetting(i, { ...setting, name: (ev.target as any).value })} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="2">
-                            <VSCodeTextField value={setting.value} onChange={ev => updateStringSetting(i, { ...setting, value: (ev.target as any).value })} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="3">
-                            <VSCodeCheckbox checked={setting.isEnvironmentVariable} onChange={ev => updateStringSetting(i, { ...setting, isEnvironmentVariable: (ev.target as any).checked })} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="4">
-                            <VSCodeButton appearance="secondary" onClick={() => removeStringSetting(i)}>Remove</VSCodeButton>
-                        </VSCodeDataGridCell>
-                    </VSCodeDataGridRow>
+                    <DataGridRow key={i + 1}>
+                        <DataGridCell grid-column="1">
+                            <TextField value={setting.name} onChange={ev => updateStringSetting(i, { ...setting, name: (ev.target as any).value })} />
+                        </DataGridCell>
+                        <DataGridCell grid-column="2">
+                            <TextField value={setting.value} onChange={ev => updateStringSetting(i, { ...setting, value: (ev.target as any).value })} />
+                        </DataGridCell>
+                        <DataGridCell grid-column="3">
+                            <Checkbox checked={setting.isEnvironmentVariable} onChange={ev => updateStringSetting(i, { ...setting, isEnvironmentVariable: (ev.target as any).checked })} />
+                        </DataGridCell>
+                        <DataGridCell grid-column="4">
+                            <Button appearance="secondary" onClick={() => removeStringSetting(i)}>Remove</Button>
+                        </DataGridCell>
+                    </DataGridRow>
                 ))}
-            </VSCodeDataGrid>
-            <VSCodeButton appearance="secondary" onClick={addStringSetting} style={{ marginTop: '1em' }}>
+            </DataGrid>
+            <Button appearance="secondary" onClick={addStringSetting} style={{ marginTop: '1em' }}>
                 Add String Setting {/* TODO: figure out a way to add icons (codicons?) */}
-            </VSCodeButton>
+            </Button>
 
             <h3>URL Settings</h3>
-            <VSCodeDataGrid gridTemplateColumns="repeat(3, 1fr) 8em">
-                <VSCodeDataGridRow key={0} row-type="header">
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="1">Name</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="2">URL</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="3">Verb</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="4"></VSCodeDataGridCell>
-                </VSCodeDataGridRow>
+            <DataGrid gridTemplateColumns="repeat(3, 1fr) 8em">
+                <DataGridRow key={0} row-type="header">
+                    <DataGridCell cell-type="columnheader" grid-column="1">Name</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="2">URL</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="3">Verb</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="4"></DataGridCell>
+                </DataGridRow>
                 {urlSettings.map((setting, i) => (
-                    <VSCodeDataGridRow key={i + 1}>
-                        <VSCodeDataGridCell grid-column="1">
-                            <VSCodeTextField value={setting.name} onChange={ev => updateUrlSetting(i, { ...setting, name: (ev.target as any).value })} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="2">
-                            <VSCodeTextField value={setting.url} onChange={ev => updateUrlSetting(i, { ...setting, url: (ev.target as any).value })} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="3">
-                            <VSCodeDropdown value={setting.verb || 'get'} onChange={ev => updateUrlSetting(i, { ...setting, verb: (ev.target as any).value })}>
-                                <VSCodeOption value={"get"}>GET</VSCodeOption>
-                                <VSCodeOption value={"put"}>PUT</VSCodeOption>
-                                <VSCodeOption value={"post"}>POST</VSCodeOption>
-                                <VSCodeOption value={"patch"}>PATCH</VSCodeOption>
-                            </VSCodeDropdown>
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="4">
-                            <VSCodeButton appearance="secondary" onClick={() => removeUrlSetting(i)}>Remove</VSCodeButton>
-                        </VSCodeDataGridCell>
-                    </VSCodeDataGridRow>
+                    <DataGridRow key={i + 1}>
+                        <DataGridCell grid-column="1">
+                            <TextField value={setting.name} onChange={ev => updateUrlSetting(i, { ...setting, name: (ev.target as any).value })} />
+                        </DataGridCell>
+                        <DataGridCell grid-column="2">
+                            <TextField value={setting.url} onChange={ev => updateUrlSetting(i, { ...setting, url: (ev.target as any).value })} />
+                        </DataGridCell>
+                        <DataGridCell grid-column="3">
+                            <Dropdown value={setting.verb || 'get'} onChange={ev => updateUrlSetting(i, { ...setting, verb: (ev.target as any).value })}>
+                                <Option value={"get"}>GET</Option>
+                                <Option value={"put"}>PUT</Option>
+                                <Option value={"post"}>POST</Option>
+                                <Option value={"patch"}>PATCH</Option>
+                            </Dropdown>
+                        </DataGridCell>
+                        <DataGridCell grid-column="4">
+                            <Button appearance="secondary" onClick={() => removeUrlSetting(i)}>Remove</Button>
+                        </DataGridCell>
+                    </DataGridRow>
                 ))}
-            </VSCodeDataGrid>
-            <VSCodeButton appearance="secondary" onClick={addUrlSetting} style={{ marginTop: '1em' }}>
+            </DataGrid>
+            <Button appearance="secondary" onClick={addUrlSetting} style={{ marginTop: '1em' }}>
                 Add URL Setting {/* TODO: figure out a way to add icons (codicons?) */}
-            </VSCodeButton>
+            </Button>
 
             <h2>App Bundles</h2>
             <Grid columns={'1fr 8em'}>
                 {appBundles.map((appBundle, i) => (
                     <>
-                        <VSCodeDropdown key={`dropdown-${i}`} value={appBundle || options.appBundles[0]} onChange={ev => updateAppBundle(i, (ev.target as any).value)}>
-                            {options.appBundles.map(bundle => <VSCodeOption value={bundle}>{bundle}</VSCodeOption>)}
-                        </VSCodeDropdown>
-                        <VSCodeButton appearance="secondary" key={`btn-${i}`} onClick={() => removeAppBundle(i)}>Remove</VSCodeButton>
+                        <Dropdown key={`dropdown-${i}`} value={appBundle || options.appBundles[0]} onChange={ev => updateAppBundle(i, (ev.target as any).value)}>
+                            {options.appBundles.map(bundle => <Option value={bundle}>{bundle}</Option>)}
+                        </Dropdown>
+                        <Button appearance="secondary" key={`btn-${i}`} onClick={() => removeAppBundle(i)}>Remove</Button>
                     </>
                 ))}
             </Grid>
-            <VSCodeButton appearance="secondary" onClick={addAppBundle} style={{ marginTop: '1em' }}>
+            <Button appearance="secondary" onClick={addAppBundle} style={{ marginTop: '1em' }}>
                 Add App Bundle {/* TODO: figure out a way to add icons (codicons?) */}
-            </VSCodeButton>
+            </Button>
 
             <Actions>
-                <VSCodeButton onClick={updateActivity}>Update</VSCodeButton>
+                <Button onClick={updateActivity}>Update</Button>
             </Actions>
         </div>
     );

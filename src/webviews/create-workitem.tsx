@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField, VSCodeDropdown, VSCodeButton, VSCodeOption, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
+import { TextField, Dropdown, Button, Option, DataGrid, DataGridRow, DataGridCell, Checkbox } from './components/controls';
 import { IActivityDetail, IActivityParam, IWorkItemParam } from '../models/design-automation-api';
 import { postMessage } from './common';
 import { Actions } from './components/Actions';
@@ -54,10 +54,10 @@ const CreateWorkItem = ({ activity }: ICreateWorkItemProps) => {
     const [parameters, setParameters] = useState<IParameter[]>(activity.parameters ? unpackParameters(activity.parameters) : []);
     const updateParameter = (newIndex: number, newParameter: IParameter) => setParameters(parameters.map((param, i) => i === newIndex ? newParameter : param));
     const ParameterPropertyInput = ({ index, parameter, field, placeholder }: { index: number, parameter: IParameter, field: 'name' | 'url' | 'localName' | 'pathInZip' | 'headers', placeholder?: string }) => (
-        <VSCodeTextField value={parameter[field] || ''} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).value })} placeholder={placeholder} />
+        <TextField value={parameter[field] || ''} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).value })} placeholder={placeholder} />
     );
     const ParameterPropertyCheckbox = ({ index, parameter, field }: { index: number, parameter: IParameter, field: 'optional' }) => (
-        <VSCodeCheckbox checked={!!parameter[field]} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).checked })} />
+        <Checkbox checked={!!parameter[field]} onChange={ev => updateParameter(index, { ...parameter, [field]: (ev.target as any).checked })} />
     );
 
     function createWorkItem() {
@@ -72,51 +72,51 @@ const CreateWorkItem = ({ activity }: ICreateWorkItemProps) => {
             <h1>Create Work Item: {activity.id}</h1>
 
             <h2>Parameters</h2>
-            <VSCodeDataGrid gridTemplateColumns="repeat(7, 1fr) 8em">
-                <VSCodeDataGridRow key={'header'} row-type="header">
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="1">Name</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="2">Value</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="3">Verb</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="4">Optional</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="5">Local Name</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="6">Path in Zip</VSCodeDataGridCell>
-                    <VSCodeDataGridCell cell-type="columnheader" grid-column="7">Headers</VSCodeDataGridCell>
-                </VSCodeDataGridRow>
+            <DataGrid gridTemplateColumns="repeat(7, 1fr) 8em">
+                <DataGridRow key={'header'} row-type="header">
+                    <DataGridCell cell-type="columnheader" grid-column="1">Name</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="2">Value</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="3">Verb</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="4">Optional</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="5">Local Name</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="6">Path in Zip</DataGridCell>
+                    <DataGridCell cell-type="columnheader" grid-column="7">Headers</DataGridCell>
+                </DataGridRow>
                 {parameters.map((param, i) => (
-                    <VSCodeDataGridRow key={`param-${i + 1}`}>
-                        <VSCodeDataGridCell grid-column="1">
+                    <DataGridRow key={`param-${i + 1}`}>
+                        <DataGridCell grid-column="1">
                             <ParameterPropertyInput index={i} parameter={param} field={"name"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="2">
+                        </DataGridCell>
+                        <DataGridCell grid-column="2">
                             <ParameterPropertyInput index={i} parameter={param} field={"url"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="3">
-                            <VSCodeDropdown value={param.verb || 'get'} onChange={ev => updateParameter(i, { ...param, verb: (ev.target as any).value })}>
-                                <VSCodeOption value={"get"}>GET</VSCodeOption>
-                                <VSCodeOption value={"put"}>PUT</VSCodeOption>
-                                <VSCodeOption value={"post"}>POST</VSCodeOption>
-                                <VSCodeOption value={"patch"}>PATCH</VSCodeOption>
-                                <VSCodeOption value={"read"}>READ</VSCodeOption>
-                            </VSCodeDropdown>
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="4">
+                        </DataGridCell>
+                        <DataGridCell grid-column="3">
+                            <Dropdown value={param.verb || 'get'} onChange={ev => updateParameter(i, { ...param, verb: (ev.target as any).value })}>
+                                <Option value={"get"}>GET</Option>
+                                <Option value={"put"}>PUT</Option>
+                                <Option value={"post"}>POST</Option>
+                                <Option value={"patch"}>PATCH</Option>
+                                <Option value={"read"}>READ</Option>
+                            </Dropdown>
+                        </DataGridCell>
+                        <DataGridCell grid-column="4">
                             <ParameterPropertyCheckbox index={i} parameter={param} field={"optional"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="5">
+                        </DataGridCell>
+                        <DataGridCell grid-column="5">
                             <ParameterPropertyInput index={i} parameter={param} field={"localName"} placeholder={"Local Name"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="6">
+                        </DataGridCell>
+                        <DataGridCell grid-column="6">
                             <ParameterPropertyInput index={i} parameter={param} field={"pathInZip"} placeholder={"Path in Zip"} />
-                        </VSCodeDataGridCell>
-                        <VSCodeDataGridCell grid-column="7">
+                        </DataGridCell>
+                        <DataGridCell grid-column="7">
                             <ParameterPropertyInput index={i} parameter={param} field={"headers"} placeholder={"HeaderA:ValueA;HeaderB:ValueB"} />
-                        </VSCodeDataGridCell>
-                    </VSCodeDataGridRow>
+                        </DataGridCell>
+                    </DataGridRow>
                 ))}
-            </VSCodeDataGrid>
+            </DataGrid>
 
             <Actions>
-                <VSCodeButton onClick={createWorkItem}>Create</VSCodeButton>
+                <Button onClick={createWorkItem}>Create</Button>
             </Actions>
         </div>
     );

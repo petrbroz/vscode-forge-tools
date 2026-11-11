@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField, VSCodeDataGrid, VSCodeDataGridRow, VSCodeDataGridCell } from '@vscode/webview-ui-toolkit/react';
+import { TextField, DataGrid, DataGridRow, DataGridCell } from './components/controls';
 import { Bucket } from '../models/oss';
 import { Grid } from './components/Grid';
 
@@ -12,29 +12,29 @@ const BucketDetails = ({ detail }: IBucketDetailsProps) => (
     <div>
         <h1>Bucket Details: {detail.bucketKey}</h1>
         <Grid>
-            <VSCodeTextField readOnly value={detail.bucketKey}>Bucket Key</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.bucketOwner}>Owner</VSCodeTextField>
-            <VSCodeTextField readOnly value={new Date(Number(detail.createdDate)).toLocaleDateString()}>Created</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.policyKey}>Data Retention Policy</VSCodeTextField>
+            <TextField readOnly value={detail.bucketKey}>Bucket Key</TextField>
+            <TextField readOnly value={detail.bucketOwner}>Owner</TextField>
+            <TextField readOnly value={new Date(Number(detail.createdDate)).toLocaleDateString()}>Created</TextField>
+            <TextField readOnly value={detail.policyKey}>Data Retention Policy</TextField>
         </Grid>
 
         <h2>Permissions</h2>
-        <VSCodeDataGrid>
-            <VSCodeDataGridRow row-type="header">
-                <VSCodeDataGridCell cell-type="columnheader" grid-column="1">
+        <DataGrid>
+            <DataGridRow row-type="header">
+                <DataGridCell cell-type="columnheader" grid-column="1">
                     Client ID
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cell-type="columnheader" grid-column="2">
+                </DataGridCell>
+                <DataGridCell cell-type="columnheader" grid-column="2">
                     Access Level
-                </VSCodeDataGridCell>
-            </VSCodeDataGridRow>
+                </DataGridCell>
+            </DataGridRow>
             {(detail.permissions ?? []).map(permission => (
-                <VSCodeDataGridRow>
-                    <VSCodeDataGridCell grid-column="1">{permission.authId}</VSCodeDataGridCell>
-                    <VSCodeDataGridCell grid-column="2">{permission.access}</VSCodeDataGridCell>
-                </VSCodeDataGridRow>
+                <DataGridRow>
+                    <DataGridCell grid-column="1">{permission.authId}</DataGridCell>
+                    <DataGridCell grid-column="2">{permission.access}</DataGridCell>
+                </DataGridRow>
             ))}
-        </VSCodeDataGrid>
+        </DataGrid>
     </div>
 );
 

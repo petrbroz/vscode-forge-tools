@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { TextField } from './components/controls';
 import { Grid } from './components/Grid';
 import { ServiceAccountKeyDetails } from '../models/secure-service-accounts';
 
@@ -12,10 +12,10 @@ const SecureServiceAccountDetails = ({ detail }: ISecureServiceAccountKeyDetails
     <div>
         <h1>Secure Service Account Key: {detail.kid}</h1>
         <Grid>
-            <VSCodeTextField readOnly value={detail.kid!}>ID</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.status!}>Status</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.createdAt!}>Created At</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.accessedAt!}>Accessed At</VSCodeTextField>
+            <TextField readOnly value={detail.kid!}>ID</TextField>
+            <TextField readOnly value={detail.status!}>Status</TextField>
+            <TextField readOnly value={detail.createdAt!}>Created At</TextField>
+            <TextField readOnly value={detail.accessedAt!}>Accessed At</TextField>
         </Grid>
     </div>
 );

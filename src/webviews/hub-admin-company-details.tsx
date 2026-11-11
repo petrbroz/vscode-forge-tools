@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { TextField } from './components/controls';
 import { HubAdminCompanyDetails } from '../models/hub-admin';
 import { Grid } from './components/Grid';
 
@@ -12,19 +12,19 @@ const HubAdminCompanyDetailsView = ({ detail }: IHubAdminCompanyDetailsProps) =>
     <div>
         <h1>Company Details: {detail.name}</h1>
         <Grid columns={'1fr 1fr'}>
-            <VSCodeTextField readOnly value={detail.id}>ID</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.name}>Name</VSCodeTextField>
+            <TextField readOnly value={detail.id}>ID</TextField>
+            <TextField readOnly value={detail.name}>Name</TextField>
 
-            <VSCodeTextField readOnly value={detail.trade || ''}>Trade</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.website_url || ''}>Website</VSCodeTextField>
+            <TextField readOnly value={detail.trade || ''}>Trade</TextField>
+            <TextField readOnly value={detail.website_url || ''}>Website</TextField>
 
-            <VSCodeTextField readOnly value={detail.phone || ''}>Phone</VSCodeTextField>
-            <VSCodeTextField readOnly value={[detail.address_line_1, detail.city, detail.state_or_province, detail.country].filter(Boolean).join(', ')}>Address</VSCodeTextField>
+            <TextField readOnly value={detail.phone || ''}>Phone</TextField>
+            <TextField readOnly value={[detail.address_line_1, detail.city, detail.state_or_province, detail.country].filter(Boolean).join(', ')}>Address</TextField>
 
-            <VSCodeTextField readOnly value={detail.erp_id || ''}>ERP ID</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.tax_id || ''}>Tax ID</VSCodeTextField>
+            <TextField readOnly value={detail.erp_id || ''}>ERP ID</TextField>
+            <TextField readOnly value={detail.tax_id || ''}>Tax ID</TextField>
 
-            <VSCodeTextField readOnly value={detail.description || ''}>Description</VSCodeTextField>
+            <TextField readOnly value={detail.description || ''}>Description</TextField>
         </Grid>
     </div>
 );
