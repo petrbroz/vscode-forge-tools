@@ -33,10 +33,6 @@ function isLoadMore(entry: HubsEntry): entry is hi.ILoadMore {
     return (<hi.ILoadMore>entry).loadMore === true;
 }
 
-function isHint(entry: HubsEntry): entry is hi.IHint {
-    return (<hi.IHint>entry).hint !== undefined;
-}
-
 export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
     private _context: IContext;
     private _onDidChangeTreeData: vscode.EventEmitter<HubsEntry | null> = new vscode.EventEmitter<HubsEntry | null>();

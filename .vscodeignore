@@ -1,7 +1,10 @@
-.vscode
-.vscode-test
-src
-.gitignore
-tsconfig.json
-esbuild.js
-node_modules
+# Allowlist: exclude everything, then re-include only what the packaged extension needs.
+# (package.json is always included by vsce. Negations win over exclusions, so keep them specific.)
+**
+!out/extension.js
+!out/webviews/*.js
+!resources/**
+!media/walkthrough/**/*.png
+!README.md
+!CHANGELOG.md
+!LICENSE

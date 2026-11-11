@@ -34,10 +34,6 @@ function isLoadMore(entry: SimpleStorageEntry): entry is ILoadMore {
     return (<ILoadMore>entry).loadMore === true;
 }
 
-function isHint(entry: SimpleStorageEntry): entry is IHint {
-    return (<IHint>entry).hint !== undefined;
-}
-
 export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry>, vscode.TreeDragAndDropController<SimpleStorageEntry> {
     /** Key used for the bucket list's page/continuation-token cache (the object list uses its bucket key instead). */
     static readonly rootKey = 'root';

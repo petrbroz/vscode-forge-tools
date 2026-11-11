@@ -94,8 +94,7 @@ async function updateWebhook({ system, event, id, authContext }: IWebhook, conte
 	try {
 		const service = webhooksServiceFor(context, authContext);
 		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, service.getHookDetails(system, event, id));
-		const scopes = service.getEventScopes(system, event);
-		let panel = createWebViewPanel(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail, scopes }, async message => {
+		let panel = createWebViewPanel(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail }, async message => {
 			switch (message.command) {
 				case 'update':
 					try {

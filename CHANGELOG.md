@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Changed
+  - App (2-legged) access tokens are now cached and reused until they expire, instead of being requested for every API call
+  - Smaller extension package: development files, tests, and sourcemaps are no longer included
+- Fixed
+  - The upload progress notification now tracks the actual upload progress instead of filling up immediately
+
 ## [3.6.0] - 2026-11-11
 
 - Added

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { randomUUID } from 'crypto';
 import { BucketsItems, ObjectDetails } from './models/oss';
 import { urnify } from './urn';
 import { IDerivative } from './models/model-derivative';
@@ -144,12 +145,11 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     }
 }
 
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+/** Returns a comparator that sorts items by the given property using natural, case-insensitive string ordering. */
 export function stringPropertySorter<T>(propName: keyof T) {
-    return function (a: T, b: T): number {
-        if (a[propName] < b[propName]) { return -1; }
-        else if (a[propName] > b[propName]) { return +1; }
-        else { return 0; }
-    };
+    return (a: T, b: T): number => collator.compare(String(a[propName] ?? ''), String(b[propName] ?? ''));
 }
 
 export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
@@ -157,8 +157,8 @@ export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
         location: vscode.ProgressLocation.Notification,
         title,
         cancellable: false
-    }, (progress, token) => task);
-};
+    }, () => task);
+}
 
 /** Opens (or reveals/updates, if already open) a read-only virtual document showing `data` as formatted JSON. `pathSegments` must uniquely identify the underlying resource so re-opening it reuses the same tab. */
 export function showReadOnlyJson(context: IContext, pathSegments: string[], data: unknown): Thenable<void> {
@@ -194,7 +194,7 @@ export function createWebViewPanel<Props>(context: IContext, scriptName: string,
         panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
     }
     const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
-    const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    const nonce = randomUUID();
     panel.webview.html = /*html*/ `
         <!DOCTYPE html>
         <html lang="en">
@@ -234,7 +234,7 @@ export function createViewerWebViewPanel<Props>(context: IContext, scriptName: s
         panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
     }
     const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
-    const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    const nonce = randomUUID();
     const encodedProps = Buffer.from(JSON.stringify(props)).toString('base64');
     panel.webview.html = /*html*/ `
         <!DOCTYPE html>
