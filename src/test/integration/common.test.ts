@@ -113,6 +113,7 @@ describe('promptBucket / promptObject / promptDerivative', () => {
 	it('promptBucket returns undefined when the user cancels the quick pick', async () => {
 		(vscode.window as any).showQuickPick = async () => undefined;
 		const fakeContext = {
+			environment: { region: 'US' },
 			ossService: { getAllBuckets: async () => [{ bucketKey: 'bucket-1' }] },
 			extensionContext: { workspaceState: fakeMemento() }
 		};
@@ -123,12 +124,15 @@ describe('promptBucket / promptObject / promptDerivative', () => {
 	it('promptBucket returns the picked bucket', async () => {
 		const buckets = [{ bucketKey: 'bucket-1' }, { bucketKey: 'bucket-2' }];
 		(vscode.window as any).showQuickPick = async () => 'bucket-2';
+		let requestedRegion: string | undefined;
 		const fakeContext = {
-			ossService: { getAllBuckets: async () => buckets },
+			environment: { region: 'EMEA' },
+			ossService: { getAllBuckets: async (region: string) => { requestedRegion = region; return buckets; } },
 			extensionContext: { workspaceState: fakeMemento() }
 		};
 
 		assert.strictEqual(await promptBucket(fakeContext as any), buckets[1]);
+		assert.strictEqual(requestedRegion, 'EMEA');
 	});
 
 	it('promptBucket lists the last-selected bucket first and remembers the new pick', async () => {
@@ -136,7 +140,7 @@ describe('promptBucket / promptObject / promptDerivative', () => {
 		let offered: string[] | undefined;
 		(vscode.window as any).showQuickPick = async (items: string[]) => { offered = items; return 'bucket-3'; };
 		const workspaceState = fakeMemento({ 'aps.lastBucket': 'bucket-2' });
-		const fakeContext = { ossService: { getAllBuckets: async () => buckets }, extensionContext: { workspaceState } };
+		const fakeContext = { environment: { region: 'US' }, ossService: { getAllBuckets: async () => buckets }, extensionContext: { workspaceState } };
 
 		await promptBucket(fakeContext as any);
 
