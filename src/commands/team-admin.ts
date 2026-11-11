@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
+import { IContext, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import {
     EntryType,
     ITeamAdminProductPool,
@@ -98,25 +98,7 @@ export class TeamAdminCommands {
                 service.getUser(user.teamId, user.id),
                 service.getAssignments(user.teamId, { userId: user.id })
             ]));
-            const name = [detail.firstName, detail.lastName].filter(Boolean).join(' ') || detail.email;
-            createWebViewPanel(this.context, 'details.js', 'details', `Team User Details: ${name}`, {
-                title: `Team User Details: ${name}`,
-                fields: [
-                    { label: 'ID', value: detail.id },
-                    { label: 'E-mail', value: detail.email },
-                    { label: 'First Name', value: detail.firstName || '' },
-                    { label: 'Last Name', value: detail.lastName || '' },
-                    { label: 'Role', value: detail.role },
-                    { label: 'Registration Pending', value: detail.isEmailVerified ? 'No' : 'Yes' }
-                ],
-                tables: [{
-                    title: 'Product Assignments',
-                    columns: ['Product', 'Type', 'Product ID'],
-                    columnWidths: '2fr 1fr 2fr',
-                    rows: assignments.map(assignment => [assignment.productName, assignment.assignmentType, assignment.productId]),
-                    emptyMessage: 'No product assignments.'
-                }]
-            });
+            await showReadOnlyJson(this.context, ['team-admin', user.teamId, 'users', user.id, 'details'], { ...detail, assignments });
         } catch (err) {
             showErrorMessage('Could not retrieve team user details', err, this.context);
         }

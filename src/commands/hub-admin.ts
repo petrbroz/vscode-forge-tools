@@ -37,15 +37,7 @@ export class HubAdminCommands {
                 `Getting hub details: ${hub.id}`,
                 hubsServiceFor(this.context, hub.authContext).getHubDetails(hub.id)
             );
-            createWebViewPanel(this.context, 'details.js', 'details', `Hub Details: ${details.name}`, {
-                title: `Hub Details: ${details.name}`,
-                fields: [
-                    { label: 'ID', value: details.id },
-                    { label: 'Name', value: details.name },
-                    { label: 'Region', value: details.region || '' },
-                    { label: 'Extension Type', value: details.extensionType || '' }
-                ]
-            });
+            await showReadOnlyJson(this.context, ['hub-admin', hub.authContext, 'hubs', hub.id], details);
         } catch (err) {
             showErrorMessage('Could not retrieve hub details', err, this.context);
         }
@@ -97,25 +89,7 @@ export class HubAdminCommands {
                 `Getting hub admin project details: ${project.id}`,
                 hubAdminServiceFor(this.context, project.authContext).getProject(project.id)
             );
-            createWebViewPanel(this.context, 'details.js', 'details', `Project Details: ${details.name}`, {
-                title: `Project Details: ${details.name}`,
-                fields: [
-                    { label: 'ID', value: details.id },
-                    { label: 'Name', value: details.name },
-                    { label: 'Status', value: details.status || '' },
-                    { label: 'Type', value: details.type || '' },
-                    { label: 'Classification', value: details.classification || '' },
-                    { label: 'Job Number', value: details.jobNumber || '' },
-                    { label: 'Start Date', value: details.startDate || '' },
-                    { label: 'End Date', value: details.endDate || '' },
-                    { label: 'Address', value: [details.addressLine1, details.city, details.stateOrProvince, details.country].filter(Boolean).join(', ') },
-                    { label: 'Platform', value: details.platform || '' },
-                    { label: 'Members', value: (details.memberCount ?? '').toString() },
-                    { label: 'Companies', value: (details.companyCount ?? '').toString() },
-                    { label: 'Created At', value: details.createdAt || '' },
-                    { label: 'Updated At', value: details.updatedAt || '' }
-                ]
-            });
+            await showReadOnlyJson(this.context, ['hub-admin', project.authContext, 'projects', project.id], details);
         } catch (err) {
             showErrorMessage('Could not retrieve hub admin project details', err, this.context);
         }
@@ -172,20 +146,7 @@ export class HubAdminCommands {
                 `Getting hub admin company details: ${company.id}`,
                 hubAdminServiceFor(this.context, company.authContext).getCompany(company.id, company.accountId)
             );
-            createWebViewPanel(this.context, 'details.js', 'details', `Company Details: ${details.name}`, {
-                title: `Company Details: ${details.name}`,
-                fields: [
-                    { label: 'ID', value: details.id },
-                    { label: 'Name', value: details.name },
-                    { label: 'Trade', value: details.trade || '' },
-                    { label: 'Website', value: details.website_url || '' },
-                    { label: 'Phone', value: details.phone || '' },
-                    { label: 'Address', value: [details.address_line_1, details.city, details.state_or_province, details.country].filter(Boolean).join(', ') },
-                    { label: 'ERP ID', value: details.erp_id || '' },
-                    { label: 'Tax ID', value: details.tax_id || '' },
-                    { label: 'Description', value: details.description || '' }
-                ]
-            });
+            await showReadOnlyJson(this.context, ['hub-admin', company.authContext, 'companies', company.id], details);
         } catch (err) {
             showErrorMessage('Could not retrieve hub admin company details', err, this.context);
         }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
+import { IContext, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import { IIssue } from '../models/issues';
 
 export class IssuesCommands {
@@ -28,34 +28,7 @@ export class IssuesCommands {
                 this.context.issuesService.getIssueDetails(projectId, id),
                 this.context.issuesService.getIssueComments(projectId, id)
             ]));
-            createWebViewPanel(this.context, 'details.js', 'details', `Issue Details: #${displayId}`, {
-                title: `Issue Details: #${detail.displayId} ${detail.title}`,
-                fields: [
-                    { label: 'ID', value: detail.id },
-                    { label: 'Display ID', value: (detail.displayId ?? '').toString() },
-                    { label: 'Status', value: detail.status },
-                    { label: 'Assigned To', value: detail.assignedTo || '<none>' },
-                    { label: 'Assigned To Type', value: detail.assignedToType || '<none>' },
-                    { label: 'Start Date', value: detail.startDate || '<none>' },
-                    { label: 'Due Date', value: detail.dueDate || '<none>' },
-                    { label: 'Location', value: detail.locationDetails || '<none>' },
-                    { label: 'Created By', value: detail.createdBy || '<none>' },
-                    { label: 'Created At', value: detail.createdAt || '<none>' },
-                    { label: 'Updated By', value: detail.updatedBy || '<none>' },
-                    { label: 'Updated At', value: detail.updatedAt || '<none>' },
-                    { label: 'Closed By', value: detail.closedBy || '<none>' },
-                    { label: 'Closed At', value: detail.closedAt || '<none>' },
-                    { label: 'Comments', value: (detail.commentCount ?? 0).toString() },
-                    { label: 'Watchers', value: (detail.watchers ?? []).join(', ') || '<none>' },
-                    { label: 'Description', value: detail.description || '<no description>', multiline: true }
-                ],
-                tables: comments && comments.length > 0 ? [{
-                    title: `Comments (${comments.length})`,
-                    columns: ['Created By', 'Created At', 'Comment'],
-                    columnWidths: '1fr 1fr 3fr',
-                    rows: comments.map(comment => [comment.createdBy || '<unknown>', comment.createdAt || '', comment.body || ''])
-                }] : undefined
-            });
+            await showReadOnlyJson(this.context, ['issues', projectId, id], { ...detail, comments });
         } catch (err) {
             showErrorMessage('Could not access issue', err, this.context);
         }

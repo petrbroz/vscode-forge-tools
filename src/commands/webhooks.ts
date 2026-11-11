@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, showErrorMessage } from '../common';
-import { withProgress, createWebViewPanel } from '../common';
+import { IContext, showErrorMessage, withProgress, createWebViewPanel, showReadOnlyJson } from '../common';
 import { IWebhook, IWebhookEvent } from '../models/webhooks';
 import { webhooksServiceFor } from '../providers/webhooks';
 
@@ -70,24 +69,7 @@ async function createWebhook({ system, event, authContext }: IWebhookEvent, cont
 async function viewWebhookDetails({ id, system, event, authContext }: IWebhook, context: IContext) {
 	try {
 		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, webhooksServiceFor(context, authContext).getHookDetails(system, event, id));
-		createWebViewPanel(context, 'details.js', 'details', `Webhook Details: ${id}`, {
-			title: `Webhook Details: ${id}`,
-			fields: [
-				{ label: 'ID', value: webhookDetail.hookId },
-				{ label: 'Status', value: webhookDetail.status },
-				{ label: 'System', value: webhookDetail.system },
-				{ label: 'Event', value: webhookDetail.event },
-				{ label: 'Created By', value: webhookDetail.createdBy },
-				{ label: 'Created On', value: webhookDetail.createdDate },
-				{ label: 'URN', value: webhookDetail.urn },
-				{ label: 'Tenant', value: webhookDetail.tenant },
-				{ label: 'Scope', value: Object.keys(webhookDetail.scope ?? {})[0] ?? '' },
-				{ label: 'Scope Value', value: Object.values(webhookDetail.scope ?? {})[0] ?? '' },
-				{ label: 'Callback URL', value: webhookDetail.callbackUrl },
-				{ label: 'Filter', value: (webhookDetail as typeof webhookDetail & { filter?: string }).filter || '' },
-				{ label: 'Attributes', value: webhookDetail.hookAttribute ? JSON.stringify(webhookDetail.hookAttribute) : '' }
-			]
-		});
+		await showReadOnlyJson(context, ['webhooks', system, event, id], webhookDetail);
 	} catch(err) {
 		showErrorMessage('Could not access webhook', err, context);
 	}
