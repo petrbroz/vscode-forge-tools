@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Team Admin (user) view for the Team Admin API (Beta): browse teams, users, product pools, and assignments, invite users, and assign/unassign products
+  - `autodesk.forge.enableTeamAdminApi` setting to enable the Team Admin API (Beta), which requests additional scopes when signing in
 - Fixed
   - Folders in the Hubs view now prefer their display name over their internal name
   - Tooltips in the Hubs view now show both the display name and the internal name

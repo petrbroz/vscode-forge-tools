@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 import { AuthenticationClient, ResponseType, Scopes, ThreeLeggedToken } from '@aps_sdk/authentication';
+import { TEAM_ADMIN_SCOPES } from './team-admin';
 
 /** Base64url-encodes a buffer (RFC 7636 / PKCE: no padding, URL-safe alphabet). */
 function base64UrlEncode(buffer: Buffer): string {
@@ -36,6 +37,14 @@ export class AuthenticationService {
         return DefaultScopes;
     }
 
+    /**
+     * Team Admin API scopes. Kept out of {@link defaultScopes} because they only work for 3-legged tokens
+     * of apps that have the Team Admin API enabled, so they're requested at sign-in only when opted in.
+     */
+    get teamAdminScopes(): string[] {
+        return TEAM_ADMIN_SCOPES;
+    }
+
     /** Generates a 2-legged (application) access token for the given scopes. */
     async getAccessToken(scopes: string[]): Promise<{ accessToken: string; expiresIn: number }> {
         const credentials = await this.client.getTwoLeggedToken(this.clientId, this.clientSecret, scopes as Scopes[]);
@@ -52,10 +61,11 @@ export class AuthenticationService {
     /**
      * Builds the browser URL that starts the 3-legged OAuth authorization code grant. `state` is
      * echoed back verbatim as a query parameter on the redirect, so the caller can correlate the
-     * eventual callback with this request. Pass `codeChallenge` for a public (PKCE) client.
+     * eventual callback with this request. Pass `codeChallenge` for a public (PKCE) client, and `scopes`
+     * to request something other than {@link defaultScopes} (e.g. to add {@link teamAdminScopes}).
      */
-    buildAuthorizationUrl(clientId: string, redirectUri: string, state: string, codeChallenge?: string): string {
-        return this.client.authorize(clientId, ResponseType.Code, redirectUri, DefaultScopes as Scopes[], {
+    buildAuthorizationUrl(clientId: string, redirectUri: string, state: string, codeChallenge?: string, scopes: string[] = DefaultScopes): string {
+        return this.client.authorize(clientId, ResponseType.Code, redirectUri, scopes as Scopes[], {
             state,
             ...(codeChallenge ? { codeChallenge, codeChallengeMethod: 'S256' } : {})
         });

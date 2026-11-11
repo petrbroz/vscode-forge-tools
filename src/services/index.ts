@@ -22,6 +22,7 @@ import { HubsService } from './hubs';
 import { WebhooksService } from './webhooks';
 import { IssuesService } from './issues';
 import { HubAdminService } from './hub-admin';
+import { TeamAdminService } from './team-admin';
 
 const OSS_SCOPES: string[] = [Scopes.BucketCreate, Scopes.BucketRead, Scopes.BucketUpdate, Scopes.BucketDelete, Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate];
 const MODEL_DERIVATIVE_SCOPES: string[] = [Scopes.DataRead, Scopes.DataWrite, Scopes.DataCreate, Scopes.ViewablesRead];
@@ -43,6 +44,7 @@ export interface IServices {
     secureServiceAccountsService: SecureServiceAccountsService;
     hubAdminServiceApp: HubAdminService;  // Hub Admin (app) view - account/project/company data (2-legged)
     hubAdminServiceUser: HubAdminService; // Hub Admin (user) view - account/project/company data (active session)
+    teamAdminService: TeamAdminService; // Team Admin (user) view - team users and product seats (user context only)
 }
 
 /**
@@ -140,6 +142,7 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
             sdkManager,
             authenticationProvider: new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, HUB_ADMIN_SCOPES, env.host)
         })),
-        hubAdminServiceUser: new HubAdminService(new AdminClient({ sdkManager, authenticationProvider: user }))
+        hubAdminServiceUser: new HubAdminService(new AdminClient({ sdkManager, authenticationProvider: user })),
+        teamAdminService: new TeamAdminService(user, env.host)
     };
 }

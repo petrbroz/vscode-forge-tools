@@ -11,6 +11,7 @@ import { createServices, createSessionAuthenticationProvider } from './services'
 import { ApsAuthenticationProvider } from './auth-provider';
 import { SecureServiceAccountsDataProvider } from './providers/secure-service-accounts';
 import { HubAdminDataProvider } from './providers/hub-admin';
+import { TeamAdminDataProvider, TEAM_ADMIN_ENABLED_SETTING } from './providers/team-admin';
 import { ReadOnlyContentProvider, READONLY_SCHEME } from './providers/readonly-content';
 import { AuthenticationCommands } from './commands/authentication';
 import { ObjectStorageServiceCommands } from './commands/object-storage';
@@ -20,6 +21,7 @@ import { ModelDerivativesCommands } from './commands/model-derivative';
 import { SecureServiceAccountsCommands } from './commands/secure-service-accounts';
 import { WebhooksCommands } from './commands/webhooks';
 import { HubAdminCommands } from './commands/hub-admin';
+import { TeamAdminCommands } from './commands/team-admin';
 import { IssuesCommands } from './commands/issues';
 import { EnvironmentCommands } from './commands/environment';
 
@@ -100,6 +102,16 @@ export async function activate(_context: vscode.ExtensionContext) {
 	context.extensionContext.subscriptions.push(hubAdminUserView);
 	const refreshHubAdmin = () => { hubAdminAppDataProvider.refresh(); hubAdminUserDataProvider.refresh(); };
 
+	// Setup Team Admin (user) view
+	let teamAdminDataProvider = new TeamAdminDataProvider(context);
+	let teamAdminView = vscode.window.createTreeView('apsTeamAdminView', { treeDataProvider: teamAdminDataProvider });
+	context.extensionContext.subscriptions.push(teamAdminView);
+	context.extensionContext.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+		if (event.affectsConfiguration(TEAM_ADMIN_ENABLED_SETTING)) {
+			teamAdminDataProvider.refresh();
+		}
+	}));
+
 	function updateUserSessionContext() {
 		vscode.commands.executeCommand('setContext', 'aps:userSession', !!context.session);
 	}
@@ -127,6 +139,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 		refreshWebhooks();
 		secureServiceAccountsProvider.refresh();
 		refreshHubAdmin();
+		teamAdminDataProvider.refresh();
 	}
 
 	const environmentCommands = new EnvironmentCommands(context, async () => {
@@ -147,6 +160,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 		issuesDataProvider.refresh();
 		refreshWebhooks();
 		refreshHubAdmin();
+		teamAdminDataProvider.refresh();
 	}));
 
 	const objectStorageServiceCommands = new ObjectStorageServiceCommands(
@@ -189,6 +203,9 @@ export async function activate(_context: vscode.ExtensionContext) {
 	const issuesCommands = new IssuesCommands(context, () => issuesDataProvider.refresh());
 	context.extensionContext.subscriptions.push(...issuesCommands.registerCommands());
 
+	const teamAdminCommands = new TeamAdminCommands(context, () => teamAdminDataProvider.refresh());
+	context.extensionContext.subscriptions.push(...teamAdminCommands.registerCommands());
+
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + context.environment.title;
 		statusBarItem.command = 'aps.switchEnvironment';
@@ -206,6 +223,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	issuesDataProvider.refresh();
 	refreshWebhooks();
 	refreshHubAdmin();
+	teamAdminDataProvider.refresh();
 }
 
 export function deactivate() { }
