@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { TextField } from './components/controls';
 import { IAppBundleDetail } from '../models/design-automation-api';
 import { Grid } from './components/Grid';
 
@@ -12,11 +12,11 @@ const AppBundleDetails = ({ detail }: IAppBundleDetailsProps) => (
     <div>
         <h1>App Bundle Details: {detail.id}</h1>
         <Grid>
-            <VSCodeTextField readOnly value={detail.id}>ID</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.version.toString()}>Version</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.engine}>Engine</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.description}>Description</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.package || ''}>Package</VSCodeTextField>
+            <TextField readOnly value={detail.id}>ID</TextField>
+            <TextField readOnly value={detail.version.toString()}>Version</TextField>
+            <TextField readOnly value={detail.engine}>Engine</TextField>
+            <TextField readOnly value={detail.description}>Description</TextField>
+            <TextField readOnly value={detail.package || ''}>Package</TextField>
         </Grid>
     </div>
 );

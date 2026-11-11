@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { TextField } from './components/controls';
 import { Grid } from './components/Grid';
 import { ServiceAccountDetails } from '../models/secure-service-accounts';
 
@@ -12,13 +12,13 @@ const SecureServiceAccountDetails = ({ detail }: ISecureServiceAccountDetailsPro
     <div>
         <h1>Secure Service Account: {detail.serviceAccountId}</h1>
         <Grid>
-            <VSCodeTextField readOnly value={detail.serviceAccountId!}>ID</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.email!}>E-mail</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.status!}>Status</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.createdBy!}>Created By</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.createdAt!}>Created At</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.accessedAt!}>Accessed At</VSCodeTextField>
-            <VSCodeTextField readOnly value={detail.expiresAt!}>Expires At</VSCodeTextField>
+            <TextField readOnly value={detail.serviceAccountId!}>ID</TextField>
+            <TextField readOnly value={detail.email!}>E-mail</TextField>
+            <TextField readOnly value={detail.status!}>Status</TextField>
+            <TextField readOnly value={detail.createdBy!}>Created By</TextField>
+            <TextField readOnly value={detail.createdAt!}>Created At</TextField>
+            <TextField readOnly value={detail.accessedAt!}>Accessed At</TextField>
+            <TextField readOnly value={detail.expiresAt!}>Expires At</TextField>
         </Grid>
     </div>
 );

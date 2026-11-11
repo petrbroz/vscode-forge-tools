@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
+import { Button } from './components/controls';
 import { postMessage } from './common';
 
 function downloadThumbnail(size: string) {
@@ -22,15 +22,15 @@ const Thumbnails = ({ objectKey, smallDataURI, mediumDataURI, largeDataURI }: IT
         <h1>Thumbnails: {objectKey}</h1>
 
         <h2>100x100px</h2>
-        <VSCodeButton onClick={() => downloadThumbnail('small')}>Download</VSCodeButton>
+        <Button onClick={() => downloadThumbnail('small')}>Download</Button>
         <img src={smallDataURI} alt={objectKey} style={{ display: 'block' }} />
 
         <h2>200x200px</h2>
-        <VSCodeButton onClick={() => downloadThumbnail('medium')}>Download</VSCodeButton>
+        <Button onClick={() => downloadThumbnail('medium')}>Download</Button>
         <img src={mediumDataURI} alt={objectKey} style={{ display: 'block' }} />
 
         <h2>400x400px</h2>
-        <VSCodeButton onClick={() => downloadThumbnail('large')}>Download</VSCodeButton>
+        <Button onClick={() => downloadThumbnail('large')}>Download</Button>
         <img src={largeDataURI} alt={objectKey} style={{ display: 'block' }} />
     </div>
 );

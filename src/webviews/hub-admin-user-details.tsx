@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { TextField } from './components/controls';
 import { HubAdminUserDetails } from '../models/hub-admin';
 import { Grid } from './components/Grid';
 
@@ -15,20 +15,20 @@ const HubAdminUserDetailsView = ({ detail, imageDataUri }: IHubAdminUserDetailsP
         <div style={{ display: 'flex', gap: '1em', alignItems: 'flex-start' }}>
             {imageDataUri && <img src={imageDataUri} alt={detail.name || detail.email} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover' }} />}
             <Grid columns={'1fr 1fr'}>
-                <VSCodeTextField readOnly value={detail.id}>ID</VSCodeTextField>
-                <VSCodeTextField readOnly value={detail.email}>E-mail</VSCodeTextField>
+                <TextField readOnly value={detail.id}>ID</TextField>
+                <TextField readOnly value={detail.email}>E-mail</TextField>
 
-                <VSCodeTextField readOnly value={detail.name}>Name</VSCodeTextField>
-                <VSCodeTextField readOnly value={detail.company_name || ''}>Company</VSCodeTextField>
+                <TextField readOnly value={detail.name}>Name</TextField>
+                <TextField readOnly value={detail.company_name || ''}>Company</TextField>
 
-                <VSCodeTextField readOnly value={detail.role || ''}>Role</VSCodeTextField>
-                <VSCodeTextField readOnly value={detail.status || ''}>Status</VSCodeTextField>
+                <TextField readOnly value={detail.role || ''}>Role</TextField>
+                <TextField readOnly value={detail.status || ''}>Status</TextField>
 
-                <VSCodeTextField readOnly value={detail.job_title || ''}>Job Title</VSCodeTextField>
-                <VSCodeTextField readOnly value={detail.phone || ''}>Phone</VSCodeTextField>
+                <TextField readOnly value={detail.job_title || ''}>Job Title</TextField>
+                <TextField readOnly value={detail.phone || ''}>Phone</TextField>
 
-                <VSCodeTextField readOnly value={[detail.city, detail.state_or_province, detail.country].filter(Boolean).join(', ')}>Location</VSCodeTextField>
-                <VSCodeTextField readOnly value={detail.last_sign_in || ''}>Last Sign In</VSCodeTextField>
+                <TextField readOnly value={[detail.city, detail.state_or_province, detail.country].filter(Boolean).join(', ')}>Location</TextField>
+                <TextField readOnly value={detail.last_sign_in || ''}>Last Sign In</TextField>
             </Grid>
         </div>
     </div>
