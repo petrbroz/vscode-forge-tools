@@ -26,22 +26,16 @@ export class DesignAutomationCommands {
 			vscode.commands.registerCommand('aps.da.createAppBundle', this.createAppBundle.bind(this)),
 			vscode.commands.registerCommand('aps.da.updateAppBundle', this.updateAppBundle.bind(this)),
 			vscode.commands.registerCommand('aps.da.viewAppBundleDetails', this.viewAppBundleDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewAppBundleDetailsJSON', this.viewAppBundleDetailsJSON.bind(this)),
 			vscode.commands.registerCommand('aps.da.viewAppBundleAliasDetails', this.viewAppBundleAliasDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewAppBundleAliasDetailsJSON', this.viewAppBundleAliasDetailsJSON.bind(this)),
 			vscode.commands.registerCommand('aps.da.viewAppBundleVersionDetails', this.viewAppBundleVersionDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewAppBundleVersionDetailsJSON', this.viewAppBundleVersionDetailsJSON.bind(this)),
 			vscode.commands.registerCommand('aps.da.deleteAppBundle', this.deleteAppBundle.bind(this)),
 			vscode.commands.registerCommand('aps.da.deleteAppBundleAlias', this.deleteAppBundleAlias.bind(this)),
 			vscode.commands.registerCommand('aps.da.createAppBundleAlias', this.createAppBundleAlias.bind(this)),
 			vscode.commands.registerCommand('aps.da.updateAppBundleAlias', this.updateAppBundleAlias.bind(this)),
 			vscode.commands.registerCommand('aps.da.deleteAppBundleVersion', this.deleteAppBundleVersion.bind(this)),
 			vscode.commands.registerCommand('aps.da.viewActivityDetails', this.viewActivityDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewActivityDetailsJSON', this.viewActivityDetailsJSON.bind(this)),
 			vscode.commands.registerCommand('aps.da.viewActivityAliasDetails', this.viewActivityAliasDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewActivityAliasDetailsJSON', this.viewActivityAliasDetailsJSON.bind(this)),
 			vscode.commands.registerCommand('aps.da.viewActivityVersionDetails', this.viewActivityVersionDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewActivityVersionDetailsJSON', this.viewActivityVersionDetailsJSON.bind(this)),
 			vscode.commands.registerCommand('aps.da.deleteActivity', this.deleteActivity.bind(this)),
 			vscode.commands.registerCommand('aps.da.deleteActivityAlias', this.deleteActivityAlias.bind(this)),
 			vscode.commands.registerCommand('aps.da.createActivity', this.createActivity.bind(this)),
@@ -83,30 +77,13 @@ export class DesignAutomationCommands {
         }
 	}
 
-	async viewAppBundleDetailsJSON(entry?: IAppBundleAliasEntry | ISharedAppBundleEntry) {
-        if (entry) {
-            await viewAppBundleDetailsJSON('fullid' in entry ? entry.fullid : `${entry.client}.${entry.appbundle}+${entry.alias}`, this.context);
-        } else {
-            await viewAppBundleDetailsJSON(undefined, this.context);
-        }
-	}
-
 	async viewAppBundleAliasDetails(entry?: IAppBundleAliasEntry) {
 		await viewAppBundleAliasDetails(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, this.context);
-	}
-
-	async viewAppBundleAliasDetailsJSON(entry?: IAppBundleAliasEntry) {
-		await viewAppBundleAliasDetailsJSON(entry ? `${entry.client}.${entry.appbundle}+${entry.alias}` : undefined, this.context);
 	}
 
 	async viewAppBundleVersionDetails(entry?: IAppBundleVersionEntry) {
         entry = this.ensureInput(entry);
         await viewAppBundleDetails({ name: entry.appbundle, version: entry.version }, this.context);
-	}
-
-	async viewAppBundleVersionDetailsJSON(entry?: IAppBundleVersionEntry) {
-        entry = this.ensureInput(entry);
-        await viewAppBundleDetailsJSON({ name: entry.appbundle, version: entry.version }, this.context);
 	}
 
 	async deleteAppBundle(entry?: IAppBundleEntry) {
@@ -144,28 +121,13 @@ export class DesignAutomationCommands {
         await viewActivityDetails(id, this.context);
 	}
 
-	async viewActivityDetailsJSON(entry?: IActivityAliasEntry | ISharedActivityEntry) {
-        entry = this.ensureInput(entry);
-        const id = 'fullid' in entry ? entry.fullid : `${entry.client}.${entry.activity}+${entry.alias}`;
-        await viewActivityDetailsJSON(id, this.context);
-	}
-
 	async viewActivityAliasDetails(entry?: IActivityAliasEntry) {
 		await viewActivityAliasDetails(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, this.context);
-	}
-
-	async viewActivityAliasDetailsJSON(entry?: IActivityAliasEntry) {
-		await viewActivityAliasDetailsJSON(entry ? `${entry.client}.${entry.activity}+${entry.alias}` : undefined, this.context);
 	}
 
 	async viewActivityVersionDetails(entry?: IActivityVersionEntry) {
         entry = this.ensureInput(entry);
         await viewActivityDetails({ name: entry.activity, version: entry.version }, this.context);
-	}
-
-	async viewActivityVersionDetailsJSON(entry?: IActivityVersionEntry) {
-        entry = this.ensureInput(entry);
-        await viewActivityDetailsJSON({ name: entry.activity, version: entry.version }, this.context);
 	}
 
 	async deleteActivity(entry?: IActivityEntry) {
@@ -268,45 +230,7 @@ async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | und
 	}
 }
 
-async function viewAppBundleDetailsJSON(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
-	try {
-		if (!id) {
-			id = await promptAppBundleFullID(context);
-			if (!id) {
-				return;
-			}
-		}
-
-		const appBundleDetail = await withProgress(`Getting app bundle details: ${id}`, typeof(id) === 'string'
-			? context.designAutomationService.getAppBundle(id)
-			: context.designAutomationService.getAppBundleVersion((<INameAndVersion>id).name, (<INameAndVersion>id).version)
-		);
-		await showReadOnlyJson(context, ['design-automation', 'appbundle', idKey(id)], appBundleDetail);
-	} catch (err) {
-		showErrorMessage('Could not access app bundle', err, context);
-	}
-}
-
 async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
-    try {
-		if (!id) {
-			id = await promptAppBundleFullID(context);
-			if (!id) {
-				return;
-			}
-		}
-
-		// TODO: add a method to the SDK for retrieve a single alias info
-		const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
-		const aliases = await withProgress(`Getting app bundle alias details: ${id}`, context.designAutomationService.listAppBundleAliases(daid.id));
-		const alias = aliases.find(entry => entry.id === daid.alias);
-		await showReadOnlyJson(context, ['design-automation', 'appbundle-alias', id as string], alias);
-	} catch(err) {
-		showErrorMessage('Could not access app bundle alias', err, context);
-	}
-}
-
-async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undefined, context: IContext) {
     try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);
@@ -328,15 +252,6 @@ async function viewAppBundleAliasDetailsJSON(id: FullyQualifiedID | undefined, c
 async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, context: IContext) {
 	try {
 		const activityDetail = await withProgress(`Getting activity details: ${id}`, typeof(id) === 'string' ? context.designAutomationService.getActivity(id) : context.designAutomationService.getActivityVersion(id.name, id.version));
-		createWebViewPanel(context, 'activity-details.js', 'activity-details', `Activity Details: ${activityDetail.id}`, { detail: activityDetail });
-	} catch(err) {
-		showErrorMessage('Could not access activity', err, context);
-	}
-}
-
-async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVersion, context: IContext) {
-	try {
-		const activityDetail = await withProgress(`Getting activity details: ${id}`, typeof(id) === 'string' ? context.designAutomationService.getActivity(id) : context.designAutomationService.getActivityVersion(id.name, id.version));
 		await showReadOnlyJson(context, ['design-automation', 'activity', idKey(id)], activityDetail);
 	} catch(err) {
 		showErrorMessage('Could not access activity', err, context);
@@ -344,25 +259,6 @@ async function viewActivityDetailsJSON(id: FullyQualifiedID | INameAndVersion, c
 }
 
 async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
-    try {
-		if (!id) {
-			id = await promptAppBundleFullID(context);
-			if (!id) {
-				return;
-			}
-		}
-
-		// TODO: add a method to the SDK for retrieve a single alias info
-		const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
-		const aliases = await withProgress(`Getting activity alias details: ${id}`, context.designAutomationService.listActivityAliases(daid.id));
-		const alias = aliases.find(entry => entry.id === daid.alias);
-		await showReadOnlyJson(context, ['design-automation', 'activity-alias', id as string], alias);
-	} catch(err) {
-		showErrorMessage('Could not access activity alias', err, context);
-	}
-}
-
-async function viewActivityAliasDetailsJSON(id: FullyQualifiedID | undefined, context: IContext) {
     try {
 		if (!id) {
 			id = await promptAppBundleFullID(context);

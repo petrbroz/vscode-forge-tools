@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Changed
   - Read-only resource details now open as formatted JSON documents
+  - Removed duplicate "View ... Details (JSON)" commands; every "View ... Details" command now opens a read-only JSON document
   - Webviews now use `@vscode-elements/react-elements` instead of the deprecated `@vscode/webview-ui-toolkit`
   - App (2-legged) access tokens are now cached and reused until they expire, instead of being requested for every API call
   - Smaller extension package: development files, tests, and sourcemaps are no longer included
