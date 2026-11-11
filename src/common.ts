@@ -28,7 +28,7 @@ export interface IContext extends IServices {
 const LAST_BUCKET_KEY = 'aps.lastBucket';
 
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
-    const buckets = await withProgress('Loading buckets...', context.ossService.getAllBuckets());
+    const buckets = await withProgress('Loading buckets...', context.ossService.getAllBuckets(context.environment.region));
     const lastBucketKey = context.extensionContext.workspaceState.get<string>(LAST_BUCKET_KEY);
     const bucketKey = await vscode.window.showQuickPick(sortRecentFirst(buckets.map(item => item.bucketKey), lastBucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
     if (!bucketKey) {

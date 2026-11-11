@@ -111,7 +111,7 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
     });
     const modelDerivativeClientUser = new ModelDerivativeClient({ sdkManager, authenticationProvider: user });
     const appViewerProvider = new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, VIEWER_SCOPES, env.host);
-    const modelDerivativeService = new ModelDerivativeService(modelDerivativeClientApp, modelDerivativeClientUser, appViewerProvider, user);
+    const modelDerivativeService = new ModelDerivativeService(modelDerivativeClientApp, modelDerivativeClientUser, appViewerProvider, user, env.region);
     const dataManagementClient = new DataManagementClient({ sdkManager, authenticationProvider: user });
     const dataManagementClientApp = new DataManagementClient({
         sdkManager,
@@ -130,8 +130,8 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
         webhooksServiceApp: new WebhooksService(new WebhooksClient({
             sdkManager,
             authenticationProvider: new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, WEBHOOKS_SCOPES, env.host)
-        })),
-        webhooksServiceUser: new WebhooksService(new WebhooksClient({ sdkManager, authenticationProvider: user })),
+        }), env.region),
+        webhooksServiceUser: new WebhooksService(new WebhooksClient({ sdkManager, authenticationProvider: user }), env.region),
         hubsService: new HubsService(dataManagementClient, modelDerivativeService),
         hubsServiceApp: new HubsService(dataManagementClientApp, modelDerivativeService),
         issuesService: new IssuesService(issuesClient),

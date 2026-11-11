@@ -1,4 +1,4 @@
-import { WebhooksClient, HookDetails } from '@aps_sdk/webhooks';
+import { WebhooksClient, HookDetails, Region } from '@aps_sdk/webhooks';
 import { WebhookSystem, WebhookEvent } from '../models/webhooks';
 import { WEBHOOKS } from './webhooks-catalog';
 
@@ -23,7 +23,12 @@ export interface IUpdateWebhookOptions {
  * operations so the vscode layers never touch the SDK's clients or transforms.
  */
 export class WebhooksService {
-    constructor(private readonly client: WebhooksClient) {}
+    constructor(private readonly client: WebhooksClient, private readonly region?: string) {}
+
+    /** Region option (data center) to pass to every hook call; `undefined` lets the SDK default to US. */
+    private get regionArg(): { region?: Region } {
+        return this.region ? { region: this.region as Region } : {};
+    }
 
     /**
      * Lists every webhook registered for a given system/event. The SDK's `getSystemEventHooks`
@@ -33,7 +38,7 @@ export class WebhooksService {
         const results: HookDetails[] = [];
         let pageState: string | undefined;
         do {
-            const page = await this.client.getSystemEventHooks(system, event, { pageState });
+            const page = await this.client.getSystemEventHooks(system, event, { pageState, ...this.regionArg });
             results.push(...(page.data ?? []));
             pageState = page.links?.next;
         } while (pageState);
@@ -48,7 +53,7 @@ export class WebhooksService {
     }
 
     getHookDetails(system: string, event: string, id: string): Promise<HookDetails> {
-        return this.client.getHookDetails(system, event, id);
+        return this.client.getHookDetails(system, event, id, this.regionArg);
     }
 
     async createWebhook(system: string, event: string, options: ICreateWebhookOptions): Promise<void> {
@@ -57,17 +62,17 @@ export class WebhooksService {
             scope: { [options.scopeKey]: options.scopeValue },
             filter: options.filter || undefined,
             hookAttribute: options.hookAttribute
-        });
+        }, this.regionArg);
     }
 
     async updateWebhook(system: string, event: string, id: string, options: IUpdateWebhookOptions): Promise<void> {
         await this.client.patchSystemEventHook(system, event, id, {
             filter: options.filter || undefined,
             hookAttribute: options.hookAttribute
-        });
+        }, this.regionArg);
     }
 
     async deleteWebhook(system: string, event: string, id: string): Promise<void> {
-        await this.client.deleteSystemEventHook(system, event, id);
+        await this.client.deleteSystemEventHook(system, event, id, this.regionArg);
     }
 }

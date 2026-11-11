@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Fixed
+  - Model Derivative and Webhooks requests now honor the region of the current environment
+  - The bucket quick pick now lists buckets from the current environment's region
   - Folders in the Hubs view now prefer their display name over their internal name
   - Tooltips in the Hubs view now show both the display name and the internal name
 

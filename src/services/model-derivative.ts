@@ -6,7 +6,8 @@ import {
     Manifest,
     ObjectTree,
     Properties,
-    ModelViews
+    ModelViews,
+    Region
 } from '@aps_sdk/model-derivative';
 import { IAuthenticationProvider } from '@aps_sdk/autodesk-sdkmanager';
 import { urnify } from '../urn';
@@ -135,8 +136,14 @@ export class ModelDerivativeService {
         private readonly appClient: ModelDerivativeClient,
         private readonly userClient: ModelDerivativeClient,
         private readonly appViewerProvider: IAuthenticationProvider,
-        private readonly userProvider: IAuthenticationProvider
+        private readonly userProvider: IAuthenticationProvider,
+        private readonly region?: string
     ) {}
+
+    /** Region option (data center) to pass to region-aware SDK calls; `undefined` lets the SDK default to US. */
+    private get regionArg(): { region?: Region } {
+        return this.region ? { region: this.region as Region } : {};
+    }
 
     /** Picks the client for a URN: user context for Hubs resources, app context for OSS objects. */
     private clientForUrn(urn: string): ModelDerivativeClient {
@@ -192,7 +199,7 @@ export class ModelDerivativeService {
         const urn = this.getObjectUrn(object);
         return this.clientForObject(object).startJob(
             { input: { urn }, output: { formats: [{ type: svf2, views: ['2d', '3d'] }] as any } },
-            { xAdsForce: true }
+            { xAdsForce: true, ...this.regionArg }
         );
     }
 
@@ -205,17 +212,17 @@ export class ModelDerivativeService {
             output: { formats: [buildOutputFormat(outputFormat, advanced, views2d, views3d)] },
             misc: workflowId ? { workflow: workflowId, workflowAttribute: workflowAttributes ? JSON.parse(workflowAttributes) : undefined } : undefined
         };
-        await this.clientForObject(object).startJob(jobPayload, { xAdsForce: true });
+        await this.clientForObject(object).startJob(jobPayload, { xAdsForce: true, ...this.regionArg });
     }
 
     /** Lists the Model Views (viewables) of a tree object. */
     getModelViews(object: ObjectDetails | IVersion): Promise<ModelViews> {
-        return this.clientForObject(object).getModelViews(this.getObjectUrn(object));
+        return this.clientForObject(object).getModelViews(this.getObjectUrn(object), this.regionArg);
     }
 
     /** Fetches the manifest of a tree object (used to check translation status). */
     getObjectManifest(object: ObjectDetails | IVersion): Promise<Manifest> {
-        return this.clientForObject(object).getManifest(this.getObjectUrn(object));
+        return this.clientForObject(object).getManifest(this.getObjectUrn(object), this.regionArg);
     }
 
     /** Downloads the 100x100, 200x200 and 400x400 thumbnails of a tree object, as binary strings. */
@@ -223,37 +230,37 @@ export class ModelDerivativeService {
         const client = this.clientForObject(object);
         const urn = this.getObjectUrn(object);
         return Promise.all([
-            client.getThumbnail(urn, { width: 100, height: 100 }),
-            client.getThumbnail(urn, { width: 200, height: 200 }),
-            client.getThumbnail(urn, { width: 400, height: 400 })
+            client.getThumbnail(urn, { width: 100, height: 100, ...this.regionArg }),
+            client.getThumbnail(urn, { width: 200, height: 200, ...this.regionArg }),
+            client.getThumbnail(urn, { width: 400, height: 400, ...this.regionArg })
         ]);
     }
 
     /** Fetches the manifest of an already-encoded URN (OSS objects use the app client). */
     getManifest(urn: string): Promise<Manifest> {
-        return this.appClient.getManifest(urn);
+        return this.appClient.getManifest(urn, this.regionArg);
     }
 
     /** Fetches the manifest of a Hubs version (uses the user client when logged in). */
     getVersionManifest(versionId: string): Promise<Manifest> {
         const urn = urlSafeUrn(versionId);
-        return this.clientForUrn(urn).getManifest(urn);
+        return this.clientForUrn(urn).getManifest(urn, this.regionArg);
     }
 
     /** Deletes the manifest (and all derivatives) of a tree object. */
     async deleteManifest(object: ObjectDetails | IVersion): Promise<void> {
         const urn = this.getObjectUrn(object);
-        await this.clientForUrn(urn).deleteManifest(urn);
+        await this.clientForUrn(urn).deleteManifest(urn, this.regionArg);
     }
 
     /** Fetches a viewable's object tree; pass `forceGet` to bypass the 20 MB response limit. */
     getObjectTree(urn: string, guid: string, forceGet: boolean = false): Promise<ObjectTree> {
-        return this.clientForUrn(urn).getObjectTree(urn, guid, forceGet ? { forceget: 'true' } : undefined);
+        return this.clientForUrn(urn).getObjectTree(urn, guid, forceGet ? { forceget: 'true', ...this.regionArg } : this.regionArg);
     }
 
     /** Fetches all properties of a viewable; pass `forceGet` to bypass the 20 MB response limit. */
     getAllProperties(urn: string, guid: string, forceGet: boolean = false): Promise<Properties> {
-        return this.clientForUrn(urn).getAllProperties(urn, guid, forceGet ? { forceget: 'true' } : undefined);
+        return this.clientForUrn(urn).getAllProperties(urn, guid, forceGet ? { forceget: 'true', ...this.regionArg } : this.regionArg);
     }
 
     /** Maps a viewable derivative's geometry children into `IDerivative` view models. */
@@ -296,7 +303,7 @@ export class ModelDerivativeService {
      */
     async getVersionDerivatives(versionId: string, manifest?: Manifest): Promise<IDerivative[]> {
         const urn = urlSafeUrn(versionId);
-        const m = (manifest ?? await this.clientForUrn(urn).getManifest(urn)) as any;
+        const m = (manifest ?? await this.clientForUrn(urn).getManifest(urn, this.regionArg)) as any;
         if (m.status !== 'success') {
             throw new Error('Unexpected manifest status: ' + m.status);
         }
@@ -313,7 +320,7 @@ export class ModelDerivativeService {
      */
     async getViewableDerivatives(objectId: string): Promise<IDerivative[] | null> {
         const urn = urnify(objectId);
-        const manifest = await this.appClient.getManifest(urn) as any;
+        const manifest = await this.appClient.getManifest(urn, this.regionArg) as any;
         const svf = manifest.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
         if (!svf) {
             return null;
@@ -331,7 +338,7 @@ export class ModelDerivativeService {
     async getCustomDerivatives(objectId: string): Promise<IDerivative[]> {
         const urn = urnify(objectId);
         const formats = await this.getFormats();
-        const manifest = await this.appClient.getManifest(urn) as any;
+        const manifest = await this.appClient.getManifest(urn, this.regionArg) as any;
         return manifest.derivatives
             .filter((deriv: any) => formats.hasOutput(deriv.outputType))
             .filter((deriv: any) => !isViewableFormat(deriv.outputType))
@@ -357,7 +364,7 @@ export class ModelDerivativeService {
 
     /** Downloads the bytes of a (non-viewable) derivative via its signed download URL. */
     async downloadDerivative(fileUrn: string, modelUrn: string): Promise<Uint8Array> {
-        const derivativeDownload = await this.appClient.getDerivativeUrl(encodeURI(fileUrn), modelUrn);
+        const derivativeDownload = await this.appClient.getDerivativeUrl(encodeURI(fileUrn), modelUrn, this.regionArg);
         const response = await fetch(derivativeDownload.url!);
         if (!response.ok) {
             throw new Error(`Request failed with status code ${response.status}`);
