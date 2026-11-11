@@ -113,7 +113,20 @@ export class ObjectStorageServiceCommands {
 
             const { bucketKey } = bucket;
             const bucketDetails = await withProgress(`Getting bucket details: ${bucketKey}`, this.context.ossService.getBucketDetails(bucketKey));
-            createWebViewPanel(this.context, 'bucket-details.js', 'bucket-details', `Bucket Details: ${bucketKey}`, { detail: bucketDetails });
+            createWebViewPanel(this.context, 'details.js', 'details', `Bucket Details: ${bucketKey}`, {
+                title: `Bucket Details: ${bucketKey}`,
+                fields: [
+                    { label: 'Bucket Key', value: bucketDetails.bucketKey },
+                    { label: 'Owner', value: bucketDetails.bucketOwner },
+                    { label: 'Created', value: new Date(Number(bucketDetails.createdDate)).toLocaleDateString() },
+                    { label: 'Data Retention Policy', value: bucketDetails.policyKey }
+                ],
+                tables: [{
+                    title: 'Permissions',
+                    columns: ['Client ID', 'Access Level'],
+                    rows: (bucketDetails.permissions ?? []).map(permission => [permission.authId, permission.access])
+                }]
+            });
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(bucketDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
         } catch(err) {
@@ -195,7 +208,17 @@ export class ObjectStorageServiceCommands {
 
             const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
             const objectDetails = await withProgress(`Getting object details: ${objectKey}`, this.context.ossService.getObjectDetails(bucketKey, objectKey));
-            createWebViewPanel(this.context, 'object-details.js', 'object-details', `Object Details: ${objectKey}`, { detail: objectDetails });
+            createWebViewPanel(this.context, 'details.js', 'details', `Object Details: ${objectKey}`, {
+                title: `Object Details: ${objectKey}`,
+                fields: [
+                    { label: 'Bucket Key', value: objectDetails.bucketKey },
+                    { label: 'Object Key', value: objectDetails.objectKey },
+                    { label: 'Object ID', value: objectDetails.objectId },
+                    { label: 'Size', value: (objectDetails.size ?? 0).toString() },
+                    { label: 'SHA1', value: objectDetails.sha1 },
+                    { label: 'Location', value: objectDetails.location }
+                ]
+            });
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
         } catch(err) {

@@ -262,7 +262,16 @@ async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | und
 			? context.designAutomationService.getAppBundle(id)
 			: context.designAutomationService.getAppBundleVersion((<INameAndVersion>id).name, (<INameAndVersion>id).version)
 		);
-		createWebViewPanel(context, 'appbundle-details.js', 'appbundle-details', `App Bundle Details: ${appBundleDetail.id}`, { detail: appBundleDetail });
+		createWebViewPanel(context, 'details.js', 'details', `App Bundle Details: ${appBundleDetail.id}`, {
+			title: `App Bundle Details: ${appBundleDetail.id}`,
+			fields: [
+				{ label: 'ID', value: appBundleDetail.id },
+				{ label: 'Version', value: appBundleDetail.version.toString() },
+				{ label: 'Engine', value: appBundleDetail.engine },
+				{ label: 'Description', value: appBundleDetail.description },
+				{ label: 'Package', value: appBundleDetail.package || '' }
+			]
+		});
 	} catch (err) {
 		showErrorMessage('Could not access app bundle', err, context);
 	}
@@ -300,7 +309,14 @@ async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, conte
 		const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
 		const aliases = await withProgress(`Getting app bundle alias details: ${id}`, context.designAutomationService.listAppBundleAliases(daid.id));
 		const alias = aliases.find(entry => entry.id === daid.alias);
-		createWebViewPanel(context, 'alias-details.js', 'alias-details', `Alias Details: ${id}`, { detail: alias });
+		createWebViewPanel(context, 'details.js', 'details', `Alias Details: ${id}`, {
+			title: `Alias Details: ${id}`,
+			fields: [
+				{ label: 'ID', value: alias!.id },
+				{ label: 'Version', value: alias!.version.toString() },
+				{ label: 'Receiver', value: alias!.receiver || '' }
+			]
+		});
 	} catch(err) {
 		showErrorMessage('Could not access app bundle alias', err, context);
 	}
@@ -356,7 +372,14 @@ async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, contex
 		const daid = DesignAutomationID.parse(id as FullyQualifiedID) as DesignAutomationID;
 		const aliases = await withProgress(`Getting activity alias details: ${id}`, context.designAutomationService.listActivityAliases(daid.id));
 		const alias = aliases.find(entry => entry.id === daid.alias);
-		createWebViewPanel(context, 'alias-details.js', 'alias-details', `Alias Details: ${id}`, { detail: alias });
+		createWebViewPanel(context, 'details.js', 'details', `Alias Details: ${id}`, {
+			title: `Alias Details: ${id}`,
+			fields: [
+				{ label: 'ID', value: alias!.id },
+				{ label: 'Version', value: alias!.version.toString() },
+				{ label: 'Receiver', value: alias!.receiver || '' }
+			]
+		});
 	} catch(err) {
 		showErrorMessage('Could not access activity alias', err, context);
 	}

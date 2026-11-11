@@ -66,7 +66,18 @@ export class SecureServiceAccountsCommands {
                 `Getting secure service account details: ${secureServiceAccount.id}`,
                 this.context.secureServiceAccountsService.getServiceAccountDetails(secureServiceAccount.id)
             );
-            createWebViewPanel(this.context, 'secure-service-account-details.js', 'secure-service-account-details', `Secure Service Account Details: ${secureServiceAccount.id}`, { detail: secureServiceAccountDetails });
+            createWebViewPanel(this.context, 'details.js', 'details', `Secure Service Account Details: ${secureServiceAccount.id}`, {
+                title: `Secure Service Account: ${secureServiceAccountDetails.serviceAccountId}`,
+                fields: [
+                    { label: 'ID', value: secureServiceAccountDetails.serviceAccountId! },
+                    { label: 'E-mail', value: secureServiceAccountDetails.email! },
+                    { label: 'Status', value: secureServiceAccountDetails.status! },
+                    { label: 'Created By', value: secureServiceAccountDetails.createdBy! },
+                    { label: 'Created At', value: secureServiceAccountDetails.createdAt! },
+                    { label: 'Accessed At', value: secureServiceAccountDetails.accessedAt! },
+                    { label: 'Expires At', value: secureServiceAccountDetails.expiresAt! }
+                ]
+            });
         } catch (err) {
             showErrorMessage('Could not retrieve secure service account details', err, this.context);
         }
@@ -170,7 +181,15 @@ export class SecureServiceAccountsCommands {
                 vscode.window.showErrorMessage(`Could not find secure service account key details: ${secureServiceAccountKey.id}`);
                 return;
             }
-            createWebViewPanel(this.context, 'secure-service-account-key-details.js', 'secure-service-account-key-details', `Secure Service Account Key Details: ${secureServiceAccountDetails.kid}`, { detail: secureServiceAccountDetails });
+            createWebViewPanel(this.context, 'details.js', 'details', `Secure Service Account Key Details: ${secureServiceAccountDetails.kid}`, {
+                title: `Secure Service Account Key: ${secureServiceAccountDetails.kid}`,
+                fields: [
+                    { label: 'ID', value: secureServiceAccountDetails.kid! },
+                    { label: 'Status', value: secureServiceAccountDetails.status! },
+                    { label: 'Created At', value: secureServiceAccountDetails.createdAt! },
+                    { label: 'Accessed At', value: secureServiceAccountDetails.accessedAt! }
+                ]
+            });
         } catch (err) {
             showErrorMessage('Could not retrieve secure service account key details', err, this.context);
         }
