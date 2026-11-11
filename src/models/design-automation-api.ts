@@ -3,7 +3,7 @@
  * `@aps_sdk/*` SDK for Design Automation, so these replace the types the extension used to import
  * from the legacy SDK. This module MUST stay free of runtime dependencies (no `axios`, no Node APIs)
  * so it can be safely imported by the React webviews - the REST client itself lives in
- * `src/clients/design-automation.ts`.
+ * `src/services/design-automation.ts`.
  */
 
 /** A parameter of an activity (`IActivityDetail.parameters` value). */

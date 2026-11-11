@@ -19,10 +19,6 @@ function isWebhookEvent(entry: WebhookEntry): entry is IWebhookEvent {
     return (<IWebhookEvent>entry).type === 'event';
 }
 
-function isWebhook(entry: WebhookEntry): entry is IWebhook {
-    return (<IWebhook>entry).type === 'hook';
-}
-
 export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntry> {
     private _context: IContext;
     private _authContext: WebhookAuthContext;

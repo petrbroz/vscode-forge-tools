@@ -344,7 +344,7 @@ export class ModelDerivativesCommands {
 					location: vscode.ProgressLocation.Notification,
 					title: `Downloading thumbnails: ${key}`,
 					cancellable: false
-				}, async (progress, token) => {
+				}, async () => {
 					await this.context.modelDerivativeService.getObjectManifest(thumbnailObject); // Check if the manifest exists
 					return await this.context.modelDerivativeService.getObjectThumbnails(thumbnailObject);
 				});

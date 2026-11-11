@@ -2,11 +2,6 @@ import * as crypto from 'crypto';
 import { AuthenticationClient, ResponseType, Scopes, ThreeLeggedToken } from '@aps_sdk/authentication';
 import { TEAM_ADMIN_SCOPES } from './team-admin';
 
-/** Base64url-encodes a buffer (RFC 7636 / PKCE: no padding, URL-safe alphabet). */
-function base64UrlEncode(buffer: Buffer): string {
-    return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
 /** Scopes offered when generating access tokens and requested during the 3-legged login flow. */
 const DefaultScopes: string[] = [
     Scopes.ViewablesRead,
@@ -53,8 +48,8 @@ export class AuthenticationService {
 
     /** Generates a PKCE `code_verifier` and its S256 `code_challenge` for a public-client login. */
     createPkcePair(): { verifier: string; challenge: string } {
-        const verifier = base64UrlEncode(crypto.randomBytes(32));
-        const challenge = base64UrlEncode(crypto.createHash('sha256').update(verifier).digest());
+        const verifier = crypto.randomBytes(32).toString('base64url');
+        const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
         return { verifier, challenge };
     }
 

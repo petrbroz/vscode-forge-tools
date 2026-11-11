@@ -232,10 +232,14 @@ export class ObjectStorageServiceCommands {
                     location: vscode.ProgressLocation.Notification,
                     title: `Uploading file: ${filepath}`,
                     cancellable: false
-                }, async (progress, token) => {
+                }, async (progress) => {
+                    let reported = 0;
                     await context.ossService.uploadObject(bucketKey, name, filepath, {
                         contentType,
-                        onProgress: (percentCompleted) => progress.report({ increment: percentCompleted })
+                        onProgress: (percentCompleted) => {
+                            progress.report({ increment: percentCompleted - reported });
+                            reported = percentCompleted;
+                        }
                     });
                 });
                 const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');

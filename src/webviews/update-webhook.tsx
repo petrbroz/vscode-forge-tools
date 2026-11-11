@@ -9,10 +9,9 @@ import { Actions } from './components/Actions';
 
 export interface IUpdateWebhookProps {
     detail: HookDetails & { filter?: string; hookAttribute?: string; };
-    scopes: string[];
 }
 
-const UpdateWebhook = ({ detail, scopes }: IUpdateWebhookProps) => {
+const UpdateWebhook = ({ detail }: IUpdateWebhookProps) => {
     const [filter, setFilter] = useState(detail.filter || '');
     const [attributes, setAttributes] = useState(detail.hookAttribute ? JSON.stringify(detail.hookAttribute) : '');
 

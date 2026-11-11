@@ -143,17 +143,13 @@ export class DesignAutomationClient {
         return this.request<IAppBundleUploadParams>({ method: 'POST', url: `/appbundles/${name}/versions`, data: { engine, settings, description } });
     }
 
-    async uploadAppBundleArchive(details: IAppBundleUploadParams, stream: fs.ReadStream): Promise<void> {
+    async uploadAppBundleArchive(details: IAppBundleUploadParams, filePath: string): Promise<void> {
         const { endpointURL, formData } = details.uploadParameters;
         const form = new FormData();
         for (const [key, value] of Object.entries(formData)) {
             form.append(key, value);
         }
-        const chunks: Buffer[] = [];
-        for await (const chunk of stream) {
-            chunks.push(chunk as Buffer);
-        }
-        form.append('file', new Blob([Buffer.concat(chunks)]), path.basename(String(stream.path))); // The archive must be the last field
+        form.append('file', await fs.openAsBlob(filePath), path.basename(filePath)); // The archive must be the last field
         // The endpoint URL is a pre-signed S3 upload, not on the APS host - no baseURL, no bearer token.
         const response = await fetch(endpointURL, { method: 'POST', body: form });
         if (!response.ok) {
@@ -361,7 +357,7 @@ export class DesignAutomationService {
 
     /** Uploads an app bundle archive from a local file path to the signed URL in `details`. */
     uploadAppBundleArchive(details: IAppBundleUploadParams, filePath: string): Promise<void> {
-        return this.client.uploadAppBundleArchive(details, fs.createReadStream(filePath));
+        return this.client.uploadAppBundleArchive(details, filePath);
     }
 
     deleteAppBundle(id: string): Promise<void> {

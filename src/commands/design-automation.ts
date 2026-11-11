@@ -181,19 +181,12 @@ export class DesignAutomationCommands {
 	}
 
 	async createActivity() {
-        await createActivity(
-            (activity: IActivityDetail) => { this.refresh(); },
-            this.context
-        );
+        await createActivity(() => { this.refresh(); }, this.context);
 	}
 
 	async updateActivity(entry?: IActivityAliasEntry | IActivityVersionEntry) {
         entry = this.ensureInput(entry);
-        await updateActivity(
-            'alias' in entry ? `${entry.client}.${entry.activity}+${entry.alias}` : { name: entry.activity, version: entry.version },
-            (activity: IActivityDetail) => { this.refresh(); },
-            this.context
-        );
+        await updateActivity('alias' in entry ? `${entry.client}.${entry.activity}+${entry.alias}` : { name: entry.activity, version: entry.version }, () => { this.refresh(); }, this.context);
 	}
 
 	async createActivityAlias(entry?: IActivityAliasesEntry) {
@@ -625,7 +618,7 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 	try {
 		const activity = await withProgress(`Getting activity details: ${id}`, context.designAutomationService.getActivity(id));
 		if (activity) {
-			let panel = createWebViewPanel(context, 'create-workitem.js', 'create-workitem', `Create Work Item: ${activity.id}`, { activity }, async message => {
+			createWebViewPanel(context, 'create-workitem.js', 'create-workitem', `Create Work Item: ${activity.id}`, { activity }, async message => {
 				switch (message.command) {
 					case 'create':
 						try {
@@ -634,7 +627,7 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 								location: vscode.ProgressLocation.Notification,
 								title: `Processing workitem`,
 								cancellable: false
-							}, async (progress, token) => {
+							}, async (progress) => {
 								let workitem = await context.designAutomationService.createWorkItem(id, parameters);
 								progress.report({ message: workitem.status });
 								return await context.designAutomationService.waitForWorkItem(workitem, status => progress.report({ message: status }));

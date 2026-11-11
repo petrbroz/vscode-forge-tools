@@ -14,7 +14,12 @@
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
+				"${workspaceFolder}/out/**/*.js",
+				"!**/node_modules/**"
+			],
+			"sourceMaps": true,
+			"skipFiles": [
+				"<node_internals>/**"
 			],
 			"preLaunchTask": "npm: build"
 		},

@@ -69,7 +69,6 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
         const engineId = parseDesignAutomationID(engine);
         const firstInputName = parameters.find(param => param.verb === 'get') as IActivityParam;
         const firstBundle = appBundles.length > 0 ? parseDesignAutomationID(appBundles[0]) : undefined;
-        debugger;
         switch (engineId.name.toLowerCase()) {
             case 'autocad':
                 return `$(engine.path)\\\\accoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
