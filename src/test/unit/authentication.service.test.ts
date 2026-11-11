@@ -70,6 +70,23 @@ describe('AuthenticationService', () => {
 			assert.strictEqual(received.codeChallenge, 'challenge-1');
 			assert.strictEqual(received.codeChallengeMethod, 'S256');
 		});
+
+		it('requests the given scopes instead of the defaults when provided', () => {
+			let received: string[] | undefined;
+			const fakeClient = {
+				authorize: (clientId: string, responseType: string, redirectUri: string, scopes: string[]) => {
+					received = scopes;
+					return 'url';
+				}
+			};
+			const service = new AuthenticationService(fakeClient as any, 'app-client-id', 'app-client-secret');
+			const scopes = [...service.defaultScopes, ...service.teamAdminScopes];
+
+			service.buildAuthorizationUrl('3l-client-id', 'vscode://publisher.name/callback', 'state-1', undefined, scopes);
+
+			assert.deepStrictEqual(received, scopes);
+			assert.ok(!service.defaultScopes.some(scope => scope.startsWith('tmadmapi:')));
+		});
 	});
 
 	describe('exchangeAuthorizationCode (confidential 3-legged client)', () => {

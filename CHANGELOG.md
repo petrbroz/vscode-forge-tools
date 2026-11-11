@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Team Admin (user) view for the Team Admin API (Beta): browse teams, users, product pools, and assignments, invite users, and assign/unassign products
+  - `autodesk.forge.enableTeamAdminApi` setting to enable the Team Admin API (Beta), which requests additional scopes when signing in
 - Fixed
   - Model Derivative and Webhooks requests now honor the region of the current environment
   - The bucket quick pick now lists buckets from the current environment's region
