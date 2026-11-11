@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { BucketsItems, ObjectDetails } from '../models/oss';
-import { createWebViewPanel, IContext, promptBucket, promptObject, showErrorMessage, withProgress } from '../common';
+import { IContext, promptBucket, promptObject, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 
 export class ObjectStorageServiceCommands {
     constructor(
@@ -113,7 +113,7 @@ export class ObjectStorageServiceCommands {
 
             const { bucketKey } = bucket;
             const bucketDetails = await withProgress(`Getting bucket details: ${bucketKey}`, this.context.ossService.getBucketDetails(bucketKey));
-            createWebViewPanel(this.context, 'bucket-details.js', 'bucket-details', `Bucket Details: ${bucketKey}`, { detail: bucketDetails });
+            await showReadOnlyJson(this.context, ['oss', 'buckets', bucketKey], bucketDetails);
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(bucketDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
         } catch(err) {
@@ -195,7 +195,7 @@ export class ObjectStorageServiceCommands {
 
             const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
             const objectDetails = await withProgress(`Getting object details: ${objectKey}`, this.context.ossService.getObjectDetails(bucketKey, objectKey));
-            createWebViewPanel(this.context, 'object-details.js', 'object-details', `Object Details: ${objectKey}`, { detail: objectDetails });
+            await showReadOnlyJson(this.context, ['oss', 'buckets', bucketKey, 'objects', objectKey], objectDetails);
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
         } catch(err) {

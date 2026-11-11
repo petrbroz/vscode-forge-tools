@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, showReadOnlyJson, showReadOnlyText, withProgress } from '../common';
+import { IContext, showErrorMessage, showReadOnlyJson, showReadOnlyText, withProgress } from '../common';
 import { ISecureServiceAccount, ISecureServiceAccountKey } from '../models/secure-service-accounts';
 
 export class SecureServiceAccountsCommands {
@@ -66,7 +66,7 @@ export class SecureServiceAccountsCommands {
                 `Getting secure service account details: ${secureServiceAccount.id}`,
                 this.context.secureServiceAccountsService.getServiceAccountDetails(secureServiceAccount.id)
             );
-            createWebViewPanel(this.context, 'secure-service-account-details.js', 'secure-service-account-details', `Secure Service Account Details: ${secureServiceAccount.id}`, { detail: secureServiceAccountDetails });
+            await showReadOnlyJson(this.context, ['secure-service-accounts', secureServiceAccount.id], secureServiceAccountDetails);
         } catch (err) {
             showErrorMessage('Could not retrieve secure service account details', err, this.context);
         }
@@ -170,7 +170,7 @@ export class SecureServiceAccountsCommands {
                 vscode.window.showErrorMessage(`Could not find secure service account key details: ${secureServiceAccountKey.id}`);
                 return;
             }
-            createWebViewPanel(this.context, 'secure-service-account-key-details.js', 'secure-service-account-key-details', `Secure Service Account Key Details: ${secureServiceAccountDetails.kid}`, { detail: secureServiceAccountDetails });
+            await showReadOnlyJson(this.context, ['secure-service-accounts', secureServiceAccountKey.secureServiceAccountId, 'keys', secureServiceAccountKey.id], secureServiceAccountDetails);
         } catch (err) {
             showErrorMessage('Could not retrieve secure service account key details', err, this.context);
         }

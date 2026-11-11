@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
+import { IContext, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import { IIssue } from '../models/issues';
 
 export class IssuesCommands {
@@ -28,7 +28,7 @@ export class IssuesCommands {
                 this.context.issuesService.getIssueDetails(projectId, id),
                 this.context.issuesService.getIssueComments(projectId, id)
             ]));
-            createWebViewPanel(this.context, 'issue-details.js', 'issue-details', `Issue Details: #${displayId}`, { detail, comments });
+            await showReadOnlyJson(this.context, ['issues', projectId, id], { ...detail, comments });
         } catch (err) {
             showErrorMessage('Could not access issue', err, this.context);
         }

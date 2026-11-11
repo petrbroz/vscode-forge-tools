@@ -545,34 +545,16 @@
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.da.viewAppBundleDetailsJSON",
-                "title": "View App Bundle Details (JSON)",
-                "category": "Autodesk Platform Services > Automation API",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.da.viewAppBundleAliasDetails",
                 "title": "View App Bundle Alias Details",
                 "category": "Autodesk Platform Services > Automation API",
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.da.viewAppBundleAliasDetailsJSON",
-                "title": "View App Bundle Alias Details (JSON)",
-                "category": "Autodesk Platform Services > Automation API",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.da.viewAppBundleVersionDetails",
                 "title": "View App Bundle Version Details",
                 "category": "Autodesk Platform Services > Automation API",
                 "icon": "$(eye)"
-            },
-            {
-                "command": "aps.da.viewAppBundleVersionDetailsJSON",
-                "title": "View App Bundle Version Details (JSON)",
-                "category": "Autodesk Platform Services > Automation API",
-                "icon": "$(json)"
             },
             {
                 "command": "aps.da.deleteAppBundle",
@@ -611,34 +593,16 @@
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.da.viewActivityDetailsJSON",
-                "title": "View Activity Details (JSON)",
-                "category": "Autodesk Platform Services > Automation API",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.da.viewActivityAliasDetails",
                 "title": "View Activity Alias Details",
                 "category": "Autodesk Platform Services > Automation API",
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.da.viewActivityAliasDetailsJSON",
-                "title": "View Activity Alias Details (JSON)",
-                "category": "Autodesk Platform Services > Automation API",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.da.viewActivityVersionDetails",
                 "title": "View Activity Version Details",
                 "category": "Autodesk Platform Services > Automation API",
                 "icon": "$(eye)"
-            },
-            {
-                "command": "aps.da.viewActivityVersionDetailsJSON",
-                "title": "View Activity Version Details (JSON)",
-                "category": "Autodesk Platform Services > Automation API",
-                "icon": "$(json)"
             },
             {
                 "command": "aps.da.deleteActivity",
@@ -779,22 +743,10 @@
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.hubAdmin.viewHubDetailsJSON",
-                "title": "View Hub Details (JSON)",
-                "category": "Autodesk Platform Services > Hub Admin",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.hubAdmin.viewUserDetails",
                 "title": "View User Details",
                 "category": "Autodesk Platform Services > Hub Admin",
                 "icon": "$(eye)"
-            },
-            {
-                "command": "aps.hubAdmin.viewUserDetailsJSON",
-                "title": "View User Details (JSON)",
-                "category": "Autodesk Platform Services > Hub Admin",
-                "icon": "$(json)"
             },
             {
                 "command": "aps.hubAdmin.copyUserID",
@@ -809,12 +761,6 @@
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.hubAdmin.viewProjectDetailsJSON",
-                "title": "View Project Details (JSON)",
-                "category": "Autodesk Platform Services > Hub Admin",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.hubAdmin.copyProjectID",
                 "title": "Copy Project ID to Clipboard",
                 "category": "Autodesk Platform Services > Hub Admin",
@@ -825,12 +771,6 @@
                 "title": "View Project User Details",
                 "category": "Autodesk Platform Services > Hub Admin",
                 "icon": "$(eye)"
-            },
-            {
-                "command": "aps.hubAdmin.viewProjectUserDetailsJSON",
-                "title": "View Project User Details (JSON)",
-                "category": "Autodesk Platform Services > Hub Admin",
-                "icon": "$(json)"
             },
             {
                 "command": "aps.hubAdmin.copyProjectUserID",
@@ -845,12 +785,6 @@
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.hubAdmin.viewCompanyDetailsJSON",
-                "title": "View Company Details (JSON)",
-                "category": "Autodesk Platform Services > Hub Admin",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.hubAdmin.copyCompanyID",
                 "title": "Copy Company ID to Clipboard",
                 "category": "Autodesk Platform Services > Hub Admin",
@@ -863,8 +797,8 @@
                 "icon": "$(refresh)"
             },
             {
-                "command": "aps.teamAdmin.viewTeamDetailsJSON",
-                "title": "View Team Details (JSON)",
+                "command": "aps.teamAdmin.viewTeamDetails",
+                "title": "View Team Details",
                 "category": "Autodesk Platform Services > Team Admin",
                 "icon": "$(json)"
             },
@@ -887,20 +821,14 @@
                 "icon": "$(eye)"
             },
             {
-                "command": "aps.teamAdmin.viewUserDetailsJSON",
-                "title": "View User Details (JSON)",
-                "category": "Autodesk Platform Services > Team Admin",
-                "icon": "$(json)"
-            },
-            {
                 "command": "aps.teamAdmin.copyUserID",
                 "title": "Copy User ID",
                 "category": "Autodesk Platform Services > Team Admin",
                 "icon": "$(copy)"
             },
             {
-                "command": "aps.teamAdmin.viewProductPoolDetailsJSON",
-                "title": "View Product Pool Details (JSON)",
+                "command": "aps.teamAdmin.viewProductPoolDetails",
+                "title": "View Product Pool Details",
                 "category": "Autodesk Platform Services > Team Admin",
                 "icon": "$(json)"
             },
@@ -956,7 +884,7 @@
                     "when": "false"
                 },
                 {
-                    "command": "aps.teamAdmin.viewTeamDetailsJSON",
+                    "command": "aps.teamAdmin.viewTeamDetails",
                     "when": "false"
                 },
                 {
@@ -972,15 +900,11 @@
                     "when": "false"
                 },
                 {
-                    "command": "aps.teamAdmin.viewUserDetailsJSON",
-                    "when": "false"
-                },
-                {
                     "command": "aps.teamAdmin.copyUserID",
                     "when": "false"
                 },
                 {
-                    "command": "aps.teamAdmin.viewProductPoolDetailsJSON",
+                    "command": "aps.teamAdmin.viewProductPoolDetails",
                     "when": "false"
                 },
                 {
@@ -1180,17 +1104,7 @@
                     "group": "0_view"
                 },
                 {
-                    "command": "aps.da.viewAppBundleDetailsJSON",
-                    "when": "view == apsDesignAutomationView && viewItem == shared-appbundle",
-                    "group": "0_view"
-                },
-                {
                     "command": "aps.da.viewAppBundleVersionDetails",
-                    "when": "view == apsDesignAutomationView && viewItem == appbundle-version",
-                    "group": "0_view"
-                },
-                {
-                    "command": "aps.da.viewAppBundleVersionDetailsJSON",
                     "when": "view == apsDesignAutomationView && viewItem == appbundle-version",
                     "group": "0_view"
                 },
@@ -1225,17 +1139,7 @@
                     "group": "0_view"
                 },
                 {
-                    "command": "aps.da.viewActivityDetailsJSON",
-                    "when": "view == apsDesignAutomationView && viewItem == shared-activity",
-                    "group": "0_view"
-                },
-                {
                     "command": "aps.da.viewActivityVersionDetails",
-                    "when": "view == apsDesignAutomationView && viewItem == activity-version",
-                    "group": "0_view"
-                },
-                {
-                    "command": "aps.da.viewActivityVersionDetailsJSON",
                     "when": "view == apsDesignAutomationView && viewItem == activity-version",
                     "group": "0_view"
                 },
@@ -1320,7 +1224,7 @@
                     "group": "3_remove"
                 },
                 {
-                    "command": "aps.teamAdmin.viewTeamDetailsJSON",
+                    "command": "aps.teamAdmin.viewTeamDetails",
                     "when": "view == apsTeamAdminView && viewItem == 'team-admin-team'",
                     "group": "0_view@1"
                 },
@@ -1345,11 +1249,6 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.teamAdmin.viewUserDetailsJSON",
-                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-user'",
-                    "group": "0_view@2"
-                },
-                {
                     "command": "aps.teamAdmin.copyUserID",
                     "when": "view == apsTeamAdminView && viewItem == 'team-admin-user'",
                     "group": "0_view@3"
@@ -1365,7 +1264,7 @@
                     "group": "inline@1"
                 },
                 {
-                    "command": "aps.teamAdmin.viewProductPoolDetailsJSON",
+                    "command": "aps.teamAdmin.viewProductPoolDetails",
                     "when": "view == apsTeamAdminView && viewItem == 'team-admin-product-pool'",
                     "group": "0_view@1"
                 },
@@ -1432,19 +1331,9 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.da.viewAppBundleDetailsJSON",
-                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-                    "group": "0_view@2"
-                },
-                {
                     "command": "aps.da.viewAppBundleAliasDetails",
                     "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
                     "group": "0_view@3"
-                },
-                {
-                    "command": "aps.da.viewAppBundleAliasDetailsJSON",
-                    "when": "view == apsDesignAutomationView && viewItem == appbundle-alias",
-                    "group": "0_view@4"
                 },
                 {
                     "command": "aps.da.viewActivityDetails",
@@ -1452,19 +1341,9 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.da.viewActivityDetailsJSON",
-                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
-                    "group": "0_view@2"
-                },
-                {
                     "command": "aps.da.viewActivityAliasDetails",
                     "when": "view == apsDesignAutomationView && viewItem == activity-alias",
                     "group": "0_view@3"
-                },
-                {
-                    "command": "aps.da.viewActivityAliasDetailsJSON",
-                    "when": "view == apsDesignAutomationView && viewItem == activity-alias",
-                    "group": "0_view@4"
                 },
                 {
                     "command": "aps.hubAdmin.viewHubDetails",
@@ -1472,19 +1351,9 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.hubAdmin.viewHubDetailsJSON",
-                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-hub'",
-                    "group": "0_view@2"
-                },
-                {
                     "command": "aps.hubAdmin.viewUserDetails",
                     "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-user'",
                     "group": "0_view@1"
-                },
-                {
-                    "command": "aps.hubAdmin.viewUserDetailsJSON",
-                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-user'",
-                    "group": "0_view@2"
                 },
                 {
                     "command": "aps.hubAdmin.copyUserID",
@@ -1497,11 +1366,6 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.hubAdmin.viewProjectDetailsJSON",
-                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project'",
-                    "group": "0_view@2"
-                },
-                {
                     "command": "aps.hubAdmin.copyProjectID",
                     "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project'",
                     "group": "0_view@3"
@@ -1512,11 +1376,6 @@
                     "group": "0_view@1"
                 },
                 {
-                    "command": "aps.hubAdmin.viewProjectUserDetailsJSON",
-                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project-user'",
-                    "group": "0_view@2"
-                },
-                {
                     "command": "aps.hubAdmin.copyProjectUserID",
                     "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-project-user'",
                     "group": "0_view@3"
@@ -1525,11 +1384,6 @@
                     "command": "aps.hubAdmin.viewCompanyDetails",
                     "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-company'",
                     "group": "0_view@1"
-                },
-                {
-                    "command": "aps.hubAdmin.viewCompanyDetailsJSON",
-                    "when": "(view == apsHubAdminAppView || view == apsHubAdminUserView) && viewItem == 'hub-admin-company'",
-                    "group": "0_view@2"
                 },
                 {
                     "command": "aps.hubAdmin.copyCompanyID",

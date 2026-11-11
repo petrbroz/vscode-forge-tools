@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, showErrorMessage } from '../common';
-import { withProgress, createWebViewPanel } from '../common';
+import { IContext, showErrorMessage, withProgress, createWebViewPanel, showReadOnlyJson } from '../common';
 import { IWebhook, IWebhookEvent } from '../models/webhooks';
 import { webhooksServiceFor } from '../providers/webhooks';
 
@@ -70,7 +69,7 @@ async function createWebhook({ system, event, authContext }: IWebhookEvent, cont
 async function viewWebhookDetails({ id, system, event, authContext }: IWebhook, context: IContext) {
 	try {
 		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, webhooksServiceFor(context, authContext).getHookDetails(system, event, id));
-		createWebViewPanel(context, 'webhook-details.js', 'webhook-details', `Webhook Details: ${id}`, { detail: webhookDetail });
+		await showReadOnlyJson(context, ['webhooks', system, event, id], webhookDetail);
 	} catch(err) {
 		showErrorMessage('Could not access webhook', err, context);
 	}

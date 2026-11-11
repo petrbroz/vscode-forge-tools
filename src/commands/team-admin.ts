@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
+import { IContext, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import {
     EntryType,
     ITeamAdminProductPool,
@@ -17,13 +17,12 @@ export class TeamAdminCommands {
     registerCommands(): vscode.Disposable[] {
         return [
             vscode.commands.registerCommand('aps.teamAdmin.refresh', this.refreshTeamAdmin.bind(this)),
-            vscode.commands.registerCommand('aps.teamAdmin.viewTeamDetailsJSON', this.viewTeamDetailsJSON.bind(this)),
+            vscode.commands.registerCommand('aps.teamAdmin.viewTeamDetails', this.viewTeamDetails.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.copyTeamID', this.copyTeamID.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.addUser', this.addUser.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.viewUserDetails', this.viewUserDetails.bind(this)),
-            vscode.commands.registerCommand('aps.teamAdmin.viewUserDetailsJSON', this.viewUserDetailsJSON.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.copyUserID', this.copyUserID.bind(this)),
-            vscode.commands.registerCommand('aps.teamAdmin.viewProductPoolDetailsJSON', this.viewProductPoolDetailsJSON.bind(this)),
+            vscode.commands.registerCommand('aps.teamAdmin.viewProductPoolDetails', this.viewProductPoolDetails.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.copyProductID', this.copyProductID.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.assignProduct', this.assignProduct.bind(this)),
             vscode.commands.registerCommand('aps.teamAdmin.unassignProduct', this.unassignProduct.bind(this)),
@@ -41,7 +40,7 @@ export class TeamAdminCommands {
         this.refresh();
     }
 
-    async viewTeamDetailsJSON(team?: ITeamAdminTeam) {
+    async viewTeamDetails(team?: ITeamAdminTeam) {
         try {
             team = this.ensureInput(team);
             const details = await withProgress(`Getting team details: ${team.id}`, this.context.teamAdminService.getTeam(team.id));
@@ -98,17 +97,7 @@ export class TeamAdminCommands {
                 service.getUser(user.teamId, user.id),
                 service.getAssignments(user.teamId, { userId: user.id })
             ]));
-            createWebViewPanel(this.context, 'team-admin-user-details.js', 'team-admin-user-details', `Team User Details: ${user.name}`, { detail, assignments });
-        } catch (err) {
-            showErrorMessage('Could not retrieve team user details', err, this.context);
-        }
-    }
-
-    async viewUserDetailsJSON(user?: ITeamAdminUser) {
-        try {
-            user = this.ensureInput(user);
-            const details = await withProgress(`Getting team user details: ${user.email}`, this.context.teamAdminService.getUser(user.teamId, user.id));
-            await showReadOnlyJson(this.context, ['team-admin', user.teamId, 'users', user.id], details);
+            await showReadOnlyJson(this.context, ['team-admin', user.teamId, 'users', user.id, 'details'], { ...detail, assignments });
         } catch (err) {
             showErrorMessage('Could not retrieve team user details', err, this.context);
         }
@@ -120,7 +109,7 @@ export class TeamAdminCommands {
         vscode.window.showInformationMessage(`Team user ID copied to clipboard: ${user.id}`);
     }
 
-    async viewProductPoolDetailsJSON(pool?: ITeamAdminProductPool) {
+    async viewProductPoolDetails(pool?: ITeamAdminProductPool) {
         try {
             pool = this.ensureInput(pool);
             const { type, ...details } = pool;
