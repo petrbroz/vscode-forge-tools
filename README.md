@@ -4,7 +4,14 @@
 ![Visual Studio Marketplace Installs](https://vsmarketplacebadges.dev/installs/petrbroz.vscode-forge-tools.png)
 ![Visual Studio Marketplace Downloads](https://vsmarketplacebadges.dev/downloads/petrbroz.vscode-forge-tools.png)
 ![Visual Studio Marketplace Rating](https://vsmarketplacebadges.dev/rating/petrbroz.vscode-forge-tools.png)
-![platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.png)
+
+![Open VSX Version](https://img.shields.io/open-vsx/v/petrbroz/vscode-forge-tools
+)
+![Open VSX Installs](https://img.shields.io/open-vsx/dt/petrbroz/vscode-forge-tools
+)
+![Open VSX Rating](https://img.shields.io/open-vsx/rating/petrbroz/vscode-forge-tools
+)
+
 [![license](https://img.shields.io/badge/license-MIT-blue.png)](http://opensource.org/licenses/MIT)
 
 [Visual Studio Code](https://code.visualstudio.com) extension for accessing [Autodesk Platform Services](https://aps.autodesk.com) services and content.
@@ -52,6 +59,7 @@ The extension exposes the following settings:
   - `region` - data region for storing design data; can be `US` (default), `EMEA`, `AUS`, `CAN`, `DEU`, `IND`, `JPN`, or `GBR`
 - `autodesk.forge.data.defaultContentType` - content type to use for all files uploaded to OSS
 - `autodesk.forge.data.uploadChunkSize` - size of individual chunks (in bytes) when uploading files to OSS with the resumable functionality
+- `autodesk.forge.enableTeamAdminApi` - enable the _Team Admin (user)_ view for the Team Admin API (Beta); when enabled, signing in with 3-legged OAuth requests additional scopes (`tmadmapi:*`), so your APS app must have the Team Admin API enabled
 - `autodesk.forge.viewer.extensions` - array of Viewer [extension](https://aps.autodesk.com/en/docs/viewer/v7/reference/Extensions) IDs (for example, `Autodesk.VisualClusters` or `Autodesk.DocumentBrowser`) to be automatically loaded when previewing derivatives
 - `autodesk.forge.viewer.api` - Model Derivative API used by the viewer; by default, the viewer will determine the appropriate API based on the viewable output format (SVF vs SVF2)
 - `autodesk.forge.viewer.env` - Model Derivative environment used by the viewer; by default, the viewer will determine the appropriate environment based on the viewable output format (SVF vs SVF2)
@@ -117,6 +125,10 @@ The _Design Automation (app)_ view can be used for browsing [Design Automation](
 ### Secure Service Accounts (app) View
 
 Manage your [Secure Service Accounts](https://aps.autodesk.com/en/docs/ssa/v1/developers_guide/overview/) and their keys through the _Secure Service Accounts (app)_ view and the context menu of individual tree items — including generating assertions and access tokens for a key — or use any commands starting with `Secure Service Accounts:`.
+
+### Team Admin (user) View
+
+The _Team Admin (user)_ view uses the [Team Admin API](https://aps.autodesk.com/en/docs/team_admin/v1/developers_guide/overview/) (Beta) to browse the teams you administer in a team → users/product pools → assignments tree, invite users to a team, and assign or unassign products. The API only accepts 3-legged tokens of a team administrator, and your APS app must have the Team Admin API enabled. Turn on the `autodesk.forge.enableTeamAdminApi` setting, then sign in again with 3-legged OAuth (with or without PKCE). Enabling it makes sign-in request the additional `tmadmapi:*` scopes the API needs. The API runs in production, so changes affect real teams and seats.
 
 ## Known Limitations & Issues
 

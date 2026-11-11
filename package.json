@@ -6,7 +6,7 @@
     "description": "Visual Studio Code extension for accessing Autodesk Platform Services.",
     "author": "Petr Broz <petr.broz@autodesk.com>",
     "license": "MIT",
-    "version": "3.5.1",
+    "version": "3.6.0",
     "homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
     "repository": {
         "type": "git",
@@ -133,6 +133,12 @@
                     "maximum": 200,
                     "default": 32,
                     "description": "Number of projects/folder items/versions to fetch per page in the Data & Derivatives (user) tree view, before showing a \"Load more\" item."
+                },
+                "autodesk.forge.enableTeamAdminApi": {
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable the Team Admin (user) view for the Team Admin API (Beta). When enabled, signing in with 3-legged OAuth requests additional scopes (tmadmapi:team:read, tmadmapi:team-users:write, tmadmapi:team-products:write), so your APS app must have the Team Admin API enabled. Sign in again after changing this setting."
                 }
             }
         },
@@ -191,6 +197,11 @@
                     "id": "apsHubAdminUserView",
                     "name": "Hub Admin (user)",
                     "icon": "$(organization)"
+                },
+                {
+                    "id": "apsTeamAdminView",
+                    "name": "Team Admin (user)",
+                    "icon": "$(organization)"
                 }
             ]
         },
@@ -214,6 +225,16 @@
                 "view": "apsHubAdminUserView",
                 "when": "!aps:userSession",
                 "contents": "Hub Admin (user) data requires a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsTeamAdminView",
+                "when": "!aps:userSession",
+                "contents": "Team Admin data requires a user context.\n[Sign in to APS](command:aps.auth.login)"
+            },
+            {
+                "view": "apsTeamAdminView",
+                "when": "aps:userSession && !config.autodesk.forge.enableTeamAdminApi",
+                "contents": "The Team Admin API (Beta) is disabled. Enabling it requests additional scopes when you sign in, and requires the Team Admin API to be enabled for your APS app.\n[Enable Team Admin API](command:workbench.action.openSettings?%5B%22autodesk.forge.enableTeamAdminApi%22%5D)\nAfter enabling the setting, sign out and sign in again with 3-legged OAuth."
             }
         ],
         "authentication": [
@@ -834,6 +855,72 @@
                 "title": "Copy Company ID to Clipboard",
                 "category": "Autodesk Platform Services > Hub Admin",
                 "icon": "$(copy)"
+            },
+            {
+                "command": "aps.teamAdmin.refresh",
+                "title": "Refresh Team Admin",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "aps.teamAdmin.viewTeamDetailsJSON",
+                "title": "View Team Details (JSON)",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.teamAdmin.copyTeamID",
+                "title": "Copy Team ID",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.teamAdmin.addUser",
+                "title": "Add User to Team",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(person-add)"
+            },
+            {
+                "command": "aps.teamAdmin.viewUserDetails",
+                "title": "View User Details",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "aps.teamAdmin.viewUserDetailsJSON",
+                "title": "View User Details (JSON)",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.teamAdmin.copyUserID",
+                "title": "Copy User ID",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.teamAdmin.viewProductPoolDetailsJSON",
+                "title": "View Product Pool Details (JSON)",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(json)"
+            },
+            {
+                "command": "aps.teamAdmin.copyProductID",
+                "title": "Copy Product ID",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "aps.teamAdmin.assignProduct",
+                "title": "Assign Product",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(add)"
+            },
+            {
+                "command": "aps.teamAdmin.unassignProduct",
+                "title": "Unassign Product",
+                "category": "Autodesk Platform Services > Team Admin",
+                "icon": "$(remove)"
             }
         ],
         "submenus": [
@@ -867,6 +954,46 @@
                 {
                     "command": "aps.dm.loadMore",
                     "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.viewTeamDetailsJSON",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.copyTeamID",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.addUser",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.viewUserDetails",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.viewUserDetailsJSON",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.copyUserID",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.viewProductPoolDetailsJSON",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.copyProductID",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.assignProduct",
+                    "when": "false"
+                },
+                {
+                    "command": "aps.teamAdmin.unassignProduct",
+                    "when": "false"
                 }
             ],
             "view/title": [
@@ -887,7 +1014,7 @@
                 },
                 {
                     "command": "aps.auth.logout",
-                    "when": "(view == apsHubsView || view == apsIssuesView || view == apsWebhooksUserView || view == apsHubAdminUserView) && aps:userSession",
+                    "when": "(view == apsHubsView || view == apsIssuesView || view == apsWebhooksUserView || view == apsHubAdminUserView || view == apsTeamAdminView) && aps:userSession",
                     "group": "navigation"
                 },
                 {
@@ -908,6 +1035,11 @@
                 {
                     "command": "aps.hubAdmin.refresh",
                     "when": "view == apsHubAdminAppView || view == apsHubAdminUserView",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aps.teamAdmin.refresh",
+                    "when": "view == apsTeamAdminView",
                     "group": "navigation"
                 }
             ],
@@ -1186,6 +1318,71 @@
                     "command": "aps.ssa.deleteAccountKey",
                     "when": "view == apsSecureServiceAccountsView && viewItem == 'secure-service-account-key'",
                     "group": "3_remove"
+                },
+                {
+                    "command": "aps.teamAdmin.viewTeamDetailsJSON",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-team'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.teamAdmin.copyTeamID",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-team'",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.teamAdmin.addUser",
+                    "when": "view == apsTeamAdminView && (viewItem == 'team-admin-team' || viewItem == 'team-admin-users-category')",
+                    "group": "1_action@1"
+                },
+                {
+                    "command": "aps.teamAdmin.addUser",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-users-category'",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "aps.teamAdmin.viewUserDetails",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-user'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.teamAdmin.viewUserDetailsJSON",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-user'",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.teamAdmin.copyUserID",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-user'",
+                    "group": "0_view@3"
+                },
+                {
+                    "command": "aps.teamAdmin.assignProduct",
+                    "when": "view == apsTeamAdminView && (viewItem == 'team-admin-user' || viewItem == 'team-admin-product-pool' || viewItem == 'team-admin-product-pools-category')",
+                    "group": "1_action@2"
+                },
+                {
+                    "command": "aps.teamAdmin.assignProduct",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-product-pool'",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "aps.teamAdmin.viewProductPoolDetailsJSON",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-product-pool'",
+                    "group": "0_view@1"
+                },
+                {
+                    "command": "aps.teamAdmin.copyProductID",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-product-pool'",
+                    "group": "0_view@2"
+                },
+                {
+                    "command": "aps.teamAdmin.unassignProduct",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-assignment-direct'",
+                    "group": "3_remove@1"
+                },
+                {
+                    "command": "aps.teamAdmin.unassignProduct",
+                    "when": "view == apsTeamAdminView && viewItem == 'team-admin-assignment-direct'",
+                    "group": "inline@1"
                 }
             ],
             "aps.submenu.view": [

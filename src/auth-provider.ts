@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { IContext, withProgress } from './common';
 import { IEnvironment } from './models/environment';
 import { ApsAuthMode, ApsAuthModeKind, IApsAuthSession } from './models/authentication';
+import { TEAM_ADMIN_ENABLED_SETTING } from './providers/team-admin';
 
 /** How long to wait for the OAuth browser redirect to reach {@link ApsAuthenticationProvider.handleUri}. */
 const LoginTimeoutMs = 2 * 60 * 1000;
@@ -149,7 +150,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
      * deliver the matching authorization code.
      * Pass `usePkce: true` for the public-client PKCE flow (no client secret exchanged).
      */
-    private async runOAuthFlow(env: IEnvironment, usePkce: boolean): Promise<{ token: string; expiresIn: number; refreshToken?: string }> {
+    private async runOAuthFlow(env: IEnvironment, usePkce: boolean): Promise<{ token: string; expiresIn: number; refreshToken?: string; scopes: string[] }> {
         const { authenticationService, extensionContext } = this.getContext();
         const state = randomUUID();
         const externalUri = await vscode.env.asExternalUri(
@@ -159,15 +160,30 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         await this.notifyCallbackUriIfNeeded(env, redirectUri, extensionContext);
 
         const pkce = usePkce ? authenticationService.createPkcePair() : undefined;
-        const authorizeUrl = authenticationService.buildAuthorizationUrl(env.clientId, redirectUri, state, pkce?.challenge);
+        const scopes = this.oauthScopes();
+        const authorizeUrl = authenticationService.buildAuthorizationUrl(env.clientId, redirectUri, state, pkce?.challenge, scopes);
 
         const codePromise = this.waitForCallback(state);
         this.openBrowser(authorizeUrl);
         const code = await codePromise;
 
-        return pkce
+        const result = await (pkce
             ? authenticationService.exchangeAuthorizationCodeWithPkce(env.clientId, code, redirectUri, pkce.verifier)
-            : authenticationService.exchangeAuthorizationCode(env.clientId, code, redirectUri);
+            : authenticationService.exchangeAuthorizationCode(env.clientId, code, redirectUri));
+        return { ...result, scopes };
+    }
+
+    /**
+     * Scopes requested by the 3-legged OAuth flows: the default scopes, plus the Team Admin API scopes when
+     * the Team Admin API is enabled via the `autodesk.forge.enableTeamAdminApi` setting. They're opt-in
+     * because requesting them fails for apps that don't have the Team Admin API enabled.
+     */
+    private oauthScopes(): string[] {
+        const { authenticationService } = this.getContext();
+        const includeTeamAdmin = vscode.workspace.getConfiguration(undefined, null).get<boolean>(TEAM_ADMIN_ENABLED_SETTING);
+        return includeTeamAdmin
+            ? [...authenticationService.defaultScopes, ...authenticationService.teamAdminScopes]
+            : authenticationService.defaultScopes;
     }
 
     /**
@@ -225,12 +241,12 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         const base = { id: randomUUID(), environmentKey: env.clientId };
         switch (kind) {
             case 'authorization-code': {
-                const { token, expiresIn, refreshToken } = await this.runOAuthFlow(env, false);
-                return { ...base, mode: { kind }, scopes: authenticationService.defaultScopes, label: '3-legged', accessToken: token, expiresAt: Date.now() + expiresIn * 1000, refreshToken };
+                const { token, expiresIn, refreshToken, scopes: grantedScopes } = await this.runOAuthFlow(env, false);
+                return { ...base, mode: { kind }, scopes: grantedScopes, label: '3-legged', accessToken: token, expiresAt: Date.now() + expiresIn * 1000, refreshToken };
             }
             case 'authorization-code-pkce': {
-                const { token, expiresIn, refreshToken } = await this.runOAuthFlow(env, true);
-                return { ...base, mode: { kind }, scopes: authenticationService.defaultScopes, label: '3-legged (PKCE)', accessToken: token, expiresAt: Date.now() + expiresIn * 1000, refreshToken };
+                const { token, expiresIn, refreshToken, scopes: grantedScopes } = await this.runOAuthFlow(env, true);
+                return { ...base, mode: { kind }, scopes: grantedScopes, label: '3-legged (PKCE)', accessToken: token, expiresAt: Date.now() + expiresIn * 1000, refreshToken };
             }
             case 'service-account':
                 return this.runServiceAccountFlow(env, base);

@@ -41,7 +41,10 @@ export interface IFolder {
     kind: 'folder';
     projectId: string;
     id: string;
+    /** Tree label: `attributes.displayName` if present, otherwise `attributes.name`. */
     name: string;
+    /** Raw `attributes.name`, set only when {@link name} came from `attributes.displayName` instead. */
+    rawName?: string;
 }
 
 export interface IItem {
