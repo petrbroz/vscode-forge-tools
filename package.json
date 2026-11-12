@@ -1065,7 +1065,7 @@
                 },
                 {
                     "command": "aps.md.downloadDerivativeCustom",
-                    "when": "view == apsDataManagementView && viewItem == non-viewable-derivative",
+                    "when": "(view == apsDataManagementView || view == apsHubsView) && viewItem == non-viewable-derivative",
                     "group": "1_action_md"
                 },
                 {

@@ -164,7 +164,7 @@ export class HubsDataProvider extends BaseTreeProvider<HubsEntry> {
             return node;
         } else if (isDerivative(entry)) {
             const node = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.None);
-            node.id = entry.urn;
+            node.id = `${entry.urn}/${entry.bubble?.fileUrn ?? entry.guid}`;
             node.tooltip = [
                 `Derivative`,
                 `Name: ${entry.name}`,
