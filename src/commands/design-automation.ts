@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, command, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
+import { IContext, command, promptAppBundleFullID, promptEngineStep, runMultiStep, inputStep, showErrorMessage } from '../common';
 import { IActivityDetail, DesignAutomationID } from '../models/design-automation-api';
 import { withProgress, isCancellation, toAbortSignal, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
 import type { IActivityFormProps, IActivityFormMessage } from '../webviews/activity-form';
@@ -181,25 +181,30 @@ async function findAvailableEngines(context: IContext, progressTitle: string) {
 
 async function uploadAppBundle(name: string | undefined, context: IContext) {
 	try {
-		let exists = !!name;
-		name ??= await vscode.window.showInputBox({ prompt: 'Enter app bundle name', value: '' });
-		if (!name) {
-			return;
+		const exists = !!name;
+		let uris: vscode.Uri[] | undefined;
+		let engine = '';
+		let description = '';
+		const title = 'Upload app bundle';
+		const steps: Parameters<typeof runMultiStep>[0] = [];
+		if (!exists) {
+			steps.push((i, n) => inputStep(title, i, n, 'Enter app bundle name', name ?? '', value => { name = value; }));
 		}
-		const uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, openLabel: 'Upload zip' });
-		if (!uris) {
-			return;
-		}
-		const engine = await promptEngine(context);
-		if (!engine) {
-			return;
-		}
-		const description = await vscode.window.showInputBox({ prompt: 'Enter app bundle description', value: '' });
-		if (typeof description === 'undefined') {
+		steps.push(async () => {
+			const selected = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, openLabel: 'Upload zip' });
+			if (!selected) {
+				return 'cancel';
+			}
+			uris = selected;
+			return 'next';
+		});
+		steps.push((i, n) => promptEngineStep(context, title, i, n, value => { engine = value; }));
+		steps.push((i, n) => inputStep(title, i, n, 'Enter app bundle description', description, value => { description = value; }, { allowEmpty: true }));
+		if (!(await runMultiStep(steps)) || !name || !uris) {
 			return;
 		}
 
-		const filepath = uris[0].fsPath;
+		const filepath = (uris as vscode.Uri[])[0].fsPath;
 		const details = exists
 			? await context.designAutomationService.updateAppBundle(name, engine, description)
 			: await context.designAutomationService.createAppBundle(name, engine, description);

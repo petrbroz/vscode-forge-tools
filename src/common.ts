@@ -317,3 +317,104 @@ export function createWebViewPanel<Props, Message = unknown>(context: IContext, 
     `;
     return panel;
 }
+
+/** Result of a single step in a multi-step flow. */
+export type StepResult = 'next' | 'back' | 'cancel';
+
+/**
+ * Runs a sequence of steps, letting the user go back to a previous step (using the Back button
+ * of quick picks/input boxes) without restarting the whole flow. Returns true if all steps completed.
+ */
+export async function runMultiStep(steps: ((index: number, total: number) => Thenable<StepResult>)[]): Promise<boolean> {
+    let i = 0;
+    while (i < steps.length) {
+        const result = await steps[i](i, steps.length);
+        if (result === 'cancel') {
+            return false;
+        }
+        i = result === 'back' ? Math.max(0, i - 1) : i + 1;
+    }
+    return true;
+}
+
+function stepTitle(title: string, index: number, total: number): string {
+    return total > 1 ? `${title} (${index + 1}/${total})` : title;
+}
+
+/** Shows a single-selection quick pick as a step; the Back button is shown for all but the first step. */
+export function pickStep(title: string, index: number, total: number, items: string[], placeHolder: string, onPick: (value: string) => void): Promise<StepResult> {
+    return new Promise<StepResult>(resolve => {
+        const input = vscode.window.createQuickPick<vscode.QuickPickItem>();
+        let result: StepResult = 'cancel';
+        input.title = stepTitle(title, index, total);
+        input.placeholder = placeHolder;
+        input.items = items.map(label => ({ label }));
+        input.ignoreFocusOut = true;
+        if (index > 0) {
+            input.buttons = [vscode.QuickInputButtons.Back];
+        }
+        input.onDidTriggerButton(button => {
+            if (button === vscode.QuickInputButtons.Back) {
+                result = 'back';
+                input.hide();
+            }
+        });
+        input.onDidAccept(() => {
+            const selected = input.selectedItems[0];
+            if (selected) {
+                onPick(selected.label);
+                result = 'next';
+                input.hide();
+            }
+        });
+        input.onDidHide(() => {
+            input.dispose();
+            resolve(result);
+        });
+        input.show();
+    });
+}
+
+/** Shows an input box as a step; the Back button is shown for all but the first step. */
+export function inputStep(title: string, index: number, total: number, prompt: string, value: string, onInput: (value: string) => void, options?: { allowEmpty?: boolean }): Promise<StepResult> {
+    return new Promise<StepResult>(resolve => {
+        const input = vscode.window.createInputBox();
+        let result: StepResult = 'cancel';
+        input.title = stepTitle(title, index, total);
+        input.prompt = prompt;
+        input.value = value;
+        input.ignoreFocusOut = true;
+        if (index > 0) {
+            input.buttons = [vscode.QuickInputButtons.Back];
+        }
+        input.onDidTriggerButton(button => {
+            if (button === vscode.QuickInputButtons.Back) {
+                result = 'back';
+                input.hide();
+            }
+        });
+        input.onDidAccept(() => {
+            if (!options?.allowEmpty && !input.value) {
+                return;
+            }
+            onInput(input.value);
+            result = 'next';
+            input.hide();
+        });
+        input.onDidHide(() => {
+            input.dispose();
+            resolve(result);
+        });
+        input.show();
+    });
+}
+
+/** Like `promptEngine`, but as a step of a multi-step flow. */
+export async function promptEngineStep(context: IContext, title: string, index: number, total: number, onPick: (engine: string) => void): Promise<StepResult> {
+    const engines = await withProgress('Loading engines...', context.designAutomationService.listEngines());
+    const lastEngine = context.extensionContext.globalState.get<string>(LAST_ENGINE_KEY);
+    return pickStep(title, index, total, sortRecentFirst(engines, lastEngine), 'Select engine', engine => {
+        void context.extensionContext.globalState.update(LAST_ENGINE_KEY, engine);
+        onPick(engine);
+    });
+}
