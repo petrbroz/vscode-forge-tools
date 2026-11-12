@@ -22,7 +22,7 @@ yarn build         # esbuild -> out/ (extension + webviews)
 
 ## Architecture
 
-The source under `src/` is organized into five layers with a strict, one-directional dependency rule.
+The source under `src/` is organized into six layers with a strict, one-directional dependency rule.
 
 ### Layers
 
@@ -71,11 +71,16 @@ The source under `src/` is organized into five layers with a strict, one-directi
 - **`src/providers`** — Thin `vscode.TreeDataProvider`s, one per view. They map results from
   `context.<name>Service.*` into `vscode.TreeItem`s.
 
+- **`src/tools`** — Thin [language model tools](https://code.visualstudio.com/api/extension-guides/tools)
+  (`ApsLanguageModelTools`, exposing `registerTools(): vscode.Disposable[]`) for VS Code chat agent mode.
+  Like commands, they call `context.<name>Service.*` for all domain work; tools with side effects return
+  `confirmationMessages` from `prepareInvocation`.
+
 #### Dependency rule
 
 Dependencies point one way only:
 
-- `commands`, `providers` → `services` + `models`
+- `commands`, `providers`, `tools` → `services` + `models`
 - `services` → `models`
 - `webviews` → `models`
 
@@ -85,7 +90,7 @@ These invariants are checked with:
 
 ```bash
 grep -rn "from 'vscode'\|import \* as vscode" src/services src/models   # must be empty
-grep -rn "@aps_sdk" src/commands src/providers src/webviews             # must be empty
+grep -rn "@aps_sdk" src/commands src/providers src/tools src/webviews   # must be empty
 ```
 
 ### The context object
@@ -160,6 +165,9 @@ only — esbuild does all emitting). There is no separate lint/format step.
     Palette but fails with "command not found" when invoked; same for an orphaned menu entry.
   - Command IDs follow `<prefix>.<methodName>`, where `<prefix>` matches the other commands in that file
     (e.g. `aps.oss.*` for `object-storage.ts`, `aps.da.*` for `design-automation.ts`).
+  - The same applies to language model tools: every `vscode.lm.registerTool(name, ...)` call in
+    `src/tools/index.ts` must have a matching `contributes.languageModelTools` entry (same `name`, with
+    its `inputSchema` matching the tool's input interface), and vice versa.
   - Don't reintroduce a decorator, codegen script, or build step to automate this sync — it was
     deliberately removed in favor of keeping both sides hand-maintained and explicit.
 - **Respect the layer boundaries** (see [Architecture](#architecture) above). Dependencies point one
