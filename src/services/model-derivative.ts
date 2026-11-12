@@ -32,7 +32,7 @@ function isViewableFormat(format: string): boolean {
     return format === svf || format === svf2;
 }
 
-/** URL-safe base64 URN (the plain base64 URN with its single `/` replaced by `_`). */
+/** URL-safe, unpadded base64 URN (the plain base64 URN with its single `/` replaced by `_`). */
 function urlSafeUrn(id: string): string {
     return urnify(id).replace('/', '_');
 }
@@ -172,7 +172,7 @@ export class ModelDerivativeService {
         return this._formats;
     }
 
-    /** Returns the URL-safe base64 URN of a tree object (OSS object or Hubs version). */
+    /** Returns the URL-safe, unpadded base64 URN of a tree object (OSS object or Hubs version). */
     getObjectUrn(object: ObjectDetails | IVersion): string {
         return urlSafeUrn(getId(object));
     }

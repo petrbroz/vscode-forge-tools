@@ -198,7 +198,7 @@ describe('ModelDerivativeService', () => {
 
 		it('encodes an OSS object as a url-safe base64 urn of its objectId, and reads the format off objectKey', () => {
 			const object = { objectId: 'urn:adsk.objects:os.object:my-bucket/model.rvt', objectKey: 'model.rvt' };
-			const expected = Buffer.from(object.objectId).toString('base64').replace('/', '_');
+			const expected = Buffer.from(object.objectId).toString('base64').replace(/=+$/, '').replace('/', '_');
 
 			assert.strictEqual(service.getObjectUrn(object as any), expected);
 			assert.strictEqual(service.getSourceFileFormat(object as any), 'rvt');
@@ -206,7 +206,7 @@ describe('ModelDerivativeService', () => {
 
 		it('encodes a Hubs version as a url-safe base64 urn of its version id, with no source file format', () => {
 			const version = { kind: 'version', itemId: 'item-1', id: 'urn:adsk.wipprod:fs.file:vf.abc?version=1', name: 'model.dwg' };
-			const expected = Buffer.from(version.id).toString('base64').replace('/', '_');
+			const expected = Buffer.from(version.id).toString('base64').replace(/=+$/, '').replace('/', '_');
 
 			assert.strictEqual(service.getObjectUrn(version as any), expected);
 			assert.strictEqual(service.getSourceFileFormat(version as any), '');
@@ -348,7 +348,7 @@ describe('ModelDerivativeService', () => {
 			const result = await service.getViewableDerivatives(objectId);
 
 			assert.deepStrictEqual(result!.map(d => ({ urn: d.urn, name: d.name, guid: d.guid })), [
-				{ urn: Buffer.from(objectId).toString('base64'), name: 'View1', guid: 'guid-1' }
+				{ urn: Buffer.from(objectId).toString('base64').replace(/=+$/, ''), name: 'View1', guid: 'guid-1' }
 			]);
 		});
 	});
