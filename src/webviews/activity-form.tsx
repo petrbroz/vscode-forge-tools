@@ -46,15 +46,6 @@ function packSettings(stringSettings: ICodeOnEngineStringSetting[], urlSettings:
     return map;
 }
 
-function parseDesignAutomationID(id: string) {
-    const d = id.indexOf('.'), p = id.indexOf('+');
-    return {
-        owner: id.substring(0, d),
-        name: id.substring(d + 1, p),
-        alias: id.substring(p + 1)
-    };
-}
-
 const ActivityForm = ({ initial, options }: IActivityFormProps) => {
     const [id, setId] = useState(initial?.id ?? '');
     const [description, setDescription] = useState(initial?.description || '');
