@@ -194,7 +194,11 @@ function withExtension(pathSegments: string[], extension: string): vscode.Uri {
     return readOnlyUri(...pathSegments.slice(0, -1), `${pathSegments[pathSegments.length - 1]}.${extension}`);
 }
 
-export function createWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
+/** Pinned version of the APS Viewer; update on release. */
+export const VIEWER_VERSION = '7.110.0';
+
+export function createWebViewPanel<Props, Message = unknown>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: Message) => void, options?: { viewer?: boolean }): vscode.WebviewPanel {
+    const viewer = !!options?.viewer;
     let disposables: vscode.Disposable[] = [];
     let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
         enableScripts: true, // Enable javascript in the webview
@@ -215,67 +219,51 @@ export function createWebViewPanel<Props>(context: IContext, scriptName: string,
     }
     const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
     const nonce = randomUUID();
-    panel.webview.html = /*html*/ `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1.0">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; img-src data:">
-            <title>${title}</title>
-        </head>
-        <body>
-            <div id="root"></div>
-            <script type="module" nonce="${nonce}">
-                import { render } from '${scriptUri}';
-                render(document.getElementById('root'), ${JSON.stringify(props)});
-            </script>
-        </body>
-        </html>
-    `;
-    return panel;
-}
-
-export function createViewerWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
-    let disposables: vscode.Disposable[] = [];
-    let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
-        enableScripts: true // Enable javascript in the webview
-    });
-    panel.onDidDispose(() => {
-        while (disposables.length) {
-            const disposable = disposables.pop();
-            if (disposable) {
-                disposable.dispose();
-            }
-        }
-        panel.dispose();
-    }, null, disposables);
-    if (onMessage) {
-        panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
-    }
-    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
-    const nonce = randomUUID();
-    const encodedProps = Buffer.from(JSON.stringify(props)).toString('base64');
-    panel.webview.html = /*html*/ `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1.0">
-            <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.css">
-            <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
-            <title>${title}</title>
+    let csp: string;
+    let headExtras = '';
+    let bootstrap: string;
+    if (viewer) {
+        const viewerBase = `https://developer.api.autodesk.com/modelderivative/v2/viewers/${VIEWER_VERSION}`;
+        const cspSource = panel.webview.cspSource;
+        csp = [
+            `default-src 'none'`,
+            `script-src 'nonce-${nonce}' ${cspSource} https://developer.api.autodesk.com 'unsafe-eval'`,
+            `style-src ${cspSource} https://developer.api.autodesk.com 'unsafe-inline'`,
+            `img-src ${cspSource} data: blob: https://*.api.autodesk.com`,
+            `connect-src https://*.api.autodesk.com https://*.autodesk.com data: blob:`,
+            `font-src ${cspSource} https://developer.api.autodesk.com data:`,
+            `worker-src blob: https://developer.api.autodesk.com`,
+            `child-src blob:`,
+            `media-src data: blob:`
+        ].join('; ');
+        headExtras = /*html*/ `
+            <link rel="stylesheet" href="${viewerBase}/style.css">
+            <script nonce="${nonce}" src="${viewerBase}/viewer3D.js"></script>
             <style>
                 body { margin: 0; }
                 #root { position: absolute; inset: 0; }
-            </style>
+            </style>`;
+        const encodedProps = Buffer.from(JSON.stringify(props)).toString('base64');
+        bootstrap = `const decodedProps = JSON.parse(atob('${encodedProps}'));
+                render(document.getElementById('root'), decodedProps);`;
+    } else {
+        csp = `default-src 'none'; script-src 'nonce-${nonce}'; img-src data:`;
+        bootstrap = `render(document.getElementById('root'), ${JSON.stringify(props)});`;
+    }
+    panel.webview.html = /*html*/ `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="${csp}">${headExtras}
+            <title>${title}</title>
         </head>
         <body>
             <div id="root"></div>
             <script type="module" nonce="${nonce}">
                 import { render } from '${scriptUri}';
-                const decodedProps = JSON.parse(atob('${encodedProps}'));
-                render(document.getElementById('root'), decodedProps);
+                ${bootstrap}
             </script>
         </body>
         </html>

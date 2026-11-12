@@ -7,8 +7,13 @@ import { Grid } from './components/Grid';
 import { postMessage } from './common';
 import { Actions } from './components/Actions';
 
+export type IUpdateWebhookMessage = {
+    command: 'update';
+    webhook: { filter: string; attributes: string; };
+};
+
 export interface IUpdateWebhookProps {
-    detail: HookDetails & { filter?: string; hookAttribute?: string; };
+    detail: HookDetails & { filter?: string; };
 }
 
 const UpdateWebhook = ({ detail }: IUpdateWebhookProps) => {
@@ -16,7 +21,7 @@ const UpdateWebhook = ({ detail }: IUpdateWebhookProps) => {
     const [attributes, setAttributes] = useState(detail.hookAttribute ? JSON.stringify(detail.hookAttribute) : '');
 
     function updateWebhook() {
-        postMessage({
+        postMessage<IUpdateWebhookMessage>({
             command: 'update',
             webhook: { filter, attributes }
         });

@@ -53,7 +53,7 @@ The source under `src/` is organized into six layers with a strict, one-directio
   `@aps_sdk/*` and to use `fetch`/`fs`. Categorized by service, one `Service` class each:
   `OssService`, `ModelDerivativeService`, `HubsService`, `DesignAutomationService`,
   `SecureServiceAccountsService`, `WebhooksService`, `AuthenticationService`. Each wraps its underlying
-  `@aps_sdk/*` client (or, for Design Automation, the hand-written `fetch`-based `DesignAutomationClient`)
+  `@aps_sdk/*` client (or, for Design Automation and Team Admin, the shared `fetch`-based `RestClient` in `rest-client.ts`)
   and exposes plain domain methods; SDK enums/values (`Access`, `PolicyKey`, `Region`, `Scopes`, `Utils`)
   stay *inside* the service. Shared infra also lives here: `aps-sdk-manager.ts`,
   `client-credentials-authentication-provider.ts`, `static-token-authentication-provider.ts`, and the

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { IContext, stringPropertySorter, showErrorMessage } from '../common';
 import { WebhookSystem, IWebhookSystem, IWebhookEvent, IWebhook, WebhookAuthContext } from '../models/webhooks';
 import { WEBHOOKS } from '../services/webhooks-catalog';
@@ -19,20 +20,14 @@ function isWebhookEvent(entry: WebhookEntry): entry is IWebhookEvent {
     return (<IWebhookEvent>entry).type === 'event';
 }
 
-export class WebhooksDataProvider implements vscode.TreeDataProvider<WebhookEntry> {
+export class WebhooksDataProvider extends BaseTreeProvider<WebhookEntry> {
     private _context: IContext;
     private _authContext: WebhookAuthContext;
-    private _onDidChangeTreeData: vscode.EventEmitter<WebhookEntry | null> = new vscode.EventEmitter<WebhookEntry | null>();
-
-	readonly onDidChangeTreeData?: vscode.Event<WebhookEntry | null> = this._onDidChangeTreeData.event;
 
     constructor(context: IContext, authContext: WebhookAuthContext) {
+        super();
         this._context = context;
         this._authContext = authContext;
-    }
-
-    refresh(entry?: WebhookEntry) {
-        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(entry: WebhookEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

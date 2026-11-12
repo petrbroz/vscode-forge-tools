@@ -1,19 +1,14 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { IContext } from '../common';
 import { EntryType, ISecureServiceAccount, ISecureServiceAccountKey } from '../models/secure-service-accounts';
 
 type SecureServiceAccountsEntry = ISecureServiceAccount | ISecureServiceAccountKey;
 
-export class SecureServiceAccountsDataProvider implements vscode.TreeDataProvider<SecureServiceAccountsEntry> {
-    private _onDidChangeTreeData: vscode.EventEmitter<SecureServiceAccountsEntry | null> = new vscode.EventEmitter<SecureServiceAccountsEntry | null>();
-
-    readonly onDidChangeTreeData?: vscode.Event<SecureServiceAccountsEntry | null> = this._onDidChangeTreeData.event;
+export class SecureServiceAccountsDataProvider extends BaseTreeProvider<SecureServiceAccountsEntry> {
 
     constructor(protected context: IContext) {
-    }
-
-    refresh(entry?: SecureServiceAccountsEntry) {
-        this._onDidChangeTreeData.fire(entry || null);
+        super();
     }
 
     getTreeItem(entry: SecureServiceAccountsEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

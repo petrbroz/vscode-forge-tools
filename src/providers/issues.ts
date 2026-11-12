@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { IContext } from '../common';
 import { IHub, IProject, IHint } from '../models/hubs';
 import { IIssue } from '../models/issues';
@@ -17,18 +18,12 @@ function isIssue(entry: IssuesEntry): entry is IIssue {
     return (<IIssue>entry).kind === 'issue';
 }
 
-export class IssuesDataProvider implements vscode.TreeDataProvider<IssuesEntry> {
+export class IssuesDataProvider extends BaseTreeProvider<IssuesEntry> {
     private _context: IContext;
-    private _onDidChangeTreeData: vscode.EventEmitter<IssuesEntry | null> = new vscode.EventEmitter<IssuesEntry | null>();
-
-    readonly onDidChangeTreeData?: vscode.Event<IssuesEntry | null> = this._onDidChangeTreeData.event;
 
     constructor(context: IContext) {
+        super();
         this._context = context;
-    }
-
-    refresh(entry?: IssuesEntry) {
-        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(entry: IssuesEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

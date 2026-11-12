@@ -7,6 +7,19 @@ import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
 
+export type IUpdateActivityMessage = {
+    command: 'update';
+    activity: {
+        id: string;
+        description: string;
+        engine: string;
+        commands: string[];
+        parameters: { [key: string]: IActivityParam };
+        settings: { [key: string]: ICodeOnEngineStringSetting | ICodeOnEngineUrlSetting };
+        appBundles: string[];
+    };
+};
+
 export interface IUpdateActivityProps {
     activity: IActivityDetail;
     options: {
@@ -109,7 +122,7 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
     const updateAppBundle = (newIndex: number, newappBundle: string) => setAppBundles(appBundles.map((appBundle, i) => i === newIndex ? newappBundle : appBundle));
 
     function updateActivity() {
-        postMessage({
+        postMessage<IUpdateActivityMessage>({
             command: 'update',
             activity: {
                 id, description, engine,
