@@ -3,7 +3,7 @@ import { SimpleStorageDataProvider } from './providers/data-management';
 import { DesignAutomationDataProvider }from './providers/design-automation';
 import { IContext } from './common';
 import { BaseTreeProvider } from './providers/base';
-import { WebhooksDataProvider } from './providers/webhooks';
+import { WebhooksDataProvider, WebhookDecorationProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
 import { IssuesDataProvider } from './providers/issues';
 import { getEnvironments, pickDefaultEnvironment, setupNewEnvironment } from './environment';
@@ -91,7 +91,9 @@ export async function activate(_context: vscode.ExtensionContext) {
 		});
 		context.extensionContext.subscriptions.push(view);
 	}
-	const refreshWebhooks = () => { webhooksAppDataProvider.refresh(); webhooksUserDataProvider.refresh(); };
+	const webhookDecorationProvider = new WebhookDecorationProvider();
+	context.extensionContext.subscriptions.push(vscode.window.registerFileDecorationProvider(webhookDecorationProvider));
+	const refreshWebhooks = () => { webhooksAppDataProvider.refresh(); webhooksUserDataProvider.refresh(); webhookDecorationProvider.refresh(); };
 	const refreshHubAdmin = () => { hubAdminAppDataProvider.refresh(); hubAdminUserDataProvider.refresh(); };
 	const refreshUserViews = () => providers.filter(p => p.user).forEach(p => p.provider.refresh());
 	const refreshAllViews = () => providers.forEach(p => p.provider.refresh());
