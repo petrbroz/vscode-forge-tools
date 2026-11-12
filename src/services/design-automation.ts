@@ -42,8 +42,21 @@ export interface IOwnedItems {
     ids: string[];
 }
 
-function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (signal?.aborted) {
+            return reject(signal.reason);
+        }
+        const onAbort = () => {
+            clearTimeout(timer);
+            reject(signal!.reason);
+        };
+        const timer = setTimeout(() => {
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+        }, ms);
+        signal?.addEventListener('abort', onAbort, { once: true });
+    });
 }
 
 /**
@@ -287,10 +300,11 @@ export class DesignAutomationService {
     /**
      * Polls a work item every 5 seconds until it leaves the `pending`/`inprogress` state, invoking
      * `onProgress` with the latest status after each poll, and returns the final work item detail.
+     * Rejects if `signal` is aborted.
      */
-    async waitForWorkItem(workitem: IWorkItemDetail, onProgress?: (status: string) => void): Promise<IWorkItemDetail> {
+    async waitForWorkItem(workitem: IWorkItemDetail, onProgress?: (status: string) => void, signal?: AbortSignal): Promise<IWorkItemDetail> {
         while (workitem.status === 'inprogress' || workitem.status === 'pending') {
-            await sleep(5000);
+            await sleep(5000, signal);
             workitem = await this.getWorkItem(workitem.id);
             onProgress?.(workitem.status);
         }

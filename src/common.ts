@@ -203,6 +203,22 @@ export function stringPropertySorter<T>(propName: keyof T) {
     return (a: T, b: T): number => collator.compare(String(a[propName] ?? ''), String(b[propName] ?? ''));
 }
 
+/** Converts a VS Code cancellation token to an `AbortSignal` that aborts when cancellation is requested. */
+export function toAbortSignal(token: vscode.CancellationToken): AbortSignal {
+    const controller = new AbortController();
+    if (token.isCancellationRequested) {
+        controller.abort();
+    } else {
+        token.onCancellationRequested(() => controller.abort());
+    }
+    return controller.signal;
+}
+
+/** Whether `err` was caused by a user-initiated cancellation (aborted request or polling). */
+export function isCancellation(err: unknown): boolean {
+    return err instanceof Error && (err.name === 'AbortError');
+}
+
 export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
     return vscode.window.withProgress<T>({
         location: vscode.ProgressLocation.Notification,
