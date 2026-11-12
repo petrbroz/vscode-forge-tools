@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext } from '../common';
+import { IContext, command } from '../common';
 import { getEnvironments, LAST_ENVIRONMENT_KEY } from '../environment';
 import { IEnvironment } from '../models/environment';
 
@@ -9,7 +9,7 @@ export class EnvironmentCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.switchEnvironment', this.switchEnvironment.bind(this)),
+            command(this.context, 'aps.switchEnvironment', this.switchEnvironment.bind(this)),
         ];
     }
 

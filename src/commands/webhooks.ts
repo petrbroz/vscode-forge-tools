@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, showErrorMessage, withProgress, createWebViewPanel, showReadOnlyJson } from '../common';
+import { IContext, command, createWebViewPanel, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import { IWebhook, IWebhookEvent } from '../models/webhooks';
 import { webhooksServiceFor } from '../providers/webhooks';
 
@@ -9,11 +9,11 @@ export class WebhooksCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.wh.refreshWebhooks', this.refreshWebhooks.bind(this)),
-            vscode.commands.registerCommand('aps.wh.createWebhook', this.createWebhook.bind(this)),
-            vscode.commands.registerCommand('aps.wh.updateWebhook', this.updateWebhook.bind(this)),
-            vscode.commands.registerCommand('aps.wh.deleteWebhook', this.deleteWebhook.bind(this)),
-            vscode.commands.registerCommand('aps.wh.viewWebhookDetails', this.viewWebhookDetails.bind(this)),
+            command(this.context, 'aps.wh.refreshWebhooks', this.refreshWebhooks.bind(this)),
+            command(this.context, 'aps.wh.createWebhook', this.createWebhook.bind(this)),
+            command(this.context, 'aps.wh.updateWebhook', this.updateWebhook.bind(this)),
+            command(this.context, 'aps.wh.deleteWebhook', this.deleteWebhook.bind(this)),
+            command(this.context, 'aps.wh.viewWebhookDetails', this.viewWebhookDetails.bind(this)),
         ];
     }
 

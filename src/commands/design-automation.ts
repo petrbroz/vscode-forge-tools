@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
+import { IContext, command, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IActivityDetail, DesignAutomationID } from '../models/design-automation-api';
 import { withProgress, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
 import { ICreateActivityProps } from '../webviews/create-activity';
@@ -22,28 +22,28 @@ export class DesignAutomationCommands {
 
 	registerCommands(): vscode.Disposable[] {
 		return [
-			vscode.commands.registerCommand('aps.da.refreshDesignAutomationTree', this.refreshDesignAutomationTree.bind(this)),
-			vscode.commands.registerCommand('aps.da.createAppBundle', this.createAppBundle.bind(this)),
-			vscode.commands.registerCommand('aps.da.updateAppBundle', this.updateAppBundle.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewAppBundleDetails', this.viewAppBundleDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewAppBundleAliasDetails', this.viewAppBundleAliasDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewAppBundleVersionDetails', this.viewAppBundleVersionDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.deleteAppBundle', this.deleteAppBundle.bind(this)),
-			vscode.commands.registerCommand('aps.da.deleteAppBundleAlias', this.deleteAppBundleAlias.bind(this)),
-			vscode.commands.registerCommand('aps.da.createAppBundleAlias', this.createAppBundleAlias.bind(this)),
-			vscode.commands.registerCommand('aps.da.updateAppBundleAlias', this.updateAppBundleAlias.bind(this)),
-			vscode.commands.registerCommand('aps.da.deleteAppBundleVersion', this.deleteAppBundleVersion.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewActivityDetails', this.viewActivityDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewActivityAliasDetails', this.viewActivityAliasDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.viewActivityVersionDetails', this.viewActivityVersionDetails.bind(this)),
-			vscode.commands.registerCommand('aps.da.deleteActivity', this.deleteActivity.bind(this)),
-			vscode.commands.registerCommand('aps.da.deleteActivityAlias', this.deleteActivityAlias.bind(this)),
-			vscode.commands.registerCommand('aps.da.createActivity', this.createActivity.bind(this)),
-			vscode.commands.registerCommand('aps.da.updateActivity', this.updateActivity.bind(this)),
-			vscode.commands.registerCommand('aps.da.createActivityAlias', this.createActivityAlias.bind(this)),
-			vscode.commands.registerCommand('aps.da.updateActivityAlias', this.updateActivityAlias.bind(this)),
-			vscode.commands.registerCommand('aps.da.deleteActivityVersion', this.deleteActivityVersion.bind(this)),
-			vscode.commands.registerCommand('aps.da.createWorkItem', this.createWorkItem.bind(this)),
+			command(this.context, 'aps.da.refreshDesignAutomationTree', this.refreshDesignAutomationTree.bind(this)),
+			command(this.context, 'aps.da.createAppBundle', this.createAppBundle.bind(this)),
+			command(this.context, 'aps.da.updateAppBundle', this.updateAppBundle.bind(this)),
+			command(this.context, 'aps.da.viewAppBundleDetails', this.viewAppBundleDetails.bind(this)),
+			command(this.context, 'aps.da.viewAppBundleAliasDetails', this.viewAppBundleAliasDetails.bind(this)),
+			command(this.context, 'aps.da.viewAppBundleVersionDetails', this.viewAppBundleVersionDetails.bind(this)),
+			command(this.context, 'aps.da.deleteAppBundle', this.deleteAppBundle.bind(this)),
+			command(this.context, 'aps.da.deleteAppBundleAlias', this.deleteAppBundleAlias.bind(this)),
+			command(this.context, 'aps.da.createAppBundleAlias', this.createAppBundleAlias.bind(this)),
+			command(this.context, 'aps.da.updateAppBundleAlias', this.updateAppBundleAlias.bind(this)),
+			command(this.context, 'aps.da.deleteAppBundleVersion', this.deleteAppBundleVersion.bind(this)),
+			command(this.context, 'aps.da.viewActivityDetails', this.viewActivityDetails.bind(this)),
+			command(this.context, 'aps.da.viewActivityAliasDetails', this.viewActivityAliasDetails.bind(this)),
+			command(this.context, 'aps.da.viewActivityVersionDetails', this.viewActivityVersionDetails.bind(this)),
+			command(this.context, 'aps.da.deleteActivity', this.deleteActivity.bind(this)),
+			command(this.context, 'aps.da.deleteActivityAlias', this.deleteActivityAlias.bind(this)),
+			command(this.context, 'aps.da.createActivity', this.createActivity.bind(this)),
+			command(this.context, 'aps.da.updateActivity', this.updateActivity.bind(this)),
+			command(this.context, 'aps.da.createActivityAlias', this.createActivityAlias.bind(this)),
+			command(this.context, 'aps.da.updateActivityAlias', this.updateActivityAlias.bind(this)),
+			command(this.context, 'aps.da.deleteActivityVersion', this.deleteActivityVersion.bind(this)),
+			command(this.context, 'aps.da.createWorkItem', this.createWorkItem.bind(this)),
 		];
 	}
 
@@ -181,11 +181,9 @@ async function findAvailableEngines(context: IContext, progressTitle: string) {
 async function uploadAppBundle(name: string | undefined, context: IContext) {
 	try {
 		let exists = !!name;
+		name ??= await vscode.window.showInputBox({ prompt: 'Enter app bundle name', value: '' });
 		if (!name) {
-			name = await vscode.window.showInputBox({ prompt: 'Enter app bundle name', value: '' });
-			if (!name) {
-				return;
-			}
+			return;
 		}
 		const uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, openLabel: 'Upload zip' });
 		if (!uris) {
@@ -213,11 +211,9 @@ async function uploadAppBundle(name: string | undefined, context: IContext) {
 
 async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | undefined, context: IContext) {
 	try {
+		id ??= await promptAppBundleFullID(context);
 		if (!id) {
-			id = await promptAppBundleFullID(context);
-			if (!id) {
-				return;
-			}
+			return;
 		}
 
 		const appBundleDetail = await withProgress(`Getting app bundle details: ${id}`, typeof(id) === 'string'
@@ -232,11 +228,9 @@ async function viewAppBundleDetails(id: FullyQualifiedID | INameAndVersion | und
 
 async function viewAppBundleAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
     try {
+		id ??= await promptAppBundleFullID(context);
 		if (!id) {
-			id = await promptAppBundleFullID(context);
-			if (!id) {
-				return;
-			}
+			return;
 		}
 
 		// TODO: add a method to the SDK for retrieve a single alias info
@@ -260,11 +254,9 @@ async function viewActivityDetails(id: FullyQualifiedID | INameAndVersion, conte
 
 async function viewActivityAliasDetails(id: FullyQualifiedID | undefined, context: IContext) {
     try {
+		id ??= await promptAppBundleFullID(context);
 		if (!id) {
-			id = await promptAppBundleFullID(context);
-			if (!id) {
-				return;
-			}
+			return;
 		}
 
 		// TODO: add a method to the SDK for retrieve a single alias info

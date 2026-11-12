@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext, showErrorMessage, withProgress } from '../common';
+import { IContext, command, withProgress } from '../common';
 import { ApsAuthenticationProvider } from '../auth-provider';
 
 export class AuthenticationCommands {
@@ -8,9 +8,9 @@ export class AuthenticationCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.auth.login', this.login.bind(this)),
-            vscode.commands.registerCommand('aps.auth.logout', this.logout.bind(this)),
-            vscode.commands.registerCommand('aps.auth.getAccessToken', this.getAccessToken.bind(this)),
+            command(this.context, 'aps.auth.login', this.login.bind(this)),
+            command(this.context, 'aps.auth.logout', this.logout.bind(this)),
+            command(this.context, 'aps.auth.getAccessToken', 'Could not generate access token', this.getAccessToken.bind(this)),
         ];
     }
 
@@ -42,14 +42,10 @@ export class AuthenticationCommands {
         if (!scopes) {
             return;
         }
-        try {
-            const { accessToken, expiresIn } = await withProgress('Generating access token...', this.context.authenticationService.getAccessToken(scopes));
-            const action = await vscode.window.showInformationMessage(`Access token generated (expires in: ${expiresIn} seconds)`, 'Copy Token to Clipboard');
-            if (action === 'Copy Token to Clipboard') {
-                await vscode.env.clipboard.writeText(accessToken);
-            }
-        } catch (err) {
-            showErrorMessage('Could not generate access token', err, this.context);
+        const { accessToken, expiresIn } = await withProgress('Generating access token...', this.context.authenticationService.getAccessToken(scopes));
+        const action = await vscode.window.showInformationMessage(`Access token generated (expires in: ${expiresIn} seconds)`, 'Copy Token to Clipboard');
+        if (action === 'Copy Token to Clipboard') {
+            await vscode.env.clipboard.writeText(accessToken);
         }
     }
 }
