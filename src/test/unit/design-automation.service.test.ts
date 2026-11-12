@@ -77,6 +77,15 @@ describe('DesignAutomationService', () => {
 			assert.deepStrictEqual(progress, ['success']);
 		});
 
+		it('rejects when the abort signal is triggered while polling', async () => {
+			const fakeClient = { getWorkItem: async () => { throw new Error('should not be called'); } };
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
+			const controller = new AbortController();
+			const promise = service.waitForWorkItem({ id: 'wi-1', status: 'pending', reportUrl: '' }, undefined, controller.signal);
+			controller.abort();
+			await assert.rejects(promise, (err: Error) => err.name === 'AbortError');
+		});
+
 		it('returns immediately without polling when already in a terminal state', async () => {
 			const fakeClient = { getWorkItem: async () => { throw new Error('should not be called'); } };
 			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);

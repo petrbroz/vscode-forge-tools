@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IContext, command, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IActivityDetail, DesignAutomationID } from '../models/design-automation-api';
-import { withProgress, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
+import { withProgress, isCancellation, toAbortSignal, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
 import type { IActivityFormProps, IActivityFormMessage } from '../webviews/activity-form';
 import type { ICreateWorkItemProps, ICreateWorkItemMessage } from '../webviews/create-workitem';
 import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../models/design-automation';
@@ -515,11 +515,11 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 							let workitem = await vscode.window.withProgress({
 								location: vscode.ProgressLocation.Notification,
 								title: `Processing workitem`,
-								cancellable: false
-							}, async (progress) => {
+								cancellable: true
+							}, async (progress, token) => {
 								let workitem = await context.designAutomationService.createWorkItem(id, parameters);
 								progress.report({ message: workitem.status });
-								return await context.designAutomationService.waitForWorkItem(workitem, status => progress.report({ message: status }));
+								return await context.designAutomationService.waitForWorkItem(workitem, status => progress.report({ message: status }), toAbortSignal(token));
 							});
 
 							let action: string | undefined;
@@ -533,7 +533,11 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 								await showReadOnlyText(context, ['design-automation', 'workitem-report', workitem.id], report);
 							}
 						} catch(err) {
-							showErrorMessage('Could not start workitem', err, context);
+							if (isCancellation(err)) {
+								vscode.window.showInformationMessage('Workitem monitoring cancelled');
+							} else {
+								showErrorMessage('Could not start workitem', err, context);
+							}
 						}
 						// panel.dispose();
 						break;
