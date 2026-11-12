@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - The upload progress notification now tracks the actual upload progress instead of filling up immediately
   - Error notifications (e.g., when creating a secure service account fails) now include the error message returned by the API, and offer "Show Details"
   - Derivatives of all output types (e.g., OBJ, STL, STEP), not just SVF/SVF2, are now listed in the tree views and can be downloaded, including from the Hubs view
+  - Uploading files larger than 2 GiB no longer fails; files are now read and uploaded in chunks
 
 ## [3.6.0] - 2026-11-11
 

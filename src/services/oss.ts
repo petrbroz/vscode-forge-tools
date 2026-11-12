@@ -11,6 +11,17 @@ const SignedUrlAccessMap: { [key in SignedUrlAccess]: Access } = { read: Access.
 /** Number of object deletions to run in parallel when emptying a bucket. */
 const DeleteBatchSize = 8;
 
+/** Minimum size of a single part in a multipart upload (S3 requires at least 5 MiB for all but the last part). */
+const UploadChunkSize = 5 * 1024 * 1024;
+/** Maximum number of parts in a multipart upload. */
+const MaxUploadParts = 10000;
+/** Maximum number of signed part upload URLs that can be requested at once. */
+const UploadUrlBatchSize = 25;
+/** Expiration (in minutes) requested for signed part upload URLs. */
+const UploadUrlExpirationMinutes = 60;
+/** Number of attempts to upload a single part before giving up. */
+const MaxUploadAttempts = 5;
+
 /** Common file extension -> MIME type mapping, offered when uploading/creating objects. */
 const AllowedMimeTypes: { [ext: string]: string } = {
     'a': 'application/octet-stream',
@@ -221,11 +232,67 @@ export class OssService {
         return this.client.getObjectDetails(bucketKey, objectKey);
     }
 
-    uploadObject(bucketKey: string, objectKey: string, filePath: string, options?: IUploadObjectOptions): Promise<ObjectDetails> {
-        return this.client.uploadObject(bucketKey, objectKey, filePath, {
-            xAdsMetaContentType: options?.contentType,
-            onProgress: options?.onProgress
-        });
+    /**
+     * Uploads a local file to an object using the signed S3 multipart upload flow, reading the file one
+     * chunk at a time.
+     *
+     * This intentionally bypasses the SDK's own `OssClient.uploadObject`: given a file path, it reads the
+     * entire file into memory with `fs.promises.readFile`, which fails for files larger than 2 GiB
+     * ("File size (...) is greater than 2 GiB").
+     */
+    async uploadObject(bucketKey: string, objectKey: string, filePath: string, options?: IUploadObjectOptions): Promise<ObjectDetails> {
+        const file = await fs.promises.open(filePath, 'r');
+        try {
+            const { size } = await file.stat();
+            const chunkSize = Math.max(UploadChunkSize, Math.ceil(size / MaxUploadParts));
+            const partCount = Math.max(1, Math.ceil(size / chunkSize));
+            const buffer = new Uint8Array(Math.min(chunkSize, size));
+            let uploadKey: string | undefined;
+            let urls: string[] = [];
+            for (let part = 0; part < partCount; part++) {
+                const start = part * chunkSize;
+                const { bytesRead } = await file.read(buffer, 0, Math.min(chunkSize, size - start), start);
+                const chunk = buffer.subarray(0, bytesRead);
+                for (let attempt = 1; ; attempt++) {
+                    if (urls.length === 0) {
+                        const response = await this.client.signedS3Upload(bucketKey, objectKey, {
+                            parts: Math.min(partCount - part, UploadUrlBatchSize),
+                            firstPart: part + 1,
+                            uploadKey,
+                            minutesExpiration: UploadUrlExpirationMinutes
+                        });
+                        uploadKey = response.uploadKey;
+                        urls = response.urls;
+                    }
+                    let status: number | undefined;
+                    try {
+                        const response = await fetch(urls[0], { method: 'PUT', body: chunk });
+                        if (response.ok) {
+                            urls.shift();
+                            break;
+                        }
+                        status = response.status;
+                    } catch (err) {
+                        if (attempt >= MaxUploadAttempts) {
+                            throw err;
+                        }
+                    }
+                    if (status !== undefined && attempt >= MaxUploadAttempts) {
+                        throw new Error(`Request failed with status code ${status}`);
+                    }
+                    if (status === 403) {
+                        urls = []; // The signed URLs have likely expired; request new ones.
+                    }
+                }
+                options?.onProgress?.(100.0 * (part + 1) / partCount);
+            }
+            const response = await this.client.completeSignedS3Upload(bucketKey, objectKey, 'application/json', { uploadKey: uploadKey! }, {
+                xAdsMetaContentType: options?.contentType
+            });
+            return response.content as ObjectDetails;
+        } finally {
+            await file.close();
+        }
     }
 
     /**
