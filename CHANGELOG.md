@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - App (2-legged) access tokens are now cached and reused until they expire, instead of being requested for every API call
   - Smaller extension package: development files, tests, and sourcemaps are no longer included
   - Requires VS Code 1.95.0 or newer
+  - Create/update webviews for activities and webhooks merged into single forms
   - Design Automation errors now include the message returned by the API
 - Removed
   - Legacy single-app settings (`autodesk.forge.clientId`, `autodesk.forge.clientSecret`, `autodesk.forge.dataRegion`) are no longer read; use `autodesk.forge.environments`
