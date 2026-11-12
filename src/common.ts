@@ -194,7 +194,7 @@ function withExtension(pathSegments: string[], extension: string): vscode.Uri {
     return readOnlyUri(...pathSegments.slice(0, -1), `${pathSegments[pathSegments.length - 1]}.${extension}`);
 }
 
-export function createWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
+export function createWebViewPanel<Props, Message = unknown>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: Message) => void): vscode.WebviewPanel {
     let disposables: vscode.Disposable[] = [];
     let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
         enableScripts: true, // Enable javascript in the webview
@@ -236,7 +236,7 @@ export function createWebViewPanel<Props>(context: IContext, scriptName: string,
     return panel;
 }
 
-export function createViewerWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
+export function createViewerWebViewPanel<Props, Message = unknown>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: Message) => void): vscode.WebviewPanel {
     let disposables: vscode.Disposable[] = [];
     let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
         enableScripts: true // Enable javascript in the webview
