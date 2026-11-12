@@ -3,7 +3,7 @@ import * as path from 'path';
 import { ObjectDetails } from '../models/oss';
 import { ObjectTree, Properties, IDerivative, svf2 } from '../models/model-derivative';
 import { IContext, command, promptBucket, promptCustomDerivative, promptDerivative, promptObject, showErrorMessage } from '../common';
-import { withProgress, createWebViewPanel, createViewerWebViewPanel, showReadOnlyJson } from '../common';
+import { withProgress, createWebViewPanel, showReadOnlyJson } from '../common';
 import type { IDerivativePreviewProps, IDerivativePreviewMessage } from '../webviews/derivative-preview';
 import type { IThumbnailsProps, IThumbnailsMessage } from '../webviews/thumbnails';
 import type { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
@@ -142,7 +142,7 @@ export class ModelDerivativesCommands {
 				}
 				// TODO: what about 'APAC'?
 			}
-			createViewerWebViewPanel<IDerivativePreviewProps, IDerivativePreviewMessage>(this.context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
+			createWebViewPanel<IDerivativePreviewProps, IDerivativePreviewMessage>(this.context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
 				api, env,
 				token: accessToken,
 				urn: derivative.urn,
@@ -156,7 +156,7 @@ export class ModelDerivativesCommands {
 						showErrorMessage(`Could not load viewable`, message.error, this.context);
 						break;
 				}
-			});
+			}, { viewer: true });
 		} catch (err) {
 			showErrorMessage(`Could not access object`, err, this.context);
 		}
