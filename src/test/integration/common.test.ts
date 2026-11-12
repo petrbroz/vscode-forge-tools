@@ -90,6 +90,45 @@ describe('showErrorMessage', () => {
 		assert.deepStrictEqual(parsed.data, { message: 'nope' });
 	});
 
+	it('includes the API error message from an @aps_sdk error (axiosError.response) and offers details', async () => {
+		let shown: string | undefined;
+		let buttons: string[] = [];
+		(vscode.window as any).showErrorMessage = async (msg: string, ...opts: string[]) => { shown = msg; buttons = opts; return 'Show Details'; };
+		let openedContent: string | undefined;
+		(vscode.workspace as any).openTextDocument = async (options: any) => { openedContent = options.content; return {} as any; };
+		(vscode.window as any).showTextDocument = async () => undefined;
+
+		const err = {
+			message: 'createServiceAccount Request failed with status : 400 and error message: Request failed with status code 400',
+			axiosError: {
+				response: {
+					status: 400,
+					statusText: 'Bad Request',
+					data: { title: 'Bad Request', detail: 'Name must be at least 5 characters long' },
+					headers: {},
+					config: { method: 'post', url: 'https://example.com/accounts', headers: { Authorization: 'test-token' } }
+				}
+			}
+		};
+		await showErrorMessage('Could not create secure service account', err);
+
+		assert.strictEqual(shown, `Could not create secure service account: ${err.message} (Name must be at least 5 characters long)`);
+		assert.deepStrictEqual(buttons, ['Show Details']);
+		const parsed = JSON.parse(openedContent!);
+		assert.strictEqual(parsed.status, 400);
+		assert.deepStrictEqual(parsed.config, { method: 'post', url: 'https://example.com/accounts' });
+		assert.ok(!openedContent!.includes('test-token'));
+	});
+
+	it('does not repeat the API error message when it is already part of the error message', async () => {
+		let shown: string | undefined;
+		(vscode.window as any).showErrorMessage = async (msg: string) => { shown = msg; return undefined; };
+
+		await showErrorMessage('Could not do the thing', { message: 'Request failed: nope', response: { status: 400, data: { message: 'nope' } } });
+
+		assert.strictEqual(shown, 'Could not do the thing: Request failed: nope');
+	});
+
 	it('does not open a document when the "Show Details" prompt is dismissed', async () => {
 		(vscode.window as any).showErrorMessage = async () => undefined;
 		let openTextDocumentCalled = false;

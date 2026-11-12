@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - The model viewer panel now has a Content-Security-Policy and loads a pinned viewer version instead of `7.*`
   - Command errors are now reported consistently through a shared command helper
   - The upload progress notification now tracks the actual upload progress instead of filling up immediately
+  - Error notifications (e.g., when creating a secure service account fails) now include the error message returned by the API, and offer "Show Details"
 
 ## [3.6.0] - 2026-11-11
 

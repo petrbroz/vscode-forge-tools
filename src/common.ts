@@ -108,6 +108,29 @@ function sortRecentFirst(items: string[], recent: string | undefined): string[] 
     return [recent, ...items.filter(item => item !== recent)];
 }
 
+/** Extracts a human-readable error message from an API error response body, if there is one. */
+export function getApiErrorMessage(data: any): string | undefined {
+    if (data === undefined || data === null) {
+        return undefined;
+    }
+    if (typeof data === 'string') {
+        return data.trim() || undefined;
+    }
+    if (Array.isArray(data)) {
+        const messages = data.map(getApiErrorMessage).filter(Boolean);
+        return messages.length > 0 ? messages.join('; ') : undefined;
+    }
+    if (typeof data === 'object') {
+        for (const key of ['detail', 'developerMessage', 'errorMessage', 'message', 'messages', 'reason', 'diagnostic', 'error_description', 'errors', 'error', 'title']) {
+            const message = getApiErrorMessage(data[key]);
+            if (message) {
+                return message;
+            }
+        }
+    }
+    return undefined;
+}
+
 export async function showErrorMessage(title: string, err: any, context?: IContext) {
     if (context) {
         context.log.error(title);
@@ -119,7 +142,7 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     let msg = title;
     if (typeof err === 'string') {
         msg += ': ' + err;
-    } else if (typeof err === 'object') {
+    } else if (err && typeof err === 'object') {
         if (err.message) {
             msg += ': ' + err.message;
         } else if (err.detail) {
@@ -127,15 +150,23 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
         }
     }
 
-    if (err.response) {
+    // Errors thrown by the @aps_sdk/* clients wrap the original axios error (and its response) in `axiosError`.
+    const response = err?.response ?? err?.axiosError?.response;
+    const apiMessage = getApiErrorMessage(response?.data);
+    if (apiMessage && !msg.includes(apiMessage)) {
+        msg += ` (${apiMessage})`;
+    }
+
+    if (response) {
         const answer = await vscode.window.showErrorMessage(msg, 'Show Details');
         if (answer === 'Show Details') {
             const raw = {
-                config: err.response.config,
-                data: err.response.data,
-                headers: err.response.headers,
-                status: err.response.status,
-                statusText: err.response.statusText
+                // Only include the request method and URL; the full request config may contain the access token.
+                config: response.config ? { method: response.config.method, url: response.config.url } : undefined,
+                data: response.data,
+                headers: response.headers,
+                status: response.status,
+                statusText: response.statusText
             };
             const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(raw, null, 4), language: 'json' });
             await vscode.window.showTextDocument(doc, { preview: false });
