@@ -32,9 +32,9 @@ function isViewableFormat(format: string): boolean {
     return format === svf || format === svf2;
 }
 
-/** URL-safe, unpadded base64 URN (the plain base64 URN with its single `/` replaced by `_`). */
+/** URL-safe, unpadded base64 URN (all `/` replaced by `_` and all `+` by `-`). */
 function urlSafeUrn(id: string): string {
-    return urnify(id).replace('/', '_');
+    return urnify(id).replace(/\//g, '_').replace(/\+/g, '-');
 }
 
 function getId(object: ObjectDetails | IVersion): string {
