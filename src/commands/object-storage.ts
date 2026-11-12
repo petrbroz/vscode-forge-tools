@@ -241,8 +241,20 @@ export class ObjectStorageServiceCommands {
         const { bucketKey } = bucket;
 
         // Collect inputs (unless files were already provided, e.g. by dragging & dropping them onto the bucket)
-        uris ??= await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: true });
+        const lastFolderKey = 'aps.oss.lastUploadFolder';
         if (!uris) {
+            const lastFolder = this.context.extensionContext.globalState.get<string>(lastFolderKey);
+            uris = await vscode.window.showOpenDialog({
+                canSelectFiles: true,
+                canSelectFolders: false,
+                canSelectMany: true,
+                defaultUri: lastFolder ? vscode.Uri.file(lastFolder) : undefined
+            });
+            if (uris && uris.length > 0) {
+                await this.context.extensionContext.globalState.update(lastFolderKey, path.dirname(uris[0].fsPath));
+            }
+        }
+        if (!uris || uris.length === 0) {
             return;
         }
 

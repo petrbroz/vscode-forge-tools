@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 - Added
+  - Drag & drop files from the OS onto a bucket to upload them; the upload dialog remembers the last used folder
   - Back button in the multi-step "Upload app bundle" flow to correct an earlier choice without restarting
   - Object uploads/downloads and Design Automation work item monitoring can now be cancelled from the progress notification
 
