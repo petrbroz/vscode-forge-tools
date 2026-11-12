@@ -1,4 +1,7 @@
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { OssService } from '../../services/oss';
 
 describe('OssService', () => {
@@ -100,6 +103,109 @@ describe('OssService', () => {
 				'copyTo:my-bucket/old.txt->new.txt',
 				'deleteObject:my-bucket/old.txt'
 			]);
+		});
+	});
+
+	describe('uploadObject', () => {
+		const originalFetch = global.fetch;
+		let tmpDir: string;
+		beforeEach(() => {
+			tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oss-upload-'));
+		});
+		afterEach(() => {
+			global.fetch = originalFetch;
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		});
+
+		it('streams the file in 5 MiB parts and completes the upload', async () => {
+			const chunkSize = 5 * 1024 * 1024;
+			const content = Buffer.alloc(2 * chunkSize + 123);
+			for (let i = 0; i < content.length; i++) {
+				content[i] = i % 251;
+			}
+			const filePath = path.join(tmpDir, 'big.bin');
+			fs.writeFileSync(filePath, content);
+
+			const signedRequests: any[] = [];
+			const uploaded: Buffer[] = [];
+			let completeArgs: any[] | undefined;
+			global.fetch = (async (url: string, init: RequestInit) => {
+				assert.strictEqual(init.method, 'PUT');
+				assert.strictEqual(url, `https://s3.example/part-${uploaded.length + 1}`);
+				uploaded.push(Buffer.from(init.body as Uint8Array));
+				return { ok: true, status: 200 };
+			}) as any;
+			const fakeClient = {
+				signedS3Upload: async (_bucketKey: string, _objectKey: string, args: any) => {
+					signedRequests.push(args);
+					const urls = Array.from({ length: args.parts }, (_, i) => `https://s3.example/part-${args.firstPart + i}`);
+					return { uploadKey: 'upload-key', urls };
+				},
+				completeSignedS3Upload: async (...args: any[]) => {
+					completeArgs = args;
+					return { content: { objectKey: 'big.bin', size: content.length } };
+				}
+			};
+			const progress: number[] = [];
+
+			const service = new OssService(fakeClient as any);
+			const result = await service.uploadObject('my-bucket', 'big.bin', filePath, { contentType: 'application/octet-stream', onProgress: p => progress.push(p) });
+
+			assert.deepStrictEqual(result, { objectKey: 'big.bin', size: content.length });
+			assert.deepStrictEqual(uploaded.map(b => b.length), [chunkSize, chunkSize, 123]);
+			assert.ok(Buffer.concat(uploaded).equals(content));
+			assert.strictEqual(signedRequests.length, 1);
+			assert.strictEqual(signedRequests[0].parts, 3);
+			assert.strictEqual(signedRequests[0].firstPart, 1);
+			assert.deepStrictEqual(completeArgs?.slice(0, 4), ['my-bucket', 'big.bin', 'application/json', { uploadKey: 'upload-key' }]);
+			assert.strictEqual(completeArgs?.[4].xAdsMetaContentType, 'application/octet-stream');
+			assert.strictEqual(progress[progress.length - 1], 100);
+		});
+
+		it('requests new signed URLs when a part upload returns 403', async () => {
+			const filePath = path.join(tmpDir, 'small.txt');
+			fs.writeFileSync(filePath, 'hello');
+
+			const signedRequests: any[] = [];
+			let puts = 0;
+			global.fetch = (async () => {
+				puts++;
+				return puts === 1 ? { ok: false, status: 403 } : { ok: true, status: 200 };
+			}) as any;
+			const fakeClient = {
+				signedS3Upload: async (_bucketKey: string, _objectKey: string, args: any) => {
+					signedRequests.push(args);
+					return { uploadKey: 'upload-key', urls: [`https://s3.example/${signedRequests.length}`] };
+				},
+				completeSignedS3Upload: async () => ({ content: { objectKey: 'small.txt' } })
+			};
+
+			const service = new OssService(fakeClient as any);
+			await service.uploadObject('my-bucket', 'small.txt', filePath);
+
+			assert.strictEqual(puts, 2);
+			assert.strictEqual(signedRequests.length, 2);
+			assert.strictEqual(signedRequests[1].uploadKey, 'upload-key');
+		});
+
+		it('uploads an empty file as a single empty part', async () => {
+			const filePath = path.join(tmpDir, 'empty.txt');
+			fs.writeFileSync(filePath, '');
+
+			const bodies: Uint8Array[] = [];
+			global.fetch = (async (_url: string, init: RequestInit) => {
+				bodies.push(init.body as Uint8Array);
+				return { ok: true, status: 200 };
+			}) as any;
+			const fakeClient = {
+				signedS3Upload: async () => ({ uploadKey: 'upload-key', urls: ['https://s3.example/1'] }),
+				completeSignedS3Upload: async () => ({ content: { objectKey: 'empty.txt' } })
+			};
+
+			const service = new OssService(fakeClient as any);
+			await service.uploadObject('my-bucket', 'empty.txt', filePath);
+
+			assert.deepStrictEqual(bodies.map(b => b.length), [0]);
 		});
 	});
 
