@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Removed
   - Legacy single-app settings (`autodesk.forge.clientId`, `autodesk.forge.clientSecret`, `autodesk.forge.dataRegion`) are no longer read; use `autodesk.forge.environments`
 - Fixed
+  - Command errors are now reported consistently through a shared command helper
   - The upload progress notification now tracks the actual upload progress instead of filling up immediately
 
 ## [3.6.0] - 2026-11-11

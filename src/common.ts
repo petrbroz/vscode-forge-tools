@@ -145,6 +145,26 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     }
 }
 
+/**
+ * Registers a command whose handler's errors are reported via `showErrorMessage` using `errorTitle`.
+ * When `errorTitle` is omitted, the handler is registered as-is.
+ */
+export function command(context: IContext, id: string, handler: (...args: any[]) => any): vscode.Disposable;
+export function command(context: IContext, id: string, errorTitle: string, handler: (...args: any[]) => any): vscode.Disposable;
+export function command(context: IContext, id: string, titleOrHandler: string | ((...args: any[]) => any), maybeHandler?: (...args: any[]) => any): vscode.Disposable {
+    if (typeof titleOrHandler === 'function') {
+        return vscode.commands.registerCommand(id, titleOrHandler);
+    }
+    const handler = maybeHandler!;
+    return vscode.commands.registerCommand(id, async (...args: any[]) => {
+        try {
+            return await handler(...args);
+        } catch (err) {
+            showErrorMessage(titleOrHandler, err, context);
+        }
+    });
+}
+
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
 /** Returns a comparator that sorts items by the given property using natural, case-insensitive string ordering. */
