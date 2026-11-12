@@ -5,24 +5,7 @@ import { IEnvironment } from './models/environment';
 export const LAST_ENVIRONMENT_KEY = 'aps.lastEnvironment';
 
 export function getEnvironments(): IEnvironment[] {
-    let environments = vscode.workspace.getConfiguration(undefined, null).get<IEnvironment[]>('autodesk.forge.environments') || [];
-    if (environments.length === 0) {
-        // See if there are extension settings using the old format
-        const oldClientId = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.clientId') || '';
-        const oldClientSecret = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.clientSecret') || '';
-        const oldDataRegion = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.dataRegion') || 'US';
-
-        if (oldClientId && oldClientSecret) {
-            vscode.window.showInformationMessage('The settings format has changed. Please see the README for more details.');
-            environments.push({
-                title: '(no title)',
-                clientId: oldClientId,
-                clientSecret: oldClientSecret,
-                region: oldDataRegion
-            });
-        }
-    }
-    return environments;
+    return vscode.workspace.getConfiguration(undefined, null).get<IEnvironment[]>('autodesk.forge.environments') || [];
 }
 
 /** Picks the environment to activate on startup: the one last selected in this workspace, if it still exists, otherwise the first configured environment. */
