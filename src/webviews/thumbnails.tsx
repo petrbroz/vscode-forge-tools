@@ -3,12 +3,17 @@ import ReactDOM from 'react-dom/client';
 import { Button } from './components/controls';
 import { postMessage } from './common';
 
-function downloadThumbnail(size: string) {
-    postMessage({
+function downloadThumbnail(size: IThumbnailsMessage['thumbnailSize']) {
+    postMessage<IThumbnailsMessage>({
         command: 'download',
         thumbnailSize: size
     });
 }
+
+export type IThumbnailsMessage = {
+    command: 'download';
+    thumbnailSize: 'small' | 'medium' | 'large';
+};
 
 export interface IThumbnailsProps {
     objectKey: string;

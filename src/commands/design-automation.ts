@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import { IContext, command, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IActivityDetail, DesignAutomationID } from '../models/design-automation-api';
 import { withProgress, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
-import { IActivityFormProps } from '../webviews/activity-form';
+import type { IActivityFormProps, IActivityFormMessage } from '../webviews/activity-form';
+import type { ICreateWorkItemProps, ICreateWorkItemMessage } from '../webviews/create-workitem';
 import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../models/design-automation';
 
 type FullyQualifiedID = string;
@@ -274,7 +275,7 @@ async function createActivity(successCallback: (activity: IActivityDetail) => vo
 		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for a new activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for new activity`, context.designAutomationService.getAvailableAppBundles());
 
-		let panel = createWebViewPanel<IActivityFormProps>(context, 'activity-form.js', 'activity-form', 'Create Activity', {
+		let panel = createWebViewPanel<IActivityFormProps, IActivityFormMessage>(context, 'activity-form.js', 'activity-form', 'Create Activity', {
 			options: {
 				engines: availableEngines,
 				appBundles: availableAppBundles
@@ -316,7 +317,7 @@ async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCal
 		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for activity`, context.designAutomationService.getAvailableAppBundles());
 
-		let panel = createWebViewPanel(context, 'activity-form.js', 'activity-form', `Update Activity: ${originalActivity.id}`, {
+		let panel = createWebViewPanel<IActivityFormProps, IActivityFormMessage>(context, 'activity-form.js', 'activity-form', `Update Activity: ${originalActivity.id}`, {
 			initial: originalActivity,
 			options: {
 				engines: availableEngines,
@@ -506,7 +507,7 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 	try {
 		const activity = await withProgress(`Getting activity details: ${id}`, context.designAutomationService.getActivity(id));
 		if (activity) {
-			createWebViewPanel(context, 'create-workitem.js', 'create-workitem', `Create Work Item: ${activity.id}`, { activity }, async message => {
+			createWebViewPanel<ICreateWorkItemProps, ICreateWorkItemMessage>(context, 'create-workitem.js', 'create-workitem', `Create Work Item: ${activity.id}`, { activity }, async message => {
 				switch (message.command) {
 					case 'create':
 						try {

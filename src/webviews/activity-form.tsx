@@ -7,6 +7,19 @@ import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
 
+export type IActivityFormMessage = {
+    command: 'create' | 'update';
+    activity: {
+        id: string;
+        description: string;
+        engine: string;
+        commands: string[];
+        parameters: { [key: string]: IActivityParam };
+        settings: { [key: string]: ICodeOnEngineStringSetting | ICodeOnEngineUrlSetting };
+        appBundles: string[];
+    };
+};
+
 export interface IActivityFormProps {
     initial?: IActivityDetail;
     options: {
@@ -100,7 +113,7 @@ const ActivityForm = ({ initial, options }: IActivityFormProps) => {
     const updateAppBundle = (newIndex: number, newappBundle: string) => setAppBundles(appBundles.map((appBundle, i) => i === newIndex ? newappBundle : appBundle));
 
     function submit() {
-        postMessage({
+        postMessage<IActivityFormMessage>({
             command: initial ? 'update' : 'create',
             activity: {
                 id, description, engine,

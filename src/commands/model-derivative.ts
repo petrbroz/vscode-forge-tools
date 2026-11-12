@@ -3,8 +3,10 @@ import * as path from 'path';
 import { ObjectDetails } from '../models/oss';
 import { ObjectTree, Properties, IDerivative, svf2 } from '../models/model-derivative';
 import { IContext, command, promptBucket, promptCustomDerivative, promptDerivative, promptObject, showErrorMessage } from '../common';
-import { withProgress, createWebViewPanel, createViewerWebViewPanel, showReadOnlyJson } from '../common';
-import { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
+import { withProgress, createWebViewPanel, showReadOnlyJson } from '../common';
+import type { IDerivativePreviewProps, IDerivativePreviewMessage } from '../webviews/derivative-preview';
+import type { IThumbnailsProps, IThumbnailsMessage } from '../webviews/thumbnails';
+import type { ICustomDerivativeMessage, ICustomDerivativeProps } from '../webviews/custom-translation';
 import { IVersion } from '../models/hubs';
 
 export class ModelDerivativesCommands {
@@ -75,7 +77,7 @@ export class ModelDerivativesCommands {
 		const sourceFormat = this.context.modelDerivativeService.getSourceFileFormat(object);
 
 		const translateObject = object;
-		let panel = createWebViewPanel<ICustomDerivativeProps>(this.context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats, sourceFormat }, async (message: ICustomDerivativeMessage) => {
+		let panel = createWebViewPanel<ICustomDerivativeProps, ICustomDerivativeMessage>(this.context, 'custom-translation.js', 'custom-translation', `Custom Translation: ${urn}`, { urn, availableFormats, sourceFormat }, async (message: ICustomDerivativeMessage) => {
 			switch (message.type) {
 				case 'translate':
 					try {
@@ -140,7 +142,7 @@ export class ModelDerivativesCommands {
 				}
 				// TODO: what about 'APAC'?
 			}
-			createViewerWebViewPanel(this.context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
+			createWebViewPanel<IDerivativePreviewProps, IDerivativePreviewMessage>(this.context, 'derivative-preview.js', 'derivative-preview', `Preview: ${derivative.name}`, {
 				api, env,
 				token: accessToken,
 				urn: derivative.urn,
@@ -154,7 +156,7 @@ export class ModelDerivativesCommands {
 						showErrorMessage(`Could not load viewable`, message.error, this.context);
 						break;
 				}
-			});
+			}, { viewer: true });
 		} catch (err) {
 			showErrorMessage(`Could not access object`, err, this.context);
 		}
@@ -328,12 +330,12 @@ export class ModelDerivativesCommands {
 				return await this.context.modelDerivativeService.getObjectThumbnails(thumbnailObject);
 			});
 			const pngToDataURI = (img: string) => 'data:image/png;base64,' + Buffer.from(img, 'binary').toString('base64');
-			createWebViewPanel(this.context, 'thumbnails.js', 'thumbnails', `Thumbnails: ${key}`, {
+			createWebViewPanel<IThumbnailsProps, IThumbnailsMessage>(this.context, 'thumbnails.js', 'thumbnails', `Thumbnails: ${key}`, {
 				objectKey: key,
 				smallDataURI: pngToDataURI(thumbnails[0]),
 				mediumDataURI: pngToDataURI(thumbnails[1]),
 				largeDataURI: pngToDataURI(thumbnails[2])
-			}, (message: any) => {
+			}, message => {
 				switch (message.command) {
 					case 'download':
 						switch (message.thumbnailSize) {

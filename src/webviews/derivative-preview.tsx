@@ -1,6 +1,11 @@
 // @ts-nocheck
 import { postMessage } from './common';
 
+export type IDerivativePreviewMessage = {
+    type: 'error';
+    error: { code: string; message: string; errors?: any; };
+};
+
 export interface IDerivativePreviewProps {
     api: string;
     env: string;

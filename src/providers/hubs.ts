@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { Manifest, IDerivative } from '../models/model-derivative';
 import { IContext, showErrorMessage } from '../common';
 import * as hi from '../models/hubs';
@@ -33,9 +34,8 @@ function isLoadMore(entry: HubsEntry): entry is hi.ILoadMore {
     return (<hi.ILoadMore>entry).loadMore === true;
 }
 
-export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
+export class HubsDataProvider extends BaseTreeProvider<HubsEntry> {
     private _context: IContext;
-    private _onDidChangeTreeData: vscode.EventEmitter<HubsEntry | null> = new vscode.EventEmitter<HubsEntry | null>();
     /** Projects/folder-contents/item-versions already fetched per parent ID, so "load more" only fetches the next page. */
     private _loadedItems = new Map<string, HubsEntry[]>();
     /** Next page number for each parent's next page, if any more remain. */
@@ -43,9 +43,8 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
     /** The hub/folder/item entry behind each parent ID above, so {@link loadMore} knows which API to call next. */
     private _parents = new Map<string, hi.IHub | hi.IFolder | hi.IItem>();
 
-    readonly onDidChangeTreeData?: vscode.Event<HubsEntry | null> = this._onDidChangeTreeData.event;
-
     constructor(context: IContext) {
+        super();
         this._context = context;
     }
 
@@ -55,7 +54,7 @@ export class HubsDataProvider implements vscode.TreeDataProvider<HubsEntry> {
             this._nextPageNumber.clear();
             this._parents.clear();
         }
-        this._onDidChangeTreeData.fire(entry || null);
+        super.refresh(entry);
     }
 
     /** Fetches the next page for the given parent ID and refreshes just that node. */

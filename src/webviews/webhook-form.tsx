@@ -7,11 +7,15 @@ import { Grid } from './components/Grid';
 import { postMessage } from './common';
 import { Actions } from './components/Actions';
 
+export type IWebhookFormMessage =
+    | { command: 'create'; webhook: { scopeKey: string; scopeValue: string; callbackUrl: string; filter: string; attributes: string; } }
+    | { command: 'update'; webhook: { filter: string; attributes: string; } };
+
 export interface IWebhookFormProps {
     system: string;
     event: string;
     scopes: string[];
-    initial?: HookDetails & { filter?: string; hookAttribute?: string; };
+    initial?: HookDetails & { filter?: string; };
 }
 
 const WebhookForm = ({ system, event, scopes, initial }: IWebhookFormProps) => {
@@ -22,7 +26,7 @@ const WebhookForm = ({ system, event, scopes, initial }: IWebhookFormProps) => {
     const [attributes, setAttributes] = useState(initial?.hookAttribute ? JSON.stringify(initial.hookAttribute) : '');
 
     function submit() {
-        postMessage(initial
+        postMessage<IWebhookFormMessage>(initial
             ? { command: 'update', webhook: { filter, attributes } }
             : { command: 'create', webhook: { scopeKey, scopeValue, callbackUrl, filter, attributes } });
     }

@@ -11,6 +11,7 @@ import {
     TeamUserDetails,
     TeamUserInvite
 } from '../models/team-admin';
+import { cursorPaging, IRequestConfig, RestClient } from './rest-client';
 
 const DEFAULT_HOST = 'https://developer.api.autodesk.com';
 const PAGE_LIMIT = 100;
@@ -22,12 +23,6 @@ const PAGE_LIMIT = 100;
  * cover inviting users and assigning/unassigning products.
  */
 export const TEAM_ADMIN_SCOPES: string[] = ['tmadmapi:team:read', 'tmadmapi:team-users:write', 'tmadmapi:team-products:write'];
-
-interface IRequestConfig {
-    method: string;
-    url: string;
-    data?: any;
-}
 
 interface IPage<T> {
     data?: T[];
@@ -41,53 +36,19 @@ interface IPage<T> {
  * administrator, so the authentication provider is always the active user session.
  */
 export class TeamAdminService {
-    private readonly baseUrl: string;
+    private readonly rest: RestClient;
 
-    constructor(private readonly authenticationProvider: IAuthenticationProvider, host?: string) {
-        this.baseUrl = `${host || DEFAULT_HOST}/team-admin/v1`;
+    constructor(authenticationProvider: IAuthenticationProvider, host?: string) {
+        this.rest = new RestClient(`${host || DEFAULT_HOST}/team-admin/v1`, authenticationProvider, TEAM_ADMIN_SCOPES);
     }
 
-    private async request<T>(config: IRequestConfig): Promise<T> {
-        const token = await this.authenticationProvider.getAccessToken(TEAM_ADMIN_SCOPES);
-        const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
-        let body: string | undefined;
-        if (config.data !== undefined) {
-            body = JSON.stringify(config.data);
-            headers['Content-Type'] = 'application/json';
-        }
-        const response = await fetch(`${this.baseUrl}${config.url}`, { method: config.method, headers, body });
-        const text = await response.text();
-        let data: any;
-        try {
-            data = text ? JSON.parse(text) : undefined;
-        } catch {
-            data = text;
-        }
-        if (!response.ok) {
-            const apiMessage = data?.message ?? data?.messages;
-            const err: any = new Error(`Request failed with status code ${response.status}${apiMessage ? `: ${apiMessage}` : ''}`);
-            const responseHeaders: Record<string, string> = {};
-            response.headers.forEach((value, key) => { responseHeaders[key] = value; });
-            err.response = { config, data, headers: responseHeaders, status: response.status, statusText: response.statusText };
-            throw err;
-        }
-        return data as T;
+    private request<T>(config: IRequestConfig): Promise<T> {
+        return this.rest.request<T>(config);
     }
 
     /** Follows the `pagination.cursor` chain of a list endpoint and returns the flattened `data` array. */
-    private async getAllPages<T>(path: string, query: Record<string, string> = {}): Promise<T[]> {
-        let results: T[] = [];
-        let cursor: string | undefined;
-        do {
-            const params = new URLSearchParams({ ...query, limit: String(PAGE_LIMIT) });
-            if (cursor) {
-                params.set('cursor', cursor);
-            }
-            const page = await this.request<IPage<T>>({ method: 'GET', url: `${path}?${params.toString()}` });
-            results = results.concat(page.data ?? []);
-            cursor = page.pagination?.hasMore ? page.pagination.cursor ?? undefined : undefined;
-        } while (cursor);
-        return results;
+    private getAllPages<T>(path: string, query: Record<string, string> = {}): Promise<T[]> {
+        return this.rest.getAllPages<T>(path, cursorPaging(PAGE_LIMIT), query);
     }
 
     private teamPath(teamId: string): string {
