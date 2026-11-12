@@ -197,7 +197,7 @@ function withExtension(pathSegments: string[], extension: string): vscode.Uri {
 /** Pinned version of the APS Viewer; update on release. */
 export const VIEWER_VERSION = '7.110.0';
 
-export function createWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void, options?: { viewer?: boolean }): vscode.WebviewPanel {
+export function createWebViewPanel<Props, Message = unknown>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: Message) => void, options?: { viewer?: boolean }): vscode.WebviewPanel {
     const viewer = !!options?.viewer;
     let disposables: vscode.Disposable[] = [];
     let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {

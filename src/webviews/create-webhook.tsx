@@ -6,6 +6,11 @@ import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
 
+export type ICreateWebhookMessage = {
+    command: 'create';
+    webhook: { scopeKey: string; scopeValue: string; callbackUrl: string; filter: string; attributes: string; };
+};
+
 export interface ICreateWebhookProps {
     system: string;
     event: string;
@@ -20,7 +25,7 @@ const CreateWebhook = ({ system, event, scopes }: ICreateWebhookProps) => {
     const [attributes, setAttributes] = useState('');
 
     function createWebhook() {
-        postMessage({
+        postMessage<ICreateWebhookMessage>({
             command: 'create',
             webhook: { scopeKey, scopeValue, callbackUrl, filter, attributes }
         });

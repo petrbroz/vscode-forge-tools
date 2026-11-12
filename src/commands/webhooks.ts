@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { IContext, command, createWebViewPanel, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import { IWebhook, IWebhookEvent } from '../models/webhooks';
+import type { ICreateWebhookProps, ICreateWebhookMessage } from '../webviews/create-webhook';
+import type { IUpdateWebhookProps, IUpdateWebhookMessage } from '../webviews/update-webhook';
 import { webhooksServiceFor } from '../providers/webhooks';
 
 export class WebhooksCommands {
@@ -42,7 +44,7 @@ export class WebhooksCommands {
 async function createWebhook({ system, event, authContext }: IWebhookEvent, context: IContext, successCallback?: () => void) {
 	const service = webhooksServiceFor(context, authContext);
 	const scopes = service.getEventScopes(system, event);
-	let panel = createWebViewPanel(context, 'create-webhook.js', 'create-webhook', 'Create Webhook', { system, event, scopes }, async message => {
+	let panel = createWebViewPanel<ICreateWebhookProps, ICreateWebhookMessage>(context, 'create-webhook.js', 'create-webhook', 'Create Webhook', { system, event, scopes }, async message => {
 		switch (message.command) {
 			case 'create':
 				try {
@@ -93,7 +95,7 @@ async function updateWebhook({ system, event, id, authContext }: IWebhook, conte
 	try {
 		const service = webhooksServiceFor(context, authContext);
 		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, service.getHookDetails(system, event, id));
-		let panel = createWebViewPanel(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail }, async message => {
+		let panel = createWebViewPanel<IUpdateWebhookProps, IUpdateWebhookMessage>(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail }, async message => {
 			switch (message.command) {
 				case 'update':
 					try {

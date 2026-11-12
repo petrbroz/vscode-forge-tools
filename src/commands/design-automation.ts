@@ -2,7 +2,9 @@ import * as vscode from 'vscode';
 import { IContext, command, promptAppBundleFullID, promptEngine, showErrorMessage } from '../common';
 import { IActivityDetail, DesignAutomationID } from '../models/design-automation-api';
 import { withProgress, createWebViewPanel, showReadOnlyJson, showReadOnlyText } from '../common';
-import { ICreateActivityProps } from '../webviews/create-activity';
+import type { ICreateActivityProps, ICreateActivityMessage } from '../webviews/create-activity';
+import type { IUpdateActivityProps, IUpdateActivityMessage } from '../webviews/update-activity';
+import type { ICreateWorkItemProps, ICreateWorkItemMessage } from '../webviews/create-workitem';
 import { IAppBundleEntry, IAppBundleAliasEntry, ISharedAppBundleEntry, IAppBundleVersionEntry, IAppBundleAliasesEntry, IActivityAliasEntry, ISharedActivityEntry, IActivityVersionEntry, IActivityEntry, IActivityAliasesEntry } from '../models/design-automation';
 
 type FullyQualifiedID = string;
@@ -274,7 +276,7 @@ async function createActivity(successCallback: (activity: IActivityDetail) => vo
 		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for a new activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for new activity`, context.designAutomationService.getAvailableAppBundles());
 
-		let panel = createWebViewPanel<ICreateActivityProps>(context, 'create-activity.js', 'create-activity', 'Create Activity', {
+		let panel = createWebViewPanel<ICreateActivityProps, ICreateActivityMessage>(context, 'create-activity.js', 'create-activity', 'Create Activity', {
 			options: {
 				engines: availableEngines,
 				appBundles: availableAppBundles
@@ -316,7 +318,7 @@ async function updateActivity(id: FullyQualifiedID | INameAndVersion, successCal
 		let availableEngines = await findAvailableEngines(context, 'Collecting available engines for activity');
 		let availableAppBundles = await withProgress(`Collecting available app bundles for activity`, context.designAutomationService.getAvailableAppBundles());
 
-		let panel = createWebViewPanel(context, 'update-activity.js', 'update-activity', `Update Activity: ${originalActivity.id}`, {
+		let panel = createWebViewPanel<IUpdateActivityProps, IUpdateActivityMessage>(context, 'update-activity.js', 'update-activity', `Update Activity: ${originalActivity.id}`, {
 			activity: originalActivity,
 			options: {
 				engines: availableEngines,
@@ -506,7 +508,7 @@ async function createWorkitem(id: FullyQualifiedID, context: IContext) {
 	try {
 		const activity = await withProgress(`Getting activity details: ${id}`, context.designAutomationService.getActivity(id));
 		if (activity) {
-			createWebViewPanel(context, 'create-workitem.js', 'create-workitem', `Create Work Item: ${activity.id}`, { activity }, async message => {
+			createWebViewPanel<ICreateWorkItemProps, ICreateWorkItemMessage>(context, 'create-workitem.js', 'create-workitem', `Create Work Item: ${activity.id}`, { activity }, async message => {
 				switch (message.command) {
 					case 'create':
 						try {

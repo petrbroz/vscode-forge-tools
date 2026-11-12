@@ -6,6 +6,11 @@ import { IActivityDetail, IActivityParam, IWorkItemParam } from '../models/desig
 import { postMessage } from './common';
 import { Actions } from './components/Actions';
 
+export type ICreateWorkItemMessage = {
+    command: 'create';
+    parameters: { [key: string]: IWorkItemParam };
+};
+
 export interface ICreateWorkItemProps {
     activity: IActivityDetail;
 }
@@ -61,7 +66,7 @@ const CreateWorkItem = ({ activity }: ICreateWorkItemProps) => {
     );
 
     function createWorkItem() {
-        postMessage({
+        postMessage<ICreateWorkItemMessage>({
             command: 'create',
             parameters: packParameters(parameters)
         });

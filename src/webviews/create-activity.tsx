@@ -7,6 +7,19 @@ import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
 
+export type ICreateActivityMessage = {
+    command: 'create';
+    activity: {
+        id: string;
+        description: string;
+        engine: string;
+        commands: string[];
+        parameters: { [key: string]: IActivityParam };
+        settings: { [key: string]: ICodeOnEngineStringSetting | ICodeOnEngineUrlSetting };
+        appBundles: string[];
+    };
+};
+
 export interface ICreateActivityProps {
     options: {
         engines: string[];
@@ -88,7 +101,7 @@ const CreateActivity = ({ options }: ICreateActivityProps) => {
         for (const setting of urlSettings) {
             settings[setting.name] = setting;
         }
-        postMessage({
+        postMessage<ICreateActivityMessage>({
             command: 'create',
             activity: {
                 id, description, engine,
