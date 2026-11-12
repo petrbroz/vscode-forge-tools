@@ -42,7 +42,7 @@ export class WebhooksCommands {
 async function createWebhook({ system, event, authContext }: IWebhookEvent, context: IContext, successCallback?: () => void) {
 	const service = webhooksServiceFor(context, authContext);
 	const scopes = service.getEventScopes(system, event);
-	let panel = createWebViewPanel(context, 'create-webhook.js', 'create-webhook', 'Create Webhook', { system, event, scopes }, async message => {
+	let panel = createWebViewPanel(context, 'webhook-form.js', 'webhook-form', 'Create Webhook', { system, event, scopes }, async message => {
 		switch (message.command) {
 			case 'create':
 				try {
@@ -93,7 +93,7 @@ async function updateWebhook({ system, event, id, authContext }: IWebhook, conte
 	try {
 		const service = webhooksServiceFor(context, authContext);
 		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, service.getHookDetails(system, event, id));
-		let panel = createWebViewPanel(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail }, async message => {
+		let panel = createWebViewPanel(context, 'webhook-form.js', 'webhook-form', `Update Webhook: ${id}`, { system, event, scopes: [], initial: webhookDetail }, async message => {
 			switch (message.command) {
 				case 'update':
 					try {

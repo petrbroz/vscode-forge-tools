@@ -2,13 +2,13 @@ import * as React from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { TextField, Dropdown, Button, Option, DataGrid, DataGridRow, DataGridCell, Checkbox } from './components/controls';
-import { IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from '../models/design-automation-api';
+import { DesignAutomationID, IActivityDetail, IActivityParam, ICodeOnEngineStringSetting, ICodeOnEngineUrlSetting } from '../models/design-automation-api';
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
 
-export interface IUpdateActivityProps {
-    activity: IActivityDetail;
+export interface IActivityFormProps {
+    initial?: IActivityDetail;
     options: {
         engines: string[];
         appBundles: string[];
@@ -55,29 +55,29 @@ function parseDesignAutomationID(id: string) {
     };
 }
 
-const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
-    const [id, setId] = useState(activity.id);
-    const [description, setDescription] = useState(activity.description || '');
-    const [engine, setEngine] = useState(activity.engine);
-    const [commands, setCommands] = useState<string[]>(activity.commandLine);
-    const [parameters, setParameters] = useState<IActivityParam[]>(activity.parameters ? unpackParameters(activity.parameters) : []);
-    const [stringSettings, setStringSettings] = useState<ICodeOnEngineStringSetting[]>(activity.settings ? unpackStringSettings(activity.settings) : []);
-    const [urlSettings, setUrlSettings] = useState<ICodeOnEngineUrlSetting[]>(activity.settings ? unpackUrlSettings(activity.settings) : []);
-    const [appBundles, setAppBundles] = useState<string[]>(activity.appbundles || []);
+const ActivityForm = ({ initial, options }: IActivityFormProps) => {
+    const [id, setId] = useState(initial?.id ?? '');
+    const [description, setDescription] = useState(initial?.description || '');
+    const [engine, setEngine] = useState(initial?.engine ?? options.engines[0]);
+    const [commands, setCommands] = useState<string[]>(initial?.commandLine ?? []);
+    const [parameters, setParameters] = useState<IActivityParam[]>(initial?.parameters ? unpackParameters(initial.parameters) : []);
+    const [stringSettings, setStringSettings] = useState<ICodeOnEngineStringSetting[]>(initial?.settings ? unpackStringSettings(initial.settings) : []);
+    const [urlSettings, setUrlSettings] = useState<ICodeOnEngineUrlSetting[]>(initial?.settings ? unpackUrlSettings(initial.settings) : []);
+    const [appBundles, setAppBundles] = useState<string[]>(initial?.appbundles ?? [options.appBundles[0]]);
 
     function commandLinePreset(): string {
-        const engineId = parseDesignAutomationID(engine);
+        const engineName = DesignAutomationID.parse(engine)?.id ?? '';
         const firstInputName = parameters.find(param => param.verb === 'get') as IActivityParam;
-        const firstBundle = appBundles.length > 0 ? parseDesignAutomationID(appBundles[0]) : undefined;
-        switch (engineId.name.toLowerCase()) {
+        const firstBundle = appBundles.length > 0 ? DesignAutomationID.parse(appBundles[0]) : undefined;
+        switch (engineName.toLowerCase()) {
             case 'autocad':
-                return `$(engine.path)\\\\accoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
+                return `$(engine.path)\\\\accoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.id}].path)"` : ''}`;
             case '3dsmax':
                 return `"$(engine.path)/3dsmaxbatch.exe" ${firstInputName ? `-sceneFile "$(args[${firstInputName.name}].path)"` : ''}`;
             case 'revit':
-                return `$(engine.path)\\\\revitcoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
+                return `$(engine.path)\\\\revitcoreconsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.id}].path)"` : ''}`;
             case 'inventor':
-                return `$(engine.path)\\\\InventorCoreConsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.name}].path)"` : ''}`;
+                return `$(engine.path)\\\\InventorCoreConsole.exe ${firstInputName ? `/i "$(args[${firstInputName.name}].path)"` : ''} ${firstBundle ? `/al "$(appbundles[${firstBundle.id}].path)"` : ''}`;
         }
         return '';
     }
@@ -108,9 +108,9 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
     const removeAppBundle = (index: number) => setAppBundles(appBundles.filter((_, i) => i !== index));
     const updateAppBundle = (newIndex: number, newappBundle: string) => setAppBundles(appBundles.map((appBundle, i) => i === newIndex ? newappBundle : appBundle));
 
-    function updateActivity() {
+    function submit() {
         postMessage({
-            command: 'update',
+            command: initial ? 'update' : 'create',
             activity: {
                 id, description, engine,
                 commands,
@@ -123,7 +123,7 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
 
     return (
         <div>
-            <h1>Update Activity: {activity.id}</h1>
+            <h1>{initial ? `Update Activity: ${initial.id}` : 'Create Activity'}</h1>
 
             <Grid>
                 <TextField value={id} onChange={ev => setId((ev.target as any).value)} placeholder="Activity name">ID</TextField>
@@ -278,12 +278,12 @@ const UpdateActivity = ({ activity, options }: IUpdateActivityProps) => {
             </Button>
 
             <Actions>
-                <Button onClick={updateActivity}>Update</Button>
+                <Button onClick={submit}>{initial ? 'Update' : 'Create'}</Button>
             </Actions>
         </div>
     );
 };
 
-export function render(container: HTMLElement, props: IUpdateActivityProps) {
-    ReactDOM.createRoot(container).render(<UpdateActivity {...props} />);
+export function render(container: HTMLElement, props: IActivityFormProps) {
+    ReactDOM.createRoot(container).render(<ActivityForm {...props} />);
 }
