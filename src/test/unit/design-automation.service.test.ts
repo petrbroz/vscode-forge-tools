@@ -1,6 +1,8 @@
 import * as assert from 'assert';
 import { DesignAutomationService } from '../../services/design-automation';
 
+const fakeAuthProvider = { getAccessToken: async () => 'fake-token' };
+
 describe('DesignAutomationService', () => {
 	describe('getOwnedAppBundles / getSharedAppBundles', () => {
 		it('splits full IDs by owner, deduping owned bare IDs', async () => {
@@ -13,7 +15,7 @@ describe('DesignAutomationService', () => {
 				listAppBundles: async () => ['nick1.Bundle1+$LATEST', 'nick1.Bundle1+1', 'other.Bundle2+1']
 			};
 
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 
 			const owned = await service.getOwnedAppBundles();
 			assert.strictEqual(owned.nickname, 'nick1');
@@ -34,7 +36,7 @@ describe('DesignAutomationService', () => {
 				listActivities: async () => ['nick1.Activity1+1', 'other.Activity2+1']
 			};
 
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 			assert.deepStrictEqual((await service.getOwnedActivities()).ids, ['Activity1']);
 			assert.deepStrictEqual(await service.getSharedActivities(), ['other.Activity2+1']);
 		});
@@ -48,7 +50,7 @@ describe('DesignAutomationService', () => {
 				listActivityAliases: async () => aliases
 			};
 
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 			assert.deepStrictEqual((await service.getAppBundleAliases('bundle-1')).map(a => a.id), ['v1']);
 			assert.deepStrictEqual((await service.getActivityAliases('activity-1')).map(a => a.id), ['v1']);
 		});
@@ -65,7 +67,7 @@ describe('DesignAutomationService', () => {
 			};
 			const progress: string[] = [];
 
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 			const result = await service.waitForWorkItem(
 				{ id: 'wi-1', status: 'inprogress', reportUrl: '' },
 				status => progress.push(status)
@@ -77,7 +79,7 @@ describe('DesignAutomationService', () => {
 
 		it('returns immediately without polling when already in a terminal state', async () => {
 			const fakeClient = { getWorkItem: async () => { throw new Error('should not be called'); } };
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 			const workitem = { id: 'wi-1', status: 'success', reportUrl: '' };
 			assert.strictEqual(await service.waitForWorkItem(workitem), workitem);
 		});
@@ -96,7 +98,7 @@ describe('DesignAutomationService', () => {
 				return { text: async () => 'line 1\nline 2' };
 			}) as any;
 
-			const service = new DesignAutomationService({} as any);
+			const service = new DesignAutomationService(fakeAuthProvider as any);
 			const report = await service.getWorkItemReport({ id: 'wi-1', status: 'success', reportUrl: 'https://example.com/report.txt' });
 
 			assert.strictEqual(requestedUrl, 'https://example.com/report.txt');
@@ -109,7 +111,7 @@ describe('DesignAutomationService', () => {
 			const fakeClient = {
 				listAppBundles: async () => ['nick1.Bundle1+$LATEST', 'nick1.Bundle1+1', 'other.Bundle2+$LATEST', 'other.Bundle2+prod']
 			};
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 
 			assert.deepStrictEqual(await service.getAvailableAppBundles(), ['nick1.Bundle1+1', 'other.Bundle2+prod']);
 		});
@@ -118,16 +120,52 @@ describe('DesignAutomationService', () => {
 	describe('findAvailableEngines', () => {
 		it('sorts the engines alphabetically', async () => {
 			const fakeClient = { listEngines: async () => ['Revit+2024', 'AutoCAD+2024', 'Inventor+2024'] };
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 
 			assert.deepStrictEqual(await service.findAvailableEngines(), ['AutoCAD+2024', 'Inventor+2024', 'Revit+2024']);
 		});
 
 		it('does not mutate the order returned by listEngines (unsorted)', async () => {
 			const fakeClient = { listEngines: async () => ['Revit+2024', 'AutoCAD+2024'] };
-			const service = new DesignAutomationService(fakeClient as any);
+			const service = Object.assign(new DesignAutomationService(fakeAuthProvider as any), fakeClient);
 
 			assert.deepStrictEqual(await service.listEngines(), ['Revit+2024', 'AutoCAD+2024']);
+		});
+	});
+
+	describe('REST calls', () => {
+		const originalFetch = global.fetch;
+		afterEach(() => {
+			global.fetch = originalFetch;
+		});
+
+		it('follows the paginationToken loop across pages and flattens the results', async () => {
+			const requestedUrls: string[] = [];
+			global.fetch = (async (url: string) => {
+				requestedUrls.push(url);
+				if (!url.includes('page=')) {
+					return { ok: true, text: async () => JSON.stringify({ data: ['engine1'], paginationToken: 'cursor-1' }) };
+				}
+				assert.ok(url.includes('page=cursor-1'));
+				return { ok: true, text: async () => JSON.stringify({ data: ['engine2'] }) };
+			}) as any;
+
+			const engines = await new DesignAutomationService(fakeAuthProvider as any).listEngines();
+
+			assert.deepStrictEqual(engines, ['engine1', 'engine2']);
+			assert.strictEqual(requestedUrls.length, 2);
+		});
+
+		it('builds the regional base URL and falls back to the raw text for the nickname', async () => {
+			let requestedUrl: string | undefined;
+			global.fetch = (async (url: string) => {
+				requestedUrl = url;
+				return { ok: true, text: async () => 'my-nickname' };
+			}) as any;
+
+			const service = new DesignAutomationService(fakeAuthProvider as any, 'https://example.com', 'EMEA' as any);
+			assert.strictEqual(await service.getNickname(), 'my-nickname');
+			assert.strictEqual(requestedUrl, 'https://example.com/da/EMEA/v3/forgeapps/me');
 		});
 	});
 });

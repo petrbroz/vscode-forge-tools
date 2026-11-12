@@ -6,7 +6,7 @@ import { WebhooksClient } from '@aps_sdk/webhooks';
 import { DataManagementClient } from '@aps_sdk/data-management';
 import { IssuesClient } from '@aps_sdk/construction-issues';
 import { AdminClient } from '@aps_sdk/construction-account-admin';
-import { IEnvironment } from '../models/environment';
+import { DesignAutomationRegion, IEnvironment } from '../models/environment';
 import { IApsAuthSession } from '../models/authentication';
 import { createApsSdkManager } from './aps-sdk-manager';
 import { ClientCredentialsAuthenticationProvider } from './client-credentials-authentication-provider';
@@ -14,7 +14,7 @@ import { StaticTokenAuthenticationProvider } from './static-token-authentication
 import { UserTokenAuthenticationProvider } from './user-token-authentication-provider';
 import { ServiceAccountAuthenticationProvider } from './service-account-authentication-provider';
 import { createSecureServiceAccountsClient, SecureServiceAccountsService } from './secure-service-accounts';
-import { createDesignAutomationClient, DesignAutomationService } from './design-automation';
+import { DESIGN_AUTOMATION_SCOPES, DesignAutomationService } from './design-automation';
 import { OssService } from './oss';
 import { AuthenticationService } from './authentication';
 import { ModelDerivativeService } from './model-derivative';
@@ -128,7 +128,11 @@ export function createServices(env: IEnvironment, userProvider?: IAuthentication
             authenticationProvider: new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, OSS_SCOPES, env.host)
         })),
         modelDerivativeService,
-        designAutomationService: new DesignAutomationService(createDesignAutomationClient(env)),
+        designAutomationService: new DesignAutomationService(
+            new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, DESIGN_AUTOMATION_SCOPES, env.host),
+            env.host,
+            env.designAutomationRegion as DesignAutomationRegion
+        ),
         webhooksServiceApp: new WebhooksService(new WebhooksClient({
             sdkManager,
             authenticationProvider: new ClientCredentialsAuthenticationProvider(env.clientId, env.clientSecret, WEBHOOKS_SCOPES, env.host)
