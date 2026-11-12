@@ -24,6 +24,7 @@ import { HubAdminCommands } from './commands/hub-admin';
 import { TeamAdminCommands } from './commands/team-admin';
 import { IssuesCommands } from './commands/issues';
 import { EnvironmentCommands } from './commands/environment';
+import { ApsLanguageModelTools } from './tools';
 
 export async function activate(_context: vscode.ExtensionContext) {
 	const environments = getEnvironments();
@@ -205,6 +206,10 @@ export async function activate(_context: vscode.ExtensionContext) {
 
 	const teamAdminCommands = new TeamAdminCommands(context, () => teamAdminDataProvider.refresh());
 	context.extensionContext.subscriptions.push(...teamAdminCommands.registerCommands());
+
+	// Language model tools for operating on APS resources from VS Code chat (agent mode)
+	const languageModelTools = new ApsLanguageModelTools(context, () => simpleStorageDataProvider.refresh(), refreshWebhooks);
+	context.extensionContext.subscriptions.push(...languageModelTools.registerTools());
 
 	function updateEnvironmentStatus(statusBarItem: vscode.StatusBarItem) {
 		statusBarItem.text = 'APS Env: ' + context.environment.title;

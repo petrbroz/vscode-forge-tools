@@ -23,7 +23,7 @@
         "extension"
     ],
     "engines": {
-        "vscode": "^1.92.0"
+        "vscode": "^1.95.0"
     },
     "categories": [
         "Other"
@@ -1615,6 +1615,264 @@
                     }
                 ]
             }
+        ],
+        "languageModelTools": [
+            {
+                "name": "aps_listBuckets",
+                "toolReferenceName": "apsListBuckets",
+                "displayName": "List APS Buckets",
+                "userDescription": "List the OSS buckets of the current APS environment.",
+                "modelDescription": "Lists all Autodesk Platform Services (APS) Object Storage Service (OSS) buckets owned by the application of the currently selected APS environment, including their bucket keys, retention policies, and creation dates.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "oss"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            {
+                "name": "aps_createBucket",
+                "toolReferenceName": "apsCreateBucket",
+                "displayName": "Create APS Bucket",
+                "userDescription": "Create a new OSS bucket in the current APS environment.",
+                "modelDescription": "Creates a new Autodesk Platform Services (APS) Object Storage Service (OSS) bucket in the region of the currently selected APS environment. Bucket keys must be globally unique, 3-128 characters long, and may only contain lowercase letters, digits, and the characters '-', '_', and '.'.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "oss"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "bucketKey": {
+                            "type": "string",
+                            "description": "Globally unique key (name) of the new bucket."
+                        },
+                        "policyKey": {
+                            "type": "string",
+                            "enum": [
+                                "transient",
+                                "temporary",
+                                "persistent"
+                            ],
+                            "description": "Retention policy of the bucket: 'transient' (24 hours), 'temporary' (30 days), or 'persistent'. Defaults to 'transient'."
+                        }
+                    },
+                    "required": [
+                        "bucketKey"
+                    ]
+                }
+            },
+            {
+                "name": "aps_listObjects",
+                "toolReferenceName": "apsListObjects",
+                "displayName": "List APS Objects",
+                "userDescription": "List the objects in an OSS bucket.",
+                "modelDescription": "Lists all objects in an Autodesk Platform Services (APS) Object Storage Service (OSS) bucket, including their object keys, object IDs, and sizes.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "oss"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "bucketKey": {
+                            "type": "string",
+                            "description": "Key (name) of the OSS bucket."
+                        }
+                    },
+                    "required": [
+                        "bucketKey"
+                    ]
+                }
+            },
+            {
+                "name": "aps_uploadFile",
+                "toolReferenceName": "apsUploadFile",
+                "displayName": "Upload File to APS",
+                "userDescription": "Upload a local file to an OSS bucket.",
+                "modelDescription": "Uploads a local file to an Autodesk Platform Services (APS) Object Storage Service (OSS) bucket. The file path may be absolute or relative to the first workspace folder.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "oss"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "bucketKey": {
+                            "type": "string",
+                            "description": "Key (name) of the OSS bucket."
+                        },
+                        "filePath": {
+                            "type": "string",
+                            "description": "Absolute path of the local file to upload, or a path relative to the first workspace folder."
+                        },
+                        "objectKey": {
+                            "type": "string",
+                            "description": "Key (name) of the new object in the bucket. Defaults to the file name."
+                        }
+                    },
+                    "required": [
+                        "bucketKey",
+                        "filePath"
+                    ]
+                }
+            },
+            {
+                "name": "aps_translateObject",
+                "toolReferenceName": "apsTranslateObject",
+                "displayName": "Translate APS Object",
+                "userDescription": "Start an SVF2 translation of an OSS object.",
+                "modelDescription": "Starts an Autodesk Platform Services (APS) Model Derivative translation of an object in an OSS bucket into the SVF2 format (2D and 3D views) so that it can be viewed in the APS Viewer. Existing derivatives are replaced. Use the aps_getTranslationStatus tool to check the progress of the translation.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "model-derivative"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "bucketKey": {
+                            "type": "string",
+                            "description": "Key (name) of the OSS bucket."
+                        },
+                        "objectKey": {
+                            "type": "string",
+                            "description": "Key (name) of the object in the bucket."
+                        }
+                    },
+                    "required": [
+                        "bucketKey",
+                        "objectKey"
+                    ]
+                }
+            },
+            {
+                "name": "aps_getTranslationStatus",
+                "toolReferenceName": "apsTranslationStatus",
+                "displayName": "Get APS Translation Status",
+                "userDescription": "Get the translation status of an OSS object.",
+                "modelDescription": "Gets the status and progress of the Autodesk Platform Services (APS) Model Derivative translation of an object in an OSS bucket (from its manifest), including the status of each derivative. Fails if the object has not been translated yet.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "model-derivative"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "bucketKey": {
+                            "type": "string",
+                            "description": "Key (name) of the OSS bucket."
+                        },
+                        "objectKey": {
+                            "type": "string",
+                            "description": "Key (name) of the object in the bucket."
+                        }
+                    },
+                    "required": [
+                        "bucketKey",
+                        "objectKey"
+                    ]
+                }
+            },
+            {
+                "name": "aps_listWebhookEvents",
+                "toolReferenceName": "apsListWebhookEvents",
+                "displayName": "List APS Webhook Events",
+                "userDescription": "List the systems and events available for APS webhooks.",
+                "modelDescription": "Lists the Autodesk Platform Services (APS) webhook systems (e.g. 'data', 'derivative', 'adsk.c4r') and their events, including the scopes supported by each event. Use this to find valid inputs for the aps_createWebhook tool.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "webhooks"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "system": {
+                            "type": "string",
+                            "description": "Optional ID of a webhook system to restrict the list to."
+                        }
+                    }
+                }
+            },
+            {
+                "name": "aps_createWebhook",
+                "toolReferenceName": "apsCreateWebhook",
+                "displayName": "Create APS Webhook",
+                "userDescription": "Create a webhook for an APS event.",
+                "modelDescription": "Creates an Autodesk Platform Services (APS) webhook that calls the given callback URL whenever the given event of the given system occurs within the given scope (for example, system 'data', event 'dm.version.added', scope 'folder' with a folder URN). Use the aps_listWebhookEvents tool to find valid systems, events, and scopes.",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(cloud)",
+                "tags": [
+                    "aps",
+                    "autodesk",
+                    "webhooks"
+                ],
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "system": {
+                            "type": "string",
+                            "description": "ID of the webhook system, e.g. 'data' or 'derivative'."
+                        },
+                        "event": {
+                            "type": "string",
+                            "description": "ID of the event, e.g. 'dm.version.added' or 'extraction.finished'."
+                        },
+                        "callbackUrl": {
+                            "type": "string",
+                            "description": "URL to be called when the event occurs."
+                        },
+                        "scopeValue": {
+                            "type": "string",
+                            "description": "Value of the webhook scope, e.g. a folder URN for the 'folder' scope."
+                        },
+                        "scopeKey": {
+                            "type": "string",
+                            "description": "Key of the webhook scope, e.g. 'folder' or 'workflow'. Defaults to the first scope supported by the event."
+                        },
+                        "filter": {
+                            "type": "string",
+                            "description": "Optional JsonPath filter expression applied to the event payload."
+                        },
+                        "authContext": {
+                            "type": "string",
+                            "enum": [
+                                "app",
+                                "user"
+                            ],
+                            "description": "Whether to create the webhook with the application's credentials ('app', default) or on behalf of the signed-in user ('user')."
+                        }
+                    },
+                    "required": [
+                        "system",
+                        "event",
+                        "callbackUrl",
+                        "scopeValue"
+                    ]
+                }
+            }
         ]
     },
     "scripts": {
@@ -1630,7 +1888,7 @@
         "@types/node": "^22.0.0",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
-        "@types/vscode": "1.92",
+        "@types/vscode": "1.95",
         "@vscode-elements/react-elements": "^2.4.0",
         "@vscode/test-cli": "^0.0.15",
         "@vscode/test-electron": "^3.1.0",
