@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { BucketsItems, ObjectDetails } from '../models/oss';
-import { createWebViewPanel, IContext, promptBucket, promptObject, showErrorMessage, withProgress } from '../common';
+import { IContext, command, promptBucket, promptObject, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 
 export class ObjectStorageServiceCommands {
     constructor(
@@ -15,24 +15,24 @@ export class ObjectStorageServiceCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.oss.refreshBuckets', this.refreshBuckets.bind(this)),
-            vscode.commands.registerCommand('aps.oss.loadMore', this.loadMore.bind(this)),
-            vscode.commands.registerCommand('aps.oss.filterObjects', this.filterObjects.bind(this)),
-            vscode.commands.registerCommand('aps.oss.clearObjectsFilter', this.clearObjectsFilter.bind(this)),
-            vscode.commands.registerCommand('aps.oss.createBucket', this.createBucket.bind(this)),
-            vscode.commands.registerCommand('aps.oss.viewBucketDetails', this.viewBucketDetails.bind(this)),
-            vscode.commands.registerCommand('aps.oss.copyBucketKey', this.copyBucketKey.bind(this)),
-            vscode.commands.registerCommand('aps.oss.deleteBucketObjects', this.deleteBucketObjects.bind(this)),
-            vscode.commands.registerCommand('aps.oss.viewObjectDetails', this.viewObjectDetails.bind(this)),
-            vscode.commands.registerCommand('aps.oss.copyObjectKey', this.copyObjectKey.bind(this)),
-            vscode.commands.registerCommand('aps.oss.uploadObject', this.uploadObject.bind(this)),
-            vscode.commands.registerCommand('aps.oss.createEmptyObject', this.createEmptyObject.bind(this)),
-            vscode.commands.registerCommand('aps.oss.copyObject', this.copyObject.bind(this)),
-            vscode.commands.registerCommand('aps.oss.renameObject', this.renameObject.bind(this)),
-            vscode.commands.registerCommand('aps.oss.downloadObject', this.downloadObject.bind(this)),
-            vscode.commands.registerCommand('aps.oss.deleteObject', this.deleteObject.bind(this)),
-            vscode.commands.registerCommand('aps.oss.generateSignedUrl', this.generateSignedUrl.bind(this)),
-            vscode.commands.registerCommand('aps.oss.deleteBucket', this.deleteBucket.bind(this)),
+            command(this.context, 'aps.oss.refreshBuckets', this.refreshBuckets.bind(this)),
+            command(this.context, 'aps.oss.loadMore', this.loadMore.bind(this)),
+            command(this.context, 'aps.oss.filterObjects', 'Could not filter objects', this.filterObjects.bind(this)),
+            command(this.context, 'aps.oss.clearObjectsFilter', 'Could not clear object filter', this.clearObjectsFilter.bind(this)),
+            command(this.context, 'aps.oss.createBucket', this.createBucket.bind(this)),
+            command(this.context, 'aps.oss.viewBucketDetails', this.viewBucketDetails.bind(this)),
+            command(this.context, 'aps.oss.copyBucketKey', 'Could not obtain bucket key', this.copyBucketKey.bind(this)),
+            command(this.context, 'aps.oss.deleteBucketObjects', this.deleteBucketObjects.bind(this)),
+            command(this.context, 'aps.oss.viewObjectDetails', this.viewObjectDetails.bind(this)),
+            command(this.context, 'aps.oss.copyObjectKey', 'Could not obtain object key', this.copyObjectKey.bind(this)),
+            command(this.context, 'aps.oss.uploadObject', this.uploadObject.bind(this)),
+            command(this.context, 'aps.oss.createEmptyObject', this.createEmptyObject.bind(this)),
+            command(this.context, 'aps.oss.copyObject', this.copyObject.bind(this)),
+            command(this.context, 'aps.oss.renameObject', this.renameObject.bind(this)),
+            command(this.context, 'aps.oss.downloadObject', this.downloadObject.bind(this)),
+            command(this.context, 'aps.oss.deleteObject', this.deleteObject.bind(this)),
+            command(this.context, 'aps.oss.generateSignedUrl', this.generateSignedUrl.bind(this)),
+            command(this.context, 'aps.oss.deleteBucket', this.deleteBucket.bind(this)),
         ];
     }
 
@@ -45,42 +45,30 @@ export class ObjectStorageServiceCommands {
     }
 
     async filterObjects(bucket?: BucketsItems) {
-        try {
-            if (!bucket) {
-                bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
-            }
-
-            const { bucketKey } = bucket;
-            const prefix = await vscode.window.showInputBox({
-                prompt: `Enter a key prefix to filter objects in bucket: ${bucketKey}`,
-                placeHolder: 'e.g. folder/subfolder/',
-                value: this.onGetFilter(bucketKey)
-            });
-            if (prefix === undefined) {
-                return;
-            }
-            this.onSetFilter(bucketKey, prefix || undefined);
-        } catch (err) {
-            showErrorMessage('Could not filter objects', err, this.context);
+        bucket ??= await promptBucket(this.context);
+        if (!bucket) {
+            return;
         }
+
+        const { bucketKey } = bucket;
+        const prefix = await vscode.window.showInputBox({
+            prompt: `Enter a key prefix to filter objects in bucket: ${bucketKey}`,
+            placeHolder: 'e.g. folder/subfolder/',
+            value: this.onGetFilter(bucketKey)
+        });
+        if (prefix === undefined) {
+            return;
+        }
+        this.onSetFilter(bucketKey, prefix || undefined);
     }
 
     async clearObjectsFilter(bucket?: BucketsItems) {
-        try {
-            if (!bucket) {
-                bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
-            }
-
-            this.onSetFilter(bucket.bucketKey, undefined);
-        } catch (err) {
-            showErrorMessage('Could not clear object filter', err, this.context);
+        bucket ??= await promptBucket(this.context);
+        if (!bucket) {
+            return;
         }
+
+        this.onSetFilter(bucket.bucketKey, undefined);
     }
 
     async createBucket() {
@@ -104,16 +92,14 @@ export class ObjectStorageServiceCommands {
 
     async viewBucketDetails(bucket?: BucketsItems) {
         try {
+            bucket ??= await promptBucket(this.context);
             if (!bucket) {
-                bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
+                return;
             }
 
             const { bucketKey } = bucket;
             const bucketDetails = await withProgress(`Getting bucket details: ${bucketKey}`, this.context.ossService.getBucketDetails(bucketKey));
-            createWebViewPanel(this.context, 'bucket-details.js', 'bucket-details', `Bucket Details: ${bucketKey}`, { detail: bucketDetails });
+            await showReadOnlyJson(this.context, ['oss', 'buckets', bucketKey], bucketDetails);
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(bucketDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
         } catch(err) {
@@ -122,28 +108,20 @@ export class ObjectStorageServiceCommands {
     }
 
     async copyBucketKey(bucket?: BucketsItems) {
-        try {
-            if (!bucket) {
-                bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
-            }
-
-            await vscode.env.clipboard.writeText(bucket.bucketKey);
-            vscode.window.showInformationMessage(`Bucket key copied to clipboard: ${bucket.bucketKey}`);
-        } catch (err) {
-            showErrorMessage('Could not obtain bucket key', err, this.context);
+        bucket ??= await promptBucket(this.context);
+        if (!bucket) {
+            return;
         }
+
+        await vscode.env.clipboard.writeText(bucket.bucketKey);
+        vscode.window.showInformationMessage(`Bucket key copied to clipboard: ${bucket.bucketKey}`);
     }
 
     async deleteBucketObjects(bucket?: BucketsItems) {
         try {
+            bucket ??= await promptBucket(this.context);
             if (!bucket) {
-                bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
+                return;
             }
 
             const { bucketKey } = bucket;
@@ -195,7 +173,7 @@ export class ObjectStorageServiceCommands {
 
             const objectKey = object.objectKey!, bucketKey = object.bucketKey!;
             const objectDetails = await withProgress(`Getting object details: ${objectKey}`, this.context.ossService.getObjectDetails(bucketKey, objectKey));
-            createWebViewPanel(this.context, 'object-details.js', 'object-details', `Object Details: ${objectKey}`, { detail: objectDetails });
+            await showReadOnlyJson(this.context, ['oss', 'buckets', bucketKey, 'objects', objectKey], objectDetails);
             // const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(objectDetails, null, 4), language: 'json' });
             // await vscode.window.showTextDocument(doc, { preview: false });
         } catch(err) {
@@ -204,23 +182,19 @@ export class ObjectStorageServiceCommands {
     }
 
     async copyObjectKey(object?: ObjectDetails) {
-        try {
-            if (!object) {
-                const bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
-                object = await promptObject(this.context, bucket.bucketKey);
-                if (!object) {
-                    return;
-                }
+        if (!object) {
+            const bucket = await promptBucket(this.context);
+            if (!bucket) {
+                return;
             }
-
-            await vscode.env.clipboard.writeText(object.objectKey!);
-            vscode.window.showInformationMessage(`Object key copied to clipboard: ${object.objectKey}`);
-        } catch (err) {
-            showErrorMessage('Could not obtain object key', err, this.context);
+            object = await promptObject(this.context, bucket.bucketKey);
+            if (!object) {
+                return;
+            }
         }
+
+        await vscode.env.clipboard.writeText(object.objectKey!);
+        vscode.window.showInformationMessage(`Object key copied to clipboard: ${object.objectKey}`);
     }
 
     async uploadObject(bucket?: BucketsItems, uris?: vscode.Uri[]) {
@@ -232,10 +206,14 @@ export class ObjectStorageServiceCommands {
                     location: vscode.ProgressLocation.Notification,
                     title: `Uploading file: ${filepath}`,
                     cancellable: false
-                }, async (progress, token) => {
+                }, async (progress) => {
+                    let reported = 0;
                     await context.ossService.uploadObject(bucketKey, name, filepath, {
                         contentType,
-                        onProgress: (percentCompleted) => progress.report({ increment: percentCompleted })
+                        onProgress: (percentCompleted) => {
+                            progress.report({ increment: percentCompleted - reported });
+                            reported = percentCompleted;
+                        }
                     });
                 });
                 const res = await vscode.window.showInformationMessage(`Upload complete: ${filepath}`, 'Translate', 'Translate (Custom)');
@@ -251,21 +229,17 @@ export class ObjectStorageServiceCommands {
             }
         }
 
+        bucket ??= await promptBucket(this.context);
         if (!bucket) {
-            bucket = await promptBucket(this.context);
-            if (!bucket) {
-                return;
-            }
+            return;
         }
 
         const { bucketKey } = bucket;
 
         // Collect inputs (unless files were already provided, e.g. by dragging & dropping them onto the bucket)
+        uris ??= await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: true });
         if (!uris) {
-            uris = await vscode.window.showOpenDialog({ canSelectFiles: true, canSelectFolders: false, canSelectMany: true });
-            if (!uris) {
-                return;
-            }
+            return;
         }
 
         if (uris.length === 1) {
@@ -279,11 +253,9 @@ export class ObjectStorageServiceCommands {
             }
             // Pick the content type for the uploaded file
             let contentType = vscode.workspace.getConfiguration(undefined, null).get<string>('autodesk.forge.data.defaultContentType');
+            contentType ??= await vscode.window.showQuickPick(this.context.ossService.contentTypes, { canPickMany: false, placeHolder: 'Select content type' });
             if (!contentType) {
-                contentType = await vscode.window.showQuickPick(this.context.ossService.contentTypes, { canPickMany: false, placeHolder: 'Select content type' });
-                if (!contentType) {
-                    return;
-                }
+                return;
             }
             await _upload(name, uris[0], this.context, bucketKey, contentType);
         } else {
@@ -294,11 +266,9 @@ export class ObjectStorageServiceCommands {
     }
 
     async createEmptyObject(bucket?: BucketsItems) {
+        bucket ??= await promptBucket(this.context);
         if (!bucket) {
-            bucket = await promptBucket(this.context);
-            if (!bucket) {
-                return;
-            }
+            return;
         }
 
         const { bucketKey } = bucket;
@@ -468,11 +438,9 @@ export class ObjectStorageServiceCommands {
 
     async deleteBucket(bucket?: BucketsItems) {
         try {
+            bucket ??= await promptBucket(this.context);
             if (!bucket) {
-                bucket = await promptBucket(this.context);
-                if (!bucket) {
-                    return;
-                }
+                return;
             }
 
             const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete bucket: ${bucket.bucketKey}? This action cannot be undone.`, { modal: true }, 'Delete');

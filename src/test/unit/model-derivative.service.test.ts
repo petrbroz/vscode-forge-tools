@@ -102,6 +102,37 @@ describe('ModelDerivativeService', () => {
 			assert.strictEqual(result[0].format, 'obj');
 			assert.strictEqual(result[0].name, 'model.obj');
 		});
+
+		it('lists the derivatives of every output in the manifest, not just the first one', async () => {
+			const service = new ModelDerivativeService({} as any, {} as any, {} as any, {} as any);
+			const manifest = {
+				derivatives: [
+					{
+						outputType: 'svf2', status: 'success',
+						children: [{ type: 'geometry', name: 'Scene', role: '3d', guid: 'guid-1' }]
+					},
+					{
+						outputType: 'obj', status: 'success',
+						children: [
+							{ type: 'resource', role: 'OBJ', urn: 'urn:adsk.viewing:fs.file:xyz/output/geometry/model.obj', guid: 'g-obj' },
+							{ type: 'resource', role: 'OBJ', urn: 'urn:adsk.viewing:fs.file:xyz/output/geometry/model.mtl', guid: 'g-mtl' }
+						]
+					},
+					{
+						outputType: 'step', status: 'failed',
+						children: [{ type: 'resource', role: 'STEP', urn: 'urn:x/output/model.stp', guid: 'g-step' }]
+					}
+				]
+			};
+
+			const result = await service.getManifestDerivatives(manifest as any, 'urn-1');
+
+			assert.deepStrictEqual(result.map(d => ({ name: d.name, format: d.format, nonViewable: !!d.nonViewable })), [
+				{ name: 'Scene', format: 'svf2', nonViewable: false },
+				{ name: 'model.obj', format: 'obj', nonViewable: true },
+				{ name: 'model.mtl', format: 'obj', nonViewable: true }
+			]);
+		});
 	});
 
 	describe('getVersionDerivatives', () => {
@@ -116,6 +147,24 @@ describe('ModelDerivativeService', () => {
 
 			assert.strictEqual(result.length, 1);
 			assert.strictEqual(result[0].name, 'View1');
+		});
+
+		it('also returns downloadable resources of non-viewable outputs', async () => {
+			const service = new ModelDerivativeService({} as any, {} as any, {} as any, {} as any);
+			const manifest = {
+				status: 'success',
+				derivatives: [
+					{ outputType: 'svf2', children: [{ type: 'geometry', name: 'View1', role: '3d', guid: 'guid-1' }] },
+					{ outputType: 'obj', children: [{ type: 'resource', role: 'OBJ', urn: 'urn:x/output/model.obj', guid: 'g-obj' }] }
+				]
+			};
+
+			const result = await service.getVersionDerivatives('version-1', manifest as any);
+
+			assert.deepStrictEqual(result.map(d => ({ name: d.name, nonViewable: !!d.nonViewable })), [
+				{ name: 'View1', nonViewable: false },
+				{ name: 'model.obj', nonViewable: true }
+			]);
 		});
 
 		it('throws when the manifest status is not success', async () => {
@@ -149,7 +198,7 @@ describe('ModelDerivativeService', () => {
 
 		it('encodes an OSS object as a url-safe base64 urn of its objectId, and reads the format off objectKey', () => {
 			const object = { objectId: 'urn:adsk.objects:os.object:my-bucket/model.rvt', objectKey: 'model.rvt' };
-			const expected = Buffer.from(object.objectId).toString('base64').replace('/', '_');
+			const expected = Buffer.from(object.objectId).toString('base64').replace(/=+$/, '').replace('/', '_');
 
 			assert.strictEqual(service.getObjectUrn(object as any), expected);
 			assert.strictEqual(service.getSourceFileFormat(object as any), 'rvt');
@@ -157,7 +206,7 @@ describe('ModelDerivativeService', () => {
 
 		it('encodes a Hubs version as a url-safe base64 urn of its version id, with no source file format', () => {
 			const version = { kind: 'version', itemId: 'item-1', id: 'urn:adsk.wipprod:fs.file:vf.abc?version=1', name: 'model.dwg' };
-			const expected = Buffer.from(version.id).toString('base64').replace('/', '_');
+			const expected = Buffer.from(version.id).toString('base64').replace(/=+$/, '').replace('/', '_');
 
 			assert.strictEqual(service.getObjectUrn(version as any), expected);
 			assert.strictEqual(service.getSourceFileFormat(version as any), '');
@@ -299,36 +348,35 @@ describe('ModelDerivativeService', () => {
 			const result = await service.getViewableDerivatives(objectId);
 
 			assert.deepStrictEqual(result!.map(d => ({ urn: d.urn, name: d.name, guid: d.guid })), [
-				{ urn: Buffer.from(objectId).toString('base64'), name: 'View1', guid: 'guid-1' }
+				{ urn: Buffer.from(objectId).toString('base64').replace(/=+$/, ''), name: 'View1', guid: 'guid-1' }
 			]);
 		});
 	});
 
 	describe('getCustomDerivatives', () => {
-		it('keeps only supported, non-viewable derivatives, and only children whose role matches the derivative', async () => {
+		it('keeps only non-viewable derivatives, listing every downloadable resource of every output', async () => {
 			const objectId = 'my-bucket/model.rvt';
 			const fakeClient = {
-				getFormats: async () => ({ formats: { obj: ['rvt'], dwg: ['rvt'] } }),
 				getManifest: async () => ({
 					derivatives: [
-						{ outputType: 'svf2', children: [{ role: '3d', urn: 'urn:x/View1', guid: 'g0' }] }, // viewable -> excluded
+						{ outputType: 'svf2', children: [{ type: 'geometry', role: '3d', name: 'View1', guid: 'g0' }] }, // viewable -> excluded
 						{
 							outputType: 'obj', children: [
-								{ role: 'obj', urn: 'urn:adsk.viewing:fs.file:xyz/output/model.obj', guid: 'g1' },
-								{ role: 'other', urn: 'urn:x/ignored', guid: 'g2' } // role doesn't match outputType -> excluded
+								{ role: 'OBJ', urn: 'urn:adsk.viewing:fs.file:xyz/output/model.obj', guid: 'g1' },
+								{ role: 'other' } // no file urn -> excluded
 							]
 						},
-						{ outputType: 'unsupported-format', children: [{ role: 'unsupported-format', urn: 'urn:x/ignored2', guid: 'g3' }] } // not in formats -> excluded
+						{ outputType: 'stl', children: [{ role: 'STL', urn: 'urn:x/output/model.stl', guid: 'g2' }] }
 					]
 				})
 			};
 			const service = new ModelDerivativeService(fakeClient as any, {} as any, {} as any, {} as any);
 			const result = await service.getCustomDerivatives(objectId);
 
-			assert.strictEqual(result.length, 1);
-			assert.strictEqual(result[0].name, 'model.obj');
-			assert.strictEqual(result[0].format, 'obj');
-			assert.strictEqual(result[0].guid, 'g1');
+			assert.deepStrictEqual(result.map(d => ({ name: d.name, format: d.format, guid: d.guid })), [
+				{ name: 'model.obj', format: 'obj', guid: 'g1' },
+				{ name: 'model.stl', format: 'stl', guid: 'g2' }
+			]);
 		});
 	});
 });

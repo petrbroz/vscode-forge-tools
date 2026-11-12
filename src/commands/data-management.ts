@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IContext } from '../common';
+import { IContext, command } from '../common';
 import { IHub, IProject, IFolder, IItem, IVersion } from '../models/hubs';
 
 export class DataManagementCommands {
@@ -8,12 +8,12 @@ export class DataManagementCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.dm.loadMore', this.loadMore.bind(this)),
-            vscode.commands.registerCommand('aps.dm.copyHubID', this.copyHubID.bind(this)),
-            vscode.commands.registerCommand('aps.dm.copyProjectID', this.copyProjectID.bind(this)),
-            vscode.commands.registerCommand('aps.dm.copyFolderID', this.copyFolderID.bind(this)),
-            vscode.commands.registerCommand('aps.dm.copyItemID', this.copyItemID.bind(this)),
-            vscode.commands.registerCommand('aps.dm.copyVersionID', this.copyVersionID.bind(this)),
+            command(this.context, 'aps.dm.loadMore', this.loadMore.bind(this)),
+            command(this.context, 'aps.dm.copyHubID', this.copyHubID.bind(this)),
+            command(this.context, 'aps.dm.copyProjectID', this.copyProjectID.bind(this)),
+            command(this.context, 'aps.dm.copyFolderID', this.copyFolderID.bind(this)),
+            command(this.context, 'aps.dm.copyItemID', this.copyItemID.bind(this)),
+            command(this.context, 'aps.dm.copyVersionID', this.copyVersionID.bind(this)),
         ];
     }
 

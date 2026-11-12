@@ -2,9 +2,11 @@ import * as assert from 'assert';
 import { urnify } from '../../urn';
 
 describe('urnify', () => {
-	it('base64-encodes an object id', () => {
-		const id = 'my-bucket/model.rvt';
-		assert.strictEqual(urnify(id), Buffer.from(id).toString('base64'));
+	it('base64-encodes an object id without "=" padding', () => {
+		for (const id of ['a', 'ab', 'abc', 'my-bucket/model.rvt']) {
+			assert.strictEqual(urnify(id), Buffer.from(id).toString('base64').replace(/=+$/, ''));
+			assert.ok(!urnify(id).includes('='));
+		}
 	});
 
 	it('uses the plain base64 alphabet, not the url-safe one (keeps "/", does not swap it for "_")', () => {
@@ -12,7 +14,7 @@ describe('urnify', () => {
 		// url-safe alphabet (like the model-derivative service's separate urlSafeUrn helper does), it
 		// would come out as "_" instead.
 		const id = Buffer.from([0xff, 0xff, 0xff]).toString('latin1');
-		assert.strictEqual(urnify(id), Buffer.from(id).toString('base64'));
+		assert.strictEqual(urnify(id), Buffer.from(id).toString('base64').replace(/=+$/, ''));
 		assert.ok(urnify(id).includes('/'));
 	});
 

@@ -22,7 +22,7 @@
 
 ## Requirements
 
-- [Visual Studio Code](https://code.visualstudio.com) version 1.92.0 or newer
+- [Visual Studio Code](https://code.visualstudio.com) version 1.95.0 or newer
 - APS app credentials ([tutorial](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app))
 - **If you plan to sign in with 3-legged OAuth** (see [Authentication](#authentication)), your APS app
   must have `vscode://petrbroz.vscode-forge-tools/callback` registered as a callback URL on
@@ -129,6 +129,10 @@ Manage your [Secure Service Accounts](https://aps.autodesk.com/en/docs/ssa/v1/de
 ### Team Admin (user) View
 
 The _Team Admin (user)_ view uses the [Team Admin API](https://aps.autodesk.com/en/docs/team_admin/v1/developers_guide/overview/) (Beta) to browse the teams you administer in a team → users/product pools → assignments tree, invite users to a team, and assign or unassign products. The API only accepts 3-legged tokens of a team administrator, and your APS app must have the Team Admin API enabled. Turn on the `autodesk.forge.enableTeamAdminApi` setting, then sign in again with 3-legged OAuth (with or without PKCE). Enabling it makes sign-in request the additional `tmadmapi:*` scopes the API needs. The API runs in production, so changes affect real teams and seats.
+
+### Language Model Tools
+
+The extension contributes [language model tools](https://code.visualstudio.com/api/extension-guides/tools) that let the chat in agent mode operate on APS resources of the current environment: listing and creating OSS buckets, listing objects, uploading files, starting SVF2 translations and checking their status, and listing webhook events and creating webhooks. Tools that create or modify resources ask for confirmation before running. You can also reference the tools in your chat prompts explicitly, for example, `#apsCreateBucket` or `#apsUploadFile`.
 
 ## Known Limitations & Issues
 

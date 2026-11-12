@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { BucketsItems, ObjectDetails } from '../models/oss';
 import { Manifest, IDerivative } from '../models/model-derivative';
 import { urnify } from '../urn';
@@ -34,11 +35,7 @@ function isLoadMore(entry: SimpleStorageEntry): entry is ILoadMore {
     return (<ILoadMore>entry).loadMore === true;
 }
 
-function isHint(entry: SimpleStorageEntry): entry is IHint {
-    return (<IHint>entry).hint !== undefined;
-}
-
-export class SimpleStorageDataProvider implements vscode.TreeDataProvider<SimpleStorageEntry>, vscode.TreeDragAndDropController<SimpleStorageEntry> {
+export class SimpleStorageDataProvider extends BaseTreeProvider<SimpleStorageEntry> implements vscode.TreeDragAndDropController<SimpleStorageEntry> {
     /** Key used for the bucket list's page/continuation-token cache (the object list uses its bucket key instead). */
     static readonly rootKey = 'root';
 
@@ -48,7 +45,6 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
     readonly dragMimeTypes: readonly string[] = [];
 
     private _context: IContext;
-    private _onDidChangeTreeData: vscode.EventEmitter<SimpleStorageEntry | null> = new vscode.EventEmitter<SimpleStorageEntry | null>();
     /** Buckets/objects already fetched per parent (see {@link rootKey}), so "load more" only fetches the next page. */
     private _loadedItems = new Map<string, (BucketsItems | ObjectDetails)[]>();
     /** Continuation token for each parent's next page, if any more remain. */
@@ -56,9 +52,8 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
     /** Active `beginsWith` prefix filter per bucket key, if the user has set one. */
     private _filters = new Map<string, string>();
 
-	readonly onDidChangeTreeData?: vscode.Event<SimpleStorageEntry | null> = this._onDidChangeTreeData.event;
-
     constructor(context: IContext) {
+        super();
         this._context = context;
     }
 
@@ -67,7 +62,7 @@ export class SimpleStorageDataProvider implements vscode.TreeDataProvider<Simple
             this._loadedItems.clear();
             this._nextStartAt.clear();
         }
-        this._onDidChangeTreeData.fire(entry || null);
+        super.refresh(entry);
     }
 
     /** The active `beginsWith` prefix filter for a bucket's object list, if any. */

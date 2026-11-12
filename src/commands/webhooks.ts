@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { IContext, showErrorMessage } from '../common';
-import { withProgress, createWebViewPanel } from '../common';
+import { IContext, command, createWebViewPanel, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 import { IWebhook, IWebhookEvent } from '../models/webhooks';
+import type { IWebhookFormProps, IWebhookFormMessage } from '../webviews/webhook-form';
 import { webhooksServiceFor } from '../providers/webhooks';
 
 export class WebhooksCommands {
@@ -10,11 +10,11 @@ export class WebhooksCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.wh.refreshWebhooks', this.refreshWebhooks.bind(this)),
-            vscode.commands.registerCommand('aps.wh.createWebhook', this.createWebhook.bind(this)),
-            vscode.commands.registerCommand('aps.wh.updateWebhook', this.updateWebhook.bind(this)),
-            vscode.commands.registerCommand('aps.wh.deleteWebhook', this.deleteWebhook.bind(this)),
-            vscode.commands.registerCommand('aps.wh.viewWebhookDetails', this.viewWebhookDetails.bind(this)),
+            command(this.context, 'aps.wh.refreshWebhooks', this.refreshWebhooks.bind(this)),
+            command(this.context, 'aps.wh.createWebhook', this.createWebhook.bind(this)),
+            command(this.context, 'aps.wh.updateWebhook', this.updateWebhook.bind(this)),
+            command(this.context, 'aps.wh.deleteWebhook', this.deleteWebhook.bind(this)),
+            command(this.context, 'aps.wh.viewWebhookDetails', this.viewWebhookDetails.bind(this)),
         ];
     }
 
@@ -43,7 +43,7 @@ export class WebhooksCommands {
 async function createWebhook({ system, event, authContext }: IWebhookEvent, context: IContext, successCallback?: () => void) {
 	const service = webhooksServiceFor(context, authContext);
 	const scopes = service.getEventScopes(system, event);
-	let panel = createWebViewPanel(context, 'create-webhook.js', 'create-webhook', 'Create Webhook', { system, event, scopes }, async message => {
+	let panel = createWebViewPanel<IWebhookFormProps, IWebhookFormMessage>(context, 'webhook-form.js', 'webhook-form', 'Create Webhook', { system, event, scopes }, async message => {
 		switch (message.command) {
 			case 'create':
 				try {
@@ -70,7 +70,7 @@ async function createWebhook({ system, event, authContext }: IWebhookEvent, cont
 async function viewWebhookDetails({ id, system, event, authContext }: IWebhook, context: IContext) {
 	try {
 		const webhookDetail = await withProgress(`Getting webhook details: ${id}`, webhooksServiceFor(context, authContext).getHookDetails(system, event, id));
-		createWebViewPanel(context, 'webhook-details.js', 'webhook-details', `Webhook Details: ${id}`, { detail: webhookDetail });
+		await showReadOnlyJson(context, ['webhooks', system, event, id], webhookDetail);
 	} catch(err) {
 		showErrorMessage('Could not access webhook', err, context);
 	}
@@ -94,8 +94,7 @@ async function updateWebhook({ system, event, id, authContext }: IWebhook, conte
 	try {
 		const service = webhooksServiceFor(context, authContext);
 		const webhookDetail = await withProgress(`Retrieving webhook data: ${id}`, service.getHookDetails(system, event, id));
-		const scopes = service.getEventScopes(system, event);
-		let panel = createWebViewPanel(context, 'update-webhook.js', 'update-webhook', `Update Webhook: ${id}`, { detail: webhookDetail, scopes }, async message => {
+		let panel = createWebViewPanel<IWebhookFormProps, IWebhookFormMessage>(context, 'webhook-form.js', 'webhook-form', `Update Webhook: ${id}`, { system, event, scopes: [], initial: webhookDetail }, async message => {
 			switch (message.command) {
 				case 'update':
 					try {

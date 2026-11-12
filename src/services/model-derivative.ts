@@ -32,7 +32,7 @@ function isViewableFormat(format: string): boolean {
     return format === svf || format === svf2;
 }
 
-/** URL-safe base64 URN (the plain base64 URN with its single `/` replaced by `_`). */
+/** URL-safe, unpadded base64 URN (the plain base64 URN with its single `/` replaced by `_`). */
 function urlSafeUrn(id: string): string {
     return urnify(id).replace('/', '_');
 }
@@ -93,14 +93,12 @@ function buildOutputFormat(outputFormat: string, advanced: JobAdvancedOptions, v
  * formats are available (in general, or for a given source format).
  */
 class ModelDerivativeFormats {
-    private readonly _outputFormats = new Set<string>();
     private readonly _outputFormatsBySourceFormat = new Map<string, string[]>();
 
     readonly outputFormats: string[] = [];
 
     constructor(availableTranslations: DerivativeTranslation[]) {
         for (const derivativeTranslation of availableTranslations) {
-            this._outputFormats.add(derivativeTranslation.outputFormat);
             this.outputFormats.push(derivativeTranslation.outputFormat);
 
             for (const sourceFormat of derivativeTranslation.sourceFormats) {
@@ -109,10 +107,6 @@ class ModelDerivativeFormats {
                 this._outputFormatsBySourceFormat.set(sourceFormat, outputFormats);
             }
         }
-    }
-
-    hasOutput(outputFormat: string): boolean {
-        return this._outputFormats.has(outputFormat);
     }
 
     findAvailableOutputFormats(sourceFormat: string): string[] {
@@ -178,7 +172,7 @@ export class ModelDerivativeService {
         return this._formats;
     }
 
-    /** Returns the URL-safe base64 URN of a tree object (OSS object or Hubs version). */
+    /** Returns the URL-safe, unpadded base64 URN of a tree object (OSS object or Hubs version). */
     getObjectUrn(object: ObjectDetails | IVersion): string {
         return urlSafeUrn(getId(object));
     }
@@ -275,31 +269,51 @@ export class ModelDerivativeService {
         }));
     }
 
-    /** Transforms a successful manifest into the tree's derivatives (viewable geometries or downloadable resources). */
-    async getManifestDerivatives(manifest: Manifest, urn: string): Promise<IDerivative[]> {
-        const formats = await this.getFormats();
-        const derivative = (manifest as any).derivatives.find((deriv: any) => formats.hasOutput(deriv.outputType));
-        if (isViewableFormat(derivative.outputType)) {
-            return ModelDerivativeService.mapGeometryDerivatives(derivative, urn);
-        } else {
-            return derivative.children.filter((child: any) => child.role === derivative.outputType).map((resource: any) => {
-                const fileUrn: string = resource.urn;
-                return {
-                    urn,
-                    name: path.basename(fileUrn),
-                    role: resource.role,
-                    guid: resource.guid,
-                    format: derivative.outputType,
-                    bubble: { fileUrn },
-                    nonViewable: true
-                };
-            });
-        }
+    /** Recursively collects the downloadable resources (children with a file `urn`) of a non-viewable derivative. */
+    private static collectResources(node: any): any[] {
+        return (node.children || []).flatMap((child: any) => [
+            ...(child.urn ? [child] : []),
+            ...ModelDerivativeService.collectResources(child)
+        ]);
+    }
+
+    /** Maps a non-viewable derivative's downloadable resources into `IDerivative` view models. */
+    private static mapResourceDerivatives(derivative: any, urn: string): IDerivative[] {
+        return ModelDerivativeService.collectResources(derivative).map((resource: any) => {
+            const fileUrn: string = resource.urn;
+            return {
+                urn,
+                name: path.basename(fileUrn),
+                role: resource.role,
+                guid: resource.guid,
+                format: derivative.outputType,
+                bubble: { fileUrn },
+                nonViewable: true
+            };
+        });
     }
 
     /**
-     * Viewable (geometry) derivatives of a Hubs version. Throws if the version isn't fully translated.
-     * Pass an already-fetched `manifest` (e.g. from {@link getVersionManifest}) to avoid re-fetching it.
+     * Transforms a successful manifest into the tree's derivatives: the viewable geometries of SVF/SVF2
+     * outputs, plus the downloadable resources of every other output (e.g. OBJ, STL, STEP, IFC).
+     */
+    private static mapManifestDerivatives(manifest: Manifest, urn: string): IDerivative[] {
+        return ((manifest as any).derivatives || [])
+            .filter((derivative: any) => derivative.status !== 'failed' && derivative.children)
+            .flatMap((derivative: any) => isViewableFormat(derivative.outputType)
+                ? ModelDerivativeService.mapGeometryDerivatives(derivative, urn)
+                : ModelDerivativeService.mapResourceDerivatives(derivative, urn));
+    }
+
+    /** Transforms a successful manifest into the tree's derivatives (viewable geometries and downloadable resources). */
+    async getManifestDerivatives(manifest: Manifest, urn: string): Promise<IDerivative[]> {
+        return ModelDerivativeService.mapManifestDerivatives(manifest, urn);
+    }
+
+    /**
+     * Derivatives (viewable geometries and downloadable resources) of a Hubs version. Throws if the
+     * version isn't fully translated. Pass an already-fetched `manifest` (e.g. from
+     * {@link getVersionManifest}) to avoid re-fetching it.
      */
     async getVersionDerivatives(versionId: string, manifest?: Manifest): Promise<IDerivative[]> {
         const urn = urlSafeUrn(versionId);
@@ -307,11 +321,7 @@ export class ModelDerivativeService {
         if (m.status !== 'success') {
             throw new Error('Unexpected manifest status: ' + m.status);
         }
-        const derivative = m.derivatives.find((deriv: any) => isViewableFormat(deriv.outputType));
-        if (!derivative || !derivative.children) {
-            return [];
-        }
-        return ModelDerivativeService.mapGeometryDerivatives(derivative, urn);
+        return ModelDerivativeService.mapManifestDerivatives(m, urn);
     }
 
     /**
@@ -337,23 +347,8 @@ export class ModelDerivativeService {
     /** Non-viewable (downloadable) derivatives of an OSS object, for picking one to download. */
     async getCustomDerivatives(objectId: string): Promise<IDerivative[]> {
         const urn = urnify(objectId);
-        const formats = await this.getFormats();
-        const manifest = await this.appClient.getManifest(urn, this.regionArg) as any;
-        return manifest.derivatives
-            .filter((deriv: any) => formats.hasOutput(deriv.outputType))
-            .filter((deriv: any) => !isViewableFormat(deriv.outputType))
-            .flatMap((deriv: any) => deriv.children.filter((child: any) => child.role === deriv.outputType))
-            .map((resource: any) => {
-                const fileUrn: string = resource.urn;
-                return {
-                    urn,
-                    name: path.basename(fileUrn),
-                    role: resource.role,
-                    guid: resource.guid,
-                    format: resource.role,
-                    bubble: { fileUrn }
-                };
-            });
+        const manifest = await this.appClient.getManifest(urn, this.regionArg);
+        return ModelDerivativeService.mapManifestDerivatives(manifest, urn).filter(derivative => derivative.nonViewable);
     }
 
     /** Writes data to a local file path (e.g. a user-chosen save-dialog target), creating parent directories as needed. */
@@ -362,9 +357,9 @@ export class ModelDerivativeService {
         await fs.promises.writeFile(filePath, data);
     }
 
-    /** Downloads the bytes of a (non-viewable) derivative via its signed download URL. */
+    /** Downloads the bytes of a (non-viewable) derivative via its signed download URL (user context for Hubs resources). */
     async downloadDerivative(fileUrn: string, modelUrn: string): Promise<Uint8Array> {
-        const derivativeDownload = await this.appClient.getDerivativeUrl(encodeURI(fileUrn), modelUrn, this.regionArg);
+        const derivativeDownload = await this.clientForUrn(modelUrn).getDerivativeUrl(encodeURI(fileUrn), modelUrn, this.regionArg);
         const response = await fetch(derivativeDownload.url!);
         if (!response.ok) {
             throw new Error(`Request failed with status code ${response.status}`);

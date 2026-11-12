@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-11-12
+
+- Added
+  - Language model tools for VS Code chat (agent mode): list/create buckets, list objects, upload files, translate objects, check translation status, list webhook events, and create webhooks
+- Changed
+  - Read-only resource details now open as formatted JSON documents
+  - Removed duplicate "View ... Details (JSON)" commands; every "View ... Details" command now opens a read-only JSON document
+  - Webviews now use `@vscode-elements/react-elements` instead of the deprecated `@vscode/webview-ui-toolkit`
+  - App (2-legged) access tokens are now cached and reused until they expire, instead of being requested for every API call
+  - Smaller extension package: development files, tests, and sourcemaps are no longer included
+  - Requires VS Code 1.95.0 or newer
+  - Create/update webviews for activities and webhooks merged into single forms
+  - Design Automation errors now include the message returned by the API
+- Removed
+  - Legacy single-app settings (`autodesk.forge.clientId`, `autodesk.forge.clientSecret`, `autodesk.forge.dataRegion`) are no longer read; use `autodesk.forge.environments`
+- Fixed
+  - Model Derivative URNs are no longer padded with `=`; fixes downloading a derivative (e.g. OBJ) of an OSS object failing with "The requested derivative does not belong to this design data"
+  - The model viewer panel now has a Content-Security-Policy and loads a pinned viewer version instead of `7.*`
+  - Command errors are now reported consistently through a shared command helper
+  - The upload progress notification now tracks the actual upload progress instead of filling up immediately
+  - Error notifications (e.g., when creating a secure service account fails) now include the error message returned by the API, and offer "Show Details"
+  - Derivatives of all output types (e.g., OBJ, STL, STEP), not just SVF/SVF2, are now listed in the tree views and can be downloaded, including from the Hubs view
+  - Uploading files larger than 2 GiB no longer fails; files are now read and uploaded in chunks
+
 ## [3.6.0] - 2026-11-11
 
 - Added

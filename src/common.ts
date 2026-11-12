@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { randomUUID } from 'crypto';
 import { BucketsItems, ObjectDetails } from './models/oss';
 import { urnify } from './urn';
 import { IDerivative } from './models/model-derivative';
@@ -107,6 +108,29 @@ function sortRecentFirst(items: string[], recent: string | undefined): string[] 
     return [recent, ...items.filter(item => item !== recent)];
 }
 
+/** Extracts a human-readable error message from an API error response body, if there is one. */
+export function getApiErrorMessage(data: any): string | undefined {
+    if (data === undefined || data === null) {
+        return undefined;
+    }
+    if (typeof data === 'string') {
+        return data.trim() || undefined;
+    }
+    if (Array.isArray(data)) {
+        const messages = data.map(getApiErrorMessage).filter(Boolean);
+        return messages.length > 0 ? messages.join('; ') : undefined;
+    }
+    if (typeof data === 'object') {
+        for (const key of ['detail', 'developerMessage', 'errorMessage', 'message', 'messages', 'reason', 'diagnostic', 'error_description', 'errors', 'error', 'title']) {
+            const message = getApiErrorMessage(data[key]);
+            if (message) {
+                return message;
+            }
+        }
+    }
+    return undefined;
+}
+
 export async function showErrorMessage(title: string, err: any, context?: IContext) {
     if (context) {
         context.log.error(title);
@@ -118,7 +142,7 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     let msg = title;
     if (typeof err === 'string') {
         msg += ': ' + err;
-    } else if (typeof err === 'object') {
+    } else if (err && typeof err === 'object') {
         if (err.message) {
             msg += ': ' + err.message;
         } else if (err.detail) {
@@ -126,15 +150,23 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
         }
     }
 
-    if (err.response) {
+    // Errors thrown by the @aps_sdk/* clients wrap the original axios error (and its response) in `axiosError`.
+    const response = err?.response ?? err?.axiosError?.response;
+    const apiMessage = getApiErrorMessage(response?.data);
+    if (apiMessage && !msg.includes(apiMessage)) {
+        msg += ` (${apiMessage})`;
+    }
+
+    if (response) {
         const answer = await vscode.window.showErrorMessage(msg, 'Show Details');
         if (answer === 'Show Details') {
             const raw = {
-                config: err.response.config,
-                data: err.response.data,
-                headers: err.response.headers,
-                status: err.response.status,
-                statusText: err.response.statusText
+                // Only include the request method and URL; the full request config may contain the access token.
+                config: response.config ? { method: response.config.method, url: response.config.url } : undefined,
+                data: response.data,
+                headers: response.headers,
+                status: response.status,
+                statusText: response.statusText
             };
             const doc = await vscode.workspace.openTextDocument({ content: JSON.stringify(raw, null, 4), language: 'json' });
             await vscode.window.showTextDocument(doc, { preview: false });
@@ -144,12 +176,31 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     }
 }
 
+/**
+ * Registers a command whose handler's errors are reported via `showErrorMessage` using `errorTitle`.
+ * When `errorTitle` is omitted, the handler is registered as-is.
+ */
+export function command(context: IContext, id: string, handler: (...args: any[]) => any): vscode.Disposable;
+export function command(context: IContext, id: string, errorTitle: string, handler: (...args: any[]) => any): vscode.Disposable;
+export function command(context: IContext, id: string, titleOrHandler: string | ((...args: any[]) => any), maybeHandler?: (...args: any[]) => any): vscode.Disposable {
+    if (typeof titleOrHandler === 'function') {
+        return vscode.commands.registerCommand(id, titleOrHandler);
+    }
+    const handler = maybeHandler!;
+    return vscode.commands.registerCommand(id, async (...args: any[]) => {
+        try {
+            return await handler(...args);
+        } catch (err) {
+            showErrorMessage(titleOrHandler, err, context);
+        }
+    });
+}
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+/** Returns a comparator that sorts items by the given property using natural, case-insensitive string ordering. */
 export function stringPropertySorter<T>(propName: keyof T) {
-    return function (a: T, b: T): number {
-        if (a[propName] < b[propName]) { return -1; }
-        else if (a[propName] > b[propName]) { return +1; }
-        else { return 0; }
-    };
+    return (a: T, b: T): number => collator.compare(String(a[propName] ?? ''), String(b[propName] ?? ''));
 }
 
 export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
@@ -157,8 +208,8 @@ export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
         location: vscode.ProgressLocation.Notification,
         title,
         cancellable: false
-    }, (progress, token) => task);
-};
+    }, () => task);
+}
 
 /** Opens (or reveals/updates, if already open) a read-only virtual document showing `data` as formatted JSON. `pathSegments` must uniquely identify the underlying resource so re-opening it reuses the same tab. */
 export function showReadOnlyJson(context: IContext, pathSegments: string[], data: unknown): Thenable<void> {
@@ -174,7 +225,11 @@ function withExtension(pathSegments: string[], extension: string): vscode.Uri {
     return readOnlyUri(...pathSegments.slice(0, -1), `${pathSegments[pathSegments.length - 1]}.${extension}`);
 }
 
-export function createWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
+/** Pinned version of the APS Viewer; update on release. */
+export const VIEWER_VERSION = '7.110.0';
+
+export function createWebViewPanel<Props, Message = unknown>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: Message) => void, options?: { viewer?: boolean }): vscode.WebviewPanel {
+    const viewer = !!options?.viewer;
     let disposables: vscode.Disposable[] = [];
     let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
         enableScripts: true, // Enable javascript in the webview
@@ -194,68 +249,52 @@ export function createWebViewPanel<Props>(context: IContext, scriptName: string,
         panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
     }
     const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
-    const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
-    panel.webview.html = /*html*/ `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1.0">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; img-src data:">
-            <title>${title}</title>
-        </head>
-        <body>
-            <div id="root"></div>
-            <script type="module" nonce="${nonce}">
-                import { render } from '${scriptUri}';
-                render(document.getElementById('root'), ${JSON.stringify(props)});
-            </script>
-        </body>
-        </html>
-    `;
-    return panel;
-}
-
-export function createViewerWebViewPanel<Props>(context: IContext, scriptName: string, id: string, title: string, props: Props, onMessage?: (message: any) => void): vscode.WebviewPanel {
-    let disposables: vscode.Disposable[] = [];
-    let panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.One, {
-        enableScripts: true // Enable javascript in the webview
-    });
-    panel.onDidDispose(() => {
-        while (disposables.length) {
-            const disposable = disposables.pop();
-            if (disposable) {
-                disposable.dispose();
-            }
-        }
-        panel.dispose();
-    }, null, disposables);
-    if (onMessage) {
-        panel.webview.onDidReceiveMessage(onMessage, undefined, disposables);
-    }
-    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionContext.extensionUri, 'out', 'webviews', scriptName));
-    const nonce = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
-    const encodedProps = Buffer.from(JSON.stringify(props)).toString('base64');
-    panel.webview.html = /*html*/ `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1.0">
-            <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.css">
-            <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
-            <title>${title}</title>
+    const nonce = randomUUID();
+    let csp: string;
+    let headExtras = '';
+    let bootstrap: string;
+    if (viewer) {
+        const viewerBase = `https://developer.api.autodesk.com/modelderivative/v2/viewers/${VIEWER_VERSION}`;
+        const cspSource = panel.webview.cspSource;
+        csp = [
+            `default-src 'none'`,
+            `script-src 'nonce-${nonce}' ${cspSource} https://developer.api.autodesk.com 'unsafe-eval'`,
+            `style-src ${cspSource} https://developer.api.autodesk.com 'unsafe-inline'`,
+            `img-src ${cspSource} data: blob: https://*.api.autodesk.com`,
+            `connect-src https://*.api.autodesk.com https://*.autodesk.com data: blob:`,
+            `font-src ${cspSource} https://developer.api.autodesk.com data:`,
+            `worker-src blob: https://developer.api.autodesk.com`,
+            `child-src blob:`,
+            `media-src data: blob:`
+        ].join('; ');
+        headExtras = /*html*/ `
+            <link rel="stylesheet" href="${viewerBase}/style.css">
+            <script nonce="${nonce}" src="${viewerBase}/viewer3D.js"></script>
             <style>
                 body { margin: 0; }
                 #root { position: absolute; inset: 0; }
-            </style>
+            </style>`;
+        const encodedProps = Buffer.from(JSON.stringify(props)).toString('base64');
+        bootstrap = `const decodedProps = JSON.parse(atob('${encodedProps}'));
+                render(document.getElementById('root'), decodedProps);`;
+    } else {
+        csp = `default-src 'none'; script-src 'nonce-${nonce}'; img-src data:`;
+        bootstrap = `render(document.getElementById('root'), ${JSON.stringify(props)});`;
+    }
+    panel.webview.html = /*html*/ `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="${csp}">${headExtras}
+            <title>${title}</title>
         </head>
         <body>
             <div id="root"></div>
             <script type="module" nonce="${nonce}">
                 import { render } from '${scriptUri}';
-                const decodedProps = JSON.parse(atob('${encodedProps}'));
-                render(document.getElementById('root'), decodedProps);
+                ${bootstrap}
             </script>
         </body>
         </html>

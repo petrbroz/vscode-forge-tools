@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { useState } from 'react';
-import { VSCodeTextField, VSCodeCheckbox, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
+import { TextField, Checkbox, Button } from './components/controls';
 import { postMessage } from './common';
 import { Grid } from './components/Grid';
 import { Actions } from './components/Actions';
@@ -87,13 +87,13 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
                     <>
                         <EnumDropdown label="2D Views" value={advanced['2dviews'] || Model2dView.Legacy} options={Object.values(Model2dView)} onChange={v => setAdvancedField('2dviews', v)} />
                         <EnumDropdown label="Extractor Version" value={advanced.extractorVersion || ExtractorVersion.Next} options={Object.values(ExtractorVersion)} onChange={v => setAdvancedField('extractorVersion', v)} />
-                        <VSCodeCheckbox checked={!!advanced.generateMasterViews} onChange={ev => setAdvancedField('generateMasterViews', (ev.target as any).checked)}>Generate Master Views</VSCodeCheckbox>
+                        <Checkbox checked={!!advanced.generateMasterViews} onChange={ev => setAdvancedField('generateMasterViews', (ev.target as any).checked)}>Generate Master Views</Checkbox>
                         <EnumDropdown label="Material Mode" value={advanced.materialMode || MaterialMode.Auto} options={Object.values(MaterialMode)} onChange={v => setAdvancedField('materialMode', v)} />
                     </>
                 );
             case 'dgn':
                 return (
-                    <VSCodeTextField value={(advanced.requestedLinkageIDs || []).join(',')} onChange={ev => setAdvancedField('requestedLinkageIDs', parseNumberList((ev.target as any).value))}>Requested Linkage IDs</VSCodeTextField>
+                    <TextField value={(advanced.requestedLinkageIDs || []).join(',')} onChange={ev => setAdvancedField('requestedLinkageIDs', parseNumberList((ev.target as any).value))}>Requested Linkage IDs</TextField>
                 );
             case 'dwg':
             case 'idw':
@@ -112,10 +112,10 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
             case 'nwd':
                 return (
                     <>
-                        <VSCodeCheckbox checked={!!advanced.hiddenObjects} onChange={ev => setAdvancedField('hiddenObjects', (ev.target as any).checked)}>Hidden Objects</VSCodeCheckbox>
-                        <VSCodeCheckbox checked={!!advanced.basicMaterialProperties} onChange={ev => setAdvancedField('basicMaterialProperties', (ev.target as any).checked)}>Basic Material Properties</VSCodeCheckbox>
-                        <VSCodeCheckbox checked={!!advanced.autodeskMaterialProperties} onChange={ev => setAdvancedField('autodeskMaterialProperties', (ev.target as any).checked)}>Autodesk Material Properties</VSCodeCheckbox>
-                        <VSCodeCheckbox checked={!!advanced.timelinerProperties} onChange={ev => setAdvancedField('timelinerProperties', (ev.target as any).checked)}>Timeliner Properties</VSCodeCheckbox>
+                        <Checkbox checked={!!advanced.hiddenObjects} onChange={ev => setAdvancedField('hiddenObjects', (ev.target as any).checked)}>Hidden Objects</Checkbox>
+                        <Checkbox checked={!!advanced.basicMaterialProperties} onChange={ev => setAdvancedField('basicMaterialProperties', (ev.target as any).checked)}>Basic Material Properties</Checkbox>
+                        <Checkbox checked={!!advanced.autodeskMaterialProperties} onChange={ev => setAdvancedField('autodeskMaterialProperties', (ev.target as any).checked)}>Autodesk Material Properties</Checkbox>
+                        <Checkbox checked={!!advanced.timelinerProperties} onChange={ev => setAdvancedField('timelinerProperties', (ev.target as any).checked)}>Timeliner Properties</Checkbox>
                     </>
                 );
             case 'vue':
@@ -134,8 +134,8 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
             case svf2:
                 return (
                     <>
-                        <VSCodeCheckbox checked={views2d} onChange={ev => setViews2d((ev.target as any).checked)}>2D Views</VSCodeCheckbox>
-                        <VSCodeCheckbox checked={views3d} onChange={ev => setViews3d((ev.target as any).checked)}>3D Views</VSCodeCheckbox>
+                        <Checkbox checked={views2d} onChange={ev => setViews2d((ev.target as any).checked)}>2D Views</Checkbox>
+                        <Checkbox checked={views3d} onChange={ev => setViews3d((ev.target as any).checked)}>3D Views</Checkbox>
                     </>
                 );
             case 'thumbnail':
@@ -160,7 +160,7 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
                 return (
                     <>
                         <EnumDropdown label="Format" value={advanced.format || StlFormat.Binary} options={Object.values(StlFormat)} onChange={v => setAdvancedField('format', v)} />
-                        <VSCodeCheckbox checked={advanced.exportColor !== false} onChange={ev => setAdvancedField('exportColor', (ev.target as any).checked)}>Export Color</VSCodeCheckbox>
+                        <Checkbox checked={advanced.exportColor !== false} onChange={ev => setAdvancedField('exportColor', (ev.target as any).checked)}>Export Color</Checkbox>
                         <EnumDropdown label="Export File Structure" value={advanced.exportFileStructure || ExportFileStructure.Single} options={Object.values(ExportFileStructure)} onChange={v => setAdvancedField('exportFileStructure', v)} />
                     </>
                 );
@@ -169,21 +169,21 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
                     <>
                         <EnumDropdown label="Export File Structure" value={advanced.exportFileStructure || ExportFileStructure.Single} options={Object.values(ExportFileStructure)} onChange={v => setAdvancedField('exportFileStructure', v)} />
                         <EnumDropdown label="Unit" value={advanced.unit || Unit.Meter} options={Object.values(Unit)} onChange={v => setAdvancedField('unit', v)} />
-                        <VSCodeTextField value={advanced.modelGuid || ''} onChange={ev => setAdvancedField('modelGuid', (ev.target as any).value)}>Model GUID</VSCodeTextField>
-                        <VSCodeTextField value={(advanced.objectIds || []).join(',')} onChange={ev => setAdvancedField('objectIds', parseNumberList((ev.target as any).value))}>Object IDs</VSCodeTextField>
+                        <TextField value={advanced.modelGuid || ''} onChange={ev => setAdvancedField('modelGuid', (ev.target as any).value)}>Model GUID</TextField>
+                        <TextField value={(advanced.objectIds || []).join(',')} onChange={ev => setAdvancedField('objectIds', parseNumberList((ev.target as any).value))}>Object IDs</TextField>
                     </>
                 );
             case 'step':
                 return (
                     <>
                         <EnumDropdown label="Application Protocol" value={advanced.applicationProtocol || ApplicationProtocol._214} options={Object.values(ApplicationProtocol)} onChange={v => setAdvancedField('applicationProtocol', v)} />
-                        <VSCodeTextField value={advanced.tolerance?.toString() ?? ''} onChange={ev => setAdvancedField('tolerance', parseFloat((ev.target as any).value))}>Tolerance</VSCodeTextField>
+                        <TextField value={advanced.tolerance?.toString() ?? ''} onChange={ev => setAdvancedField('tolerance', parseFloat((ev.target as any).value))}>Tolerance</TextField>
                     </>
                 );
             case 'iges':
                 return (
                     <>
-                        <VSCodeTextField value={advanced.tolerance?.toString() ?? ''} onChange={ev => setAdvancedField('tolerance', parseFloat((ev.target as any).value))}>Tolerance</VSCodeTextField>
+                        <TextField value={advanced.tolerance?.toString() ?? ''} onChange={ev => setAdvancedField('tolerance', parseFloat((ev.target as any).value))}>Tolerance</TextField>
                         <EnumDropdown label="Surface Type" value={advanced.surfaceType || SurfaceType.Bounded} options={Object.values(SurfaceType)} onChange={v => setAdvancedField('surfaceType', v)} />
                         <EnumDropdown label="Sheet Type" value={advanced.sheetType || SheetType.Surface} options={Object.values(SheetType)} onChange={v => setAdvancedField('sheetType', v)} />
                         <EnumDropdown label="Solid Type" value={advanced.solidType || SolidType.Solid} options={Object.values(SolidType)} onChange={v => setAdvancedField('solidType', v)} />
@@ -192,7 +192,7 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
             case 'dwg':
             case 'ifc':
                 return (
-                    <VSCodeTextField value={advanced.exportSettingName || ''} onChange={ev => setAdvancedField('exportSettingName', (ev.target as any).value)}>Export Setting Name</VSCodeTextField>
+                    <TextField value={advanced.exportSettingName || ''} onChange={ev => setAdvancedField('exportSettingName', (ev.target as any).value)}>Export Setting Name</TextField>
                 );
             default:
                 return null;
@@ -208,9 +208,9 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
 
             <h3>Input Settings</h3>
             <Grid columns={'1fr'}>
-                <VSCodeTextField readOnly value={urn}>URN</VSCodeTextField>
-                <VSCodeCheckbox checked={compressedUrn} onChange={ev => setCompressedUrn((ev.target as any).checked)}>Compressed (ZIP) Source</VSCodeCheckbox>
-                <VSCodeTextField disabled={!compressedUrn} value={rootFilename} onChange={ev => setRootFilename((ev.target as any).value)}>Root Filename</VSCodeTextField>
+                <TextField readOnly value={urn}>URN</TextField>
+                <Checkbox checked={compressedUrn} onChange={ev => setCompressedUrn((ev.target as any).checked)}>Compressed (ZIP) Source</Checkbox>
+                <TextField disabled={!compressedUrn} value={rootFilename} onChange={ev => setRootFilename((ev.target as any).value)}>Root Filename</TextField>
             </Grid>
 
             <h3>Output Settings</h3>
@@ -230,12 +230,12 @@ const CustomDerivative = ({ urn, availableFormats, sourceFormat }: ICustomDeriva
 
             <h3>Webhook Settings</h3>
             <Grid columns={'1fr 1fr'}>
-                <VSCodeTextField value={workflowId} onChange={ev => setWorkflowId((ev.target as any).value)}>Workflow ID</VSCodeTextField>
-                <VSCodeTextField value={workflowAttributes} onChange={ev => setWorkflowAttributes((ev.target as any).value)}>Workflow Attributes</VSCodeTextField>
+                <TextField value={workflowId} onChange={ev => setWorkflowId((ev.target as any).value)}>Workflow ID</TextField>
+                <TextField value={workflowAttributes} onChange={ev => setWorkflowAttributes((ev.target as any).value)}>Workflow Attributes</TextField>
             </Grid>
 
             <Actions>
-                <VSCodeButton onClick={startTranslation}>Start</VSCodeButton>
+                <Button onClick={startTranslation}>Start</Button>
             </Actions>
         </div>
     );

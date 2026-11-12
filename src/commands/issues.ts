@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createWebViewPanel, IContext, showErrorMessage, withProgress } from '../common';
+import { IContext, command, showReadOnlyJson, withProgress } from '../common';
 import { IIssue } from '../models/issues';
 
 export class IssuesCommands {
@@ -8,8 +8,8 @@ export class IssuesCommands {
 
     registerCommands(): vscode.Disposable[] {
         return [
-            vscode.commands.registerCommand('aps.issues.viewIssueDetails', this.viewIssueDetails.bind(this)),
-            vscode.commands.registerCommand('aps.issues.copyIssueID', this.copyIssueID.bind(this)),
+            command(this.context, 'aps.issues.viewIssueDetails', 'Could not access issue', this.viewIssueDetails.bind(this)),
+            command(this.context, 'aps.issues.copyIssueID', this.copyIssueID.bind(this)),
         ];
     }
 
@@ -21,17 +21,13 @@ export class IssuesCommands {
     }
 
     async viewIssueDetails(issue?: IIssue) {
-        try {
-            issue = this.ensureInput(issue);
-            const { projectId, id, displayId } = issue;
-            const [detail, comments] = await withProgress(`Getting issue details: #${displayId}`, Promise.all([
-                this.context.issuesService.getIssueDetails(projectId, id),
-                this.context.issuesService.getIssueComments(projectId, id)
-            ]));
-            createWebViewPanel(this.context, 'issue-details.js', 'issue-details', `Issue Details: #${displayId}`, { detail, comments });
-        } catch (err) {
-            showErrorMessage('Could not access issue', err, this.context);
-        }
+        issue = this.ensureInput(issue);
+        const { projectId, id, displayId } = issue;
+        const [detail, comments] = await withProgress(`Getting issue details: #${displayId}`, Promise.all([
+            this.context.issuesService.getIssueDetails(projectId, id),
+            this.context.issuesService.getIssueComments(projectId, id)
+        ]));
+        await showReadOnlyJson(this.context, ['issues', projectId, id], { ...detail, comments });
     }
 
     async copyIssueID(issue?: IIssue) {

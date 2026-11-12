@@ -22,7 +22,7 @@ yarn build         # esbuild -> out/ (extension + webviews)
 
 ## Architecture
 
-The source under `src/` is organized into five layers with a strict, one-directional dependency rule.
+The source under `src/` is organized into six layers with a strict, one-directional dependency rule.
 
 ### Layers
 
@@ -41,8 +41,9 @@ The source under `src/` is organized into five layers with a strict, one-directi
 ```
 
 - **`src/models`** — Types and interfaces only. **No `vscode`. No logic.** Categorized by service
-  (`oss.ts`, `model-derivative.ts`, `hubs.ts`, `design-automation.ts`, `design-automation-api.ts`,
-  `secure-service-accounts.ts`, `webhooks.ts`, `authentication.ts`), plus `environment.ts`
+  (`oss.ts`, `model-derivative.ts`, `hubs.ts`, `issues.ts`, `hub-admin.ts`, `team-admin.ts`,
+  `design-automation.ts`, `design-automation-api.ts`, `secure-service-accounts.ts`, `webhooks.ts`,
+  `authentication.ts`), plus `environment.ts`
   (`IEnvironment`, `DesignAutomationRegion`). This is the single place every other layer gets its types.
   When a non-service layer needs an `@aps_sdk/*` type, that type is **re-exported** from the matching
   `src/models/*` file (e.g. `export type { Bucket, ObjectFullDetails } from '@aps_sdk/oss';`) so that no
@@ -52,7 +53,7 @@ The source under `src/` is organized into five layers with a strict, one-directi
   `@aps_sdk/*` and to use `fetch`/`fs`. Categorized by service, one `Service` class each:
   `OssService`, `ModelDerivativeService`, `HubsService`, `DesignAutomationService`,
   `SecureServiceAccountsService`, `WebhooksService`, `AuthenticationService`. Each wraps its underlying
-  `@aps_sdk/*` client (or, for Design Automation, the hand-written `fetch`-based `DesignAutomationClient`)
+  `@aps_sdk/*` client (or, for Design Automation and Team Admin, the shared `fetch`-based `RestClient` in `rest-client.ts`)
   and exposes plain domain methods; SDK enums/values (`Access`, `PolicyKey`, `Region`, `Scopes`, `Utils`)
   stay *inside* the service. Shared infra also lives here: `aps-sdk-manager.ts`,
   `client-credentials-authentication-provider.ts`, `static-token-authentication-provider.ts`, and the
@@ -70,11 +71,16 @@ The source under `src/` is organized into five layers with a strict, one-directi
 - **`src/providers`** — Thin `vscode.TreeDataProvider`s, one per view. They map results from
   `context.<name>Service.*` into `vscode.TreeItem`s.
 
+- **`src/tools`** — Thin [language model tools](https://code.visualstudio.com/api/extension-guides/tools)
+  (`ApsLanguageModelTools`, exposing `registerTools(): vscode.Disposable[]`) for VS Code chat agent mode.
+  Like commands, they call `context.<name>Service.*` for all domain work; tools with side effects return
+  `confirmationMessages` from `prepareInvocation`.
+
 #### Dependency rule
 
 Dependencies point one way only:
 
-- `commands`, `providers` → `services` + `models`
+- `commands`, `providers`, `tools` → `services` + `models`
 - `services` → `models`
 - `webviews` → `models`
 
@@ -84,7 +90,7 @@ These invariants are checked with:
 
 ```bash
 grep -rn "from 'vscode'\|import \* as vscode" src/services src/models   # must be empty
-grep -rn "@aps_sdk" src/commands src/providers src/webviews             # must be empty
+grep -rn "@aps_sdk" src/commands src/providers src/tools src/webviews   # must be empty
 ```
 
 ### The context object
@@ -92,12 +98,14 @@ grep -rn "@aps_sdk" src/commands src/providers src/webviews             # must b
 `activate()` (`src/extension.ts`) builds a single `IContext` (`src/common.ts`). `IContext extends
 IServices` — so `context` carries every service instance (`context.ossService`,
 `context.modelDerivativeService`, …) plus VS Code state (`extensionContext`, `environment`,
-`previewSettings`, `threeLeggedToken`, `log`). Every provider and command receives this `context`.
+`previewSettings`, `session`, `log`, `readOnlyContentProvider`). Every provider and command receives
+this `context`.
 
-Service construction happens in exactly one place — `createServices(env, threeLeggedToken?)` in
-`src/services/index.ts`. Activation, environment switching (`EnvironmentCommands.switchEnvironment()`),
-and login/logout (`AuthenticationCommands`) all call it again and `Object.assign` the fresh services
-onto `context`, rather than mutating existing instances.
+Service construction happens in exactly one place — `createServices(env, userProvider?)` in
+`src/services/index.ts`. `activate()` funnels startup, environment switching
+(`EnvironmentCommands.switchEnvironment()`), and sign-in/out through a single `applySession()` helper
+that calls it again and `Object.assign`s the fresh services onto `context`, rather than mutating
+existing instances.
 
 `src/common.ts` also holds the `prompt*` quick-pick helpers (which call services), `showErrorMessage`,
 `withProgress`, and the `createWebViewPanel`/`createViewerWebViewPanel` factories — root-level VS Code
@@ -107,14 +115,19 @@ glue that belongs to no single service. `src/environment.ts` holds the `vscode`-
 
 ### Authentication
 
-Two auth modes coexist:
+Two auth contexts coexist:
 
-- **2-legged** (app client credentials) — the default, via `ClientCredentialsAuthenticationProvider`.
-- **3-legged** (interactive user login) — used by the Hubs view and the Model Derivative 3-legged
-  client. `AuthenticationService` runs a local HTTP callback server (default port `8123`) to complete
-  the OAuth flow; `AuthenticationCommands.login()` opens the browser and stores the resulting token in
-  memory as `context.threeLeggedToken`, then rebuilds the services in user context. Migrating this to a
-  `vscode.AuthenticationProvider` is a planned change.
+- **App (2-legged)** — client credentials via `ClientCredentialsAuthenticationProvider`, which caches
+  tokens per scope set. Used by the "(app)" views and app-only APIs (OSS, Design Automation, SSA).
+- **User** — a single persisted session per environment, owned by `ApsAuthenticationProvider`
+  (`src/auth-provider.ts`, a `vscode.AuthenticationProvider` + `vscode.UriHandler`). Sign-in modes:
+  3-legged OAuth, 3-legged OAuth with PKCE, Secure Service Account, or a pasted token. The OAuth
+  redirect comes back through the `<uriScheme>://<publisher>.<name>/callback` URI handler (no local
+  HTTP server). The session (`IApsAuthSession`) is stored in `context.secrets`;
+  `createSessionAuthenticationProvider()` in `src/services/index.ts` turns it into the matching
+  `@aps_sdk` provider (`UserTokenAuthenticationProvider` with refresh,
+  `ServiceAccountAuthenticationProvider`, or `StaticTokenAuthenticationProvider`) that `createServices()`
+  uses for the "(user)" views (Hubs, Issues, Webhooks/Hub Admin user, Team Admin).
 
 ### Build
 
@@ -124,6 +137,10 @@ esbuild (`esbuild.js`) produces two bundles:
   `external: ['vscode']`.
 - **Webviews** — every `src/webviews/*.tsx` (globbed dynamically) → `out/webviews/`, `format: esm`,
   `target: es2020`, code-split. Loaded by the panel HTML in `createWebViewPanel`.
+
+Tests are compiled separately with `tsc -p tsconfig.test.json` into `out/` (run with `yarn test`);
+`.vscodeignore` is an allowlist, so only `out/extension.js`, `out/webviews/*.js`, and assets are
+packaged — add new runtime assets there explicitly.
 
 `yarn build` runs a development build; `vscode:prepublish` runs a production build
 (`NODE_ENV=production`: minified, no sourcemaps). `yarn typecheck` runs `tsc --noEmit` (type-checking
@@ -148,6 +165,9 @@ only — esbuild does all emitting). There is no separate lint/format step.
     Palette but fails with "command not found" when invoked; same for an orphaned menu entry.
   - Command IDs follow `<prefix>.<methodName>`, where `<prefix>` matches the other commands in that file
     (e.g. `aps.oss.*` for `object-storage.ts`, `aps.da.*` for `design-automation.ts`).
+  - The same applies to language model tools: every `vscode.lm.registerTool(name, ...)` call in
+    `src/tools/index.ts` must have a matching `contributes.languageModelTools` entry (same `name`, with
+    its `inputSchema` matching the tool's input interface), and vice versa.
   - Don't reintroduce a decorator, codegen script, or build step to automate this sync — it was
     deliberately removed in favor of keeping both sides hand-maintained and explicit.
 - **Respect the layer boundaries** (see [Architecture](#architecture) above). Dependencies point one

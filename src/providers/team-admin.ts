@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { IContext } from '../common';
 import { IHint } from '../models/hubs';
 import {
@@ -39,16 +40,10 @@ export function formatSeats(pool: ITeamAdminProductPool): string {
 }
 
 /** Tree view over the Team Admin API: teams the signed-in user administers, their users, product pools, and assignments. */
-export class TeamAdminDataProvider implements vscode.TreeDataProvider<TeamAdminEntry> {
-    private _onDidChangeTreeData: vscode.EventEmitter<TeamAdminEntry | null> = new vscode.EventEmitter<TeamAdminEntry | null>();
-
-    readonly onDidChangeTreeData?: vscode.Event<TeamAdminEntry | null> = this._onDidChangeTreeData.event;
+export class TeamAdminDataProvider extends BaseTreeProvider<TeamAdminEntry> {
 
     constructor(private readonly _context: IContext) {
-    }
-
-    refresh(entry?: TeamAdminEntry) {
-        this._onDidChangeTreeData.fire(entry || null);
+        super();
     }
 
     getTreeItem(entry: TeamAdminEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
