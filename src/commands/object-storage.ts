@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { BucketsItems, ObjectDetails } from '../models/oss';
-import { IContext, command, promptBucket, promptObject, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
+import { IContext, command, isCancellation, toAbortSignal, promptBucket, promptObject, showErrorMessage, showReadOnlyJson, withProgress } from '../common';
 
 export class ObjectStorageServiceCommands {
     constructor(
@@ -198,18 +198,18 @@ export class ObjectStorageServiceCommands {
     }
 
     async uploadObject(bucket?: BucketsItems, uris?: vscode.Uri[]) {
-        // TODO: re-introduce support for cancellable uploads
         async function _upload(name: string, uri: vscode.Uri, context: IContext, bucketKey: string, contentType?: string) {
             const filepath = uri.fsPath;
             try {
                 await vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: `Uploading file: ${filepath}`,
-                    cancellable: false
-                }, async (progress) => {
+                    cancellable: true
+                }, async (progress, token) => {
                     let reported = 0;
                     await context.ossService.uploadObject(bucketKey, name, filepath, {
                         contentType,
+                        signal: toAbortSignal(token),
                         onProgress: (percentCompleted) => {
                             progress.report({ increment: percentCompleted - reported });
                             reported = percentCompleted;
@@ -225,6 +225,10 @@ export class ObjectStorageServiceCommands {
                     vscode.commands.executeCommand('aps.md.translateObjectCustom', obj);
                 }
             } catch (err) {
+                if (isCancellation(err)) {
+                    vscode.window.showInformationMessage(`Upload cancelled: ${filepath}`);
+                    return;
+                }
                 showErrorMessage('Could not upload file', err, context);
             }
         }
@@ -370,12 +374,20 @@ export class ObjectStorageServiceCommands {
         }
 
         try {
-            await withProgress(`Downloading file: ${uri.fsPath}`, this.context.ossService.downloadObject(bucketKey, objectKey, uri.fsPath));
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: `Downloading file: ${uri.fsPath}`,
+                cancellable: true
+            }, (_progress, token) => this.context.ossService.downloadObject(bucketKey, objectKey, uri.fsPath, toAbortSignal(token)));
             const action = await vscode.window.showInformationMessage(`Download complete: ${uri.fsPath}`, 'Open File');
             if (action === 'Open File') {
                 vscode.env.openExternal(uri);
             }
         } catch(err) {
+            if (isCancellation(err)) {
+                vscode.window.showInformationMessage(`Download cancelled: ${uri.fsPath}`);
+                return;
+            }
             showErrorMessage('Could not download file', err, this.context);
         }
     }

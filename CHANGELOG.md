@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+- Added
+  - Object uploads/downloads and Design Automation work item monitoring can now be cancelled from the progress notification
+
 ## [3.7.0] - 2026-11-12
 
 - Added

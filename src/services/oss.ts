@@ -143,6 +143,8 @@ const AllowedMimeTypes: { [ext: string]: string } = {
 export interface IUploadObjectOptions {
     contentType?: string;
     onProgress?: (percentCompleted: number) => void;
+    /** Aborts the upload (in-flight requests included) when signalled. */
+    signal?: AbortSignal;
 }
 
 export interface IDeleteObjectsOptions {
@@ -241,6 +243,7 @@ export class OssService {
      * ("File size (...) is greater than 2 GiB").
      */
     async uploadObject(bucketKey: string, objectKey: string, filePath: string, options?: IUploadObjectOptions): Promise<ObjectDetails> {
+        options?.signal?.throwIfAborted();
         const file = await fs.promises.open(filePath, 'r');
         try {
             const { size } = await file.stat();
@@ -250,6 +253,7 @@ export class OssService {
             let uploadKey: string | undefined;
             let urls: string[] = [];
             for (let part = 0; part < partCount; part++) {
+                options?.signal?.throwIfAborted();
                 const start = part * chunkSize;
                 const { bytesRead } = await file.read(buffer, 0, Math.min(chunkSize, size - start), start);
                 const chunk = buffer.subarray(0, bytesRead);
@@ -266,14 +270,14 @@ export class OssService {
                     }
                     let status: number | undefined;
                     try {
-                        const response = await fetch(urls[0], { method: 'PUT', body: chunk });
+                        const response = await fetch(urls[0], { method: 'PUT', body: chunk, signal: options?.signal });
                         if (response.ok) {
                             urls.shift();
                             break;
                         }
                         status = response.status;
                     } catch (err) {
-                        if (attempt >= MaxUploadAttempts) {
+                        if (options?.signal?.aborted || attempt >= MaxUploadAttempts) {
                             throw err;
                         }
                     }
@@ -328,9 +332,10 @@ export class OssService {
      * before all of them have flushed to disk, producing truncated, non-deterministic file sizes for any
      * object larger than one chunk.
      */
-    async downloadObject(bucketKey: string, objectKey: string, filePath: string): Promise<void> {
+    async downloadObject(bucketKey: string, objectKey: string, filePath: string, signal?: AbortSignal): Promise<void> {
+        signal?.throwIfAborted();
         const { url } = await this.client.signedS3Download(bucketKey, objectKey);
-        const response = await fetch(url!);
+        const response = await fetch(url!, { signal });
         if (!response.ok) {
             throw new Error(`Request failed with status code ${response.status}`);
         }
