@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SimpleStorageDataProvider } from './providers/data-management';
 import { DesignAutomationDataProvider }from './providers/design-automation';
 import { IContext } from './common';
+import { BaseTreeProvider } from './providers/base';
 import { WebhooksDataProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
 import { IssuesDataProvider } from './providers/issues';
@@ -59,53 +60,41 @@ export async function activate(_context: vscode.ExtensionContext) {
     // Delivers the OAuth redirect for the 3-legged login flows (see ApsAuthenticationProvider.handleUri).
     context.extensionContext.subscriptions.push(vscode.window.registerUriHandler(authProvider));
 
-	// Setup Data & Derivatives (app) view (OSS buckets/objects)
-	let simpleStorageDataProvider = new SimpleStorageDataProvider(context);
-	let dataManagementView = vscode.window.createTreeView('apsDataManagementView', { treeDataProvider: simpleStorageDataProvider, dragAndDropController: simpleStorageDataProvider });
-	context.extensionContext.subscriptions.push(dataManagementView);
-
-	// Setup Data & Derivatives (user) view (Data Management hubs)
-	let hubsDataProvider = new HubsDataProvider(context);
-	let hubsView = vscode.window.createTreeView('apsHubsView', { treeDataProvider: hubsDataProvider });
-	context.extensionContext.subscriptions.push(hubsView);
-
-	// Setup Issues (user) view (ACC/BIM 360 issues)
-	let issuesDataProvider = new IssuesDataProvider(context);
-	let issuesView = vscode.window.createTreeView('apsIssuesView', { treeDataProvider: issuesDataProvider });
-	context.extensionContext.subscriptions.push(issuesView);
-
-    // Setup Automation (app) view
-	let designAutomationDataProvider = new DesignAutomationDataProvider(context);
-	let designAutomationView = vscode.window.createTreeView('apsDesignAutomationView', { treeDataProvider: designAutomationDataProvider });
-	context.extensionContext.subscriptions.push(designAutomationView);
-
-	// Setup Webhooks (app) and Webhooks (user) views
-	let webhooksAppDataProvider = new WebhooksDataProvider(context, 'app');
-	let webhooksAppView = vscode.window.createTreeView('apsWebhooksView', { treeDataProvider: webhooksAppDataProvider });
-	context.extensionContext.subscriptions.push(webhooksAppView);
-	let webhooksUserDataProvider = new WebhooksDataProvider(context, 'user');
-	let webhooksUserView = vscode.window.createTreeView('apsWebhooksUserView', { treeDataProvider: webhooksUserDataProvider });
-	context.extensionContext.subscriptions.push(webhooksUserView);
+	// All tree views, flagged by whether they depend on the user (3-legged) session.
+	const simpleStorageDataProvider = new SimpleStorageDataProvider(context);
+	const hubsDataProvider = new HubsDataProvider(context);
+	const issuesDataProvider = new IssuesDataProvider(context);
+	const designAutomationDataProvider = new DesignAutomationDataProvider(context);
+	const webhooksAppDataProvider = new WebhooksDataProvider(context, 'app');
+	const webhooksUserDataProvider = new WebhooksDataProvider(context, 'user');
+	const secureServiceAccountsProvider = new SecureServiceAccountsDataProvider(context);
+	const hubAdminAppDataProvider = new HubAdminDataProvider(context, 'app');
+	const hubAdminUserDataProvider = new HubAdminDataProvider(context, 'user');
+	const teamAdminDataProvider = new TeamAdminDataProvider(context);
+	const providers: { viewId: string; provider: BaseTreeProvider<any>; user: boolean; dragAndDrop?: boolean }[] = [
+		{ viewId: 'apsDataManagementView', provider: simpleStorageDataProvider, user: false, dragAndDrop: true },
+		{ viewId: 'apsHubsView', provider: hubsDataProvider, user: true },
+		{ viewId: 'apsIssuesView', provider: issuesDataProvider, user: true },
+		{ viewId: 'apsDesignAutomationView', provider: designAutomationDataProvider, user: false },
+		{ viewId: 'apsWebhooksView', provider: webhooksAppDataProvider, user: false },
+		{ viewId: 'apsWebhooksUserView', provider: webhooksUserDataProvider, user: true },
+		{ viewId: 'apsSecureServiceAccountsView', provider: secureServiceAccountsProvider, user: false },
+		{ viewId: 'apsHubAdminAppView', provider: hubAdminAppDataProvider, user: false },
+		{ viewId: 'apsHubAdminUserView', provider: hubAdminUserDataProvider, user: true },
+		{ viewId: 'apsTeamAdminView', provider: teamAdminDataProvider, user: true }
+	];
+	for (const { viewId, provider, dragAndDrop } of providers) {
+		const view = vscode.window.createTreeView(viewId, {
+			treeDataProvider: provider,
+			...(dragAndDrop ? { dragAndDropController: provider as unknown as vscode.TreeDragAndDropController<any> } : {})
+		});
+		context.extensionContext.subscriptions.push(view);
+	}
 	const refreshWebhooks = () => { webhooksAppDataProvider.refresh(); webhooksUserDataProvider.refresh(); };
-
-    // Setup Secure Service Accounts (app) view
-    let secureServiceAccountsProvider = new SecureServiceAccountsDataProvider(context);
-    let secureServiceAccountsView = vscode.window.createTreeView('apsSecureServiceAccountsView', { treeDataProvider: secureServiceAccountsProvider });
-    context.extensionContext.subscriptions.push(secureServiceAccountsView);
-
-	// Setup Hub Admin (app) and Hub Admin (user) views
-	let hubAdminAppDataProvider = new HubAdminDataProvider(context, 'app');
-	let hubAdminAppView = vscode.window.createTreeView('apsHubAdminAppView', { treeDataProvider: hubAdminAppDataProvider });
-	context.extensionContext.subscriptions.push(hubAdminAppView);
-	let hubAdminUserDataProvider = new HubAdminDataProvider(context, 'user');
-	let hubAdminUserView = vscode.window.createTreeView('apsHubAdminUserView', { treeDataProvider: hubAdminUserDataProvider });
-	context.extensionContext.subscriptions.push(hubAdminUserView);
 	const refreshHubAdmin = () => { hubAdminAppDataProvider.refresh(); hubAdminUserDataProvider.refresh(); };
+	const refreshUserViews = () => providers.filter(p => p.user).forEach(p => p.provider.refresh());
+	const refreshAllViews = () => providers.forEach(p => p.provider.refresh());
 
-	// Setup Team Admin (user) view
-	let teamAdminDataProvider = new TeamAdminDataProvider(context);
-	let teamAdminView = vscode.window.createTreeView('apsTeamAdminView', { treeDataProvider: teamAdminDataProvider });
-	context.extensionContext.subscriptions.push(teamAdminView);
 	context.extensionContext.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
 		if (event.affectsConfiguration(TEAM_ADMIN_ENABLED_SETTING)) {
 			teamAdminDataProvider.refresh();
@@ -131,17 +120,6 @@ export async function activate(_context: vscode.ExtensionContext) {
 		updateUserSessionContext();
 	}
 
-	function refreshAllViews() {
-		simpleStorageDataProvider.refresh();
-		hubsDataProvider.refresh();
-		issuesDataProvider.refresh();
-		designAutomationDataProvider.refresh();
-		refreshWebhooks();
-		secureServiceAccountsProvider.refresh();
-		refreshHubAdmin();
-		teamAdminDataProvider.refresh();
-	}
-
 	const environmentCommands = new EnvironmentCommands(context, async () => {
 		await applySession(context.environment);
 		refreshAllViews();
@@ -156,11 +134,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	// services for the current environment and refreshes the user-context views.
 	context.extensionContext.subscriptions.push(authProvider.onDidChangeSessions(async () => {
 		await applySession(context.environment);
-		hubsDataProvider.refresh();
-		issuesDataProvider.refresh();
-		refreshWebhooks();
-		refreshHubAdmin();
-		teamAdminDataProvider.refresh();
+		refreshUserViews();
 	}));
 
 	const objectStorageServiceCommands = new ObjectStorageServiceCommands(
@@ -219,11 +193,7 @@ export async function activate(_context: vscode.ExtensionContext) {
 	// created (and rendered empty) before this resolves, so the user-context views need an explicit
 	// refresh to pick up the restored session.
 	await applySession(env);
-	hubsDataProvider.refresh();
-	issuesDataProvider.refresh();
-	refreshWebhooks();
-	refreshHubAdmin();
-	teamAdminDataProvider.refresh();
+	refreshUserViews();
 }
 
 export function deactivate() { }

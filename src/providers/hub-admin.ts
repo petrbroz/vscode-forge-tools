@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { IContext, showErrorMessage, stringPropertySorter } from '../common';
 import {
     EntryType,
@@ -37,20 +38,14 @@ type HubAdminEntry =
     | IHubAdminProjectUser
     | IHubAdminCompany;
 
-export class HubAdminDataProvider implements vscode.TreeDataProvider<HubAdminEntry> {
+export class HubAdminDataProvider extends BaseTreeProvider<HubAdminEntry> {
     private _context: IContext;
     private _authContext: HubAdminAuthContext;
-    private _onDidChangeTreeData: vscode.EventEmitter<HubAdminEntry | null> = new vscode.EventEmitter<HubAdminEntry | null>();
-
-    readonly onDidChangeTreeData?: vscode.Event<HubAdminEntry | null> = this._onDidChangeTreeData.event;
 
     constructor(context: IContext, authContext: HubAdminAuthContext) {
+        super();
         this._context = context;
         this._authContext = authContext;
-    }
-
-    refresh(entry?: HubAdminEntry) {
-        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(entry: HubAdminEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

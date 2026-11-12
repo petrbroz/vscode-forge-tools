@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { BaseTreeProvider } from './base';
 import { IContext } from '../common';
 import * as dai from '../models/design-automation';
 
@@ -31,18 +32,12 @@ const ThemeIconMap = {
     'shared-appbundles': 'plug',
 };
 
-export class DesignAutomationDataProvider implements vscode.TreeDataProvider<DesignAutomationEntry> {
+export class DesignAutomationDataProvider extends BaseTreeProvider<DesignAutomationEntry> {
     private _context: IContext;
-    private _onDidChangeTreeData: vscode.EventEmitter<DesignAutomationEntry | null> = new vscode.EventEmitter<DesignAutomationEntry | null>();
-
-	readonly onDidChangeTreeData?: vscode.Event<DesignAutomationEntry | null> = this._onDidChangeTreeData.event;
 
     constructor(context: IContext) {
+        super();
         this._context = context;
-    }
-
-    refresh(entry?: DesignAutomationEntry) {
-        this._onDidChangeTreeData.fire(entry || null);
     }
 
     getTreeItem(element: DesignAutomationEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
