@@ -10,6 +10,30 @@ export function webhooksServiceFor(context: IContext, authContext: WebhookAuthCo
     return authContext === 'user' ? context.webhooksServiceUser : context.webhooksServiceApp;
 }
 
+/** URI scheme of the `resourceUri`s assigned to webhook tree items; the hook status is carried in the query. */
+export const WEBHOOK_SCHEME = 'aps-webhook';
+
+/** Shows a badge on webhooks that are not active, based on the status already returned when listing hooks. */
+export class WebhookDecorationProvider implements vscode.FileDecorationProvider {
+    private readonly _onDidChangeFileDecorations = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>();
+    readonly onDidChangeFileDecorations = this._onDidChangeFileDecorations.event;
+
+    provideFileDecoration(uri: vscode.Uri): vscode.FileDecoration | undefined {
+        if (uri.scheme !== WEBHOOK_SCHEME) {
+            return undefined;
+        }
+        const status = new URLSearchParams(uri.query).get('status');
+        if (status && status !== 'active') {
+            return new vscode.FileDecoration('⊘', `Webhook is ${status}`, new vscode.ThemeColor('disabledForeground'));
+        }
+        return undefined;
+    }
+
+    refresh(): void {
+        this._onDidChangeFileDecorations.fire(undefined);
+    }
+}
+
 type WebhookEntry = IWebhookSystem | IWebhookEvent | IWebhook;
 
 function isWebhookSystem(entry: WebhookEntry): entry is IWebhookSystem {
@@ -56,9 +80,15 @@ export class WebhooksDataProvider extends BaseTreeProvider<WebhookEntry> {
         } else {
             const node = new vscode.TreeItem(entry.id, vscode.TreeItemCollapsibleState.None);
             node.id = entry.id;
+            node.resourceUri = vscode.Uri.from({
+                scheme: WEBHOOK_SCHEME,
+                path: `/${entry.authContext}/${entry.id}`,
+                query: new URLSearchParams({ status: entry.status ?? '' }).toString()
+            });
             node.tooltip = [
                 `Webhook`,
                 `ID: ${entry.id}`,
+                ...(entry.status ? [`Status: ${entry.status}`] : []),
                 `System: ${entry.system}`,
                 `Event: ${entry.event}`
             ].join('\n');
@@ -84,7 +114,7 @@ export class WebhooksDataProvider extends BaseTreeProvider<WebhookEntry> {
                 const { system, event } = entry;
                 const webhooks = await webhooksServiceFor(this._context, authContext).getAllSystemEventHooks(system, event);
                 return webhooks.map(webhook => {
-                    return { type: 'hook', id: webhook.hookId!, system, event, authContext } as IWebhook;
+                    return { type: 'hook', id: webhook.hookId!, system, event, authContext, status: webhook.status } as IWebhook;
                 }).sort(stringPropertySorter('id'));
             } catch(err) {
                 showErrorMessage(`Could not list webhooks`, err);

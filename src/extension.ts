@@ -3,7 +3,7 @@ import { SimpleStorageDataProvider } from './providers/data-management';
 import { DesignAutomationDataProvider }from './providers/design-automation';
 import { IContext } from './common';
 import { BaseTreeProvider } from './providers/base';
-import { WebhooksDataProvider } from './providers/webhooks';
+import { WebhooksDataProvider, WebhookDecorationProvider } from './providers/webhooks';
 import { HubsDataProvider } from './providers/hubs';
 import { IssuesDataProvider } from './providers/issues';
 import { getEnvironments, pickDefaultEnvironment, setupNewEnvironment } from './environment';
@@ -91,7 +91,9 @@ export async function activate(_context: vscode.ExtensionContext) {
 		});
 		context.extensionContext.subscriptions.push(view);
 	}
-	const refreshWebhooks = () => { webhooksAppDataProvider.refresh(); webhooksUserDataProvider.refresh(); };
+	const webhookDecorationProvider = new WebhookDecorationProvider();
+	context.extensionContext.subscriptions.push(vscode.window.registerFileDecorationProvider(webhookDecorationProvider));
+	const refreshWebhooks = () => { webhooksAppDataProvider.refresh(); webhooksUserDataProvider.refresh(); webhookDecorationProvider.refresh(); };
 	const refreshHubAdmin = () => { hubAdminAppDataProvider.refresh(); hubAdminUserDataProvider.refresh(); };
 	const refreshUserViews = () => providers.filter(p => p.user).forEach(p => p.provider.refresh());
 	const refreshAllViews = () => providers.forEach(p => p.provider.refresh());
@@ -199,6 +201,30 @@ export async function activate(_context: vscode.ExtensionContext) {
 	// refresh to pick up the restored session.
 	await applySession(env);
 	refreshUserViews();
+
+	// Hand-edited settings.json changes rebuild the services, status bar and views (same path as switching environments).
+	context.extensionContext.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async event => {
+		if (!event.affectsConfiguration('autodesk.forge')) {
+			return;
+		}
+		const config = vscode.workspace.getConfiguration(undefined, null);
+		context.previewSettings = {
+			extensions: config.get<string[]>('autodesk.forge.viewer.extensions') || [],
+			env: config.get<string>('autodesk.forge.viewer.env'),
+			api: config.get<string>('autodesk.forge.viewer.api')
+		};
+		if (event.affectsConfiguration('autodesk.forge.environments')) {
+			const updated = getEnvironments();
+			if (updated.length === 0) {
+				return; // keep the current environment until a new one is configured
+			}
+			context.environment = updated.find(e => e.title === context.environment.title)
+				?? pickDefaultEnvironment(updated, context.extensionContext.workspaceState);
+			await applySession(context.environment);
+			refreshAllViews();
+			updateEnvironmentStatus(envStatusBarItem);
+		}
+	}));
 }
 
 export function deactivate() { }

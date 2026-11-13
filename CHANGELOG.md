@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-11-13
+
+- Added
+  - Drag & drop files from the OS onto a bucket to upload them; the upload dialog remembers the last used folder
+  - Back button in the multi-step "Upload app bundle" flow to correct an earlier choice without restarting
+  - Badge on inactive webhooks in the Webhooks views
+  - Object uploads/downloads and Design Automation work item monitoring can now be cancelled from the progress notification
+  - Localization support (powered by `vscode.l10n` and `package.nls.*.json`); Japanese is the first non-English language
+  - Changes to `autodesk.forge.*` settings made directly in `settings.json` are applied without reloading the window
+- Fixed
+  - Previewing a derivative of a specific Hubs version now uses a fully URL-safe version URN
+
 ## [3.7.0] - 2026-11-12
 
 - Added

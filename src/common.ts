@@ -29,9 +29,9 @@ export interface IContext extends IServices {
 const LAST_BUCKET_KEY = 'aps.lastBucket';
 
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
-    const buckets = await withProgress('Loading buckets...', context.ossService.getAllBuckets(context.environment.region));
+    const buckets = await withProgress(vscode.l10n.t('Loading buckets...'), context.ossService.getAllBuckets(context.environment.region));
     const lastBucketKey = context.extensionContext.workspaceState.get<string>(LAST_BUCKET_KEY);
-    const bucketKey = await vscode.window.showQuickPick(sortRecentFirst(buckets.map(item => item.bucketKey), lastBucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+    const bucketKey = await vscode.window.showQuickPick(sortRecentFirst(buckets.map(item => item.bucketKey), lastBucketKey), { canPickMany: false, placeHolder: vscode.l10n.t('Select bucket') });
     if (!bucketKey) {
         return undefined;
     } else {
@@ -41,8 +41,8 @@ export async function promptBucket(context: IContext): Promise<BucketsItems | un
 }
 
 export async function promptObject(context: IContext, bucketKey: string): Promise<ObjectDetails | undefined> {
-    const objects = await withProgress('Loading objects...', context.ossService.getAllObjects(bucketKey));
-    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: 'Select object' });
+    const objects = await withProgress(vscode.l10n.t('Loading objects...'), context.ossService.getAllObjects(bucketKey));
+    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: vscode.l10n.t('Select object') });
     if (!objectKey) {
         return undefined;
     } else {
@@ -51,13 +51,13 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 }
 
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const derivatives = await withProgress('Loading derivatives...', context.modelDerivativeService.getViewableDerivatives(objectId));
+    const derivatives = await withProgress(vscode.l10n.t('Loading derivatives...'), context.modelDerivativeService.getViewableDerivatives(objectId));
     if (!derivatives) {
-        vscode.window.showWarningMessage(`No derivatives yet for ${urnify(objectId)}`);
+        vscode.window.showWarningMessage(vscode.l10n.t('No derivatives yet for {0}', urnify(objectId)));
         return undefined;
     }
 
-    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: vscode.l10n.t('Select derivative') });
     if (!derivativeName) {
         return undefined;
     } else {
@@ -66,9 +66,9 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
 }
 
 export async function promptCustomDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const derivatives = await withProgress('Loading derivatives...', context.modelDerivativeService.getCustomDerivatives(objectId));
+    const derivatives = await withProgress(vscode.l10n.t('Loading derivatives...'), context.modelDerivativeService.getCustomDerivatives(objectId));
 
-    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: vscode.l10n.t('Select derivative') });
     if (!derivativeName) {
         return undefined;
     } else {
@@ -81,9 +81,9 @@ const LAST_APP_BUNDLE_KEY = 'aps.lastAppBundle';
 const LAST_ENGINE_KEY = 'aps.lastEngine';
 
 export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
-    const appBundles = await withProgress('Loading app bundles...', context.designAutomationService.getAvailableAppBundles());
+    const appBundles = await withProgress(vscode.l10n.t('Loading app bundles...'), context.designAutomationService.getAvailableAppBundles());
     const lastAppBundle = context.extensionContext.globalState.get<string>(LAST_APP_BUNDLE_KEY);
-    const appBundle = await vscode.window.showQuickPick(sortRecentFirst(appBundles, lastAppBundle), { canPickMany: false, placeHolder: 'Select app bundle' });
+    const appBundle = await vscode.window.showQuickPick(sortRecentFirst(appBundles, lastAppBundle), { canPickMany: false, placeHolder: vscode.l10n.t('Select app bundle') });
     if (appBundle) {
         await context.extensionContext.globalState.update(LAST_APP_BUNDLE_KEY, appBundle);
     }
@@ -91,9 +91,9 @@ export async function promptAppBundleFullID(context: IContext): Promise<string |
 }
 
 export async function promptEngine(context: IContext): Promise<string | undefined> {
-    const engines = await withProgress('Loading engines...', context.designAutomationService.listEngines());
+    const engines = await withProgress(vscode.l10n.t('Loading engines...'), context.designAutomationService.listEngines());
     const lastEngine = context.extensionContext.globalState.get<string>(LAST_ENGINE_KEY);
-    const engine = await vscode.window.showQuickPick(sortRecentFirst(engines, lastEngine), { canPickMany: false, placeHolder: 'Select engine' });
+    const engine = await vscode.window.showQuickPick(sortRecentFirst(engines, lastEngine), { canPickMany: false, placeHolder: vscode.l10n.t('Select engine') });
     if (engine) {
         await context.extensionContext.globalState.update(LAST_ENGINE_KEY, engine);
     }
@@ -158,8 +158,9 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     }
 
     if (response) {
-        const answer = await vscode.window.showErrorMessage(msg, 'Show Details');
-        if (answer === 'Show Details') {
+        const showDetails = vscode.l10n.t('Show Details');
+        const answer = await vscode.window.showErrorMessage(msg, showDetails);
+        if (answer === showDetails) {
             const raw = {
                 // Only include the request method and URL; the full request config may contain the access token.
                 config: response.config ? { method: response.config.method, url: response.config.url } : undefined,
@@ -201,6 +202,22 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 /** Returns a comparator that sorts items by the given property using natural, case-insensitive string ordering. */
 export function stringPropertySorter<T>(propName: keyof T) {
     return (a: T, b: T): number => collator.compare(String(a[propName] ?? ''), String(b[propName] ?? ''));
+}
+
+/** Converts a VS Code cancellation token to an `AbortSignal` that aborts when cancellation is requested. */
+export function toAbortSignal(token: vscode.CancellationToken): AbortSignal {
+    const controller = new AbortController();
+    if (token.isCancellationRequested) {
+        controller.abort();
+    } else {
+        token.onCancellationRequested(() => controller.abort());
+    }
+    return controller.signal;
+}
+
+/** Whether `err` was caused by a user-initiated cancellation (aborted request or polling). */
+export function isCancellation(err: unknown): boolean {
+    return err instanceof Error && (err.name === 'AbortError');
 }
 
 export function withProgress<T>(title: string, task: Thenable<T>): Thenable<T> {
@@ -300,4 +317,105 @@ export function createWebViewPanel<Props, Message = unknown>(context: IContext, 
         </html>
     `;
     return panel;
+}
+
+/** Result of a single step in a multi-step flow. */
+export type StepResult = 'next' | 'back' | 'cancel';
+
+/**
+ * Runs a sequence of steps, letting the user go back to a previous step (using the Back button
+ * of quick picks/input boxes) without restarting the whole flow. Returns true if all steps completed.
+ */
+export async function runMultiStep(steps: ((index: number, total: number) => Thenable<StepResult>)[]): Promise<boolean> {
+    let i = 0;
+    while (i < steps.length) {
+        const result = await steps[i](i, steps.length);
+        if (result === 'cancel') {
+            return false;
+        }
+        i = result === 'back' ? Math.max(0, i - 1) : i + 1;
+    }
+    return true;
+}
+
+function stepTitle(title: string, index: number, total: number): string {
+    return total > 1 ? `${title} (${index + 1}/${total})` : title;
+}
+
+/** Shows a single-selection quick pick as a step; the Back button is shown for all but the first step. */
+export function pickStep(title: string, index: number, total: number, items: string[], placeHolder: string, onPick: (value: string) => void): Promise<StepResult> {
+    return new Promise<StepResult>(resolve => {
+        const input = vscode.window.createQuickPick<vscode.QuickPickItem>();
+        let result: StepResult = 'cancel';
+        input.title = stepTitle(title, index, total);
+        input.placeholder = placeHolder;
+        input.items = items.map(label => ({ label }));
+        input.ignoreFocusOut = true;
+        if (index > 0) {
+            input.buttons = [vscode.QuickInputButtons.Back];
+        }
+        input.onDidTriggerButton(button => {
+            if (button === vscode.QuickInputButtons.Back) {
+                result = 'back';
+                input.hide();
+            }
+        });
+        input.onDidAccept(() => {
+            const selected = input.selectedItems[0];
+            if (selected) {
+                onPick(selected.label);
+                result = 'next';
+                input.hide();
+            }
+        });
+        input.onDidHide(() => {
+            input.dispose();
+            resolve(result);
+        });
+        input.show();
+    });
+}
+
+/** Shows an input box as a step; the Back button is shown for all but the first step. */
+export function inputStep(title: string, index: number, total: number, prompt: string, value: string, onInput: (value: string) => void, options?: { allowEmpty?: boolean }): Promise<StepResult> {
+    return new Promise<StepResult>(resolve => {
+        const input = vscode.window.createInputBox();
+        let result: StepResult = 'cancel';
+        input.title = stepTitle(title, index, total);
+        input.prompt = prompt;
+        input.value = value;
+        input.ignoreFocusOut = true;
+        if (index > 0) {
+            input.buttons = [vscode.QuickInputButtons.Back];
+        }
+        input.onDidTriggerButton(button => {
+            if (button === vscode.QuickInputButtons.Back) {
+                result = 'back';
+                input.hide();
+            }
+        });
+        input.onDidAccept(() => {
+            if (!options?.allowEmpty && !input.value) {
+                return;
+            }
+            onInput(input.value);
+            result = 'next';
+            input.hide();
+        });
+        input.onDidHide(() => {
+            input.dispose();
+            resolve(result);
+        });
+        input.show();
+    });
+}
+
+/** Like `promptEngine`, but as a step of a multi-step flow. */
+export async function promptEngineStep(context: IContext, title: string, index: number, total: number, onPick: (engine: string) => void): Promise<StepResult> {
+    const engines = await withProgress(vscode.l10n.t('Loading engines...'), context.designAutomationService.listEngines());
+    const lastEngine = context.extensionContext.globalState.get<string>(LAST_ENGINE_KEY);
+    return pickStep(title, index, total, sortRecentFirst(engines, lastEngine), 'Select engine', engine => {
+        void context.extensionContext.globalState.update(LAST_ENGINE_KEY, engine);
+        onPick(engine);
+    });
 }

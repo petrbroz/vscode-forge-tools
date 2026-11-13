@@ -36,6 +36,7 @@ export interface IWebhookEvent {
 export interface IWebhook {
     type: 'hook';
     id: string;
+    status?: string;
     system: string;
     event: string;
     authContext: WebhookAuthContext;
