@@ -166,7 +166,13 @@ Tools that create or modify resources ask for confirmation before running. You c
 
 ### Localization
 
-The extension UI is available in English and Japanese, and follows the display language of your editor.
+The extension UI is available in English and Japanese, and follows the display language of your editor. There is no separate language setting. To switch:
+
+1. Open the Command Palette and run _Configure Display Language_.
+2. Select _日本語_ (Japanese) or _English_. If Japanese isn't listed, install the [Japanese Language Pack for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=MS-CEINTL.vscode-language-pack-ja) first.
+3. Restart VS Code when prompted.
+
+Note that this changes the display language of the whole editor, not only this extension.
 
 ## Known limitations and issues
 
