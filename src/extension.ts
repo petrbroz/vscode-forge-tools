@@ -201,6 +201,30 @@ export async function activate(_context: vscode.ExtensionContext) {
 	// refresh to pick up the restored session.
 	await applySession(env);
 	refreshUserViews();
+
+	// Hand-edited settings.json changes rebuild the services, status bar and views (same path as switching environments).
+	context.extensionContext.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async event => {
+		if (!event.affectsConfiguration('autodesk.forge')) {
+			return;
+		}
+		const config = vscode.workspace.getConfiguration(undefined, null);
+		context.previewSettings = {
+			extensions: config.get<string[]>('autodesk.forge.viewer.extensions') || [],
+			env: config.get<string>('autodesk.forge.viewer.env'),
+			api: config.get<string>('autodesk.forge.viewer.api')
+		};
+		if (event.affectsConfiguration('autodesk.forge.environments')) {
+			const updated = getEnvironments();
+			if (updated.length === 0) {
+				return; // keep the current environment until a new one is configured
+			}
+			context.environment = updated.find(e => e.title === context.environment.title)
+				?? pickDefaultEnvironment(updated, context.extensionContext.workspaceState);
+			await applySession(context.environment);
+			refreshAllViews();
+			updateEnvironmentStatus(envStatusBarItem);
+		}
+	}));
 }
 
 export function deactivate() { }
