@@ -6,7 +6,7 @@
     "description": "%extension.description%",
     "author": "Petr Broz <petr.broz@autodesk.com>",
     "license": "MIT",
-    "version": "3.7.0",
+    "version": "3.8.0",
     "homepage": "https://marketplace.visualstudio.com/items?itemName=petrbroz.vscode-forge-tools",
     "repository": {
         "type": "git",
