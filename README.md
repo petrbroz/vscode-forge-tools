@@ -16,7 +16,7 @@
 
 [Visual Studio Code](https://code.visualstudio.com) extension for accessing [Autodesk Platform Services](https://aps.autodesk.com) services and content.
 
-![Preview](https://github.com/petrbroz/vscode-forge-tools/raw/develop/media/docs/screenshot.png)
+![Preview](https://github.com/autodesk-platform-services/aps-vscode-extension/raw/develop/media/docs/screenshot.png)
 
 > Note: [Autodesk Forge is now Autodesk Platform Services](https://aps.autodesk.com/blog/autodesk-forge-becoming-autodesk-platform-services) but you may still see the _Forge_ brand used in different areas of this extension. These references have been kept to maintain backwards compatibility.
 

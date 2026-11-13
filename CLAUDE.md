@@ -4,7 +4,7 @@ Guidance for working in this repository.
 
 ## Project
 
-`vscode-forge-tools` — a VS Code extension (published as **Autodesk Platform Services**) that surfaces
+`aps-vscode-extension` (formerly `vscode-forge-tools`; the extension ID is still `petrbroz.vscode-forge-tools`) — a VS Code extension (published as **Autodesk Platform Services**) that surfaces
 APS services (OSS, Model Derivative, Data Management/Hubs, Webhooks, Design Automation, Secure Service
 Accounts) as tree views, commands, and React webview panels. TypeScript, bundled with esbuild.
 
