@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Back button in the multi-step "Upload app bundle" flow to correct an earlier choice without restarting
   - Badge on inactive webhooks in the Webhooks views
   - Object uploads/downloads and Design Automation work item monitoring can now be cancelled from the progress notification
+  - Changes to `autodesk.forge.*` settings made directly in `settings.json` are applied without reloading the window
 - Fixed
   - Previewing a derivative of a specific Hubs version now uses a fully URL-safe version URN
 
