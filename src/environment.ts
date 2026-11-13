@@ -16,21 +16,22 @@ export function pickDefaultEnvironment(environments: IEnvironment[], workspaceSt
 
 export async function setupNewEnvironment() {
     try {
-        const choice = await vscode.window.showInformationMessage('APS application credentials are missing. Configure them in VSCode settings.', 'Enter APS Credentials');
-        if (choice === 'Enter APS Credentials') {
-            const clientId = await vscode.window.showInputBox({ prompt: 'Enter APS client ID', ignoreFocusOut: true });
+        const enterCredentials = vscode.l10n.t('Enter APS Credentials');
+        const choice = await vscode.window.showInformationMessage(vscode.l10n.t('APS application credentials are missing. Configure them in VSCode settings.'), enterCredentials);
+        if (choice === enterCredentials) {
+            const clientId = await vscode.window.showInputBox({ prompt: vscode.l10n.t('Enter APS client ID'), ignoreFocusOut: true });
             if (!clientId) {
                 return;
             }
-            const clientSecret = await vscode.window.showInputBox({ prompt: 'Enter APS client secret', ignoreFocusOut: true });
+            const clientSecret = await vscode.window.showInputBox({ prompt: vscode.l10n.t('Enter APS client secret'), ignoreFocusOut: true });
             if (!clientSecret) {
                 return;
             }
-            const region = await vscode.window.showQuickPick(['US', 'EMEA', 'AUS', 'CAN', 'DEU', 'IND', 'JPN', 'GBR'], { placeHolder: 'Choose your APS region', ignoreFocusOut: true });
+            const region = await vscode.window.showQuickPick(['US', 'EMEA', 'AUS', 'CAN', 'DEU', 'IND', 'JPN', 'GBR'], { placeHolder: vscode.l10n.t('Choose your APS region'), ignoreFocusOut: true });
             if (!region) {
                 return;
             }
-            const title = await vscode.window.showInputBox({ prompt: 'Give your new environment a name', ignoreFocusOut: true });
+            const title = await vscode.window.showInputBox({ prompt: vscode.l10n.t('Give your new environment a name'), ignoreFocusOut: true });
             if (!title) {
                 return;
             }
@@ -39,6 +40,6 @@ export async function setupNewEnvironment() {
             vscode.commands.executeCommand('workbench.action.reloadWindow');
         }
     } catch (err) {
-        vscode.window.showErrorMessage(`Could not setup APS environment: ${err}`);
+        vscode.window.showErrorMessage(vscode.l10n.t('Could not setup APS environment: {0}', String(err)));
     }
 }

@@ -29,9 +29,9 @@ export interface IContext extends IServices {
 const LAST_BUCKET_KEY = 'aps.lastBucket';
 
 export async function promptBucket(context: IContext): Promise<BucketsItems | undefined> {
-    const buckets = await withProgress('Loading buckets...', context.ossService.getAllBuckets(context.environment.region));
+    const buckets = await withProgress(vscode.l10n.t('Loading buckets...'), context.ossService.getAllBuckets(context.environment.region));
     const lastBucketKey = context.extensionContext.workspaceState.get<string>(LAST_BUCKET_KEY);
-    const bucketKey = await vscode.window.showQuickPick(sortRecentFirst(buckets.map(item => item.bucketKey), lastBucketKey), { canPickMany: false, placeHolder: 'Select bucket' });
+    const bucketKey = await vscode.window.showQuickPick(sortRecentFirst(buckets.map(item => item.bucketKey), lastBucketKey), { canPickMany: false, placeHolder: vscode.l10n.t('Select bucket') });
     if (!bucketKey) {
         return undefined;
     } else {
@@ -41,8 +41,8 @@ export async function promptBucket(context: IContext): Promise<BucketsItems | un
 }
 
 export async function promptObject(context: IContext, bucketKey: string): Promise<ObjectDetails | undefined> {
-    const objects = await withProgress('Loading objects...', context.ossService.getAllObjects(bucketKey));
-    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: 'Select object' });
+    const objects = await withProgress(vscode.l10n.t('Loading objects...'), context.ossService.getAllObjects(bucketKey));
+    const objectKey = await vscode.window.showQuickPick(objects.map(item => item.objectKey!), { canPickMany: false, placeHolder: vscode.l10n.t('Select object') });
     if (!objectKey) {
         return undefined;
     } else {
@@ -51,13 +51,13 @@ export async function promptObject(context: IContext, bucketKey: string): Promis
 }
 
 export async function promptDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const derivatives = await withProgress('Loading derivatives...', context.modelDerivativeService.getViewableDerivatives(objectId));
+    const derivatives = await withProgress(vscode.l10n.t('Loading derivatives...'), context.modelDerivativeService.getViewableDerivatives(objectId));
     if (!derivatives) {
-        vscode.window.showWarningMessage(`No derivatives yet for ${urnify(objectId)}`);
+        vscode.window.showWarningMessage(vscode.l10n.t('No derivatives yet for {0}', urnify(objectId)));
         return undefined;
     }
 
-    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: vscode.l10n.t('Select derivative') });
     if (!derivativeName) {
         return undefined;
     } else {
@@ -66,9 +66,9 @@ export async function promptDerivative(context: IContext, objectId: string): Pro
 }
 
 export async function promptCustomDerivative(context: IContext, objectId: string): Promise<IDerivative | undefined> {
-    const derivatives = await withProgress('Loading derivatives...', context.modelDerivativeService.getCustomDerivatives(objectId));
+    const derivatives = await withProgress(vscode.l10n.t('Loading derivatives...'), context.modelDerivativeService.getCustomDerivatives(objectId));
 
-    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: 'Select derivative' });
+    const derivativeName = await vscode.window.showQuickPick(derivatives.map(item => item.name), { canPickMany: false, placeHolder: vscode.l10n.t('Select derivative') });
     if (!derivativeName) {
         return undefined;
     } else {
@@ -81,9 +81,9 @@ const LAST_APP_BUNDLE_KEY = 'aps.lastAppBundle';
 const LAST_ENGINE_KEY = 'aps.lastEngine';
 
 export async function promptAppBundleFullID(context: IContext): Promise<string | undefined> {
-    const appBundles = await withProgress('Loading app bundles...', context.designAutomationService.getAvailableAppBundles());
+    const appBundles = await withProgress(vscode.l10n.t('Loading app bundles...'), context.designAutomationService.getAvailableAppBundles());
     const lastAppBundle = context.extensionContext.globalState.get<string>(LAST_APP_BUNDLE_KEY);
-    const appBundle = await vscode.window.showQuickPick(sortRecentFirst(appBundles, lastAppBundle), { canPickMany: false, placeHolder: 'Select app bundle' });
+    const appBundle = await vscode.window.showQuickPick(sortRecentFirst(appBundles, lastAppBundle), { canPickMany: false, placeHolder: vscode.l10n.t('Select app bundle') });
     if (appBundle) {
         await context.extensionContext.globalState.update(LAST_APP_BUNDLE_KEY, appBundle);
     }
@@ -91,9 +91,9 @@ export async function promptAppBundleFullID(context: IContext): Promise<string |
 }
 
 export async function promptEngine(context: IContext): Promise<string | undefined> {
-    const engines = await withProgress('Loading engines...', context.designAutomationService.listEngines());
+    const engines = await withProgress(vscode.l10n.t('Loading engines...'), context.designAutomationService.listEngines());
     const lastEngine = context.extensionContext.globalState.get<string>(LAST_ENGINE_KEY);
-    const engine = await vscode.window.showQuickPick(sortRecentFirst(engines, lastEngine), { canPickMany: false, placeHolder: 'Select engine' });
+    const engine = await vscode.window.showQuickPick(sortRecentFirst(engines, lastEngine), { canPickMany: false, placeHolder: vscode.l10n.t('Select engine') });
     if (engine) {
         await context.extensionContext.globalState.update(LAST_ENGINE_KEY, engine);
     }
@@ -158,8 +158,9 @@ export async function showErrorMessage(title: string, err: any, context?: IConte
     }
 
     if (response) {
-        const answer = await vscode.window.showErrorMessage(msg, 'Show Details');
-        if (answer === 'Show Details') {
+        const showDetails = vscode.l10n.t('Show Details');
+        const answer = await vscode.window.showErrorMessage(msg, showDetails);
+        if (answer === showDetails) {
             const raw = {
                 // Only include the request method and URL; the full request config may contain the access token.
                 config: response.config ? { method: response.config.method, url: response.config.url } : undefined,
@@ -411,7 +412,7 @@ export function inputStep(title: string, index: number, total: number, prompt: s
 
 /** Like `promptEngine`, but as a step of a multi-step flow. */
 export async function promptEngineStep(context: IContext, title: string, index: number, total: number, onPick: (engine: string) => void): Promise<StepResult> {
-    const engines = await withProgress('Loading engines...', context.designAutomationService.listEngines());
+    const engines = await withProgress(vscode.l10n.t('Loading engines...'), context.designAutomationService.listEngines());
     const lastEngine = context.extensionContext.globalState.get<string>(LAST_ENGINE_KEY);
     return pickStep(title, index, total, sortRecentFirst(engines, lastEngine), 'Select engine', engine => {
         void context.extensionContext.globalState.update(LAST_ENGINE_KEY, engine);
