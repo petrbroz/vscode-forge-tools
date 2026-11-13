@@ -72,7 +72,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         const env = this.getContext().environment;
         const kind = await this.pickMode();
         if (!kind) {
-            throw new Error('Login cancelled.');
+            throw new Error(vscode.l10n.t('Login cancelled.'));
         }
         const session = await this.runModeFlow(env, kind, [...scopes]);
         await this.secrets.store(this.secretKey(env), JSON.stringify(session));
@@ -101,12 +101,12 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
 
     private async pickMode(): Promise<ApsAuthModeKind | undefined> {
         const items: IModeQuickPickItem[] = [
-            { authMode: 'authorization-code', label: '$(sign-in) 3-legged OAuth', detail: 'Interactive browser login using your APS app client ID and secret (confidential client). Requires a callback URL registered on your app.' },
-            { authMode: 'authorization-code-pkce', label: '$(sign-in) 3-legged OAuth with PKCE', detail: 'Interactive browser login for public clients, without a client secret. Requires a callback URL registered on your app.' },
-            { authMode: 'service-account', label: '$(robot) Secure Service Account', detail: 'Sign in on behalf of a secure service account using its private key.' },
-            { authMode: 'manual-token', label: '$(key) Paste access token', detail: 'Use an access token obtained from another APS application.' }
+            { authMode: 'authorization-code', label: '$(sign-in) ' + vscode.l10n.t('3-legged OAuth'), detail: vscode.l10n.t('Interactive browser login using your APS app client ID and secret (confidential client). Requires a callback URL registered on your app.') },
+            { authMode: 'authorization-code-pkce', label: '$(sign-in) ' + vscode.l10n.t('3-legged OAuth with PKCE'), detail: vscode.l10n.t('Interactive browser login for public clients, without a client secret. Requires a callback URL registered on your app.') },
+            { authMode: 'service-account', label: '$(robot) ' + vscode.l10n.t('Secure Service Account'), detail: vscode.l10n.t('Sign in on behalf of a secure service account using its private key.') },
+            { authMode: 'manual-token', label: '$(key) ' + vscode.l10n.t('Paste access token'), detail: vscode.l10n.t('Use an access token obtained from another APS application.') }
         ];
-        const picked = await vscode.window.showQuickPick(items, { placeHolder: 'Select an APS authentication method', ignoreFocusOut: true });
+        const picked = await vscode.window.showQuickPick(items, { placeHolder: vscode.l10n.t('Select an APS authentication method'), ignoreFocusOut: true });
         return picked?.authMode;
     }
 
@@ -131,7 +131,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         }
         const code = params.get('code');
         if (!code) {
-            pending.reject(new Error('Authorization callback did not include a code.'));
+            pending.reject(new Error(vscode.l10n.t('Authorization callback did not include a code.')));
             return;
         }
         pending.resolve(code);
@@ -197,11 +197,12 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         if (extensionContext.globalState.get<boolean>(seenKey)) {
             return;
         }
+        const copyAndOpen = vscode.l10n.t('Copy URL & Open APS Dev Portal');
         const action = await vscode.window.showInformationMessage(
-            `Signing in to Autodesk Platform Services requires this callback URL to be registered for your app: ${redirectUri}`,
-            'Copy URL & Open APS Dev Portal', 'Got it, don\'t show again'
+            vscode.l10n.t('Signing in to Autodesk Platform Services requires this callback URL to be registered for your app: {0}', redirectUri),
+            copyAndOpen, vscode.l10n.t('Got it, don\'t show again')
         );
-        if (action === 'Copy URL & Open APS Dev Portal') {
+        if (action === copyAndOpen) {
             await vscode.env.clipboard.writeText(redirectUri);
             vscode.env.openExternal(vscode.Uri.parse('https://aps.autodesk.com/myapps'));
         }
@@ -227,7 +228,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
                 this.pendingLogins.delete(state);
-                reject(new Error('Login timed out.'));
+                reject(new Error(vscode.l10n.t('Login timed out.')));
             }, LoginTimeoutMs);
             this.pendingLogins.set(state, {
                 resolve: code => { clearTimeout(timer); resolve(code); },
@@ -251,7 +252,7 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
             case 'service-account':
                 return this.runServiceAccountFlow(env, base);
             case 'manual-token': {
-                const token = await vscode.window.showInputBox({ prompt: 'Paste an APS access token', password: true, ignoreFocusOut: true });
+                const token = await vscode.window.showInputBox({ prompt: vscode.l10n.t('Paste an APS access token'), password: true, ignoreFocusOut: true });
                 if (!token) {
                     throw new Error('No access token provided.');
                 }
@@ -264,38 +265,38 @@ export class ApsAuthenticationProvider implements vscode.AuthenticationProvider,
     private async runServiceAccountFlow(env: IEnvironment, base: { id: string; environmentKey: string }): Promise<IApsAuthSession> {
         const { secureServiceAccountsService, authenticationService } = this.getContext();
 
-        const accounts = await withProgress('Loading secure service accounts...', secureServiceAccountsService.getServiceAccounts());
+        const accounts = await withProgress(vscode.l10n.t('Loading secure service accounts...'), secureServiceAccountsService.getServiceAccounts());
         if (accounts.length === 0) {
-            throw new Error('No secure service accounts found for this application.');
+            throw new Error(vscode.l10n.t('No secure service accounts found for this application.'));
         }
-        const email = await vscode.window.showQuickPick(accounts.map(account => account.email), { placeHolder: 'Select secure service account', ignoreFocusOut: true });
+        const email = await vscode.window.showQuickPick(accounts.map(account => account.email), { placeHolder: vscode.l10n.t('Select secure service account'), ignoreFocusOut: true });
         if (!email) {
-            throw new Error('Login cancelled.');
+            throw new Error(vscode.l10n.t('Login cancelled.'));
         }
         const account = accounts.find(a => a.email === email)!;
 
-        const keys = await withProgress('Loading keys...', secureServiceAccountsService.getServiceAccountKeys(account.id));
+        const keys = await withProgress(vscode.l10n.t('Loading keys...'), secureServiceAccountsService.getServiceAccountKeys(account.id));
         if (keys.length === 0) {
-            throw new Error('The selected service account has no keys.');
+            throw new Error(vscode.l10n.t('The selected service account has no keys.'));
         }
-        const keyId = await vscode.window.showQuickPick(keys.map(key => key.id), { placeHolder: 'Select key', ignoreFocusOut: true });
+        const keyId = await vscode.window.showQuickPick(keys.map(key => key.id), { placeHolder: vscode.l10n.t('Select key'), ignoreFocusOut: true });
         if (!keyId) {
-            throw new Error('Login cancelled.');
+            throw new Error(vscode.l10n.t('Login cancelled.'));
         }
 
-        const privateKeyFile = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: `Select private key file for key ID ${keyId}`, filters: { 'PEM Files': ['pem'], 'All Files': ['*'] } });
+        const privateKeyFile = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: vscode.l10n.t('Select private key file for key ID {0}', keyId), filters: { [vscode.l10n.t('PEM Files')]: ['pem'], [vscode.l10n.t('All Files')]: ['*'] } });
         if (!privateKeyFile || privateKeyFile.length !== 1) {
-            throw new Error('No private key file selected.');
+            throw new Error(vscode.l10n.t('No private key file selected.'));
         }
         const privateKey = Buffer.from(await vscode.workspace.fs.readFile(privateKeyFile[0])).toString('utf8');
 
-        const scopes = await vscode.window.showQuickPick(authenticationService.defaultScopes, { canPickMany: true, placeHolder: 'Select scopes', ignoreFocusOut: true });
+        const scopes = await vscode.window.showQuickPick(authenticationService.defaultScopes, { canPickMany: true, placeHolder: vscode.l10n.t('Select scopes'), ignoreFocusOut: true });
         if (!scopes || scopes.length === 0) {
-            throw new Error('No scopes selected.');
+            throw new Error(vscode.l10n.t('No scopes selected.'));
         }
 
         const assertion = secureServiceAccountsService.generateJwtAssertion(env.clientId, account.id, privateKey, keyId, scopes);
-        const token = await withProgress('Generating access token...', secureServiceAccountsService.exchangeJwtAssertion(assertion, env.clientId, env.clientSecret, scopes));
+        const token = await withProgress(vscode.l10n.t('Generating access token...'), secureServiceAccountsService.exchangeJwtAssertion(assertion, env.clientId, env.clientSecret, scopes));
         const mode: ApsAuthMode = { kind: 'service-account', serviceAccountId: account.id, keyId, privateKey };
         return {
             ...base,
